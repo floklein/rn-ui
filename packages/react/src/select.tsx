@@ -142,34 +142,45 @@ function SelectTrigger({
   ...props
 }: Omit<PartProps<"button", SelectTriggerState>, Clashing> &
   SelectTriggerProps) {
+  const field = useFieldControl(props)
   const unconnected = () =>
-    renderElement("button", { type: "button", disabled, ...props }, render, {
-      open: false,
-      disabled: !!disabled,
-      readOnly: false,
-      required: false,
-      placeholder: true,
-    })
+    renderElement(
+      "button",
+      { type: "button", disabled, ...props },
+      controlRender(field, "button", render),
+      {
+        open: false,
+        disabled: !!disabled,
+        readOnly: false,
+        required: false,
+        placeholder: true,
+      }
+    )
   return (
     <Connected
       primitive={selectPrimitive}
       controller={controller}
       fallback={unconnected}
     >
-      <TriggerPart disabled={disabled} render={render} {...props} />
+      <TriggerPart
+        field={field}
+        disabled={disabled}
+        render={render}
+        {...props}
+      />
     </Connected>
   )
 }
 
 function TriggerPart({
+  field,
   disabled,
   render,
   children = <SelectValue />,
   ...props
 }: Omit<PartProps<"button", SelectTriggerState>, Clashing> &
-  SelectTriggerProps) {
+  SelectTriggerProps & { field: ReturnType<typeof useFieldControl> }) {
   // Without content, the trigger shows the value.
-  const field = useFieldControl(props)
   const element = {
     ...props,
     children,

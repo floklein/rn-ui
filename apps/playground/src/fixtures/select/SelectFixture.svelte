@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createSelectController } from "@ui-sdk/core/select"
   import {
+    Field,
+    FieldLabel,
     Select,
     SelectClear,
     SelectContent,
@@ -33,6 +35,7 @@
   const controller = createSelectController<string, boolean>()
   const {
     fieldset,
+    field,
     grouped,
     cancel,
     align,
@@ -185,6 +188,15 @@
       disabled={fieldset || undefined}
       style="display: contents"
     >
+      {#if field}
+        <Field>
+          <FieldLabel class="label">{f.label}</FieldLabel>
+          <SelectTrigger class="trigger" {controller}>
+            <SelectValue class="value" maxLabels={max} />
+            <span aria-hidden="true">▾</span>
+          </SelectTrigger>
+        </Field>
+      {/if}
       <Select
         {...options}
         name={f.name}
@@ -195,11 +207,13 @@
         emptyItems={recent ? f.recent : undefined}
         {onValueChange}
       >
-        <SelectLabel class="label">{f.label}</SelectLabel>
-        <SelectTrigger class="trigger">
-          <SelectValue class="value" maxLabels={max} />
-          <span aria-hidden="true">▾</span>
-        </SelectTrigger>
+        {#if !field}
+          <SelectLabel class="label">{f.label}</SelectLabel>
+          <SelectTrigger class="trigger">
+            <SelectValue class="value" maxLabels={max} />
+            <span aria-hidden="true">▾</span>
+          </SelectTrigger>
+        {/if}
         <SelectClear>{f.clear}</SelectClear>
         {#if search}
           <SelectContent class="popup list-popup" alignItemWithTrigger={align}>

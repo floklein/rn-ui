@@ -10,9 +10,10 @@ The button that opens the list: a combobox named by the label. Typing on it sele
     type SelectTriggerState,
   } from "@ui-sdk/core/select"
   import { getContext } from "svelte"
+  import { useFieldControl } from "../field/context"
   import Part from "../part.svelte"
   import { useControllerTarget } from "../popup.svelte"
-  import { plainPart, type PartProps } from "../use-primitive.svelte"
+  import { plainPart, wrapPart, type PartProps } from "../use-primitive.svelte"
   import type { SelectContext } from "./context"
   import TriggerBinding from "./select-trigger-binding.svelte"
 
@@ -27,23 +28,30 @@ The button that opens the list: a combobox named by the label. Typing on it sele
     getContext<SelectContext | undefined>(selectPrimitive)
   )
   const select = $derived(connected())
+  const control = useFieldControl()?.control(
+    () => rest.id as string | undefined,
+    () => rest["aria-describedby"]
+  )
 </script>
 
 {#if select}
-  <TriggerBinding owner={select} {disabled} {...rest} />
+  <TriggerBinding owner={select} {control} {disabled} {...rest} />
 {:else}
   <!-- Until the select it names mounts, a trigger outside the select is a plain button. -->
   <Part
     tag="button"
-    part={plainPart(
-      {
-        open: false,
-        disabled: !!disabled,
-        readOnly: false,
-        required: false,
-        placeholder: true,
-      },
-      { type: "button" }
+    part={wrapPart(
+      plainPart(
+        {
+          open: false,
+          disabled: !!disabled,
+          readOnly: false,
+          required: false,
+          placeholder: true,
+        },
+        { type: "button" }
+      ),
+      control
     )}
     props={rest}
   />

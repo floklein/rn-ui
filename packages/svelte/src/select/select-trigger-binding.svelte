@@ -4,13 +4,13 @@
     type SelectTriggerProps,
     type SelectTriggerState,
   } from "@ui-sdk/core/select"
-  import { useFieldControl } from "../field/context"
   import Part from "../part.svelte"
   import { provideInstance } from "../instance"
   import {
     useHandlePart,
     wrapPart,
     type PartProps,
+    type SlotAttributes,
   } from "../use-primitive.svelte"
   import type { SelectContext } from "./context"
   import SelectValue from "./select-value.svelte"
@@ -19,11 +19,15 @@
   // a trigger given another controller keeps its element and focus.
   let {
     owner,
+    control,
     disabled,
     children,
     ...rest
   }: PartProps<"button", SelectTriggerState> &
-    SelectTriggerProps & { owner: SelectContext } = $props()
+    SelectTriggerProps & {
+      owner: SelectContext
+      control?: (attributes: SlotAttributes) => SlotAttributes
+    } = $props()
 
   // A trigger outside the select brings the select to the value inside it.
   // Context is set once, so the handle it gets reads the current one.
@@ -39,15 +43,10 @@
     },
     controls: (key) => owner.controls(key),
   })
-  const field = useFieldControl()
   const trigger = useHandlePart(
     () => owner,
     "trigger",
-    () => ({ disabled, named: !!field || rest["aria-labelledby"] != null })
-  )
-  const control = field?.control(
-    () => rest.id as string | undefined,
-    () => rest["aria-describedby"]
+    () => ({ disabled, named: !!control || rest["aria-labelledby"] != null })
   )
 </script>
 

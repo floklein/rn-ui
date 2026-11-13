@@ -181,6 +181,7 @@ function SelectTrigger(props: TriggerPartProps) {
     useContext(SelectContext)
   )
   const rest = omit(props, "disabled", "controller")
+  const field = useFieldControl(rest)
   return (
     <Show
       when={select()}
@@ -198,11 +199,11 @@ function SelectTrigger(props: TriggerPartProps) {
             placeholder: true,
           },
         }),
-        rest
+        joinField(field, rest, "button")
       )}
     >
       {(select) =>
-        triggerPart(select, () => ({ disabled: props.disabled }), rest)
+        triggerPart(select, () => ({ disabled: props.disabled }), rest, field)
       }
     </Show>
   )
@@ -211,7 +212,8 @@ function SelectTrigger(props: TriggerPartProps) {
 function triggerPart(
   select: SelectContextValue,
   trigger: () => SelectTriggerProps,
-  props: Record<string, any>
+  props: Record<string, any>,
+  field: ReturnType<typeof useFieldControl>
 ) {
   // Without content, the trigger shows the value.
   const user = merge(props, {
@@ -219,7 +221,6 @@ function triggerPart(
       return props.children ?? <SelectValue />
     },
   })
-  const field = useFieldControl(props)
   const own = () => ({
     ...trigger(),
     named: !!field || props["aria-labelledby"] != null,

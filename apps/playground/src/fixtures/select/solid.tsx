@@ -18,6 +18,7 @@ import {
   SelectValue,
   type ListData,
 } from "@ui-sdk/solid/select"
+import { Field, FieldLabel } from "@ui-sdk/solid/field"
 import { render } from "@solidjs/web"
 import type { JSX } from "@solidjs/web"
 import { createEffect, createSignal, For, Show } from "solid-js"
@@ -106,6 +107,7 @@ function Items(props: { list: Item[]; grouped: boolean; selectAll: boolean }) {
 function Fixture(props: { data?: boolean }) {
   const {
     fieldset,
+    field,
     grouped,
     cancel,
     align,
@@ -164,6 +166,15 @@ function Fixture(props: { data?: boolean }) {
         }}
       >
         <Wrap fieldset={fieldset}>
+          <Show when={field}>
+            <Field>
+              <FieldLabel class="label">{f.label}</FieldLabel>
+              <SelectTrigger class="trigger" controller={controller}>
+                <SelectValue class="value" maxLabels={max} />
+                <span aria-hidden="true">▾</span>
+              </SelectTrigger>
+            </Field>
+          </Show>
           <Select<string, boolean>
             {...options}
             name={f.name}
@@ -181,11 +192,13 @@ function Fixture(props: { data?: boolean }) {
               )
             }}
           >
-            <SelectLabel class="label">{f.label}</SelectLabel>
-            <SelectTrigger class="trigger">
-              <SelectValue class="value" maxLabels={max} />
-              <span aria-hidden="true">▾</span>
-            </SelectTrigger>
+            <Show when={!field}>
+              <SelectLabel class="label">{f.label}</SelectLabel>
+              <SelectTrigger class="trigger">
+                <SelectValue class="value" maxLabels={max} />
+                <span aria-hidden="true">▾</span>
+              </SelectTrigger>
+            </Show>
             <SelectClear>{f.clear}</SelectClear>
             <Show
               when={search}

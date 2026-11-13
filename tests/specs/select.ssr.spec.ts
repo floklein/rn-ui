@@ -22,6 +22,18 @@ const serverText = (page: Page, selector: string) =>
     return template.content.querySelector(selector)?.textContent ?? null
   }, selector)
 
+// The element the first label in the server's HTML points at, as a selector.
+const serverLabelTarget = (page: Page) =>
+  page.evaluate(() => {
+    const template = document.createElement("template")
+    template.innerHTML = (
+      window as unknown as { __serverHtml: string }
+    ).__serverHtml
+    const id = template.content.querySelector("label")?.htmlFor
+    const target = id ? template.content.getElementById(id) : null
+    return target ? `${target.localName}.${target.className}` : null
+  })
+
 test("a closed select hydrates without mismatches", async ({ page, open }) => {
   await open("select", { value: "banana" })
   await page.getByRole("combobox", { name: "Fruit" }).click()
@@ -79,3 +91,18 @@ for (const [items, options] of [
     expect(await hydrationErrors(page)).toEqual([])
   })
 }
+
+test("a field's label points at a trigger outside its select in the server markup", async ({
+  page,
+  open,
+}) => {
+  await open("select", { field: "" })
+  expect(await serverLabelTarget(page)).toBe("button.trigger")
+  const trigger = page.getByRole("combobox", { name: "Fruit", exact: true })
+  await expect(trigger).toBeVisible()
+  await expect(page.locator("label")).toHaveAttribute(
+    "for",
+    (await trigger.getAttribute("id"))!
+  )
+  expect(await hydrationErrors(page)).toEqual([])
+})

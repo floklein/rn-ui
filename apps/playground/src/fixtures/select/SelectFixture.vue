@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { createSelectController } from "@ui-sdk/core/select"
 import {
+  Field,
+  FieldLabel,
   Select,
   SelectClear,
   SelectContent,
@@ -42,6 +44,7 @@ const props = defineProps<{ data?: boolean }>()
 const controller = createSelectController<string, boolean>()
 const {
   fieldset,
+  field,
   grouped,
   cancel,
   align,
@@ -180,6 +183,13 @@ function onSubmit(event: Event) {
         :disabled="fieldset || undefined"
         style="display: contents"
       >
+        <Field v-if="field">
+          <FieldLabel class="label">{{ f.label }}</FieldLabel>
+          <SelectTrigger class="trigger" :controller="controller">
+            <SelectValue class="value" :max-labels="max" />
+            <span aria-hidden="true">▾</span>
+          </SelectTrigger>
+        </Field>
         <Select
           v-bind="options"
           :name="f.name"
@@ -190,11 +200,13 @@ function onSubmit(event: Event) {
           :empty-items="recent ? f.recent : undefined"
           @value-change="onValueChange"
         >
-          <SelectLabel class="label">{{ f.label }}</SelectLabel>
-          <SelectTrigger class="trigger">
-            <SelectValue class="value" :max-labels="max" />
-            <span aria-hidden="true">▾</span>
-          </SelectTrigger>
+          <template v-if="!field">
+            <SelectLabel class="label">{{ f.label }}</SelectLabel>
+            <SelectTrigger class="trigger">
+              <SelectValue class="value" :max-labels="max" />
+              <span aria-hidden="true">▾</span>
+            </SelectTrigger>
+          </template>
           <SelectClear>{{ f.clear }}</SelectClear>
           <StyledContent v-if="wrapped" />
           <SelectContent

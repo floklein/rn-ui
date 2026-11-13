@@ -104,6 +104,9 @@ function selectOptions() {
     cancel: params.has("cancel"),
     long: params.has("long"),
     fieldset: params.has("fieldset"),
+    // The label and trigger outside the select, ahead of it, in a Field: the
+    // trigger connects through the controller.
+    field: params.has("field"),
     ...(container && { container: document.getElementById(container) }),
     ...presentationOption(),
   }
