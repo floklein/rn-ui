@@ -25,11 +25,11 @@ Last reviewed: PRs 86 to 92 (2026-10-30, the audit fixes), 158 and 159 (2026-11-
 - **Button-like parts render `type`, `disabled` and `aria-disabled` together until they bind**, and no role, so server HTML is right for a `<button>` and an `<a>`. On an `<a>` or `<span>`, `type` and `disabled` are invalid but inert until then, and a disabled link still navigates before hydration, since only script can stop the click. Before bind they don't write `tabindex`, so a web component's author tabindex survives the first pass (PR 326, 2026-11-09).
 - **Timeline's server markup holds the tab stop on the first event**, not the current one, until it hydrates. An earlier item can't know a later item is current, so a claim can't move it there without leaving some lists with no stop; the docs say so.
 - **The Timeline feed example doesn't clear its load timeout on unmount.** React 19 ignores the late state update, and the example stays short.
+- **`web.css` with Tailwind v4 is imported as `@import "@ui-sdk/core/web.css" layer(components);` after `@import "tailwindcss"`.** Injected behavior styles go first in `<head>`, so `ui-sdk` is always the first layer declared and loses to Tailwind's preflight. A layer order statement can't come before them, and a nested `components.ui-sdk` layer sits above `base` and below `utilities`. Checked in Vite and Nuxt with a dialog mounted.
 
 ## Known and open (don't report again, check whether fixed)
 
 - `bindScrollPicker` rebinds on every render when a ref callback isn't stable, which ends a drag in progress. The docs bind in `useLayoutEffect` with `useEffectEvent`; a ref callback needs `useCallback`.
-- **Tailwind v4 and `@layer ui-sdk` order** (suspected, from PR 321): whichever layer a page declares first loses. The docs for `web.css` need to say to declare `@layer ui-sdk` before Tailwind's layers.
 - **`InputClear`, and Command items and group labels, are missing from server HTML** and appear only after mount (seen in PR 321's review, older than it).
 - **The `hold-repeat` example drops focus to `<body>` at a bound** (seen in the bindRepeat review, older than it): it sets native `disabled` on the focused button. `aria-disabled` with `bindRepeat`'s `disabled` would keep focus.
 

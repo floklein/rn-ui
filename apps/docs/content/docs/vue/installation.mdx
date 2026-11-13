@@ -64,7 +64,31 @@ With that prefix, `<DialogTrigger>` becomes `<UDialogTrigger>`. Other exports ke
 
 Components are unstyled, so you style them with your app's CSS or with Tailwind CSS. [Styling and Animation](./styling-and-animation) covers both.
 
-You can render your first component without setting up a provider, importing a UI SDK stylesheet, or adding a portal root. [Server Rendering](./server-rendering) covers rendering the initial HTML and adding interactions during hydration, in Nuxt or your own server. If your Nuxt app sends a Content Security Policy, [Content Security Policy](./styling-and-animation#content-security-policy) covers nuxt-security.
+For a default look to start from, import `@ui-sdk/core/web.css` once. In a Vite app, import it at the top of `main.ts`:
+
+```ts
+import "@ui-sdk/core/web.css"
+```
+
+In Nuxt, add it to `css` in `nuxt.config.ts`:
+
+```ts title="nuxt.config.ts"
+export default defineNuxtConfig({
+  modules: ["@ui-sdk/vue"],
+  css: ["@ui-sdk/core/web.css"],
+})
+```
+
+With Tailwind CSS, import it in your global stylesheet instead, after Tailwind. `layer(components)` puts it above Tailwind's base styles, so they don't reset it, and below its utilities, so a class still wins. Declare [the ui-sdk layer](./styling-and-animation#the-ui-sdk-layer) above both:
+
+```css
+@layer ui-sdk;
+
+@import "tailwindcss";
+@import "@ui-sdk/core/web.css" layer(components);
+```
+
+You can render your first component without setting up a provider or adding a portal root. [Server Rendering](./server-rendering) covers rendering the initial HTML and adding interactions during hydration, in Nuxt or your own server. If your Nuxt app sends a Content Security Policy, [Content Security Policy](./styling-and-animation#content-security-policy) covers nuxt-security.
 
 ## Right to Left
 

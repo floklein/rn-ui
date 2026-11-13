@@ -43,7 +43,22 @@ Each [component page](./components) lists the parts you can use.
 
 Components are unstyled, so you style them with your app's CSS or with Tailwind CSS. [Styling and Animation](./styling-and-animation) covers both.
 
-You can render your first component without setting up a provider, importing a UI SDK stylesheet, or adding a portal root. SvelteKit can render the initial HTML on the server; [Server Rendering](./server-rendering) explains how to keep it consistent when the page hydrates.
+For a default look to start from, import `@ui-sdk/core/web.css` once. In SvelteKit, import it in the `<script>` of `src/routes/+layout.svelte`. In a Vite app, import it at the top of `main.ts`:
+
+```ts
+import "@ui-sdk/core/web.css"
+```
+
+With Tailwind CSS, import it in your global stylesheet instead, after Tailwind. `layer(components)` puts it above Tailwind's base styles, so they don't reset it, and below its utilities, so a class still wins. Declare [the ui-sdk layer](./styling-and-animation#the-ui-sdk-layer) above both:
+
+```css
+@layer ui-sdk;
+
+@import "tailwindcss";
+@import "@ui-sdk/core/web.css" layer(components);
+```
+
+You can render your first component without setting up a provider or adding a portal root. SvelteKit can render the initial HTML on the server; [Server Rendering](./server-rendering) explains how to keep it consistent when the page hydrates.
 
 ## Right to Left
 

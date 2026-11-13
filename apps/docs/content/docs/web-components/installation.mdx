@@ -32,15 +32,16 @@ Load these imports from your app's browser entry. The root entry, `@ui-sdk/web`,
 
 ## Without a Build Step
 
-A plain HTML page can load the components from ui-sdk.dev, with nothing to install. Add one script, and each component loads the first time its tags appear on the page:
+A plain HTML page can load the components from ui-sdk.dev, with nothing to install. Add one script, and each component loads the first time its tags appear on the page. The stylesheet is optional and gives the default look:
 
 ```html
 <script type="module" src="https://ui-sdk.dev/web@0.js"></script>
+<link rel="stylesheet" href="https://ui-sdk.dev/web@0.css" />
 
 <ui-toggle><button>Bold</button></ui-toggle>
 ```
 
-`@0` follows the newest 0.x release. To keep a page on one release, use its exact version, like `web@0.4.1.js`. For a quick test, `web.js` with no version follows the newest release of all.
+`@0` follows the newest 0.x release. To keep a page on one release, use its exact version for both files, like `web@0.4.1.js` and `web@0.4.1.css`. For a quick test, `web.js` and `web.css` with no version follow the newest release of all.
 
 To have an agent build the page, ask it to read [web.md](/web.md) first. It's these docs in one file, written for a page that loads `web.js` and `web.css`.
 
@@ -50,7 +51,7 @@ Each component also has its own file, named like its import, if you'd rather lis
 <script type="module" src="https://ui-sdk.dev/web@0/toggle.js"></script>
 ```
 
-To host the files yourself, copy the `browser` folder from the `@ui-sdk/web` package into your site. It holds `web.js` and the `web` folder it loads from, so keep the two side by side. Browsers only run module scripts from a server, so open the page through one, not from a file on disk.
+To host the files yourself, copy the `browser` folder from the `@ui-sdk/web` package into your site. It holds `web.js` and the `web` folder it loads from, so keep the two side by side. It also holds `web.css`, which needs its own `<link>`. Browsers only run module scripts from a server, so open the page through one, not from a file on disk.
 
 ### Build Your Own
 
@@ -123,7 +124,22 @@ Selected cells get `aria-selected` and `data-selected` to style. [Compose Behavi
 
 Components use light DOM and are unstyled, so you style them with your app's CSS or with Tailwind CSS. [Styling and Animation](./styling-and-animation) covers both.
 
-You can render your first component without setting up a provider, a portal root, or a UI SDK stylesheet. CSS Modules need a bundler that imports a class-name map.
+For a default look to start from, import `@ui-sdk/core/web.css` once, in your app's browser entry:
+
+```ts
+import "@ui-sdk/core/web.css"
+```
+
+With Tailwind CSS, import it in your global stylesheet instead, after Tailwind. `layer(components)` puts it above Tailwind's base styles, so they don't reset it, and below its utilities, so a class still wins. Declare [the ui-sdk layer](./styling-and-animation#the-ui-sdk-layer) above both:
+
+```css
+@layer ui-sdk;
+
+@import "tailwindcss";
+@import "@ui-sdk/core/web.css" layer(components);
+```
+
+You can render your first component without setting up a provider or a portal root. CSS Modules need a bundler that imports a class-name map.
 
 For right-to-left layouts, set `dir="rtl"` on the page or a container. Use logical CSS properties, such as `padding-inline-start`, in your styles. [Server Rendering](./server-rendering) covers markup before the elements upgrade.
 
