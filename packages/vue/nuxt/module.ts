@@ -25,7 +25,15 @@ const uiSdk: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     compatibility: { nuxt: "^4.0.0 || ^5.0.0-0" },
   },
   defaults: { prefix: "" },
-  setup(options) {
+  setup(options, nuxt) {
+    // Nuxt transpiles this package, so it imports the core's own files unless the
+    // entry was pre-bundled up front. Listing every entry gives it and the app one copy.
+    const optimizeDeps = (nuxt.options.vite.optimizeDeps ??= {})
+    optimizeDeps.include = [
+      ...(optimizeDeps.include ?? []),
+      "@ui-sdk/core",
+      "@ui-sdk/core/*",
+    ]
     const { components, imports } = nuxtRegistrations(
       readEntries(),
       options.prefix ?? ""
