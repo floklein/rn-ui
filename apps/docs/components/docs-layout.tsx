@@ -74,8 +74,8 @@ function DocsLayout({
     <div data-docs="" className="container flex flex-1 flex-col max-lg:px-0">
       <div className="flex flex-1">
         {/* Size containment keeps the sidebar from making a short page taller than the window. */}
-        <aside className="relative hidden w-64 shrink-0 border-e border-foreground/[0.06] pb-10 contain-size lg:block">
-          <div className="sticky top-[4.375rem] h-full max-h-[calc(100dvh-4.375rem)] pt-2">
+        <aside className="relative hidden w-64 shrink-0 border-e border-foreground/[0.06] contain-size lg:block">
+          <div className="sticky top-[4.375rem] flex max-h-[min(100%,calc(100dvh-4.375rem))] flex-col pt-2">
             <Sidebar tree={tree} tocs={tocs} />
           </div>
         </aside>

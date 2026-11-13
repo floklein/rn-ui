@@ -84,7 +84,7 @@ function Sidebar({
   }, [current])
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex min-h-0 flex-col">
       <div
         ref={scroller}
         className="min-h-0 flex-1 p-1 -m-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pt-10 pe-4 pb-8 scrollbar-none"

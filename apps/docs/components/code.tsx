@@ -80,7 +80,7 @@ function Pre({
         }
         className={cn(
           className,
-          "max-h-[calc(20lh+0.875rem)] scrollbar-none overflow-auto overscroll-x-none py-3.5 font-mono text-[14px] leading-[1.7] sm:text-[13px] outline-none focus-visible:ring-3 focus-visible:ring-ring/30 [&>code]:rounded-none [&>code]:bg-transparent [&>code]:text-[1em]"
+          "max-h-[calc(20lh+1.75rem)] scrollbar-none overflow-auto overscroll-x-none py-3.5 font-mono text-[14px] leading-[1.7] sm:text-[13px] outline-none focus-visible:ring-3 focus-visible:ring-ring/30 [&>code]:rounded-none [&>code]:bg-transparent [&>code]:text-[1em]"
         )}
       />
       {!title && !prompt && copy && (

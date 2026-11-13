@@ -242,7 +242,7 @@ body {
 
   &:not([data-text]) {
     content-visibility: auto;
-    contain-intrinsic-block-size: auto min(var(--lines) * 1lh, 20lh - 0.875rem);
+    contain-intrinsic-block-size: auto min(var(--lines) * 1lh, 20lh);
 
     /* An example's Code tab skips its styles until it opens, at the same height. */
     [data-inactive] & {
