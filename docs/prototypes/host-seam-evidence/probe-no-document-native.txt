@@ -1,0 +1,25 @@
+69 entries, 60 primitives probed (native twins, window defined).
+THROWS  ./calendar calendar  [attrs day]  TypeError: Cannot read properties of undefined (reading 'slice')
+THROWS  ./calendar calendar  [state day]  TypeError: Cannot read properties of undefined (reading 'slice')
+THROWS  ./calendar calendar  [press day]  TypeError: Cannot read properties of undefined (reading 'slice')
+THROWS  ./field field  [press label]  ReferenceError: HTMLLabelElement is not defined
+THROWS  ./select select  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./combobox combobox  [press label]  ReferenceError: HTMLLabelElement is not defined
+THROWS  ./combobox combobox  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./command command  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./autocomplete autocomplete  [press label]  ReferenceError: HTMLLabelElement is not defined
+THROWS  ./autocomplete autocomplete  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./input inputGroup  [press group]  ReferenceError: Element is not defined
+THROWS  ./color-picker colorPicker  [attrs swatch-item]  TypeError: Cannot read properties of undefined (reading 'trim')
+THROWS  ./color-picker colorPicker  [press swatch-item]  TypeError: Cannot read properties of undefined (reading 'trim')
+THROWS  ./file-input fileInput  [attrs item-remove]  TypeError: Cannot read properties of undefined (reading 'name')
+THROWS  ./trigger-menu triggerMenu  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./password-input passwordInput  [press root]  ReferenceError: Element is not defined
+THROWS  ./listbox listbox  [attrs group-label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./tree tree  [press item]  ReferenceError: HTMLElement is not defined
+THROWS  ./tree tree  [attrs label]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./tree tree  [attrs group]  TypeError: Cannot read properties of undefined (reading 'replace')
+THROWS  ./date-picker datePicker  [attrs day]  TypeError: Cannot read properties of undefined (reading 'slice')
+THROWS  ./date-picker datePicker  [state day]  TypeError: Cannot read properties of undefined (reading 'slice')
+THROWS  ./date-picker datePicker  [press day]  TypeError: Cannot read properties of undefined (reading 'slice')
+23 synchronous throws, 0 asynchronous.

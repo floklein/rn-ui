@@ -1,0 +1,89 @@
+uncontrolled onCheckedChange checked=true reason=press source=touch event=undefined
+uncontrolled onCheckedChange checked=false reason=imperative source=programmatic event=undefined
+controller.toggle() -> true
+uncontrolled onCheckedChange checked=true reason=imperative source=programmatic event=undefined
+controller.setChecked(true) -> true
+controller.getChecked() -> true
+host.focus slot=root key="" viewMounted=true
+controller.focus() called
+controlled onCheckedChange checked=true reason=press source=touch event=undefined
+cancelled onCheckedChange checked=true reason=press source=touch event=undefined
+cancelled details.canceled=true
+controller.getChecked() -> undefined
+controller.toggle() -> undefined
+controller.focus() called
+onOpenChange open=true reason=trigger-press source=touch event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+host.focus slot=content key="" viewMounted=true
+onOpenChange open=false reason=close-press source=touch event=undefined returnValue=cancel
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
+onOpenChangeComplete open=false
+onOpenChange open=true reason=imperative source=programmatic event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+controller.open() -> [object Object]
+host.focus slot=content key="" viewMounted=true
+onOpenChange open=false reason=outside-press source=touch event=undefined returnValue=undefined
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
+onOpenChangeComplete open=false
+host.input outsidePress taken=true
+open() resolved reason=outside-press source=touch returnValue=undefined
+onOpenChange open=true reason=trigger-press source=touch event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+host.focus slot=content key="" viewMounted=true
+onDismissAttempt reason=outside-press
+host.input outsidePress taken=true
+onOpenChange open=false reason=close-press source=touch event=undefined returnValue=cancel
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
+onOpenChangeComplete open=false
+onOpenChange open=true reason=trigger-press source=touch event=undefined returnValue=undefined
+cancelled details.canceled=true
+onOpenChange open=true reason=trigger-press source=touch event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+host.focus slot=content key="" viewMounted=true
+onOpenChange open=false reason=close-press source=touch event=undefined returnValue=cancel
+cancelled details.canceled=true
+onOpenChange open=false reason=action source=touch event=undefined returnValue=confirm
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
+onOpenChangeComplete open=false
+host.focus slot=trigger key="" viewMounted=true
+controller.focus() called
+onOpenChange open=true reason=imperative source=programmatic event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+controller.open() -> [object Object]
+host.focus slot=content key="" viewMounted=true
+onOpenChange open=false reason=imperative source=programmatic event=undefined returnValue=undefined
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
+onOpenChangeComplete open=false
+controller.close() -> true
+open() resolved reason=imperative source=programmatic returnValue=undefined
+onOpenChange open=true reason=imperative source=programmatic event=undefined returnValue=undefined
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+onOpenChangeComplete open=true
+controller.open() -> [object Object]
+host.focus slot=content key="" viewMounted=true
+host.listen listening=false
+open() resolved reason=unmount source=programmatic returnValue=undefined
+controller.isOpen() -> undefined
+controlled onOpenChange open=true reason=trigger-press source=touch
+host.listen listening=true
+host.focus slot=content key="" viewMounted=false
+host.focus slot=content key="" viewMounted=true
+controlled onOpenChange open=false reason=close-press source=touch
+host.listen listening=false
+host.focus slot=trigger key="" viewMounted=true
