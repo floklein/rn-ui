@@ -4,6 +4,7 @@
 // pattern needs and the code for it: placement, hover and focus opening, the
 // sheet. This file imports none of that, so a popup bundles only what its
 // preset names.
+import { focusPart } from "../focus/focus-part"
 import { deriveFromOptions } from "../kernel/derive"
 import { createChange } from "../kernel/input-source"
 import { elements } from "../kernel/elements"
@@ -525,7 +526,13 @@ function createPopup<
   const controller = {
     ...control.api,
     getPayload: () => store.get().payload,
-    focus: () => triggerElement()?.focus(),
+    focus: () =>
+      focusPart(
+        triggerElement,
+        context.parts,
+        triggerSlot,
+        store.get().trigger
+      ),
   } as unknown as PopupApiOf<Options>
 
   return {

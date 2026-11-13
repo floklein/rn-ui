@@ -1,0 +1,50 @@
+{
+  "name": "@ui-sdk/react-native",
+  "version": "0.0.0-prototype.0",
+  "private": true,
+  "description": "PROTOTYPE (issue #14). UI SDK for React Native: Switch and Dialog through the host seam.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    "./dialog": "./src/dialog.tsx",
+    "./primitive": "./src/primitive.ts",
+    "./switch": "./src/switch.tsx"
+  },
+  "sideEffects": [
+    "./src/native-host.ts",
+    "./src/use-primitive.tsx",
+    "./dist/native-host.js",
+    "./dist/use-primitive.js"
+  ],
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "exports": {
+      "./dialog": {
+        "default": "./dist/dialog.js"
+      },
+      "./primitive": {
+        "default": "./dist/primitive.js"
+      },
+      "./switch": {
+        "default": "./dist/switch.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@ui-sdk/core": "workspace:^",
+    "react": ">=19",
+    "react-native": ">=0.88"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "@ui-sdk/core": "workspace:*",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "typescript": "~6.0.3"
+  }
+}

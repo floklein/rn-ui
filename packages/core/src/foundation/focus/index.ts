@@ -11,6 +11,7 @@ export {
   scrollToShow,
   stepFor,
 } from "./collection"
+export { focusPart } from "./focus-part"
 export { createFocusRecovery } from "./focus-recovery"
 export { type GridCell, type GridFocus } from "./grid-focus"
 export { keepFocus } from "./keep-focus"

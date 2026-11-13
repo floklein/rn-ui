@@ -185,6 +185,9 @@ importers:
       '@ui-sdk/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@ui-sdk/react-native':
+        specifier: workspace:*
+        version: link:../../packages/react-native
       expo:
         specifier: ~58.0.25
         version: 58.0.25(@babel/core@7.29.7)(@expo/dom-webview@58.0.2)(react-dom@19.2.3(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.7)(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
@@ -401,6 +404,24 @@ importers:
       vitest:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(jsdom@30.1.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+
+  packages/react-native:
+    devDependencies:
+      '@types/react':
+        specifier: ~19.3.0
+        version: 19.3.0
+      '@ui-sdk/core':
+        specifier: workspace:*
+        version: link:../core
+      react:
+        specifier: 19.3.0
+        version: 19.3.0
+      react-native:
+        specifier: 0.88.1
+        version: 0.88.1(@babel/core@7.29.7)(@types/react@19.3.0)(react@19.3.0)
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
 
   packages/solid:
     devDependencies:
@@ -9980,7 +10001,7 @@ snapshots:
   '@react-native/codegen@0.88.1(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/parser': 7.29.12
+      '@babel/parser': 7.29.14
       flow-parser: 0.327.0
       invariant: 2.2.4
       nullthrows: 1.1.1
@@ -13470,8 +13491,8 @@ snapshots:
   metro-source-map@0.87.3:
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/traverse': 7.29.12
-      '@babel/types': 7.29.11
+      '@babel/traverse': 7.29.14
+      '@babel/types': 7.29.14
       flow-enums-runtime: 0.0.6
       invariant: 2.2.4
       metro-symbolicate: 0.87.3
@@ -13517,9 +13538,9 @@ snapshots:
   metro-transform-plugins@0.87.3:
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/generator': 7.29.12
+      '@babel/generator': 7.29.14
       '@babel/template': 7.29.7
-      '@babel/traverse': 7.29.12
+      '@babel/traverse': 7.29.14
       flow-enums-runtime: 0.0.6
       nullthrows: 1.1.1
     transitivePeerDependencies:
@@ -13548,9 +13569,9 @@ snapshots:
   metro-transform-worker@0.87.3:
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/generator': 7.29.12
-      '@babel/parser': 7.29.12
-      '@babel/types': 7.29.11
+      '@babel/generator': 7.29.14
+      '@babel/parser': 7.29.14
+      '@babel/types': 7.29.14
       '@jridgewell/sourcemap-codec': 1.6.0
       flow-enums-runtime: 0.0.6
       metro: 0.87.3
@@ -13614,11 +13635,11 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.29.7
       '@babel/core': 7.29.7
-      '@babel/generator': 7.29.12
-      '@babel/parser': 7.29.12
+      '@babel/generator': 7.29.14
+      '@babel/parser': 7.29.14
       '@babel/template': 7.29.7
-      '@babel/traverse': 7.29.12
-      '@babel/types': 7.29.11
+      '@babel/traverse': 7.29.14
+      '@babel/types': 7.29.14
       accepts: 2.0.0
       connect: 3.7.0
       debug: 4.4.3
