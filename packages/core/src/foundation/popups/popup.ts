@@ -494,6 +494,21 @@ function watchClose(close: (event: Event) => void) {
 
 // Each shown layer's own elements, which a parent that turns modal later keeps out of its inert.
 const layerParts = new WeakMap<Layer, HTMLElement[]>()
+const freezing = new WeakSet<Layer>()
+
+// A modal spares what shows above it: a layer opened from it, a newer layer
+// that freezes the page like a confirm, and anything opened from that one.
+function above(layer: Layer, modal: Layer) {
+  for (let up: Layer | undefined = layer; up; up = up.parent) {
+    if (
+      up === modal ||
+      (freezing.has(up) && (up.order ?? 0) > (modal.order ?? 0))
+    ) {
+      return true
+    }
+  }
+  return false
+}
 
 function createPopupLayer<
   State extends { open: boolean; mounted: boolean },
@@ -1024,6 +1039,9 @@ function createPopupLayer<
     layer = own
     layerParts.set(own, [el, ...(backdrop ? [backdrop] : [])])
     cleanups.push(pushLayer(own))
+    if (modal.inertAndLock) {
+      freezing.add(own)
+    }
     for (const onShow of [options.onShow, config.onShow]) {
       const cleanup = onShow?.(own)
       if (cleanup) {
@@ -1042,12 +1060,11 @@ function createPopupLayer<
       if (trigger && behavior.keepTrigger) {
         keep.push(trigger)
       }
-      // A layer opened from this one before it turned modal stays usable too.
+      // The page freezes a paint after opening, so a confirm opened in between
+      // is already above this one.
       for (const layer of activeLayers()) {
-        for (let up = layer.parent; up; up = up.parent) {
-          if (up === own) {
-            keep.push(...(layerParts.get(layer) ?? []))
-          }
+        if (layer !== own && above(layer, own)) {
+          keep.push(...(layerParts.get(layer) ?? []))
         }
       }
       // The lock measures the page, so it goes before the page turns inert,
@@ -1094,6 +1111,11 @@ function createPopupLayer<
         typeof behavior.blocking === "function"
           ? behavior.blocking(next)
           : behavior.blocking
+      if (next.inertAndLock) {
+        freezing.add(own)
+      } else {
+        freezing.delete(own)
+      }
       if (next.inertAndLock && !modal.inertAndLock && store.get().open) {
         freezePage()
       } else if (!next.inertAndLock && modal.inertAndLock) {
@@ -1102,10 +1124,17 @@ function createPopupLayer<
       modal = next
     }
     cleanups.push(thawPage, () => (remodal = undefined))
+    // A modal beneath spares this layer when it shows above it, like a confirm
+    // opened from code over a dialog, not only when it opened from that modal.
+    const beneath = new Set(activeLayers())
     for (let up = own.parent; up; up = up.parent) {
-      if (up.keep) {
+      beneath.add(up)
+    }
+    beneath.delete(own)
+    for (const layer of beneath) {
+      if (layer.keep && above(own, layer)) {
         for (const part of [el, ...(backdrop ? [backdrop] : [])]) {
-          cleanups.push(up.keep(part))
+          cleanups.push(layer.keep(part))
         }
       }
     }

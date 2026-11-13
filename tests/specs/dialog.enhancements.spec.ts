@@ -391,6 +391,96 @@ test.describe("opening from anywhere", { tag: "@enhancement" }, () => {
     expect(await answer).toBe(false)
   })
 
+  test("a confirm opened from inside a modal dialog takes focus and stays usable", async ({
+    page,
+    open,
+  }) => {
+    await open("dialog")
+    await openWithKeyboard(page)
+    const answer = page.evaluate(() =>
+      (
+        window as unknown as { confirmDelete: () => Promise<boolean> }
+      ).confirmDelete()
+    )
+    await expect(alert(page)).toBeVisible()
+    await expect(
+      alert(page).getByRole("button", { name: "Cancel" })
+    ).toBeFocused()
+    await alert(page)
+      .getByRole("button", { name: "Delete", exact: true })
+      .click()
+    expect(await answer).toBe(true)
+    await expect(dialog(page)).toBeVisible()
+    await expect(field(page)).toBeFocused()
+  })
+
+  test("a confirm opened over a modal dialog with nothing focused stays usable", async ({
+    page,
+    open,
+  }) => {
+    await open("dialog")
+    await openWithKeyboard(page)
+    const answer = page.evaluate(() => {
+      ;(document.activeElement as HTMLElement).blur()
+      return (
+        window as unknown as { confirmDelete: () => Promise<boolean> }
+      ).confirmDelete()
+    })
+    await expect(
+      alert(page).getByRole("button", { name: "Cancel" })
+    ).toBeFocused()
+    await alert(page)
+      .getByRole("button", { name: "Delete", exact: true })
+      .click()
+    expect(await answer).toBe(true)
+    await expect(dialog(page)).toBeVisible()
+    await field(page).focus()
+    await expect(field(page)).toBeFocused()
+  })
+
+  test("a confirm opened as a modal dialog shows, before the page freezes, stays usable", async ({
+    page,
+    open,
+  }) => {
+    await open("dialog")
+    const answer = page.evaluate(async () => {
+      const target = window as unknown as {
+        dialog: { open: () => void }
+        confirmDelete: () => Promise<boolean>
+      }
+      target.dialog.open()
+      await new Promise<void>((resolve) => {
+        const shown = () => document.querySelector('[role="dialog"][data-open]')
+        if (shown()) {
+          resolve()
+          return
+        }
+        const observer = new MutationObserver(() => {
+          if (shown()) {
+            observer.disconnect()
+            resolve()
+          }
+        })
+        observer.observe(document.body, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+        })
+      })
+      return target.confirmDelete()
+    })
+    await expect(
+      alert(page).getByRole("button", { name: "Cancel" })
+    ).toBeFocused()
+    await alert(page)
+      .getByRole("button", { name: "Delete", exact: true })
+      .click()
+    expect(await answer).toBe(true)
+    await expect(dialog(page)).toBeVisible()
+    await field(page).focus()
+    await expect(field(page)).toBeFocused()
+  })
+
   test("closing reports why, for every way a dialog closes", async ({
     page,
     open,
