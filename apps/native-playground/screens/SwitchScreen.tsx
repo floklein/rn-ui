@@ -73,9 +73,7 @@ function SwitchScreen({ log }: { log: (line: string) => void }) {
         <Action
           label="setChecked(true)"
           onPress={() =>
-            log(
-              `controller.setChecked(true) -> ${controller.setChecked(true)}`
-            )
+            log(`controller.setChecked(true) -> ${controller.setChecked(true)}`)
           }
         />
         <Action
@@ -119,11 +117,7 @@ function SwitchScreen({ log }: { log: (line: string) => void }) {
         defaultChecked
         onCheckedChange={heard("disabled")}
       />
-      <Demo
-        label="readOnly"
-        readOnly
-        onCheckedChange={heard("readOnly")}
-      />
+      <Demo label="readOnly" readOnly onCheckedChange={heard("readOnly")} />
     </>
   )
 }

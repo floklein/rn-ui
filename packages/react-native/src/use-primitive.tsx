@@ -12,11 +12,7 @@ import type {
   StateOf,
   TypesOf,
 } from "@ui-sdk/core"
-import {
-  liveAttrs,
-  withSource,
-  type NativeBehavior,
-} from "@ui-sdk/core/native"
+import { liveAttrs, withSource, type NativeBehavior } from "@ui-sdk/core/native"
 import {
   attrs,
   commit,
@@ -91,7 +87,8 @@ function usePrimitive<P extends Primitive>(
   // `document` is undefined on Hermes, so core keeps nothing by itself.
   const [instance] = React.useState(() =>
     unwatched(
-      () => primitive({ ...options, controller: undefined, id }) as ReturnType<P>
+      () =>
+        primitive({ ...options, controller: undefined, id }) as ReturnType<P>
     )
   )
   React.useLayoutEffect(() => {
@@ -185,8 +182,7 @@ type PartProps<State = {}> = {
       ) => StyleProp<ViewStyle | TextStyle>)
   /** A class name for a styling library, or a function that returns one. Forwarded as a string. */
   className?:
-    | string
-    | ((state: State, interaction: Interaction) => string | undefined)
+    string | ((state: State, interaction: Interaction) => string | undefined)
   /** Content, or a function of the part's state and interaction that returns it. */
   children?:
     | React.ReactNode
@@ -249,8 +245,9 @@ function usePart<P extends Primitive, S extends SlotName<P>>(
   const primitive = typeof handle === "function" ? handle : handle.primitive
   const Scope = scopeOf(primitive)
   const nearest = React.useContext(Scope)
-  const owner = (typeof handle === "function" ? nearest : handle) as
-    PrimitiveHandle<P> | null
+  const owner = (
+    typeof handle === "function" ? nearest : handle
+  ) as PrimitiveHandle<P> | null
   if (!owner) {
     throw new Error(
       `The ${primitive.name} ${slot} part must be used inside its root.`
@@ -360,13 +357,7 @@ function createParts<P extends Primitive, H extends Hosts<P>>(
     Root(props) {
       const [options, rest] = split(props, schema.options)
       const handle = usePrimitive(primitive, options as OptionsOf<P>, behavior)
-      return usePart(
-        handle,
-        "root" as SlotName<P>,
-        undefined,
-        rest,
-        hosts.root
-      )
+      return usePart(handle, "root" as SlotName<P>, undefined, rest, hosts.root)
     },
   }
   for (const slot of Object.keys(hosts)) {

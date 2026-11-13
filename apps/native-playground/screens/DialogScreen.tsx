@@ -74,12 +74,10 @@ function DialogScreen({ log }: { log: (line: string) => void }) {
             {(state) => (
               <>
                 <DialogTitle style={styles.title}>Delete project</DialogTitle>
-                <DialogDescription>
-                  This can't be undone.
-                </DialogDescription>
+                <DialogDescription>This can't be undone.</DialogDescription>
                 <Text testID="dialog-state" style={styles.state}>
-                  open={String(state.open)} modal={String(state.modal)}{" "}
-                  nested={String(state.nested)} pending=
+                  open={String(state.open)} modal={String(state.modal)} nested=
+                  {String(state.nested)} pending=
                   {String(state.pending)}
                 </Text>
                 {options}

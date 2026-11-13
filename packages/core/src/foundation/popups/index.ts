@@ -33,6 +33,7 @@ export {
 } from "./popup-elements"
 export { contentAnchor, placementOptions } from "./popup-features"
 export { hoverCardPreset, tooltipPreset } from "./popup-hover-presets"
+export { popupNative } from "./popup-native"
 export {
   alertDialogPreset,
   comboboxPreset,
