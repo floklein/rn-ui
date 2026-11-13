@@ -46,3 +46,17 @@ Component libraries cover familiar patterns like menus, dialogs and tabs. Real p
 ## Framework experts
 
 One expert per framework in `.agents/experts/<framework>/` (react, vue, svelte, solid, web): who it is in `expert.md`, what it knows in `knowledge.md` and what's already decided in `decisions.md`. Claude Code also loads each one as a named subagent from `.claude/agents/<framework>-expert.md`. Ask one any question about its framework, or ask it to review code. Before merging a change to an adapter, core, the specs, examples or framework docs, run `ui-sdk-expert-review` on it; `node scripts/expert-scope.mjs` shows which experts it reaches.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on the fork, `floklein/rn-ui`, never on upstream `vercel-labs/ui`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human` and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
