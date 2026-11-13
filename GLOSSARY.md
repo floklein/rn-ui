@@ -13,5 +13,9 @@ One thing core needs from the host, such as showing content above the page, plac
 _Avoid_: Platform API, host service
 
 **Twin**:
-The native-host counterpart of a module that owns a host capability. It has the same exports, so shared code calls either without knowing which host it runs on.
+The native-host counterpart of a module that owns a host capability shared code calls directly. It has the same exports, so that code runs on either host without knowing which.
 _Avoid_: Shim, polyfill, port
+
+**Native behavior file**:
+A file in core, used only on the native host, that does for a component or a job what its slots' `bind` does on the DOM host.
+_Avoid_: Native port, native implementation, sidecar
