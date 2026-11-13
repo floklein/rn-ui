@@ -1,0 +1,19 @@
+{
+  "name": "native-playground",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --port ${NATIVE_PLAYGROUND_PORT:-8090}",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "workspace:*",
+    "expo": "~58.0.25",
+    "react": "19.3.0",
+    "react-native": "0.88.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3"
+  }
+}
