@@ -17,6 +17,7 @@ const capabilities =
         "appium:app": process.env.APP_PATH,
         "appium:usePreinstalledWDA": true,
         "appium:prebuiltWDAPath": process.env.WDA_PATH,
+        "appium:isHeadless": true,
         "appium:wdaLaunchTimeout": 120_000,
       }
     : {
@@ -30,7 +31,7 @@ const byTestId = (id: string) =>
 
 const byText = (text: string) =>
   platform === "ios"
-    ? `-ios predicate string:label == "${text}"`
+    ? `-ios predicate string:label == "${text}" AND accessible == true`
     : `android=new UiSelector().text("${text}")`
 
 const role = (element: Element) =>
@@ -65,6 +66,8 @@ async function openSession(name: string) {
     hostname: "127.0.0.1",
     port: 4723,
     logLevel: "warn",
+    connectionRetryTimeout: 300_000,
+    connectionRetryCount: 0,
     capabilities,
   })
   const ready = performance.now()
