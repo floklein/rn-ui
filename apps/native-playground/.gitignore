@@ -1,1 +1,5 @@
 .expo/
+ios/
+android/
+.native-build/
+specs/output/

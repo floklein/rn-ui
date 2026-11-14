@@ -1,0 +1,341 @@
+name: Appium timing
+
+# A measurement for issue #29, on this branch only. It is never merged.
+on:
+  push:
+    branches: [task/appium-ci]
+    paths:
+      - .github/workflows/appium.yml
+      - apps/native-playground/**
+      - packages/**
+      - pnpm-lock.yaml
+  workflow_dispatch:
+    inputs:
+      cache:
+        description: cold gives every cache but pnpm's a key of its own, so each one misses and is saved again.
+        type: choice
+        options: [warm, cold]
+        default: warm
+
+permissions:
+  contents: read
+
+env:
+  CACHE_SALT: ${{ inputs.cache == 'cold' && format('cold-{0}-{1}-', github.run_id, github.run_attempt) || '' }}
+  APPIUM_VERSION: 3.9.0
+  XCUITEST_VERSION: 12.22.8
+  UIAUTOMATOR2_VERSION: 8.7.3
+  ANDROID_API: 35
+
+defaults:
+  run:
+    working-directory: apps/native-playground
+
+jobs:
+  ios:
+    name: iOS
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      SPEC_PLATFORM: ios
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start the clock
+        run: |
+          {
+            echo "JOB_START=$(date +%s)"
+            echo "TIMINGS=$RUNNER_TEMP/timings"
+            echo "APPIUM_HOME=$RUNNER_TEMP/appium/home"
+            echo "APPIUM_BIN=$RUNNER_TEMP/appium/cli/node_modules/.bin/appium"
+            echo "WDA_PATH=$RUNNER_TEMP/appium/wda/WebDriverAgentRunner-Runner.app"
+            echo "APP_PATH=$PWD/.native-build/ios/NativePlayground.app"
+          } >> "$GITHUB_ENV"
+
+      - uses: ./.github/actions/setup
+
+      - name: Record the install
+        run: echo "install=$(($(date +%s) - JOB_START))" >> "$TIMINGS"
+
+      - name: Restore the built app
+        id: app
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/native-playground/.native-build/ios
+          key: ${{ env.CACHE_SALT }}native-app-ios-${{ hashFiles('pnpm-lock.yaml', 'apps/native-playground/package.json', 'apps/native-playground/app.json', 'apps/native-playground/ci/build-ios.sh') }}
+
+      - name: Build the app
+        if: steps.app.outputs.cache-hit != 'true'
+        run: |
+          start=$(date +%s)
+          echo "app_cache=miss" >> "$TIMINGS"
+          xcodebuild -version
+          ci/build-ios.sh
+          echo "build=$(($(date +%s) - start))" >> "$TIMINGS"
+          echo "SAVE_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Save the built app
+        if: steps.app.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/native-playground/.native-build/ios
+          key: ${{ steps.app.outputs.cache-primary-key }}
+
+      - name: Record the save
+        if: steps.app.outputs.cache-hit != 'true'
+        run: echo "app_cache_save=$(($(date +%s) - SAVE_START))" >> "$TIMINGS"
+
+      - name: Bundle JavaScript into the cached app
+        if: steps.app.outputs.cache-hit == 'true'
+        run: |
+          start=$(date +%s)
+          echo "app_cache=hit" >> "$TIMINGS"
+          ci/bundle.sh ios
+          echo "build_bundle=$(($(date +%s) - start))" >> "$TIMINGS"
+          echo "build=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Restore Appium
+        id: appium
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/appium
+          key: ${{ env.CACHE_SALT }}appium-ios-${{ env.APPIUM_VERSION }}-xcuitest-${{ env.XCUITEST_VERSION }}
+
+      - name: Install Appium
+        if: steps.appium.outputs.cache-hit != 'true'
+        working-directory: ${{ runner.temp }}
+        run: |
+          start=$(date +%s)
+          echo "appium_cache=miss" >> "$TIMINGS"
+          mkdir -p appium/cli
+          cd appium/cli
+          npm init -y > /dev/null
+          npm install "appium@$APPIUM_VERSION"
+          "$APPIUM_BIN" driver install --source=npm "appium-xcuitest-driver@$XCUITEST_VERSION"
+          "$APPIUM_BIN" driver run xcuitest download-wda -- --outdir "$RUNNER_TEMP/appium/wda" --platform iOS --kind sim
+          ls "$RUNNER_TEMP/appium/wda"
+          echo "appium_install=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Save Appium
+        if: steps.appium.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/appium
+          key: ${{ steps.appium.outputs.cache-primary-key }}
+
+      - name: Record the Appium cache
+        if: steps.appium.outputs.cache-hit == 'true'
+        run: echo "appium_cache=hit" >> "$TIMINGS"
+
+      - name: Boot the simulator
+        run: |
+          sdk=$(xcrun --sdk iphonesimulator --show-sdk-version)
+          udid=$(xcrun simctl list devices available --json | node -e '
+            const { devices } = JSON.parse(require("node:fs").readFileSync(0, "utf8"))
+            const wanted = "com.apple.CoreSimulator.SimRuntime.iOS-" + process.argv[1].replace(".", "-")
+            const version = (runtime) => runtime.match(/iOS-(\d+)-(\d+)/).slice(1).map(Number)
+            const runtimes = Object.keys(devices)
+              .filter((runtime) => runtime.includes("iOS-") && devices[runtime].some((device) => device.name.startsWith("iPhone")))
+              .sort((a, b) => version(a)[0] - version(b)[0] || version(a)[1] - version(b)[1])
+            const runtime = runtimes.includes(wanted) ? wanted : runtimes.at(-1)
+            const device = devices[runtime].find((device) => device.name.startsWith("iPhone"))
+            console.error(`${device.name} on ${runtime}, for the ${process.argv[1]} SDK`)
+            console.log(device.udid)
+          ' "$sdk")
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+          start=$(date +%s)
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "boot=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Run the specs
+        run: ci/run-specs.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          node ci/summary.mjs ios
+          cp "$RUNNER_TEMP/appium.log" specs/output/ || true
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: appium-ios
+          path: apps/native-playground/specs/output
+
+  android:
+    name: Android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      SPEC_PLATFORM: android
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start the clock
+        run: |
+          {
+            echo "JOB_START=$(date +%s)"
+            echo "TIMINGS=$RUNNER_TEMP/timings"
+            echo "APPIUM_HOME=$RUNNER_TEMP/appium/home"
+            echo "APPIUM_BIN=$RUNNER_TEMP/appium/cli/node_modules/.bin/appium"
+            echo "APP_PATH=$RUNNER_TEMP/app.apk"
+            echo "JAVA_HOME=$JAVA_HOME_17_X64"
+          } >> "$GITHUB_ENV"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: ./.github/actions/setup
+
+      - name: Record the install
+        run: echo "install=$(($(date +%s) - JOB_START))" >> "$TIMINGS"
+
+      - name: Restore the built app
+        id: app
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/native-playground/.native-build/android
+          key: ${{ env.CACHE_SALT }}native-app-android-${{ hashFiles('pnpm-lock.yaml', 'apps/native-playground/package.json', 'apps/native-playground/app.json', 'apps/native-playground/ci/build-android.sh') }}
+
+      - name: Build the app
+        if: steps.app.outputs.cache-hit != 'true'
+        run: |
+          start=$(date +%s)
+          echo "app_cache=miss" >> "$TIMINGS"
+          ci/build-android.sh
+          cp .native-build/android/app-release.apk "$APP_PATH"
+          echo "build=$(($(date +%s) - start))" >> "$TIMINGS"
+          echo "SAVE_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Save the built app
+        if: steps.app.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/native-playground/.native-build/android
+          key: ${{ steps.app.outputs.cache-primary-key }}
+
+      - name: Record the save
+        if: steps.app.outputs.cache-hit != 'true'
+        run: echo "app_cache_save=$(($(date +%s) - SAVE_START))" >> "$TIMINGS"
+
+      - name: Bundle JavaScript into the cached app
+        if: steps.app.outputs.cache-hit == 'true'
+        run: |
+          start=$(date +%s)
+          echo "app_cache=hit" >> "$TIMINGS"
+          ci/bundle.sh android
+          echo "build_bundle=$(($(date +%s) - start))" >> "$TIMINGS"
+          echo "build=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Restore Appium
+        id: appium
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/appium
+          key: ${{ env.CACHE_SALT }}appium-android-${{ env.APPIUM_VERSION }}-uiautomator2-${{ env.UIAUTOMATOR2_VERSION }}
+
+      - name: Install Appium
+        if: steps.appium.outputs.cache-hit != 'true'
+        working-directory: ${{ runner.temp }}
+        run: |
+          start=$(date +%s)
+          echo "appium_cache=miss" >> "$TIMINGS"
+          mkdir -p appium/cli
+          cd appium/cli
+          npm init -y > /dev/null
+          npm install "appium@$APPIUM_VERSION"
+          "$APPIUM_BIN" driver install --source=npm "appium-uiautomator2-driver@$UIAUTOMATOR2_VERSION"
+          echo "appium_install=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Save Appium
+        if: steps.appium.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/appium
+          key: ${{ steps.appium.outputs.cache-primary-key }}
+
+      - name: Record the Appium cache
+        if: steps.appium.outputs.cache-hit == 'true'
+        run: echo "appium_cache=hit" >> "$TIMINGS"
+
+      - name: Install the system image
+        run: |
+          start=$(date +%s)
+          sdkmanager=$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | tail -1)
+          (yes || true) | "$sdkmanager" --install "system-images;android-$ANDROID_API;google_apis;x86_64" > /dev/null
+          echo "image=$(($(date +%s) - start))" >> "$TIMINGS"
+
+      - name: Restore the AVD
+        id: avd
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ env.CACHE_SALT }}avd-${{ env.ANDROID_API }}-google_apis-x86_64
+
+      - name: Start creating the AVD
+        if: steps.avd.outputs.cache-hit != 'true'
+        run: |
+          echo "avd_cache=miss" >> "$TIMINGS"
+          echo "AVD_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Create the AVD and its snapshot
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ env.ANDROID_API }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "avd_create=$(($(date +%s) - AVD_START))" >> "$TIMINGS"
+
+      - name: Save the AVD
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ steps.avd.outputs.cache-primary-key }}
+
+      - name: Record the AVD cache
+        if: steps.avd.outputs.cache-hit == 'true'
+        run: echo "avd_cache=hit" >> "$TIMINGS"
+
+      - name: Start booting the emulator
+        run: echo "BOOT_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Boot the emulator and run the specs
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ env.ANDROID_API }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          working-directory: apps/native-playground
+          script: ci/run-specs.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          node ci/summary.mjs android
+          cp "$RUNNER_TEMP/appium.log" specs/output/ || true
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: appium-android
+          path: apps/native-playground/specs/output
