@@ -1,6 +1,6 @@
 # React Native build plan
 
-The work of [the spec](react-native.md), sliced into 80 implementation tickets. Each is sized for one agent session and leaves the repo green. The plan decides nothing: each ticket names the map issues that govern it, and what they leave open is listed as [questions](#questions) at the end.
+The work of [the spec](react-native.md), sliced into 80 implementation tickets. Each is sized for one agent session and leaves the repo green. The plan decides nothing: each ticket names the map issues that govern it, and what is still open is listed under [questions](#questions) at the end.
 
 ## How the plan is ordered
 
@@ -602,31 +602,9 @@ A ticket created from this plan links back to this section.
 
 ## Questions
 
-What the resolutions don't settle and a builder will hit. None is answered here.
+The questions this plan first listed are settled in [What the build plan's open questions resolve to](https://github.com/floklein/rn-ui/issues/37), and the answers are in [the spec](react-native.md#rules-for-the-build). Every ticket follows them. What is left:
 
-- What does the storage twin read and write, and does `@ui-sdk/react-native/preferences` exist? The ADR lists storage among the twins and no ticket decides it, so no ticket here covers either.
-- How does a native app use the behaviors `@ui-sdk/core` exports for building one's own component (reordering, moving between lists, roving focus and the others that take elements), given that they aren't components and `@ui-sdk/react` has no entry for them?
-- Which entries besides `shortcuts` count as a concept that doesn't exist on native?
-- How do `required` and `readOnly` reach a screen reader, when React Native has no counterpart for `aria-required` and `aria-readonly`?
-- Which source do Android back and the iOS escape gesture report, and how is a screen reader's activation told from a finger's press, when `onPress` doesn't say?
-- How long is the timeout after which an exiting part unmounts when `done` is never called?
-- What does `presentation="sheet"` do when the app hasn't imported the sheet entry?
-- How do a sibling Backdrop and Content share one `Modal` without losing the React context of providers between the root and the content?
-- Who renders Gesture Handler's root view, which it also needs inside each Android `Modal`: the Drawer and sheet entries, or the app?
-- How does an Expo app get core's development warnings, when `#dev` resolves to the stub unless Metro adds the `development` condition?
-- How do the new public names in core (the host interface, the native behavior entries) pass `public-docs-pages` and `stability` in `pnpm lint`: a docs page each, or a listed entry?
-- Which entry does the public native pattern check ship from?
-- Which renderer do the adapter's own Jest tests use, given that the pattern check imports none?
-- How does the no-document probe gate while a component whose path throws is still `pending`?
-- Do device specs run against Expo Go or a development build, locally and on GitHub runners?
-- Do device specs open only the examples, or do they need screens of their own for scenarios no example shows, such as a cancelled change?
-- Which kinds of web spec file have a native file: `ssr`, `render`, `counts`, `kitchen-sink`, `leaks`? And does `scripts/check-coverage.mjs` count native as a framework?
-- Does merging upstream run the sweep of every device spec? The checking decision runs it after a merge that touches shared code; the upstream routine lists only the Jest-level checks.
-- What happens when a device check fails where no fallback is recorded: a corrected value disturbing an IME, the `selection` prop for OTP slots, and the popup measurements?
-- Is Gesture Handler external when `scripts/size.mjs` measures Drawer's entry and the sheet entry?
-- Which guide pages does the native docs section have? React's include server rendering and building one's own parts.
-- What do Scroll Area's scrollbar and thumb parts do over a `ScrollView`?
-- What is the name of the wrapper component that marks a region for the agent layer, and are the `data-agent-*` props forwarded to the host?
-- Who supplies npm publish access to the `@rn-ui-sdk` scope for the workflow?
-- Can a component ticket close before the owner has a physical iPhone for the VoiceOver pass?
-- If the owner refuses the hardware-keyboard exception, which tickets carry key events? None here does.
+- Whether device specs run against Expo Go or a standalone build waits on [Measure Appium on GitHub runners](https://github.com/floklein/rn-ui/issues/29).
+- Who supplies npm publish access to the `@rn-ui-sdk` scope is open for the owner.
+- A physical iPhone for the manual VoiceOver pass is open for the owner. Until there is one, a component merges with that pass recorded as outstanding.
+- Whether the owner accepts the hardware-keyboard exception is open. If it is refused, no ticket here carries key events, and the plan needs new ones.

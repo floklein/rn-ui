@@ -309,6 +309,34 @@ From [How the fork takes upstream changes][upstream].
 - After a merge the registry checks run first, then the web gates, then the native Jest-level checks. The mirrored files the drift check lists are reviewed before the registry's commit advances.
 - `pending` is one list, read by the parity check, the size check and the example check. A component upstream adds doesn't turn the fork red: it stays visibly incomplete in the check's output, which is the parity list. There is no separate tracker.
 
+## Rules for the build
+
+Small rules every implementation ticket shares, so that no ticket decides them alone ([What the build plan's open questions resolve to][build-rules]).
+
+1. **Storage and preferences.** The storage twin keeps values in memory, and keeps them between launches through a storage the app passes in as two functions, get and set. The `preferences` entry exists with the same names.
+2. **Building one's own component.** On native a custom component is built as the library's own are: `definePrimitive`, `@ui-sdk/react-native/primitive` and the native host interface. Core's exported helpers that take elements, such as `createRovingFocus` and reordering, are web-only.
+3. **Absent entries.** An entry is absent only when every export in it needs a concept that doesn't exist on native, which today is `shortcuts`. In an entry that exists, an export that needs the DOM, such as `cropImage`, is absent.
+4. **`required` and `readOnly`** stay in state, where the app's styles and labels can use them, and are not announced. The adapter adds no words of its own to a label, since it has no translations.
+5. **Sources.** A change reports `touch` for a press and for Android back, and `virtual` for the iOS escape gesture, for an accessibility action, and for a press while a screen reader is running.
+6. **The exit timeout** is two seconds, fixed, with no option.
+7. **`presentation="sheet"` without the sheet entry:** the component uses its own form, and development warns.
+8. **Context across a `Modal`.** A Dialog's Backdrop and Content share one `Modal` by being moved into an outlet the root renders, so React context from a provider placed between the root and the content doesn't reach the content. A provider goes above the root or inside the content.
+9. **Gesture Handler's root view.** The app renders its own at its root, as Gesture Handler asks of every app. Drawer's entry and the sheet entry render the one inside their `Modal` themselves.
+10. **Development warnings.** The native build of core resolves `#dev` and `#name-check` to their real modules and guards them with React Native's `__DEV__`, so warnings work with no app configuration and release bundles drop them.
+11. **New public names** in core and the adapter get a docs page and a stability label like any public name, in the ticket that introduces them.
+12. **The native pattern check** ships from `@ui-sdk/react-native/testing`.
+13. **The adapter's own Jest tests** render parts with React Native Testing Library, a development dependency of the repo and never a peer.
+14. **The no-document check** skips a component until it leaves `pending`.
+15. **Device specs** open fixtures of their own in the native playground, as the web specs use fixtures in `apps/playground`. Each example is opened once to prove it runs.
+16. **Spec kinds.** Every kind of web spec gets a native file wherever it applies: behavior, right to left, accessibility (the platform tree per state and Apple's audit), custom rendering, enhancements, kitchen sinks and one-off specs. Server rendering, count gates, leak specs and the screen-reader phrase log have none. The coverage script counts native as a framework, with a listed exemption per web-only case.
+17. **After an upstream merge** the sweep of every device spec runs, since it is a merge that touches shared code.
+18. **A device check that fails with no recorded fallback** stops its ticket, which records what it saw. The question comes back to the council as a new decision; the builder doesn't pick a fallback alone.
+19. **Sizes.** Gesture Handler is external when Drawer's entry and the sheet entry are measured, like `react-native`.
+20. **Guides.** The native docs section has the guides React's has, each written for native, leaving out a guide whose whole subject is web-only.
+21. **Scroll Area** keeps its scrollbar and thumb parts, drawn from the scroll position the `ScrollView` reports, with the `ScrollView`'s own indicator hidden. Dragging a thumb scrolls.
+22. **The agent layer's region wrapper** is `AgentRegion`. The `data-agent-*` props are read by the adapter and not forwarded to the host.
+23. **A missing VoiceOver pass.** A component whose only missing check is the manual VoiceOver pass can be merged with that pass recorded as outstanding. It stays listed as incomplete in the parity list until the pass is done.
+
 ## Recorded differences from the web
 
 Every difference the resolutions record, by subject.
@@ -471,3 +499,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [budgets]: https://github.com/floklein/rn-ui/issues/33
 [expert]: https://github.com/floklein/rn-ui/issues/34
 [upstream]: https://github.com/floklein/rn-ui/issues/35
+[build-rules]: https://github.com/floklein/rn-ui/issues/37
