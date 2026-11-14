@@ -18,6 +18,13 @@ until curl -sf http://127.0.0.1:4723/status > /dev/null; do
 done
 echo "appium_start=$(($(date +%s) - start))" >> "$TIMINGS"
 
+mkdir -p specs/output
+if [ "$SPEC_PLATFORM" = android ]; then
+  adb logcat -c
+  adb logcat > specs/output/logcat.txt &
+  logcat=$!
+fi
+
 failed=0
 for spec in switch dialog; do
   start=$(date +%s)
@@ -28,5 +35,5 @@ for spec in switch dialog; do
   [ "$code" -eq 0 ] || failed=1
 done
 
-kill "$appium"
+kill "$appium" ${logcat:-}
 exit "$failed"
