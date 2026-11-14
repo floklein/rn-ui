@@ -2,6 +2,8 @@
 
 The work of [the spec](react-native.md), sliced into 80 implementation tickets. Each is sized for one agent session and leaves the repo green. The plan decides nothing: each ticket names the map issues that govern it, and what is still open is listed under [questions](#questions) at the end.
 
+The tickets are on the tracker, as sub-issues of [React Native support: build plan](https://github.com/floklein/rn-ui/issues/38), with the same titles and blocking as here.
+
 ## How the plan is ordered
 
 The order is the one [What parity means for every component](https://github.com/floklein/rn-ui/issues/15) set.
