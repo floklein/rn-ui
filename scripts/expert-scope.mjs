@@ -39,7 +39,8 @@ function owns(framework, file) {
       /^apps\/playground\/src\/fixtures\/.+\.vue$/.test(file)) ||
     (framework === "svelte" &&
       /^apps\/playground\/src\/fixtures\/.+\.svelte$/.test(file)) ||
-    (framework === "react-native" && file.startsWith("apps/native-playground/"))
+    (framework === "react-native" &&
+      /^(apps\/native-playground|tests\/native)\//.test(file))
   )
 }
 
