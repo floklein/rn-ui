@@ -9,7 +9,7 @@ You don't call anything here to use the components. This page is for building an
 
 ## The Host Interface
 
-`@ui-sdk/core/native` exports the `NativeHost` type and `setNativeHost`, which registers the host. `@ui-sdk/react-native` calls it once, as it loads:
+`@ui-sdk/core/native` exports the `NativeHost` type, `setNativeHost`, which registers the host, and `nativeHost`, which returns the one registered now, so a check can wrap it to see what core asks. `@ui-sdk/react-native` calls it once, as it loads:
 
 ```ts
 import { setNativeHost } from "@ui-sdk/core/native"
@@ -30,3 +30,24 @@ setNativeHost({
 ## Focus From a Controller
 
 A controller's `focus()`, like Switch's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view.
+
+## Checking a Native Component
+
+`@ui-sdk/react-native/testing` checks a native component with no device, the way `@ui-sdk/core/testing` checks a web one. Each check takes the host tree your test renderer rendered and the OS, and imports no renderer: pass your renderer's `act` so each action renders.
+
+```tsx
+import { act, render, screen } from "@testing-library/react-native"
+import { checkPattern } from "@ui-sdk/react-native/testing"
+import { Platform } from "react-native"
+
+await render(
+  <Switch aria-label="Wi-Fi">
+    <SwitchThumb />
+  </Switch>
+)
+await checkPattern(screen.container, "switch", { os: Platform.OS, act })
+```
+
+- `checkPattern` checks roles, required states, names, one accessible element per item and hidden content, then performs the accessibility actions a screen reader user has and reads the state after each: activate everywhere, escape on iOS, expand and collapse on Android. Opening and closing must request accessibility focus.
+- `checkDirection` renders the component left to right and right to left, performs each action, and checks both directions end the same.
+- `checkCreation` checks that creating a primitive and rendering its parts reads no web global and asks the native host nothing.

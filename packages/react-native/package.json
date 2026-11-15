@@ -18,7 +18,8 @@
   "license": "Apache-2.0",
   "exports": {
     "./primitive": "./src/primitive.ts",
-    "./switch": "./src/switch.tsx"
+    "./switch": "./src/switch.tsx",
+    "./testing": "./src/testing.ts"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -37,6 +38,10 @@
       "./switch": {
         "types": "./dist/switch.d.ts",
         "default": "./dist/switch.js"
+      },
+      "./testing": {
+        "types": "./dist/testing.d.ts",
+        "default": "./dist/testing.js"
       },
       "./package.json": "./package.json"
     }
