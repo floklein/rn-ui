@@ -31,6 +31,6 @@ Components are unstyled. Each part takes `style` as a value or as a function of 
 <Switch style={(state) => [styles.track, state.checked && styles.on]} />
 ```
 
-The function also receives the part's interaction, `{ pressed, hovered, focused }`, as React Native reports it, for press and keyboard feedback. `className` and `children` take the same functions, so styling libraries that read `className`, like NativeWind v5 and Uniwind, work as they are. With NativeWind v4, call `cssInterop` on each part you style.
+The function also receives the part's interaction, `{ pressed, hovered, focused }`, as React Native reports it, for press feedback. `focused` follows keyboard focus on Android only; on iOS, Full Keyboard Access draws its own focus ring. `className` and `children` take the same functions, so styling libraries that read `className`, like NativeWind v5 and Uniwind, work as they are. With NativeWind v4, call `cssInterop` on each part you style.
 
 You can render your first component without setting up a provider.

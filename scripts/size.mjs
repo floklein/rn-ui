@@ -626,8 +626,6 @@ render(() => <button onClick={() => {}}>App</button>, document.body)`
   }
 }
 
-// A native entry whose component hasn't left `pending`, like
-// `@ui-sdk/react-native/menu` while Menu is being written.
 function isPending(name) {
   return (
     name.startsWith("@ui-sdk/react-native/") &&

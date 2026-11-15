@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `e6e73b12` (2026-11-15, before the adapter's first code; no review has run yet)
+Last reviewed: `ba4b47e0` (2026-11-15, ticket 55: the docs section, the manual pass checklist and the size rows, read against the adapter)
 
 ## Settled
 
@@ -29,4 +29,9 @@ Last reviewed: `e6e73b12` (2026-11-15, before the adapter's first code; no revie
 ## Known and open (don't report again, check whether fixed)
 
 - `aria-labelledby` and `aria-describedby` are dropped by the translation until names land (ticket 7 of the build plan).
+- **`interaction.focused` never turns on under iOS Full Keyboard Access**: React Native 0.88 fires `onFocus` on iOS only behind the `enableImperativeFocus` flag, which is off. The docs say Android only.
+- **A disabled `Pressable` part likely stays a Tab stop on Android** (`Pressable` sets `focusable` whatever `disabled` is, and the adapter drops core's `tabindex`). Not yet seen on a device; translating `disabled` to `focusable={false}` would fix it.
+- **Web-only options are still in the native types and docs tables**: `RootPropsIn` takes `OptionsOf<P>` whole, so `<Switch name="x">` type-checks, against decision #20; Switch's `TypeTable`, state and reason tables show core's web wording (`name`, `form`, `<fieldset>`, `reset`).
+- **Switch's basic example names the switch twice on iOS**: its visible `Text` sits outside the `Pressable` and is its own accessible element. Putting the text inside `Switch` would make one element and widen the press target.
+- **The install commands name `@ui-sdk/*`**, which the fork publishes as `@rn-ui-sdk/*`; the docs follow upstream's names until the owner decides.
 - `scripts/check-packages.mjs` builds the adapter with `skipLibCheck: true`, since React Native's globals clash with `lib.dom` (ticket 17 revisits it).

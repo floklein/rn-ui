@@ -7,7 +7,7 @@ Use a switch for a setting that takes effect as soon as it changes, like Airplan
 
 <ComponentExample
   name="switch/basic"
-  caption="Tap Airplane mode, or double-tap it with VoiceOver or TalkBack, to turn it on and off."
+  caption="Tap the switch, or double-tap it with VoiceOver or TalkBack, to turn Airplane mode on and off."
 />
 
 ## Installation
@@ -63,7 +63,7 @@ A native view takes part in no form, so the switch renders no hidden input and i
 
 ## Styling
 
-Style the switch and its thumb with functions of their state, like `(state) => [styles.track, state.checked && styles.on]`. Each part receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press and keyboard feedback. Slide the thumb with a `transform`, and reverse it when `I18nManager.isRTL` is true.
+Style the switch and its thumb with functions of their state, like `(state) => [styles.track, state.checked && styles.on]`. Each part receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press feedback, and keyboard focus on Android. Slide the thumb with a `transform`, and reverse it when `I18nManager.isRTL` is true.
 
 ## Part State
 
@@ -141,8 +141,9 @@ The switch follows the [WAI-ARIA switch pattern](https://www.w3.org/WAI/ARIA/apg
 
 With a hardware keyboard, with iOS Full Keyboard Access or on Android:
 
-| Key   | Does                                |
-| ----- | ----------------------------------- |
-| Tab   | Moves to the next switch            |
-| Space | Turns it on or off                  |
-| Enter | Turns it on or off, on Android only |
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Turns it on or off                                           |
+| Enter      | Turns it on or off, on Android only                          |

@@ -28,7 +28,6 @@ const frameworks = {
     ext: "tsx",
     lang: "tsx",
   },
-  // A native view can't render in the page, so its examples show as code only.
   "react-native": {
     label: "React Native",
     short: "Native",

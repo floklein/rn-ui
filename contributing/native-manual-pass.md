@@ -38,7 +38,7 @@ A component is done only when its device specs and this pass both succeed. A com
 ## Hardware keyboard, screen reader off (iOS and Android)
 
 1. Tab, and Shift-Tab, reach every part a user acts on, in order, and skip disabled ones. On Android the arrow keys move between them too.
-2. The focused part shows focus: the system ring on iOS, and on both OSes the style the example gives `interaction.focused`.
+2. The focused part shows focus: the system ring on iOS, and on Android the style the example gives `interaction.focused`, or the system highlight when it gives none. iOS reports no focus to `interaction.focused`.
 3. Space activates the focused part on iOS. Enter and Space activate it on Android.
 4. A modal popup keeps Tab inside it, where the OS's `Modal` does.
 5. Every popup can be dismissed from the keyboard: Escape on Android (it acts as Back), and Escape on iOS with Full Keyboard Access where the OS routes it to the escape gesture. Focus returns to the part that opened it.
