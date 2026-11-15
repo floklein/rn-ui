@@ -23,7 +23,7 @@ describe("focusing a part", () => {
 
   test("on the native host, it asks the host to focus the part of the slot", () => {
     const focus = vi.fn()
-    setNativeHost({ focus })
+    setNativeHost({ focus, announce: vi.fn() })
     const instance = switchPrimitive({ id: "s" })
     const root = instance.part("root")
     const thumb = instance.part("thumb")
@@ -37,7 +37,7 @@ describe("focusing a part", () => {
 
   test("on the native host, it picks the part with the key when the slot has several", () => {
     const focus = vi.fn()
-    setNativeHost({ focus })
+    setNativeHost({ focus, announce: vi.fn() })
     const instance = switchPrimitive({ id: "s" })
     const first = instance.part("root", { id: "first" })
     const second = instance.part("root", { id: "second" })
@@ -52,7 +52,7 @@ describe("focusing a part", () => {
 
   test("on the native host, it asks nothing when the slot has no part", () => {
     const focus = vi.fn()
-    setNativeHost({ focus })
+    setNativeHost({ focus, announce: vi.fn() })
     const instance = switchPrimitive({ id: "s" })
     focusPartNative(
       () => undefined,

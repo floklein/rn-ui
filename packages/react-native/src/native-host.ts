@@ -22,6 +22,11 @@ setNativeHost({
       AccessibilityInfo.sendAccessibilityEvent(view, "focus")
     }
   },
+  announce(text, priority) {
+    AccessibilityInfo.announceForAccessibilityWithOptions(text, {
+      queue: priority === "polite",
+    })
+  },
 })
 
 export { pressSource, views }

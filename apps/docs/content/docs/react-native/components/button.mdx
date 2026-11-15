@@ -1,0 +1,209 @@
+---
+title: Button
+description: Run an action, show that it's working, and keep it reachable when disabled.
+---
+
+Button renders a `Pressable` with the button role and adds what a `Pressable` doesn't do on its own: it stays pending while an async action runs, so the action can't run twice, tells screen readers about slow actions, and can stay pressable while disabled. For a plain press handler, a `Pressable` is enough.
+
+<ComponentExample
+  name="button/basic"
+  caption="Tap Button, or double-tap it with VoiceOver or TalkBack. The console logs each press."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Usage
+
+Use `onPress` to run an action. Put the label in a `Text` inside the button, which also names it for screen readers.
+
+```tsx
+import { Button } from "@ui-sdk/react-native/button"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Button onPress={() => save()}>
+      <Text>Save</Text>
+    </Button>
+  )
+}
+
+export { Example }
+```
+
+## Pending
+
+Return a Promise from `onPress` to keep the button pending until it settles. The button ignores further presses while it waits.
+
+```tsx
+<Button
+  onPress={() => new Promise((resolve) => setTimeout(resolve, 1500))}
+  pendingAnnouncement="Saving"
+>
+  <Text>Save</Text>
+</Button>
+```
+
+After one second, VoiceOver and TalkBack say "Loading". Set `pendingAnnouncement` to change that message, as above, or use an empty string to silence it.
+
+<ComponentExample
+  name="button/pending"
+  caption="Tap Save, then tap it again while it saves. Nothing happens until the first action finishes."
+/>
+
+## Pending Content
+
+To change what the button shows while it waits, pass a function as `children`. It receives the button's state:
+
+<ComponentExample
+  name="button/pending-content"
+  caption="Tap Save. A spinner shows beside the label while it saves."
+/>
+
+Keep the label and change only the visual, as above. [Pending Buttons](#pending-buttons) explains why.
+
+## Handling Errors
+
+If the handler throws or its Promise rejects, `state.error` holds the error. Use it to show a message or a retry label. The next press clears the error and runs the handler again.
+
+The demo uses a `render` function to change the label with the state.
+
+<ComponentExample
+  name="button/render"
+  caption="Tap Save Changes. Saving always fails here: the console shows the error and the label changes to Try Again."
+/>
+
+## Changes After an Await
+
+`onPress` receives the press event and `{ source }`, which says how the button was pressed: `"touch"`, or `"virtual"` while a screen reader runs. If the handler changes another ui-sdk component after an `await`, wrap that change in `withSource` to keep the original source. Otherwise, the later change is reported as `"programmatic"`.
+
+```tsx
+import { withSource } from "@ui-sdk/core/observe"
+
+;<Button
+  onPress={async (event, { source }) => {
+    await save()
+    withSource(source, () => backups.setChecked(true))
+  }}
+>
+  <Text>Save</Text>
+</Button>
+```
+
+[Observe](/docs/core/observe#keep-the-source-after-an-await) explains source tracking.
+
+## Disabled
+
+Set `disabled` to prevent presses. The `Pressable` is disabled too, so Android's Tab skips it, and screen readers announce it as dimmed or disabled.
+
+<ComponentExample
+  name="button/disabled"
+  caption="Try tapping the button. It does nothing."
+/>
+
+## Focusable When Disabled
+
+Add `focusableWhenDisabled` to leave the `Pressable` enabled while the button is disabled, so it can still be reached with VoiceOver or TalkBack and hear why it's unavailable. Presses still do nothing. Screen readers still announce it as disabled, which on Android also takes it out of Tab's order.
+
+Use `aria-description` to explain why the action is unavailable:
+
+```tsx
+<Button
+  disabled
+  focusableWhenDisabled
+  aria-description="Add a title to publish."
+>
+  <Text>Publish</Text>
+</Button>
+```
+
+<ComponentExample
+  name="button/focusable-when-disabled"
+  caption="Swipe to Publish with VoiceOver or TalkBack while it's disabled: it says why. Enter a title to enable it, then tap Publish. The console logs what was published."
+/>
+
+## Links
+
+Pass `role="link"` to make the button a link for screen readers, and open the address in `onPress`, with `Linking.openURL` or your router.
+
+```tsx
+<Button role="link" onPress={() => Linking.openURL("https://reactnative.dev")}>
+  <Text>Get Started</Text>
+</Button>
+```
+
+<ComponentExample
+  name="button/link"
+  caption="Tap Get Started to open React Native's site. Changelog is disabled and opens nothing."
+/>
+
+## Forms
+
+A native view takes part in no form, so Button has no `type`: there's no form to submit or reset. Run what a submit would in `onPress`.
+
+## Styling
+
+Style the button with a function of its state, like `(state) => [styles.button, state.pending && styles.pending]`. It receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press feedback, and keyboard focus on Android.
+
+## Part State
+
+### Button [#part-state-button]
+
+<PartStateTable
+  component="button"
+  part="root"
+  path="../../packages/core/src/components/button/button.ts"
+  name="ButtonState"
+/>
+
+## API Reference
+
+Button takes `Pressable`'s props and the options below, as React Native props. `render`, `children` and `style` can read the button's state.
+
+### Button
+
+<TypeTable
+  path="../../packages/core/src/components/button/button.ts"
+  name="ButtonOptions"
+/>
+
+### State
+
+<StateTable
+  path="../../packages/core/src/components/button/button.ts"
+  name="ButtonState"
+/>
+
+### Events
+
+| Prop      | Receives                                                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `onPress` | The press event and `{ source }`, how the button was pressed. Return a Promise to keep the button pending until it settles. |
+
+## Accessibility
+
+Give the button a clear text label. If it contains only an icon, add an `aria-label`.
+
+### Pending Buttons
+
+While its action runs, the button tells screen readers it's busy, so you don't need to add anything:
+
+- Its accessibility state is busy and disabled, and it ignores presses until the action settles. Its `Pressable` stays enabled, so VoiceOver's and TalkBack's focus stays on it. On Android, the disabled state takes it out of Tab's order while it waits.
+- After a second, VoiceOver and TalkBack say `pendingAnnouncement` ("Loading" by default). Quick actions stay silent.
+
+To show progress, keep the label and change only the visual, like a spinner. Changing the text renames the button while a screen reader is on it, and screen readers don't reliably announce a new name on the focused element. The announcement already tells everyone it's working.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Presses it                                                   |
+| Enter      | Presses it, on Android only                                  |

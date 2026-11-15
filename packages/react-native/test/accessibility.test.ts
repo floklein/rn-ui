@@ -44,7 +44,7 @@ const hiddenProps = {
 }
 
 // Each row: the attributes, and the props they become on iOS and on Android.
-const rows: [Record<string, string>, object, object][] = [
+const rows: [Record<string, string | undefined>, object, object][] = [
   [{ id: "a" }, { nativeID: "a" }, { nativeID: "a" }],
   [
     { disabled: "" },
@@ -129,6 +129,7 @@ const rows: [Record<string, string>, object, object][] = [
     { accessibilityState: { busy: true } },
     { accessibilityState: { busy: true } },
   ],
+  [{ "aria-busy": undefined }, {}, { accessibilityState: { busy: false } }],
   [
     { role: "button", "aria-pressed": "true" },
     {

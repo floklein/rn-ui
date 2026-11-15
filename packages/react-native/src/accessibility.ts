@@ -100,6 +100,11 @@ function toNativeProps(attrs: Attrs, os: OS) {
     props.accessibilityRole = "button"
   }
   for (const [name, given] of Object.entries(attrs)) {
+    // Android's view drops "busy" from what TalkBack reads only when a state
+    // names busy, so a part that can be busy says it isn't.
+    if (name === "aria-busy" && given === undefined && os === "android") {
+      state.busy = false
+    }
     if (given === undefined) {
       continue
     }

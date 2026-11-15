@@ -17,6 +17,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "exports": {
+    "./button": "./src/button.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
     "./testing": "./src/testing.ts"
@@ -31,6 +32,10 @@
   ],
   "publishConfig": {
     "exports": {
+      "./button": {
+        "types": "./dist/button.d.ts",
+        "default": "./dist/button.js"
+      },
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"

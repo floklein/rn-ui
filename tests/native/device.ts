@@ -66,6 +66,11 @@ const roles: Record<string, string> = {
 const byId = (id: string) =>
   platform === "ios" ? `~${id}` : `android=new UiSelector().resourceId("${id}")`
 
+// UiAutomator only finds what's on screen, so a screen low in the list is
+// scrolled to first.
+const scrolledTo = (id: string) =>
+  `android=new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().resourceId("${id}"))`
+
 function attributes(tag: string) {
   return Object.fromEntries(
     [...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, name, value]) => [
@@ -150,8 +155,11 @@ function useDevice(name: string) {
       if (await driver.$(byId("back")).isExisting()) {
         await driver.$(byId("back")).click()
       }
-      await driver.$(byId(screen)).waitForExist({ timeout: 20_000 })
-      await driver.$(byId(screen)).click()
+      const item = driver.$(
+        platform === "ios" ? byId(screen) : scrolledTo(screen)
+      )
+      await item.waitForExist({ timeout: 20_000 })
+      await item.click()
       await driver.$(byId("back")).waitForExist({ timeout: 5000 })
     },
     async saveTree(state: string) {

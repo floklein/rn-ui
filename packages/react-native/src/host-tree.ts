@@ -164,6 +164,7 @@ async function performWatched(
       requests.push(part)
       host?.focus(part)
     },
+    announce: (text, priority) => host?.announce(text, priority),
   })
   try {
     await act(() => perform(node, action))

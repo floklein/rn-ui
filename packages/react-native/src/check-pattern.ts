@@ -15,7 +15,7 @@ import {
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name.
  * @experimental
  */
-type NativePattern = "switch"
+type NativePattern = "button" | "switch"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -69,6 +69,26 @@ async function checkActivationToggles(
   await performWatched(control(), "activate", context.act)
 }
 
+async function buttonPattern(context: Context) {
+  const buttons = context.withRole("button")
+  if (!buttons.length) {
+    context.problem(
+      context.root,
+      "has no element with the button role, so it isn't a button (APG button)."
+    )
+    return
+  }
+  for (const button of buttons) {
+    requireName(context, button, "button")
+  }
+  for (const index of buttons.keys()) {
+    const button = context.withRole("button")[index]
+    if (!isDisabled(button)) {
+      await performWatched(button, "activate", context.act)
+    }
+  }
+}
+
 async function switchPattern(context: Context) {
   const switches = context.withRole("switch")
   if (!switches.length) {
@@ -100,6 +120,7 @@ async function switchPattern(context: Context) {
 }
 
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
+  button: buttonPattern,
   switch: switchPattern,
 }
 
