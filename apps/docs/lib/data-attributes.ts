@@ -34,6 +34,7 @@ import {
 } from "@ui-sdk/core/renderer"
 import {
   attrs as partAttrs,
+  partState,
   press,
 } from "@ui-sdk/core/internal/foundation/kernel/part"
 import { selectAllKey } from "@ui-sdk/core/internal/foundation/lists/listbox-keys"
@@ -3085,7 +3086,15 @@ async function dataAttributeTables(component: string, framework: Framework) {
   }
 }
 
+/** The state each sampled instance hands one part's render and style functions. */
+function partStates(component: string, slot: string) {
+  const { instances, samples } = components[component]
+  return instances().flatMap((instance) =>
+    (samples[slot] ?? []).map((props) => partState(instance.part(slot, props)))
+  )
+}
+
 /** Whether `component` has a data attributes table. */
 const hasDataAttributes = (component: string) => component in components
 
-export { dataAttributeTables, hasDataAttributes, partLabel }
+export { dataAttributeTables, hasDataAttributes, partLabel, partStates }

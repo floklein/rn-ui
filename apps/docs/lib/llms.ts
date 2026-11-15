@@ -19,6 +19,7 @@ const packageNames: Record<Framework, string> = {
   svelte: "svelte",
   solid: "solid",
   "web-components": "web",
+  "react-native": "react-native",
 }
 
 // Headings one level deeper for each of `levels`, outside fenced code.
@@ -171,11 +172,7 @@ ${guides.join("\n\n")}
 Each page has the component's composition, examples, styling hooks and every prop.
 
 ${components.map((page) => componentLine(page, framework, to, { withImport: !site })).join("\n")}
-
-## ${framework === "react" ? "Hooks" : "Utilities"}
-
-${utilityPages.join("\n\n")}
-`
+${utilityPages.length ? `\n## ${framework === "react" ? "Hooks" : "Utilities"}\n\n${utilityPages.join("\n\n")}\n` : ""}`
 }
 
 export { frameworkLlms, packageNames }

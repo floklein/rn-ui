@@ -6,7 +6,7 @@ import {
   TabsTab,
 } from "@/components/ui/tabs"
 import { cn } from "cn"
-import type { Framework } from "@/lib/frameworks"
+import { isCodeOnly, type Framework } from "@/lib/frameworks"
 import { exampleIndex, readExampleModules } from "@/lib/example-modules"
 import { hasExample, readExampleSources } from "@/lib/example-sources"
 import { preloadModule } from "react-dom"
@@ -41,9 +41,10 @@ async function ComponentExample({
 }) {
   const isAtTop = exampleIndex() < 2
   const framework = fallback && !hasExample(name, wanted) ? fallback : wanted
+  const codeOnly = isCodeOnly(framework)
   const [sources, modules] = await Promise.all([
     readExampleSources(name, framework),
-    readExampleModules(name, framework),
+    codeOnly ? null : readExampleModules(name, framework),
   ])
   if (!sources) {
     return null
@@ -67,13 +68,13 @@ async function ComponentExample({
     />
   )
   const single = sources.files.length === 1
-  const deferred = !hideCode && !hideTabs
+  const deferred = !codeOnly && !hideCode && !hideTabs
   // Several files show one at a time, so the code panel stays as tall as one file.
   const source = single ? (
     <CodeBlock
       code={sources.files[0].code}
       lang={sources.files[0].lang}
-      copy={false}
+      copy={codeOnly}
       deferred={deferred}
     />
   ) : (
@@ -112,7 +113,9 @@ async function ComponentExample({
       {modules?.styles.map((href) => (
         <link key={href} rel="stylesheet" href={href} precedence="examples" />
       ))}
-      {hideCode || hideTabs ? (
+      {codeOnly ? (
+        <Frame className={cn("overflow-hidden", flat)}>{source}</Frame>
+      ) : hideCode || hideTabs ? (
         <Frame className="flex flex-col overflow-hidden">
           {preview}
           {!hideCode && (

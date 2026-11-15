@@ -25,6 +25,7 @@ import {
 import { SpecList } from "./spec-list"
 import {
   ControllerTable,
+  PartStateTable,
   ReasonTable,
   StateTable,
   TypeTable,
@@ -266,6 +267,7 @@ function getMDXComponents(
       <CssVariables {...props} framework={framework} />
     ),
     StateTable,
+    PartStateTable,
     ReasonTable,
     ControllerTable,
     CoreExports,

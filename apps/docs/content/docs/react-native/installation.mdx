@@ -1,0 +1,36 @@
+---
+title: Installation
+description: Install UI SDK in your React Native app.
+---
+
+Start with an app using React Native 0.88 and React 19 or newer, like an Expo SDK 58 app.
+
+## Install the Packages
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+`@ui-sdk/react-native` provides the components. `@ui-sdk/core` provides their behavior and is a peer dependency. Install both so the components and any helpers you use share one copy of the core. Neither package has a dependency of its own, and neither needs a native module, so there's nothing to link or prebuild.
+
+## Import a Component
+
+Import each component from its own entry:
+
+```tsx
+import { Switch, SwitchThumb } from "@ui-sdk/react-native/switch"
+```
+
+There is no root import from `@ui-sdk/react-native`. Each [component page](./components) lists the parts you can use.
+
+## Add Your Styles
+
+Components are unstyled. Each part takes `style` as a value or as a function of its state, and merges it with its own as an array, never flattened:
+
+```tsx
+<Switch style={(state) => [styles.track, state.checked && styles.on]} />
+```
+
+The function also receives the part's interaction, `{ pressed, hovered, focused }`, as React Native reports it, for press and keyboard feedback. `className` and `children` take the same functions, so styling libraries that read `className`, like NativeWind v5 and Uniwind, work as they are. With NativeWind v4, call `cssInterop` on each part you style.
+
+You can render your first component without setting up a provider.

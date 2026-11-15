@@ -1,0 +1,29 @@
+---
+title: Introduction
+description: Use unstyled React Native components with screen reader and keyboard support built in.
+---
+
+<Callout>
+
+These docs cover ui-sdk in React Native. Building for the web? See [React](/docs/react), [Vue](/docs/vue), [Svelte](/docs/svelte), [Solid](/docs/solid) or [Web Components](/docs/web-components). To learn how the behaviors work, see [Core](/docs/core).
+
+</Callout>
+
+`@ui-sdk/react-native` gives you components built on the same behaviors as `@ui-sdk/react`, rendered with React Native's own views. They handle interactions, focus, and the accessibility props VoiceOver and TalkBack read. You choose their views and styles.
+
+Each part renders a host from `react-native`, like `Pressable` or `View`. Its state reaches your styles through functions, since a native view has no data attributes or CSS variables.
+
+## Set It Up
+
+<Cards>
+  <Card
+    title="Installation"
+    href="./installation"
+    description="Install the packages in your React Native app."
+  />
+  <Card
+    title="Components"
+    href="./components"
+    description="Browse the components that run on iOS and Android."
+  />
+</Cards>
