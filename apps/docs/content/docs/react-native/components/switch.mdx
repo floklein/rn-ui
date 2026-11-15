@@ -47,7 +47,7 @@ export { Example }
 
 ## Disabled
 
-`disabled` prevents presses and changes, and screen readers announce the switch as dimmed or disabled.
+`disabled` prevents presses and changes, takes the switch out of Tab's order on Android, and screen readers announce it as dimmed or disabled.
 
 ## Read-Only
 
@@ -59,7 +59,7 @@ Pass `checked` and `onCheckedChange` to own the value. A [controller](#controlle
 
 ## Forms
 
-A native view takes part in no form, so the switch renders no hidden input and ignores `name`, `value` and `form`. Read its value from `onCheckedChange` or a controller. `required` stays in its state for your styles and labels.
+A native view takes part in no form, so the switch has no `name` or `form` prop and renders no hidden input. Read its value from `onCheckedChange` or a controller. `required` stays in its state for your styles and labels.
 
 ## Styling
 

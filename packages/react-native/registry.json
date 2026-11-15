@@ -178,6 +178,13 @@
     },
     {
       "kind": "edit",
+      "file": "apps/docs/lib/reference-rows.ts",
+      "mirrors": ["apps/docs/lib/reference-rows.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Native TypeTables leave out the web-only names and modal's \"trap-focus\" value, which @ui-sdk/react-native's types don't take."
+    },
+    {
+      "kind": "edit",
       "file": "apps/docs/content/docs/meta.json",
       "mirrors": ["apps/docs/content/docs/meta.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",

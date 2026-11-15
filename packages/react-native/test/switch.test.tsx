@@ -50,6 +50,20 @@ describe("Switch", () => {
     expect(screen.getByRole("switch")).toBeChecked()
   })
 
+  // Android disables the view for `accessibilityState.disabled`, and its focus
+  // search skips a disabled view, so Tab passes over it.
+  test("a disabled switch passes the disabled state that takes it out of Android's Tab order", async () => {
+    const { rerender } = await render(<Switch disabled testID="switch" />)
+    expect(screen.getByTestId("switch").props.accessibilityState).toEqual({
+      checked: false,
+      disabled: true,
+    })
+    await rerender(<Switch testID="switch" />)
+    expect(screen.getByTestId("switch").props.accessibilityState).toEqual({
+      checked: false,
+    })
+  })
+
   test("a disabled switch ignores a press", async () => {
     const onCheckedChange = jest.fn()
     await render(<Switch disabled onCheckedChange={onCheckedChange} />)
