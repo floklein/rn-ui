@@ -1,0 +1,74 @@
+name: Device specs setup
+description: Builds the native playground's standalone app, or puts this checkout's JavaScript into a cached one, and installs Appium with the platform's driver.
+
+inputs:
+  platform:
+    description: ios or android.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Point at Appium
+      shell: bash
+      run: |
+        {
+          echo "APPIUM_HOME=$RUNNER_TEMP/appium/home"
+          echo "APPIUM_BIN=$RUNNER_TEMP/appium/cli/node_modules/.bin/appium"
+          echo "WDA_PATH=$RUNNER_TEMP/appium/wda/WebDriverAgentRunner-Runner.app"
+        } >> "$GITHUB_ENV"
+
+    # The native build depends only on the native dependencies and the build
+    # script, so a change to JavaScript alone reuses it.
+    - name: Restore the built app
+      id: app
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: apps/native-playground/.native-build/${{ inputs.platform }}
+        key: native-app-${{ inputs.platform }}-${{ hashFiles('pnpm-lock.yaml', 'apps/native-playground/package.json', 'apps/native-playground/app.json', 'apps/native-playground/scripts/build-app.sh') }}
+
+    - name: Build the app
+      if: steps.app.outputs.cache-hit != 'true'
+      shell: bash
+      run: apps/native-playground/scripts/build-app.sh ${{ inputs.platform }}
+
+    - name: Save the built app
+      if: steps.app.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: apps/native-playground/.native-build/${{ inputs.platform }}
+        key: ${{ steps.app.outputs.cache-primary-key }}
+
+    - name: Bundle JavaScript into the cached app
+      if: steps.app.outputs.cache-hit == 'true'
+      shell: bash
+      run: apps/native-playground/scripts/embed-bundle.sh ${{ inputs.platform }}
+
+    - name: Restore Appium
+      id: appium
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/appium
+        key: appium-${{ inputs.platform }}-${{ hashFiles('tests/native/appium.json') }}
+
+    - name: Install Appium
+      if: steps.appium.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PLATFORM: ${{ inputs.platform }}
+      run: |
+        appium=$(node -p 'require("./tests/native/appium.json").appium')
+        driver=$(node -p "require('./tests/native/appium.json').drivers.$PLATFORM.package")
+        mkdir -p "$RUNNER_TEMP/appium/cli"
+        (cd "$RUNNER_TEMP/appium/cli" && npm init -y > /dev/null && npm install "appium@$appium")
+        "$APPIUM_BIN" driver install --source=npm "$driver"
+        if [ "$PLATFORM" = ios ]; then
+          "$APPIUM_BIN" driver run xcuitest download-wda -- --outdir "$RUNNER_TEMP/appium/wda" --platform iOS --kind sim
+        fi
+
+    - name: Save Appium
+      if: steps.appium.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/appium
+        key: ${{ steps.appium.outputs.cache-primary-key }}

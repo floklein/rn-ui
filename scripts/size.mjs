@@ -318,7 +318,7 @@ if (failures.length) {
 function adapterEntries(adapter) {
   const adapterExports = readManifest(`packages/${adapter}`).exports
   const missing = Object.keys(coreManifest.exports).filter(
-    // `renderer` is for the renderers themselves, `native` for the native adapter and `testing` for tests.
+    // `renderer` and `native` are for the renderers themselves and `testing` for tests, so none ships in an app.
     (key) =>
       key !== "." &&
       key !== "./renderer" &&

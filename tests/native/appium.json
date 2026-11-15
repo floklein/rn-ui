@@ -1,0 +1,10 @@
+{
+  "appium": "3.9.0",
+  "drivers": {
+    "ios": { "name": "xcuitest", "package": "appium-xcuitest-driver@12.22.8" },
+    "android": {
+      "name": "uiautomator2",
+      "package": "appium-uiautomator2-driver@8.7.3"
+    }
+  }
+}

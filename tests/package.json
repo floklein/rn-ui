@@ -14,6 +14,7 @@
     "@guidepup/virtual-screen-reader": "^0.33.0",
     "@playwright/test": "catalog:",
     "@types/node": "^24.0.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "webdriverio": "10.2.0"
   }
 }

@@ -4,6 +4,12 @@
     "slug": "native-playground",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light"
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "dev.uisdk.nativeplayground"
+    },
+    "android": {
+      "package": "dev.uisdk.nativeplayground"
+    }
   }
 }
