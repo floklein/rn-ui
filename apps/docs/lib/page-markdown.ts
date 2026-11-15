@@ -11,6 +11,7 @@ import { readExampleSources } from "./example-sources"
 import { frameworks, type Framework } from "./frameworks"
 import { contentDir, docPage, docPages, readPage, withIncludes } from "./pages"
 import { partStateRows } from "./part-state"
+import { publishedNames } from "./published-names"
 import {
   controllerRows,
   reasonRows,
@@ -463,7 +464,10 @@ async function pageMarkdown(
 
   // A heading's custom anchor, like `### AccordionPanel [#styling-accordionpanel]`, is the site's.
   text = text.replace(/^(#{1,6} .*?)\s*\[#[\w-]+\]\s*$/gm, "$1")
-  return `# ${title}\n\n${description ? `${description}\n\n` : ""}${text.replace(/\n{3,}/g, "\n\n").trim()}\n`
+  return publishedNames(
+    `# ${title}\n\n${description ? `${description}\n\n` : ""}${text.replace(/\n{3,}/g, "\n\n").trim()}\n`,
+    framework
+  )
 }
 
 export { type LinkTarget, type PageLinks, pageMarkdown, type PageOptions }
