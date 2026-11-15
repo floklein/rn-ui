@@ -1,0 +1,48 @@
+{
+  "name": "@fixture/native-build",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#dev": {
+      "development": "./src/dev.ts",
+      "default": "./src/dev-stub.ts"
+    }
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "imports": {
+      "#dev": {
+        "react-native": {
+          "development": {
+            "types": "./dist/dev.d.ts",
+            "default": "./dist/native/dev.js"
+          },
+          "default": {
+            "types": "./dist/dev-stub.d.ts",
+            "default": "./dist/native/dev.guard.js"
+          }
+        },
+        "development": {
+          "types": "./dist/dev.d.ts",
+          "default": "./dist/dev.js"
+        },
+        "default": {
+          "types": "./dist/dev-stub.d.ts",
+          "default": "./dist/dev-stub.js"
+        }
+      }
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "react-native": "./dist/native/index.js",
+        "default": "./dist/index.js"
+      }
+    }
+  }
+}
