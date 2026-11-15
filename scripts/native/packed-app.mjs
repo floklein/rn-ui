@@ -37,15 +37,32 @@ for (const file of ["App.tsx", "index.ts", "screens.ts", "app.json"]) {
     rename(text).replace("../../examples/components", "./examples/components")
   )
 }
-const examples = path.join(root, "examples/components")
-for (const file of readdirSync(examples, { recursive: true })) {
-  if (/^[\w-]+\/react-native\/[\w-]+\.tsx$/.test(file)) {
-    const target = path.join(app, "examples/components", file)
-    mkdirSync(path.dirname(target), { recursive: true })
-    writeFileSync(
-      target,
-      rename(readFileSync(path.join(examples, file), "utf8"))
-    )
+const copies = [
+  {
+    from: path.join(root, "examples/components"),
+    into: path.join(app, "examples/components"),
+    files: /^[\w-]+\/react-native\/[\w-]+\.tsx$/,
+  },
+  {
+    from: path.join(root, "examples/shared/react"),
+    into: path.join(app, "examples/shared/react"),
+    files: /^[\w-]+\.tsx?$/,
+  },
+  {
+    from: path.join(playground, "fixtures"),
+    into: path.join(app, "fixtures"),
+    files: /^[\w-]+\.tsx$/,
+  },
+]
+for (const { from, into, files } of copies) {
+  for (const file of readdirSync(from, { recursive: true })) {
+    if (files.test(file)) {
+      mkdirSync(path.dirname(path.join(into, file)), { recursive: true })
+      writeFileSync(
+        path.join(into, file),
+        rename(readFileSync(path.join(from, file), "utf8"))
+      )
+    }
   }
 }
 
