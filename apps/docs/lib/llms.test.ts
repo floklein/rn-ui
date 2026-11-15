@@ -1,6 +1,7 @@
 import { expect, test } from "vitest"
 import { frameworkLlms } from "./llms"
 
+// It builds a TypeScript program for every reference table, which takes seconds.
 const link = ({ slugs }: { slugs: string[] }) => `/docs/${slugs.join("/")}`
 
 test("React Native's llms.txt indexes Switch with its native import", async () => {
@@ -10,4 +11,4 @@ test("React Native's llms.txt indexes Switch with its native import", async () =
     "- [Switch](/docs/react-native/components/switch): Turn a setting on or off. Import from `@ui-sdk/react-native/switch`."
   )
   expect(text).toContain("## Installation")
-})
+}, 30_000)
