@@ -365,6 +365,161 @@ jobs:
           retention-days: 14
           overwrite: true
 
+  # The device specs a change can affect, from scripts/device-specs.mjs, or
+  # every one of them on a full or main run.
+  device-plan:
+    name: Plan device specs
+    needs: plan
+    if: contains(fromJSON('["affected", "affected-engines", "main", "full"]'), needs.plan.outputs.suite)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      base: ${{ steps.plan.outputs.base }}
+      specs: ${{ steps.plan.outputs.specs }}
+      all: ${{ steps.plan.outputs.all }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Test the planner
+        run: node --test apps/native-playground/test/device-plan.test.mjs
+      - id: plan
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || (github.event.before != '0000000000000000000000000000000000000000' && github.event.before) || 'origin/main' }}
+          ALL: ${{ startsWith(needs.plan.outputs.suite, 'affected') && '' || '--all' }}
+        run: |
+          node scripts/device-specs.mjs --dry --base "$BASE" $ALL
+          echo "base=$(git rev-parse "$BASE")" >> "$GITHUB_OUTPUT"
+          echo "all=$ALL" >> "$GITHUB_OUTPUT"
+
+  # Blocks a pull request: its result is one of the checks `passed` reads.
+  device-android:
+    name: Device specs, Android
+    needs: device-plan
+    if: needs.device-plan.outputs.specs != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      ANDROID_ARCH: x86_64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/device-specs
+        with:
+          platform: android
+
+      # The AVD and its snapshot are kept between runs; booting from the
+      # snapshot takes about 20 seconds.
+      - name: Install the system image
+        run: |
+          sdkmanager=$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | tail -1)
+          (yes || true) | "$sdkmanager" --install "system-images;android-35;google_apis;x86_64" > /dev/null
+      - name: Restore the AVD
+        id: avd
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-35-google_apis-x86_64
+      - name: Create the AVD and its snapshot
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Created the AVD."
+      - name: Save the AVD
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ steps.avd.outputs.cache-primary-key }}
+
+      - name: Run the device specs
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          BASE: ${{ needs.device-plan.outputs.base }}
+          ALL: ${{ needs.device-plan.outputs.all }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: node scripts/device-specs.mjs --platform android --base "$BASE" $ALL
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: device-specs-android
+          path: tests/test-results/native
+          retention-days: 14
+
+  # Reports without blocking: `passed` doesn't read it, since 3 of 20 measured
+  # runs failed with no real fault (issue #119). A red run is rerun once by
+  # hand, and a failure that repeats holds the merge until it is diagnosed.
+  device-ios:
+    name: Device specs, iOS
+    needs: device-plan
+    if: needs.device-plan.outputs.specs != ''
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/device-specs
+        with:
+          platform: ios
+      - name: Boot the simulator
+        run: |
+          udid=$(xcrun simctl list devices available --json | node -e '
+            const { devices } = JSON.parse(require("node:fs").readFileSync(0, "utf8"))
+            const version = (runtime) => runtime.match(/iOS-(\d+)-(\d+)/).slice(1).map(Number)
+            const runtime = Object.keys(devices)
+              .filter((key) => key.includes("iOS-") && devices[key].some((device) => device.name.startsWith("iPhone")))
+              .sort((a, b) => version(a)[0] - version(b)[0] || version(a)[1] - version(b)[1])
+              .at(-1)
+            const device = devices[runtime].find((device) => device.name.startsWith("iPhone"))
+            console.error(`${device.name} on ${runtime}`)
+            console.log(device.udid)
+          ')
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+      - name: Run the device specs
+        env:
+          BASE: ${{ needs.device-plan.outputs.base }}
+          ALL: ${{ needs.device-plan.outputs.all }}
+        run: node scripts/device-specs.mjs --platform ios --base "$BASE" $ALL
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: device-specs-ios
+          path: tests/test-results/native
+          retention-days: 14
+
   # One check for the main ruleset to require, since the affected matrix names
   # its jobs by shard count. A label's run takes another name, so its result
   # can't stand in for the push's.
@@ -382,6 +537,8 @@ jobs:
       - e2e
       - e2e-report
       - docs
+      - device-plan
+      - device-android
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:

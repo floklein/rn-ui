@@ -16,10 +16,10 @@ function App() {
           <Text>Back</Text>
         </Pressable>
         <Text accessibilityRole="header" style={styles.title}>
-          {open.component} / {open.example}
+          {open.title}
         </Text>
         <View style={styles.example}>
-          <open.Example />
+          <open.Screen />
         </View>
       </View>
     )
@@ -28,15 +28,13 @@ function App() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.list}>
       {screens.map((screen) => (
         <Pressable
-          key={`${screen.component}/${screen.example}`}
+          key={screen.id}
           accessibilityRole="button"
-          testID={`screen-${screen.component}-${screen.example}`}
+          testID={screen.id}
           onPress={() => setOpen(screen)}
           style={styles.item}
         >
-          <Text>
-            {screen.component} / {screen.example}
-          </Text>
+          <Text>{screen.title}</Text>
         </Pressable>
       ))}
     </ScrollView>

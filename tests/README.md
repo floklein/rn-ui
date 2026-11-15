@@ -5,7 +5,7 @@ A map of every test in the repo: what each kind covers, where it runs, and the e
 ## Before you run anything
 
 - **Run Playwright and vitest through `scripts/test-slot.sh`.** It waits for one of two machine-wide slots (`UI_SDK_TEST_SLOTS` changes the count), so parallel sessions don't slow each other down.
-- **Set your own port on every command that starts a server.** Locally, the configs reuse a server already listening on their port, so a shared port can test someone else's checkout. The ports and their defaults: `PLAYGROUND_PORT` (5300) for the playground, `DOCS_PORT` (5400) for the docs site. The examples below use 5310 and 5410. Pick ones nobody else uses.
+- **Set your own port on every command that starts a server.** Locally, the configs reuse a server already listening on their port, so a shared port can test someone else's checkout. The ports and their defaults: `PLAYGROUND_PORT` (5300) for the playground, `DOCS_PORT` (5400) for the docs site, `NATIVE_PLAYGROUND_PORT` (8090) for the native playground's Metro server, and `APPIUM_PORT` (a free port when unset) for the device specs' Appium server. The examples below use 5310 and 5410. Pick ones nobody else uses.
 - **Check the exit code, not the output.** `echo $?` after the command, or `&& echo passed`.
 
 Run from `tests/`:
@@ -35,6 +35,7 @@ A file filter is a regular expression matched against the path, so `specs/menu` 
 | [Count gates](#count-gates)           | `<name>.counts.spec.ts`                                           | `react`, `vue`, `web`, engines                                                       | `pr`      |
 | [Leak specs](#leak-specs)             | `leaks.spec.ts`                                                   | Every framework. Chromium only                                                       | `pr`      |
 | [One-off specs](#one-off-specs)       | `<name>.<topic>.spec.ts`, like `combobox.virtual.spec.ts`         | Like behavior, without the sheet projects                                            | `pr`      |
+| [Device specs](#device-specs)         | `tests/native/<name>.spec.ts`, `<name>.a11y.spec.ts`              | An iOS simulator and an Android emulator, through Appium                             | `pr`      |
 | [Unit tests](#unit-tests)             | `packages/*/test/*.test.ts(x)`                                    | Node, vitest                                                                         | `pr`      |
 | [Docs tests](#docs-tests)             | `tests/docs/*.spec.ts`                                            | Chromium, against the docs site                                                      | `nightly` |
 | [Bundle size](#bundle-size)           | `scripts/size.mjs`, `size-budget.json`                            | Node                                                                                 | `pr`      |
@@ -227,6 +228,28 @@ cd tests && PLAYGROUND_PORT=5310 PERF_REPORT=1 ../scripts/test-slot.sh npx playw
 ```bash
 cd tests && PLAYGROUND_PORT=5310 ../scripts/test-slot.sh npx playwright test specs/combobox.virtual --project react
 ```
+
+## Device specs
+
+`tests/native/`, for React Native. They're written apart from the Playwright specs, with the same kinds of file and the same scenario names where the scenario exists: `<name>.spec.ts` for behavior, `<name>.a11y.spec.ts` for the platform's accessibility tree per state and, on iOS, Apple's audit. Each file opens one Appium session (`tests/native/device.ts`) on the native playground's standalone release build, which carries its JavaScript bundle, so no Metro server runs. The specs open fixtures of their own from `apps/native-playground/fixtures/<name>.tsx` and press with real touches, and each example in `examples/components/<name>/react-native/` is opened once. The timeouts Appium's measurement had to raise, [issue #29](https://github.com/floklein/rn-ui/issues/29), are in `device.ts`.
+
+`scripts/device-specs.mjs` plans and runs them on one device. A component's specs run when its native entry or anything that entry imports changes, in the adapter or in core, or its example, fixture or spec does. The harness, the playground's app and build files and the lockfile run every spec.
+
+```bash
+pnpm test:device --dry                                  # The plan against origin/main, without running it.
+pnpm test:device --platform ios --base feat/react-native-support
+pnpm test:device:sweep --platform android               # Every device spec.
+SIMULATOR_UDID=<udid> APPIUM_PORT=4791 pnpm test:device:sweep --platform ios
+ANDROID_SERIAL=emulator-5556 APPIUM_PORT=4792 pnpm test:device:sweep --platform android
+```
+
+- **The device.** Boot one first. iOS needs `SIMULATOR_UDID`, plus `SIMULATOR_DEVICE_SET` for a simulator outside Xcode's own set, like a Simlock lease's `SIMLOCK_IOS_DEVICE_SET`. Android takes `ANDROID_SERIAL` when more than one device is attached. `WDA_PATH` points at a prebuilt WebDriverAgent (`appium driver run xcuitest download-wda`); without it the driver builds its own.
+- **The app.** The script builds it when `apps/native-playground/.native-build/<platform>/` is empty, with `apps/native-playground/scripts/build-app.sh <platform>`: `expo prebuild` generates the native folders, which are never committed, then Xcode or Gradle builds a release app. After a change to JavaScript only, `scripts/embed-bundle.sh <platform>` puts the new bundle into the built app in seconds. `APP_PATH` runs another build.
+- **Appium.** Version and drivers are in `tests/native/appium.json`. The script runs it with `npx` and installs the platform's driver when missing, or uses `APPIUM_BIN`. Its log, and the trees the specs save, go to `tests/test-results/native/` (`DEVICE_SPEC_OUTPUT` changes it).
+- **One spec file.** With Appium already running: `DEVICE_PLATFORM=ios APP_PATH=<app> APPIUM_PORT=4791 SIMULATOR_UDID=<udid> node --test tests/native/switch.spec.ts`.
+- **CI.** The Device specs jobs in `ci.yml` run the plan on a pull request and every spec on a `main` or `full` run, each on its own runner. The Android job blocks: `CI passed` reads it. The iOS job reports without blocking, since 3 of 20 measured runs failed with no real fault ([issue #119](https://github.com/floklein/rn-ui/issues/119)). Rerun a red iOS job once by hand (`gh run rerun <run> --failed`); its first result stays on the pull request, and a failure that repeats holds the merge until it's diagnosed. The built app is cached on the native dependencies and the build script, so a change to JavaScript alone takes about 3 minutes on Android and 9 on iOS.
+
+The planner's own tests are in `apps/native-playground/test/device-plan.test.mjs` (`cd apps/native-playground && node --test test/device-plan.test.mjs`).
 
 ## Unit tests
 
