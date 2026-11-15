@@ -4,7 +4,6 @@ import { after, before } from "node:test"
 import { remote } from "webdriverio"
 
 type Platform = "ios" | "android"
-type Driver = WebdriverIO.Browser
 
 type Node = {
   role: string
@@ -113,7 +112,7 @@ function parseTree(source: string) {
  * closes it after the file's last test.
  */
 function useDevice(name: string) {
-  let driver: Driver
+  let driver: WebdriverIO.Browser
   const device = {
     platform,
     get driver() {
@@ -155,7 +154,6 @@ function useDevice(name: string) {
       await driver.$(byId(screen)).click()
       await driver.$(byId("back")).waitForExist({ timeout: 5000 })
     },
-    /** Saves the platform's own tree, the way the OS built it, for `state`. */
     async saveTree(state: string) {
       await mkdir(output, { recursive: true })
       await writeFile(
@@ -201,4 +199,4 @@ function useDevice(name: string) {
   return device
 }
 
-export { byId, type Node, parseTree, platform, useDevice }
+export { type Node, useDevice }

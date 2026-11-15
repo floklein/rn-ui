@@ -191,7 +191,6 @@ function plan(files, base = root) {
   }
 }
 
-/** The spec files of `components`, as paths from the repo root. */
 function specsOf(components, base = root) {
   const all = specComponents(base)
   return specFiles(base)
@@ -246,7 +245,6 @@ function appium(args, options) {
     : ["npx", ["--yes", `appium@${tools.appium}`, ...args], options]
 }
 
-/** Starts Appium on `port` with the platform's driver, resolving once it answers. */
 async function startAppium(platform, port) {
   const driver = tools.drivers[platform]
   const installed = spawnSync(
