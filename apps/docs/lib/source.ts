@@ -7,6 +7,7 @@ import { defineDocs } from "fumadocs-mdx/macro"
 import { highlightLines } from "./highlight-lines"
 import { plainTokens } from "./plain-tokens"
 import { remarkInstall } from "./remark-install"
+import { remarkPublishedNames } from "./remark-published-names"
 import { textBlocks } from "./text-blocks"
 
 const docs = defineDocs({
@@ -26,7 +27,11 @@ const docs = defineDocs({
           plainTokens,
         ],
       },
-      remarkPlugins: (plugins) => [remarkInstall, ...plugins],
+      remarkPlugins: (plugins) => [
+        remarkInstall,
+        remarkPublishedNames,
+        ...plugins,
+      ],
       remarkNpmOptions: { persist: { id: "package-manager" } },
     }),
   },

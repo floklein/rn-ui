@@ -8,6 +8,7 @@ import {
 import { frameworkIds, frameworks, type Framework } from "./frameworks"
 import { frameworkLlms } from "./llms"
 import { pageMarkdown, type LinkTarget } from "./page-markdown"
+import { publishedNames } from "./published-names"
 import { docPage, docPages, frameworkGuides } from "./pages"
 import { repoRoot } from "./repo-root"
 import { frameworkPages, utilitiesFolder } from "./sections"
@@ -190,7 +191,7 @@ async function writePackageDocs(names = Object.keys(packageFrameworks)) {
     }
     for (const [file, text] of Object.entries(files)) {
       await mkdir(path.dirname(path.join(dir, file)), { recursive: true })
-      await writeFile(path.join(dir, file), text)
+      await writeFile(path.join(dir, file), publishedNames(text, framework))
     }
     console.log(`packages/${name}/docs: ${Object.keys(files).length} files`)
     if (name === "web") {

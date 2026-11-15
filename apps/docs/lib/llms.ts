@@ -3,6 +3,7 @@ import path from "node:path"
 import { frameworks, type Framework } from "./frameworks"
 import { pageMarkdown, type LinkTarget, type PageLinks } from "./page-markdown"
 import { docPages, frameworkGuides, type DocPage } from "./pages"
+import { publishedNames } from "./published-names"
 import { utilitiesFolder } from "./sections"
 import { exampleFolder } from "./example-folder"
 
@@ -160,7 +161,8 @@ ${pageSetup(site)}`
 
 This file is the context an agent needs to build with ${name}: how ${label} renders a primitive and the conventions every part shares, then every component with a link to its page. Read the pages of the components you use. It's generated from the docs, for this release.`
 
-  return `${intro}
+  return publishedNames(
+    `${intro}
 
 - [Core](${to({ slugs: ["core"] })}): build a component, compose behaviors, and explore the foundations, from defining a primitive to working with state, the browser and text.
 - [Agents](${to({ slugs: ["agents"] })}): letting an agent operate a page, and WebMCP.
@@ -172,7 +174,9 @@ ${guides.join("\n\n")}
 Each page has the component's composition, examples, styling hooks and every prop.
 
 ${components.map((page) => componentLine(page, framework, to, { withImport: !site })).join("\n")}
-${utilityPages.length ? `\n## ${framework === "react" ? "Hooks" : "Utilities"}\n\n${utilityPages.join("\n\n")}\n` : ""}`
+${utilityPages.length ? `\n## ${framework === "react" ? "Hooks" : "Utilities"}\n\n${utilityPages.join("\n\n")}\n` : ""}`,
+    framework
+  )
 }
 
 export { frameworkLlms, packageNames }
