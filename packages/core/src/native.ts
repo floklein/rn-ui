@@ -5,4 +5,8 @@
  *
  * @module
  */
-export { type NativeHost, setNativeHost } from "./foundation/kernel/native-host"
+export {
+  type NativeHost,
+  nativeHost,
+  setNativeHost,
+} from "./foundation/kernel/native-host"

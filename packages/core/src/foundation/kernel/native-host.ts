@@ -21,6 +21,11 @@ function setNativeHost(next: NativeHost | undefined) {
   host = next
 }
 
+/**
+ * The native host registered now, or `undefined` before the adapter loads.
+ * A check wraps it to see what core asks.
+ * @experimental
+ */
 const nativeHost = () => host
 
 export { type NativeHost, nativeHost, setNativeHost }
