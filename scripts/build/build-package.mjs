@@ -9,6 +9,7 @@
 import { cpSync, readdirSync, rmSync } from "node:fs"
 import path from "node:path"
 import { parseArgs } from "node:util"
+import { buildNative } from "../native/native-build.mjs"
 import { emitDeclarations } from "./declarations.mjs"
 import { buildNuxtModule } from "./nuxt-module.mjs"
 import { findPublishProblems } from "./publish-manifest.mjs"
@@ -22,6 +23,7 @@ const { values: flags } = parseArgs({
     server: { type: "string", multiple: true, default: [] },
     solid: { type: "boolean", default: false },
     nuxt: { type: "boolean", default: false },
+    native: { type: "boolean", default: false },
   },
 })
 
@@ -51,7 +53,10 @@ if (flags.nuxt) {
   await buildNuxtModule({ packageDir, outDir })
 }
 
-const problems = findPublishProblems(packageDir)
+const problems = [
+  ...(flags.native ? buildNative({ packageDir, outDir }) : []),
+  ...findPublishProblems(packageDir),
+]
 if (problems.length) {
   console.error(
     `The published package.json doesn't match the build:\n  ${problems.join("\n  ")}`
