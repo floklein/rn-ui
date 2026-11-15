@@ -25,7 +25,7 @@ const coreFile = (module) =>
 const budgetFile = path.join(root, "size-budget.json")
 // Components the native adapter doesn't ship yet. Their entries need no budget.
 const nativePending = new Set(
-  readJson(path.join(root, "scripts/native-pending.json"))
+  readJson(path.join(root, "packages/react-native/registry.json")).pending
 )
 const tolerance = 0.03
 
