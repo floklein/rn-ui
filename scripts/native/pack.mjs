@@ -19,6 +19,7 @@ const publishedNames = /@ui-sdk\/(core|react-native|react)\b/g
 const rewrittenFiles = /\.(js|d\.ts|map|md|txt)$/
 
 const readJson = (file) => JSON.parse(readFileSync(file, "utf8"))
+const rename = (name) => name.replace(publishedNames, "@rn-ui-sdk/$1")
 
 function publishedManifest(manifest, version) {
   const {
@@ -46,8 +47,6 @@ function publishedManifest(manifest, version) {
   }
   return published
 }
-
-const rename = (name) => name.replace(publishedNames, "@rn-ui-sdk/$1")
 
 function stage(name, version, stageDir) {
   const packageDir = path.join(root, "packages", name)

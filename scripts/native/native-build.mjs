@@ -10,11 +10,8 @@ import {
 import path from "node:path"
 
 /**
- * Builds `dist/native` for React Native from the package's `dist`: the same
- * modules, with each `x.native.js` twin in the place of `x.js`, and a guard
- * for each `#` import pair that picks its module with React Native's
- * `__DEV__`. The twins leave the DOM tree. Returns the published entries
- * that have no `react-native` condition.
+ * Builds `dist/native`, with each twin in the place of its module, and lists
+ * the published entries that have no `react-native` condition.
  */
 function buildNative({ packageDir, outDir }) {
   const nativeDir = path.join(outDir, "native")
@@ -34,14 +31,14 @@ function buildNative({ packageDir, outDir }) {
   const { publishConfig } = JSON.parse(
     readFileSync(path.join(packageDir, "package.json"), "utf8")
   )
-  for (const target of Object.values(publishConfig.imports ?? {})) {
+  for (const target of Object.values(publishConfig.imports)) {
     if (target["react-native"]?.development) {
       writeGuard(packageDir, target)
     }
   }
   return [
-    ...missingConditions(publishConfig.exports ?? {}, "exports"),
-    ...missingConditions(publishConfig.imports ?? {}, "imports"),
+    ...missingConditions(publishConfig.exports, "exports"),
+    ...missingConditions(publishConfig.imports, "imports"),
   ]
 }
 
