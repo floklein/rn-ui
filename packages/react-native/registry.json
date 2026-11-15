@@ -20,14 +20,14 @@
       "file": "AGENTS.md",
       "mirrors": ["AGENTS.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The fork's issue tracker, triage labels and domain docs, appended."
+      "why": "The fork's issue tracker, triage labels and domain docs, appended. react-native in the framework experts' list."
     },
     {
       "kind": "edit",
       "file": "contributing/README.md",
       "mirrors": ["contributing/README.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "A row for upstream.md, the routine for merging upstream."
+      "why": "A row for upstream.md, the routine for merging upstream. A row for native-manual-pass.md, the manual screen reader and keyboard pass."
     },
     {
       "kind": "edit",
@@ -118,14 +118,14 @@
       "file": "scripts/size.mjs",
       "mirrors": ["scripts/size.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Core's native entry is skipped like renderer and testing, since no app ships it."
+      "why": "Core's native entry is skipped like renderer and testing, since no app ships it. A react-native adapter row that bundles native twins, with no budget needed for registry-pending components."
     },
     {
       "kind": "edit",
       "file": "tests/README.md",
       "mirrors": ["tests/README.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The native playground's and Appium's ports, a row for device specs and a section on running them."
+      "why": "The native playground's and Appium's ports, a row for device specs and a section on running them. How pnpm size measures React Native rows."
     },
     {
       "kind": "edit",
@@ -133,6 +133,111 @@
       "mirrors": ["tests/package.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "webdriverio, which the device specs drive Appium with."
+    },
+    {
+      "kind": "edit",
+      "file": ".agents/skills/ui-sdk-expert-review/SKILL.md",
+      "mirrors": [".agents/skills/ui-sdk-expert-review/SKILL.md"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "react-native in the skill description's expert list."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/components/component-example.tsx",
+      "mirrors": ["apps/docs/components/component-example.tsx"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Code-only frameworks show their example source with copy and no live preview."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/components/mdx.tsx",
+      "mirrors": ["apps/docs/components/mdx.tsx"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Registers PartStateTable for MDX pages."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/components/site-preferences.tsx",
+      "mirrors": ["apps/docs/components/site-preferences.tsx"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The react-native framework's visibility class."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/components/type-tables.tsx",
+      "mirrors": ["apps/docs/components/type-tables.tsx"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "PartStateTable, the state fields a part's style functions receive on React Native."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/content/docs/meta.json",
+      "mirrors": ["apps/docs/content/docs/meta.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The react-native section in the docs navigation."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/css-variables.test.ts",
+      "mirrors": ["apps/docs/lib/css-variables.test.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Skips code-only pages and checks native pages have a Part State section per styled part."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/data-attributes.ts",
+      "mirrors": ["apps/docs/lib/data-attributes.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports partStates, the sampled state each part's render and style functions receive."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/frameworks.ts",
+      "mirrors": ["apps/docs/lib/frameworks.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The react-native framework, code-only, and isCodeOnly."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/llms.ts",
+      "mirrors": ["apps/docs/lib/llms.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "react-native's package mapping, and no Utilities section when a framework has none."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/page-markdown.ts",
+      "mirrors": ["apps/docs/lib/page-markdown.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Renders PartStateTable in agent Markdown."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/pages.ts",
+      "mirrors": ["apps/docs/lib/pages.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Returns no pages for a missing directory."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/next.config.mjs",
+      "mirrors": ["apps/docs/next.config.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "react-native in the docs frameworks list."
+    },
+    {
+      "kind": "edit",
+      "file": "scripts/expert-scope.mjs",
+      "mirrors": ["scripts/expert-scope.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The react-native expert, reached by the native playground and native tests."
+    },
+    {
+      "kind": "edit",
+      "file": "size-budget.json",
+      "mirrors": ["size-budget.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Budgets for @ui-sdk/react-native/primitive and switch."
     }
   ],
   "components": {
