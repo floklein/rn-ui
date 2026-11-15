@@ -54,6 +54,6 @@ await render(
 await checkPattern(screen.container, "switch", { os: Platform.OS, act })
 ```
 
-- `checkPattern` takes the `"button"` and `"switch"` patterns. It checks roles, required states, names, one accessible element per item and hidden content, then performs the accessibility actions a screen reader user has and reads the state after each: activate everywhere, escape on iOS, expand and collapse on Android. Opening and closing must request accessibility focus.
+- `checkPattern` takes the `"button"` and `"switch"` patterns; `"button"` is native only, since the web check has no button pattern. It checks roles, required states, names, one accessible element per item and hidden content, then performs the accessibility actions a screen reader user has and reads the state after each: activate everywhere, escape on iOS, expand and collapse on Android. Opening and closing must request accessibility focus.
 - `checkDirection` renders the component left to right and right to left, performs each action, and checks both directions end the same.
 - `checkCreation` checks that creating a primitive and rendering its parts reads no web global and asks the native host nothing.

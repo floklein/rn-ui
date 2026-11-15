@@ -107,7 +107,7 @@ Set `disabled` to prevent presses. The `Pressable` is disabled too, so Android's
 
 ## Focusable When Disabled
 
-Add `focusableWhenDisabled` to leave the `Pressable` enabled while the button is disabled, so it can still be reached with VoiceOver or TalkBack and hear why it's unavailable. Presses still do nothing. Screen readers still announce it as disabled, which on Android also takes it out of Tab's order.
+Add `focusableWhenDisabled` to leave the `Pressable` itself enabled while the button is disabled. Presses still do nothing, and screen readers still announce it as disabled. On Android the disabled state disables the view anyway, so Tab skips it there too.
 
 Use `aria-description` to explain why the action is unavailable:
 
@@ -192,7 +192,8 @@ Give the button a clear text label. If it contains only an icon, add an `aria-la
 
 While its action runs, the button tells screen readers it's busy, so you don't need to add anything:
 
-- Its accessibility state is busy and disabled, and it ignores presses until the action settles. Its `Pressable` stays enabled, so VoiceOver's and TalkBack's focus stays on it. On Android, the disabled state takes it out of Tab's order while it waits.
+- Its accessibility state is disabled, and it ignores presses until the action settles. On Android the disabled state disables the view, so it leaves Tab's order while it waits, and keyboard focus moves away from it.
+- Its accessibility state is busy too, except on Android when the button is named by the text inside it: Android would read "busy" in place of that text. A button with an `aria-label` is busy on both.
 - After a second, VoiceOver and TalkBack say `pendingAnnouncement` ("Loading" by default). Quick actions stay silent.
 
 To show progress, keep the label and change only the visual, like a spinner. Changing the text renames the button while a screen reader is on it, and screen readers don't reliably announce a new name on the focused element. The announcement already tells everyone it's working.

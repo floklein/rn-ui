@@ -28,7 +28,7 @@ test("an async action keeps it pending until it settles, and presses meanwhile d
   await device.expectTree((tree) =>
     assert.equal(tree.get("presses")?.text, "save:touch share:touch")
   )
-  await device.press("save-finish")
+  await device.press("finish-waiting")
   await device.expectTree((tree) => {
     assert.equal(tree.get("save-state")?.text, "idle")
     assert.equal(tree.get("button-save")?.enabled, true)

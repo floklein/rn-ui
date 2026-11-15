@@ -124,12 +124,18 @@ const rows: [Record<string, string | undefined>, object, object][] = [
     { accessibilityState: { expanded: false } },
     { accessibilityState: { expanded: false } },
   ],
+  [{ "aria-busy": "true" }, { accessibilityState: { busy: true } }, {}],
   [
-    { "aria-busy": "true" },
-    { accessibilityState: { busy: true } },
-    { accessibilityState: { busy: true } },
+    { "aria-busy": "true", "aria-label": "Save" },
+    { accessibilityLabel: "Save", accessibilityState: { busy: true } },
+    { accessibilityLabel: "Save", accessibilityState: { busy: true } },
   ],
-  [{ "aria-busy": undefined }, {}, { accessibilityState: { busy: false } }],
+  [
+    { "aria-busy": undefined, "aria-label": "Save" },
+    { accessibilityLabel: "Save" },
+    { accessibilityLabel: "Save", accessibilityState: { busy: false } },
+  ],
+  [{ "aria-busy": undefined }, {}, {}],
   [
     { role: "button", "aria-pressed": "true" },
     {

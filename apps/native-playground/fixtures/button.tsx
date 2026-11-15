@@ -37,7 +37,11 @@ const buttonStyle = (state: ButtonState) => [
 
 function Fixture() {
   const [presses, setPresses] = useState<string[]>([])
-  const finish = useRef<() => void>(undefined)
+  const waiting = useRef<(() => void)[]>([])
+  const wait = () =>
+    new Promise<void>((resolve) => {
+      waiting.current.push(resolve)
+    })
   const record =
     (name: string) => (_event: unknown, details: ButtonActionDetails) =>
       setPresses((current) => [...current, `${name}:${details.source}`])
@@ -49,9 +53,7 @@ function Fixture() {
         testID="button-save"
         onPress={(event, details) => {
           record("save")(event, details)
-          return new Promise<void>((resolve) => {
-            finish.current = resolve
-          })
+          return wait()
         }}
         render={(props, state) => (
           <View style={styles.row}>
@@ -62,6 +64,16 @@ function Fixture() {
         style={buttonStyle}
       >
         <Text style={styles.label}>Save</Text>
+      </Button>
+      <Button
+        testID="button-export"
+        onPress={(event, details) => {
+          record("export")(event, details)
+          return wait()
+        }}
+        style={buttonStyle}
+      >
+        <Text style={styles.label}>Export</Text>
       </Button>
       <Button
         aria-label="Sync"
@@ -109,9 +121,9 @@ function Fixture() {
       </Button>
       <View style={styles.actions}>
         <Action
-          label="Finish saving"
-          testID="save-finish"
-          onPress={() => finish.current?.()}
+          label="Finish waiting"
+          testID="finish-waiting"
+          onPress={() => waiting.current.splice(0).forEach((done) => done())}
         />
       </View>
       <Text testID="presses">{presses.join(" ") || "none"}</Text>

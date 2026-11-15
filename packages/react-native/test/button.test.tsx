@@ -48,7 +48,7 @@ describe("Button", () => {
     const save = deferred()
     const onPress = jest.fn(() => save.promise)
     await render(
-      <Button onPress={onPress} testID="button">
+      <Button aria-label="Save" onPress={onPress} testID="button">
         {(state) => <Text>{state.pending ? "Saving" : "Save"}</Text>}
       </Button>
     )
@@ -64,12 +64,12 @@ describe("Button", () => {
     expect(screen.getByText("Save")).toBeOnTheScreen()
   })
 
-  // React Native's Android view rebuilds its description, which says "busy",
-  // only from a state that names busy.
-  test("once it settles, a state that says it isn't busy reaches Android", async () => {
+  // Android writes busy into the view's description, which hides the text
+  // inside it, and rewrites it only from a state that names busy.
+  test("once it settles, a labelled button tells Android it isn't busy", async () => {
     const save = deferred()
     await render(
-      <Button onPress={() => save.promise} testID="button">
+      <Button aria-label="Save" onPress={() => save.promise} testID="button">
         <Text>Save</Text>
       </Button>
     )
@@ -78,6 +78,19 @@ describe("Button", () => {
     expect(screen.getByTestId("button").props.accessibilityState?.busy).toBe(
       Platform.OS === "android" ? false : undefined
     )
+  })
+
+  test("a button named by its text is busy only on iOS, where busy keeps its name", async () => {
+    await render(
+      <Button onPress={() => new Promise(() => {})} testID="button">
+        <Text>Save</Text>
+      </Button>
+    )
+    await fireEvent.press(screen.getByTestId("button"))
+    expect(screen.getByTestId("button").props.accessibilityState?.busy).toBe(
+      Platform.OS === "android" ? undefined : true
+    )
+    expect(screen.getByTestId("button")).toBeDisabled()
   })
 
   test("a rejected Promise leaves its reason in the state, and the next press clears it", async () => {

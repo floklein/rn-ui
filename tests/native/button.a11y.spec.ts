@@ -6,6 +6,7 @@ const device = useDevice("button.a11y")
 
 const buttons = [
   "button-save",
+  "button-export",
   "button-sync",
   "button-delete",
   "button-publish",
@@ -32,6 +33,7 @@ test("the platform tree at first", async () => {
   await device.saveTree("first")
   assert.deepEqual(await snapshot(), {
     "button-save": button("Save"),
+    "button-export": button("Export"),
     "button-sync": button("Sync"),
     "button-delete": button("Delete", false),
     "button-publish": button("Publish", false),
@@ -39,14 +41,16 @@ test("the platform tree at first", async () => {
   })
 })
 
-test("the platform tree while an action is pending", async () => {
+test("the platform tree while actions are pending", async () => {
   await device.press("button-save")
+  await device.press("button-export")
   await device.expectTree((tree) =>
     assert.equal(tree.get("save-state")?.text, "pending")
   )
   await device.saveTree("pending")
   assert.deepEqual(await snapshot(), {
     "button-save": button(busy, false),
+    "button-export": button("Export", false),
     "button-sync": button("Sync"),
     "button-delete": button("Delete", false),
     "button-publish": button("Publish", false),
@@ -54,16 +58,19 @@ test("the platform tree while an action is pending", async () => {
   })
 })
 
-test("the platform tree once the action settles", async () => {
+test("the platform tree once the actions settle", async () => {
   await device.press("button-save")
+  await device.press("button-export")
   await device.expectTree((tree) =>
     assert.equal(tree.get("save-state")?.text, "pending")
   )
-  await device.press("save-finish")
+  await device.press("finish-waiting")
   await device.expectTree((tree) =>
     assert.equal(tree.get("save-state")?.text, "idle")
   )
-  assert.deepEqual((await snapshot())["button-save"], button("Save"))
+  const settled = await snapshot()
+  assert.deepEqual(settled["button-save"], button("Save"))
+  assert.deepEqual(settled["button-export"], button("Export"))
 })
 
 test("no audit issues at first", async () => {
