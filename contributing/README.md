@@ -12,6 +12,7 @@ Everything you need to work on ui-sdk, for people and agents alike. Start with t
 | [docs-writing.md](docs-writing.md)       | The website's writing style, with current pages as references                                       |
 | [examples.md](examples.md)               | How the docs examples are styled                                                                    |
 | [releasing.md](releasing.md)             | Changesets, the version pull request and publishing to npm                                          |
+| [upstream.md](upstream.md)               | How the fork merges upstream, and the native registry that keeps the native host in step            |
 | [../tests/README.md](../tests/README.md) | Every kind of test, where it runs and the exact command                                             |
 
 ## The repo

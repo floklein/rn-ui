@@ -1,0 +1,192 @@
+{
+  "upstream": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+  "entries": [
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/focus/focus-part.native.ts",
+      "mirrors": ["packages/core/src/foundation/forms/toggle-control.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Focuses a part through the native host where the toggle control focused its root element."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/forms/toggle-control.ts",
+      "mirrors": ["packages/core/src/foundation/forms/toggle-control.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of element(\"root\")?.focus(), and its context type picks parts."
+    },
+    {
+      "kind": "edit",
+      "file": "AGENTS.md",
+      "mirrors": ["AGENTS.md"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The fork's issue tracker, triage labels and domain docs, appended."
+    },
+    {
+      "kind": "edit",
+      "file": "contributing/README.md",
+      "mirrors": ["contributing/README.md"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A row for upstream.md, the routine for merging upstream."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/content/docs/core/meta.json",
+      "mirrors": ["apps/docs/content/docs/core/meta.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The native-host page in Core's navigation."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/package-docs.ts",
+      "mirrors": ["apps/docs/lib/package-docs.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "\"react-native\": undefined, so the package ships Core docs until its own section exists."
+    },
+    {
+      "kind": "edit",
+      "file": "examples/tsconfig.react.json",
+      "mirrors": ["examples/tsconfig.react.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Excludes components/*/react-native, which the native playground type-checks."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/package.json",
+      "mirrors": ["packages/core/package.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ./native export, in exports and publishConfig."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/focus/index.ts",
+      "mirrors": ["packages/core/src/foundation/focus/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports focusPart."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/kernel/index.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports nativeHost, NativeHost and Twin."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/renderer.ts",
+      "mirrors": ["packages/core/src/renderer.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports withSource and liveAttrs for the native adapter."
+    },
+    {
+      "kind": "edit",
+      "file": "pnpm-lock.yaml",
+      "mirrors": ["pnpm-lock.yaml"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Generated. After a merge, take upstream's and run pnpm install."
+    },
+    {
+      "kind": "edit",
+      "file": "scripts/check-packages.mjs",
+      "mirrors": ["scripts/check-packages.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "react-native as a peer, and frameworkOptions[\"react-native\"] with skipLibCheck."
+    },
+    {
+      "kind": "edit",
+      "file": "scripts/public-exports.mjs",
+      "mirrors": ["scripts/public-exports.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "react-native in documentedPackages."
+    }
+  ],
+  "components": {
+    "switch": {
+      "entry": "packages/react-native/src/switch.tsx",
+      "slots": {
+        "switchPrimitive.root": {
+          "needs": "nothing",
+          "reason": "Its press is the adapter's generic press, its focus() goes through the focus-part twin, and it takes part in no form."
+        },
+        "switchPrimitive.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    }
+  },
+  "pending": [
+    "accordion",
+    "alert-dialog",
+    "autocomplete",
+    "avatar",
+    "button",
+    "calendar",
+    "carousel",
+    "checkbox",
+    "collapsible",
+    "color-picker",
+    "combobox",
+    "command",
+    "date-input",
+    "date-picker",
+    "dialog",
+    "drawer",
+    "field",
+    "file-input",
+    "hover-card",
+    "image-cropper",
+    "input",
+    "label",
+    "listbox",
+    "menu",
+    "menubar",
+    "meter",
+    "navigation-menu",
+    "number-input",
+    "otp-input",
+    "pagination",
+    "password-input",
+    "popover",
+    "progress",
+    "radio",
+    "rating",
+    "resizable",
+    "scroll-area",
+    "segmented-control",
+    "select",
+    "separator",
+    "slider",
+    "tabs",
+    "time-input",
+    "timeline",
+    "toast",
+    "toggle",
+    "token-input",
+    "toolbar",
+    "tooltip",
+    "tree",
+    "trigger-menu",
+    "waterfall"
+  ],
+  "exemptions": [
+    {
+      "component": "switch",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
+      "component": "switch",
+      "example": "invalid",
+      "feature": "Validity from a required control on submit",
+      "reason": "Native computes no validity, and has no submission to block."
+    },
+    {
+      "component": "switch",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    }
+  ]
+}
