@@ -2,7 +2,7 @@
 
 The work of [the spec](react-native.md), sliced into 62 implementation tickets. Each is sized for one agent session and leaves the repo green. The plan decides nothing: each ticket names the map issues that govern it, and what is still open is listed under [questions](#questions) at the end.
 
-The tickets are on the tracker, as sub-issues of [React Native support](https://github.com/floklein/rn-ui/issues/38), with the same titles and blocking as here. Tickets are numbered 1 to 18, then 37 to 80: the numbers in between belonged to the first plan's horizontal foundation, which was re-sliced into tracer bullets and is closed as superseded on the tracker.
+The tickets are on the tracker, as sub-issues of [Spec: React Native support](https://github.com/floklein/rn-ui/issues/38), with the same titles and blocking as here. Tickets are numbered 1 to 18, then 37 to 80: the numbers in between belonged to the first plan's horizontal foundation, which was re-sliced into tracer bullets and is closed as superseded on the tracker.
 
 ## How the plan is ordered
 
