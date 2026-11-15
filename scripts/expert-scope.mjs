@@ -14,7 +14,7 @@ import path from "node:path"
 import { parseArgs } from "node:util"
 
 const root = path.resolve(import.meta.dirname, "..")
-const frameworks = ["react", "vue", "svelte", "solid", "web"]
+const frameworks = ["react", "vue", "svelte", "solid", "web", "react-native"]
 
 const { values: flags } = parseArgs({
   options: {
@@ -38,7 +38,9 @@ function owns(framework, file) {
     (framework === "vue" &&
       /^apps\/playground\/src\/fixtures\/.+\.vue$/.test(file)) ||
     (framework === "svelte" &&
-      /^apps\/playground\/src\/fixtures\/.+\.svelte$/.test(file))
+      /^apps\/playground\/src\/fixtures\/.+\.svelte$/.test(file)) ||
+    (framework === "react-native" &&
+      /^(apps\/native-playground|tests\/native)\//.test(file))
   )
 }
 

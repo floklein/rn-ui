@@ -77,6 +77,9 @@ function sharedHref(slugs: string[]) {
  */
 function docPages(folder: string) {
   const dir = path.join(contentDir, folder)
+  if (!existsSync(dir)) {
+    return []
+  }
   const meta = path.join(dir, "meta.json")
   const listed = existsSync(meta)
     ? (JSON.parse(readFileSync(meta, "utf8")) as { pages: string[] }).pages

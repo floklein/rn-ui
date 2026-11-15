@@ -25,7 +25,7 @@ const packageFrameworks: Record<string, Framework | undefined> = {
   svelte: "svelte",
   solid: "solid",
   web: "web-components",
-  "react-native": undefined,
+  "react-native": "react-native",
 }
 
 const guidesByFramework = new Map(
@@ -146,11 +146,7 @@ ${llms}${shared}
 ## Components
 
 ${list("components")}
-
-## ${framework === "react" ? "Hooks" : "Utilities"}
-
-${list(utilitiesFolder(framework))}
-
+${list(utilitiesFolder(framework)) ? `\n## ${framework === "react" ? "Hooks" : "Utilities"}\n\n${list(utilitiesFolder(framework))}\n` : ""}
 ## Framework Guides
 
 ${guides}

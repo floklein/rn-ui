@@ -47,6 +47,7 @@ const savedCheck = {
   svelte: "invisible [html[data-framework=svelte]_&]:visible",
   "web-components": "invisible [html[data-framework=web-components]_&]:visible",
   solid: "invisible [html[data-framework=solid]_&]:visible",
+  "react-native": "invisible [html[data-framework=react-native]_&]:visible",
 }
 
 /** A check on the current framework: the page's, else the remembered one, else React. */

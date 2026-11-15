@@ -7,7 +7,7 @@ import {
   cssVariableTable,
 } from "./css-variables"
 import { dataAttributeTables, hasDataAttributes } from "./data-attributes"
-import { frameworkIds } from "./frameworks"
+import { frameworkIds, isCodeOnly } from "./frameworks"
 import { contentDir } from "./pages"
 import { repoRoot } from "./repo-root"
 
@@ -248,7 +248,7 @@ const parts = (body: string) =>
     text,
   }))
 
-const pages = frameworkIds.flatMap((framework) =>
+const allPages = frameworkIds.flatMap((framework) =>
   readdirSync(path.join(contentDir, framework, "components"))
     .filter((name) => name.endsWith(".mdx"))
     .map((file) => ({
@@ -261,6 +261,32 @@ const pages = frameworkIds.flatMap((framework) =>
       ),
     }))
 )
+
+const pages = allPages.filter((page) => !isCodeOnly(page.framework))
+
+// A native part has no data attributes or CSS variables: its state replaces both.
+test("a native page has a Part State section per part with data attributes", async () => {
+  for (const { framework, component, page, source } of allPages) {
+    if (!isCodeOnly(framework) || !hasDataAttributes(component)) {
+      continue
+    }
+    expect(source, page).not.toMatch(/<(?:DataAttributes|CssVariables)\b/)
+    const states = parts(section(source, "Part State"))
+    for (const part of (await dataAttributeTables(component, framework))
+      .styled) {
+      expect(
+        states.some(
+          (each) =>
+            each.id.startsWith("part-state-") &&
+            each.text.includes(
+              `<PartStateTable\n  component="${component}"\n  part="${part.slot}"`
+            )
+        ),
+        `${page}: no Part State section for ${part.name}`
+      ).toBe(true)
+    }
+  }
+})
 
 test("Styling has a section per part that carries CSS variables", () => {
   for (const { component, page, source } of pages) {

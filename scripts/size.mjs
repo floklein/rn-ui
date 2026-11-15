@@ -23,6 +23,10 @@ const foundation = new Set(
 const coreFile = (module) =>
   `packages/core/src/${foundation.has(module.split("/")[0]) ? "foundation" : "components"}/${module}.ts`
 const budgetFile = path.join(root, "size-budget.json")
+// Components the native adapter doesn't ship yet. Their entries need no budget.
+const nativePending = new Set(
+  readJson(path.join(root, "packages/react-native/registry.json")).pending
+)
 const tolerance = 0.03
 
 const { values: flags } = parseArgs({
@@ -144,6 +148,18 @@ const adapters = [
     options: {},
     defines: true,
   },
+  {
+    name: "react-native",
+    // Core is bundled with each module's `.native.ts` twin in its place, as
+    // Metro resolves it. Only the entries written so far are measured.
+    options: {
+      external: ["react", "react/*", "react-native", "react-native/*"],
+      resolveExtensions: [".native.tsx", ".native.ts", ".tsx", ".ts", ".js"],
+      conditions: ["react-native"],
+      jsx: "automatic",
+    },
+    partial: true,
+  },
 ]
 
 // Field ships only with a Field: a control joins a field through a small
@@ -222,10 +238,13 @@ for (const adapter of adapters) {
         ).code
       )
     : 0
-  const entries = adapter.defines
-    ? entriesOf(adapter.name)
-    : adapterEntries(adapter.name)
-  for (const entry of [...entries, perfPagesEntry(adapter)]) {
+  const entries =
+    adapter.defines || adapter.partial
+      ? entriesOf(adapter.name)
+      : adapterEntries(adapter.name)
+  // The perf pages are web pages, with no native counterpart.
+  const perfEntries = adapter.partial ? [] : [perfPagesEntry(adapter)]
+  for (const entry of [...entries, ...perfEntries]) {
     // With the framework external, the code is the entry's alone, so the leak
     // check reads it: the Svelte runtime keeps its warnings in production.
     const own = await bundleForProduction(entry, adapter.options)
@@ -607,8 +626,23 @@ render(() => <button onClick={() => {}}>App</button>, document.body)`
   }
 }
 
+function isPending(name) {
+  return (
+    name.startsWith("@ui-sdk/react-native/") &&
+    nativePending.has(
+      name
+        .split("/")
+        .pop()
+        .replace(/ \(lazy\)$/, "")
+    )
+  )
+}
+
 function findBudgetFailures(rows) {
   return rows.flatMap(({ name, size, budget }) => {
+    if (budget === undefined && isPending(name)) {
+      return []
+    }
     if (budget === undefined) {
       return [`${name} has no budget. Run \`pnpm size --update\`.`]
     }
@@ -646,7 +680,9 @@ function printTable(rows) {
   for (const { name, size, budget } of rows) {
     const change =
       budget === undefined
-        ? "new"
+        ? isPending(name)
+          ? "pending"
+          : "new"
         : `${(((size - budget) / budget) * 100).toFixed(1)}%`
     const budgetText = budget === undefined ? "-" : formatBytes(budget)
     console.log(
