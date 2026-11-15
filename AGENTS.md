@@ -45,7 +45,7 @@ Component libraries cover familiar patterns like menus, dialogs and tabs. Real p
 
 ## Framework experts
 
-One expert per framework in `.agents/experts/<framework>/` (react, vue, svelte, solid, web): who it is in `expert.md`, what it knows in `knowledge.md` and what's already decided in `decisions.md`. Claude Code also loads each one as a named subagent from `.claude/agents/<framework>-expert.md`. Ask one any question about its framework, or ask it to review code. Before merging a change to an adapter, core, the specs, examples or framework docs, run `ui-sdk-expert-review` on it; `node scripts/expert-scope.mjs` shows which experts it reaches.
+One expert per framework in `.agents/experts/<framework>/` (react, vue, svelte, solid, web, react-native): who it is in `expert.md`, what it knows in `knowledge.md` and what's already decided in `decisions.md`. Claude Code also loads each one as a named subagent from `.claude/agents/<framework>-expert.md`. Ask one any question about its framework, or ask it to review code. Before merging a change to an adapter, core, the specs, examples or framework docs, run `ui-sdk-expert-review` on it; `node scripts/expert-scope.mjs` shows which experts it reaches.
 
 ## Agent skills
 

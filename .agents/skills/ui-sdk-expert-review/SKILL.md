@@ -1,6 +1,6 @@
 ---
 name: ui-sdk-expert-review
-description: Reviews a change with ui-sdk's framework experts (react, vue, svelte, solid, web), only the ones the change reaches, each from its last reviewed commit. Use before merging a branch that touches an adapter, core, specs, examples or framework docs, or when asked for an expert review. Pass a base ref, framework names, or nothing.
+description: Reviews a change with ui-sdk's framework experts (react, vue, svelte, solid, web, react-native), only the ones the change reaches, each from its last reviewed commit. Use before merging a branch that touches an adapter, core, specs, examples or framework docs, or when asked for an expert review. Pass a base ref, framework names, or nothing.
 metadata:
   internal: true
 ---
