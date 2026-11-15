@@ -2,18 +2,19 @@
 
 Everything you need to work on ui-sdk, for people and agents alike. Start with the root `AGENTS.md`, then read what your task needs:
 
-| File                                     | What's in it                                                                                        |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [architecture.md](architecture.md)       | The layers in core, `definePrimitive`, the rendering contract per framework, and the popup layer    |
-| [api-guide.md](api-guide.md)             | The API rules: names, state and callbacks, reasons, parts, attributes, controllers, settled choices |
-| [code.md](code.md)                       | How code is written, structured and reviewed                                                        |
-| [pitfalls.md](pitfalls.md)               | What cost real debugging time, by framework, browser and tool                                       |
-| [docs-site.md](docs-site.md)             | How the docs site, examples and agent Markdown are built, and how docs are written                  |
-| [docs-writing.md](docs-writing.md)       | The website's writing style, with current pages as references                                       |
-| [examples.md](examples.md)               | How the docs examples are styled                                                                    |
-| [releasing.md](releasing.md)             | Changesets, the version pull request and publishing to npm                                          |
-| [upstream.md](upstream.md)               | How the fork merges upstream, and the native registry that keeps the native host in step            |
-| [../tests/README.md](../tests/README.md) | Every kind of test, where it runs and the exact command                                             |
+| File                                           | What's in it                                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [architecture.md](architecture.md)             | The layers in core, `definePrimitive`, the rendering contract per framework, and the popup layer    |
+| [api-guide.md](api-guide.md)                   | The API rules: names, state and callbacks, reasons, parts, attributes, controllers, settled choices |
+| [code.md](code.md)                             | How code is written, structured and reviewed                                                        |
+| [pitfalls.md](pitfalls.md)                     | What cost real debugging time, by framework, browser and tool                                       |
+| [docs-site.md](docs-site.md)                   | How the docs site, examples and agent Markdown are built, and how docs are written                  |
+| [docs-writing.md](docs-writing.md)             | The website's writing style, with current pages as references                                       |
+| [examples.md](examples.md)                     | How the docs examples are styled                                                                    |
+| [releasing.md](releasing.md)                   | Changesets, the version pull request and publishing to npm                                          |
+| [upstream.md](upstream.md)                     | How the fork merges upstream, and the native registry that keeps the native host in step            |
+| [native-manual-pass.md](native-manual-pass.md) | The manual VoiceOver, TalkBack and hardware-keyboard pass each React Native component gets          |
+| [../tests/README.md](../tests/README.md)       | Every kind of test, where it runs and the exact command                                             |
 
 ## The repo
 

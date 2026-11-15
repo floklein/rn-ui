@@ -1,0 +1,149 @@
+---
+title: Switch
+description: Turn a setting on or off.
+---
+
+Use a switch for a setting that takes effect as soon as it changes, like Airplane mode or a notification preference. Keep its label the same in both states: the label says what the setting is, and the switch shows whether it's on.
+
+<ComponentExample
+  name="switch/basic"
+  caption="Tap the switch, or double-tap it with VoiceOver or TalkBack, to turn Airplane mode on and off."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Switch`:
+
+```text
+Switch
+└── SwitchThumb
+```
+
+`Switch` renders a `Pressable` and `SwitchThumb` a `View`. Name the switch with `aria-label`, since a native view has no `<label>` to wrap it in. The thumb stays mounted and gets the switch's state, so its style can slide it from one end to the other.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import { Switch, SwitchThumb } from "@ui-sdk/react-native/switch"
+
+function Example() {
+  return (
+    <Switch aria-label="Airplane mode">
+      <SwitchThumb />
+    </Switch>
+  )
+}
+
+export { Example }
+```
+
+## Disabled
+
+`disabled` prevents presses and changes, and screen readers announce the switch as dimmed or disabled.
+
+## Read-Only
+
+`readOnly` keeps the switch focusable while preventing the user from changing it. Use it for a setting managed somewhere else. It isn't announced, so say why in the label or nearby text.
+
+## Controlled
+
+Pass `checked` and `onCheckedChange` to own the value. A [controller](#controller) from `createSwitchController()` changes it from anywhere. See [State and Events](/docs/react/state-and-events) for the shared change callback.
+
+## Forms
+
+A native view takes part in no form, so the switch renders no hidden input and ignores `name`, `value` and `form`. Read its value from `onCheckedChange` or a controller. `required` stays in its state for your styles and labels.
+
+## Styling
+
+Style the switch and its thumb with functions of their state, like `(state) => [styles.track, state.checked && styles.on]`. Each part receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press feedback, and keyboard focus on Android. Slide the thumb with a `transform`, and reverse it when `I18nManager.isRTL` is true.
+
+## Part State
+
+### Switch [#part-state-switch]
+
+<PartStateTable
+  component="switch"
+  part="root"
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchState"
+/>
+
+### SwitchThumb [#part-state-switchthumb]
+
+<PartStateTable
+  component="switch"
+  part="thumb"
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchThumbState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Switch
+
+<TypeTable
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive. The thumb's state, `SwitchThumbState`, is the same.
+
+<StateTable
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchState"
+/>
+
+### Reasons
+
+`details.reason` says why the switch turned on or off.
+
+<ReasonTable
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchCheckedChangeReason"
+/>
+
+### Controller
+
+Create one with `createSwitchController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, runs the change callback like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/switch/switch.ts"
+  name="SwitchController"
+/>
+
+### Events
+
+Callbacks get the new state first, then the details.
+
+| Prop              | On       | Receives                                                        |
+| ----------------- | -------- | --------------------------------------------------------------- |
+| `onCheckedChange` | `Switch` | `(checked, details)`: the new state, and the [reason](#reasons) |
+
+## Accessibility
+
+The switch follows the [WAI-ARIA switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/), translated to React Native's accessibility props. `Switch` has the `switch` role and its checked and disabled state, so VoiceOver and TalkBack announce it as a switch that's on or off, and a double-tap toggles it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Turns it on or off                                           |
+| Enter      | Turns it on or off, on Android only                          |

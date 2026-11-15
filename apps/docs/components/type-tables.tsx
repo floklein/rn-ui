@@ -6,6 +6,7 @@ import {
   typeRows,
   type Row,
 } from "@/lib/reference-rows"
+import { partStateRows } from "@/lib/part-state"
 import { Frame } from "./frame"
 
 // API reference tables, from rows generated from the core's exported types.
@@ -123,6 +124,11 @@ function StateTable(props: { path: string; name: string }) {
   return <Rows label={props.name} rows={stateRows(props)} />
 }
 
+/** The state fields one part's style functions receive on React Native. */
+function PartStateTable(props: Parameters<typeof partStateRows>[0]) {
+  return <Rows label={props.name} rows={partStateRows(props)} />
+}
+
 /** The reasons a callback can report, described from the shared vocabulary in core. */
 function ReasonTable(props: { path: string; name: string }) {
   return <Rows label={props.name} rows={reasonRows(props)} />
@@ -133,4 +139,12 @@ function ControllerTable(props: { path: string; name: string }) {
   return <Rows label={props.name} rows={controllerRows(props)} />
 }
 
-export { ControllerTable, ReasonTable, Rows, StateTable, Text, TypeTable }
+export {
+  ControllerTable,
+  PartStateTable,
+  ReasonTable,
+  Rows,
+  StateTable,
+  Text,
+  TypeTable,
+}

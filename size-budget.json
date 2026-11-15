@@ -420,5 +420,7 @@
   "@ui-sdk/web/trigger-menu (lazy)": 107,
   "@ui-sdk/web/waterfall": 22841,
   "@ui-sdk/web (perf pages)": 108369,
-  "@ui-sdk/web (perf pages) (lazy)": 13395
+  "@ui-sdk/web (perf pages) (lazy)": 13395,
+  "@ui-sdk/react-native/primitive": 4267,
+  "@ui-sdk/react-native/switch": 10530
 }

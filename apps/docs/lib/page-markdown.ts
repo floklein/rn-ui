@@ -10,6 +10,7 @@ import { dataAttributeTables } from "./data-attributes"
 import { readExampleSources } from "./example-sources"
 import { frameworks, type Framework } from "./frameworks"
 import { contentDir, docPage, docPages, readPage, withIncludes } from "./pages"
+import { partStateRows } from "./part-state"
 import {
   controllerRows,
   reasonRows,
@@ -310,6 +311,12 @@ async function pageMarkdown(
       .replace(tag("StateTable"), (_, attrs: string) => {
         const found = stateRows(
           attributes(attrs) as { path: string; name: string }
+        )
+        return compact ? nameList(found) : rowList(found)
+      })
+      .replace(tag("PartStateTable"), (_, attrs: string) => {
+        const found = partStateRows(
+          attributes(attrs) as Parameters<typeof partStateRows>[0]
         )
         return compact ? nameList(found) : rowList(found)
       })

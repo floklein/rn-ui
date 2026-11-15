@@ -28,6 +28,14 @@ const frameworks = {
     ext: "tsx",
     lang: "tsx",
   },
+  "react-native": {
+    label: "React Native",
+    short: "Native",
+    example: "react-native",
+    ext: "tsx",
+    lang: "tsx",
+    codeOnly: true,
+  },
 } as const
 
 type Framework = keyof typeof frameworks
@@ -37,6 +45,9 @@ const frameworkIds = Object.keys(frameworks) as Framework[]
 function isFramework(value: string): value is Framework {
   return value in frameworks
 }
+
+/** Whether a framework's examples show as code, with no live preview. */
+const isCodeOnly = (framework: Framework) => "codeOnly" in frameworks[framework]
 
 // Whether a prop is a callback, like `onOpenChange`.
 const isCallback = (name: string) => /^on[A-Z]/.test(name)
@@ -65,5 +76,6 @@ export {
   frameworkIds,
   frameworks,
   isCallback,
+  isCodeOnly,
   isFramework,
 }
