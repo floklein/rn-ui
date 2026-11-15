@@ -27,7 +27,7 @@ test("Switch's native Markdown page lists each part's state and shows the native
   const page = docPage(["react-native", "components", "switch"])!
   const markdown = await pageMarkdown(page.file, "react-native", () => null)
   expect(markdown).toContain(
-    'import { Switch, SwitchThumb } from "@ui-sdk/react-native/switch"'
+    'import { Switch, SwitchThumb } from "@rn-ui-sdk/react-native/switch"'
   )
   expect(markdown).toMatch(/### SwitchThumb\n+- `checked` \(`boolean`\): \S/)
   expect(markdown).not.toContain("<PartStateTable")

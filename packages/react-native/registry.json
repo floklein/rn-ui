@@ -41,7 +41,7 @@
       "file": "apps/docs/lib/package-docs.ts",
       "mirrors": ["apps/docs/lib/package-docs.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "\"react-native\": undefined, so the package ships Core docs until its own section exists."
+      "why": "\"react-native\": undefined, so the package ships Core docs until its own section exists. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
     },
     {
       "kind": "edit",
@@ -216,14 +216,14 @@
       "file": "apps/docs/lib/llms.ts",
       "mirrors": ["apps/docs/lib/llms.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "react-native's package mapping, and no Utilities section when a framework has none."
+      "why": "react-native's package mapping, and no Utilities section when a framework has none. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/page-markdown.ts",
       "mirrors": ["apps/docs/lib/page-markdown.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Renders PartStateTable in agent Markdown."
+      "why": "Renders PartStateTable in agent Markdown. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
     },
     {
       "kind": "edit",
@@ -238,6 +238,20 @@
       "mirrors": ["apps/docs/next.config.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native in the docs frameworks list."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/example-sources.ts",
+      "mirrors": ["apps/docs/lib/example-sources.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A native example's code shows the fork's `@rn-ui-sdk/*` names (spec rule 24); the files keep `@ui-sdk/*`."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/source.ts",
+      "mirrors": ["apps/docs/lib/source.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The remark plugin that shows the fork's `@rn-ui-sdk/*` names on the native section's pages (spec rule 24)."
     },
     {
       "kind": "edit",

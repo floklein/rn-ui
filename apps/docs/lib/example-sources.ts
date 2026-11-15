@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { exampleFolder } from "./example-folder"
 import { frameworks, type Framework } from "./frameworks"
+import { publishedNames } from "./published-names"
 
 function examplePath(name: string, framework: Framework) {
   const { example, ext } = frameworks[framework]
@@ -73,7 +74,13 @@ async function readExampleSources(name: string, framework: Framework) {
     })
   }
 
-  return { files, log }
+  return {
+    files: files.map((file) => ({
+      ...file,
+      code: publishedNames(file.code, framework),
+    })),
+    log,
+  }
 }
 
 export { hasExample, readExampleSources }
