@@ -1,5 +1,3 @@
-// Renders a host with no primitive behind it, and merges props and refs, as
-// `@ui-sdk/react`'s module of the same name does for the DOM.
 import * as React from "react"
 
 /**

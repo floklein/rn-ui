@@ -1,6 +1,5 @@
-// The generic half of the native adapter, in the shape of `@ui-sdk/react`'s:
-// a part reads its slot's declarative fields and delivers `press`, and never
-// runs `bind`, `asleep`, `connect` or the `on` handlers.
+// A part reads its slot's declarative fields and delivers `press`. It never
+// runs `bind`, `asleep`, `connect` or the `on` handlers, which need the DOM.
 import type {
   OptionsOf,
   Part,
@@ -114,8 +113,6 @@ function usePrimitive<P extends Primitive>(
   }, [primitive, instance])
 }
 
-// The instance the parts inside share, and the props of the parts around them
-// that the parts inside read, like an item's value.
 type Scope = {
   handle: PrimitiveHandle<Primitive>
   around: Record<string, Record<string, unknown>>
@@ -186,8 +183,7 @@ type PartProps<Host extends React.ElementType, State = {}> = Omit<
 type ViewRef = (view: HostInstance | null) => () => void
 const viewRefs = new WeakMap<Part, ViewRef>()
 
-// Lets the native host find the part's mounted view, and forget it once it
-// unmounts, so a focus request after that asks nothing.
+// Forgetting the view as it unmounts keeps a later focus request from asking.
 function viewRef(part: Part) {
   let ref = viewRefs.get(part)
   if (!ref) {
@@ -206,9 +202,6 @@ function viewRef(part: Part) {
   return ref
 }
 
-// A part's host props from its slot and the user's: the attributes, the
-// user's `role` and `aria-*` among them, translated in one place, and the
-// user's `accessibility*` props winning over the translation field by field.
 function nativeProps(
   part: Part,
   slotProps: object,
@@ -225,23 +218,7 @@ function nativeProps(
     },
     Platform.OS === "android" ? "android" : "ios"
   )
-  return mergeProps(
-    rest,
-    translated,
-    pick(rest, translated),
-    mergeAccessibility(translated, rest)
-  )
-}
-
-// The user's props that name the same thing as the translation, so they win.
-function pick(user: Record<string, unknown>, translated: object) {
-  const picked: Record<string, unknown> = {}
-  for (const name in translated) {
-    if (name !== "style" && user[name] !== undefined) {
-      picked[name] = user[name]
-    }
-  }
-  return picked
+  return mergeProps(translated, rest, mergeAccessibility(translated, rest))
 }
 
 // A slot's state, or none for a slot that hands render functions nothing.

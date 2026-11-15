@@ -1,5 +1,3 @@
-// Helpers for building native parts on the same primitives the components
-// use, with the names `@ui-sdk/react/primitive` exports.
 export {
   type Interaction,
   mergeProps,

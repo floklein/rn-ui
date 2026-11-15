@@ -1,5 +1,3 @@
-// The native host core's native code asks, implemented with `react-native`
-// and registered as this module loads.
 import type { Part } from "@ui-sdk/core"
 import { setNativeHost } from "@ui-sdk/core/native"
 import { AccessibilityInfo, type HostInstance } from "react-native"
