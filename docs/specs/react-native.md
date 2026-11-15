@@ -335,7 +335,8 @@ Small rules every implementation ticket shares, so that no ticket decides them a
 20. **Guides.** The native docs section has the guides React's has, each written for native, leaving out a guide whose whole subject is web-only.
 21. **Scroll Area** keeps its scrollbar and thumb parts, drawn from the scroll position the `ScrollView` reports, with the `ScrollView`'s own indicator hidden. Dragging a thumb scrolls.
 22. **The agent layer's region wrapper** is `AgentRegion`. The `data-agent-*` props are read by the adapter and not forwarded to the host.
-23. **A missing VoiceOver pass.** A component whose only missing check is the manual VoiceOver pass can be merged with that pass recorded as outstanding. It stays listed as incomplete in the parity list until the pass is done.
+23. **A missing manual step.** A component whose only missing checks are the manual VoiceOver pass, the TalkBack pass or the iOS hardware-keyboard step can be merged with those recorded as outstanding, since the build's agents can't perform them. It stays listed as incomplete in the parity list until they are done by hand. The Android hardware-keyboard step stays required.
+24. **Package names in the native docs.** The `react-native` docs section shows the published names, `@rn-ui-sdk/*`, in install commands and in every import of its pages and examples, rewritten when the docs are built, so a user's copy works as it is.
 
 ## Recorded differences from the web
 
