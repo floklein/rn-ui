@@ -13,6 +13,8 @@ import type {
 import type { CheckboxPrimitive } from "@ui-sdk/core/checkbox"
 import type { FileInputPrimitive } from "@ui-sdk/core/file-input"
 import type { RadioGroupPrimitive } from "@ui-sdk/core/radio"
+import type { RatingPrimitive } from "@ui-sdk/core/rating"
+import type { SegmentedControlPrimitive } from "@ui-sdk/core/segmented-control"
 import type { SliderPrimitive } from "@ui-sdk/core/slider"
 import type { SwitchPrimitive } from "@ui-sdk/core/switch"
 import {
@@ -53,18 +55,24 @@ type Native<T> = {
     : T[K]
 }
 
-// Their `input` slot is the hidden input a form submits; core's other
-// `input` slots are text fields.
+// Their `input` slot is the hidden input a form submits, while core's other
+// `input` slots are text fields. Kept by hand: a new hidden `input` goes here.
 type FormInputOwner =
   | CheckboxPrimitive
   | FileInputPrimitive
   | RadioGroupPrimitive
+  | RatingPrimitive
+  | SegmentedControlPrimitive
   | SliderPrimitive
   | SwitchPrimitive
 
 type NativeSlot<P extends Primitive> = Exclude<
   SlotName<P>,
-  "hidden-input" | "form-input" | (P extends FormInputOwner ? "input" : never)
+  | "hidden-input"
+  | "form-input"
+  | "value-input"
+  | "group-input"
+  | (P extends FormInputOwner ? "input" : never)
 >
 
 /**

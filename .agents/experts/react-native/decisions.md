@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `ba4b47e0` (2026-11-15, ticket 55: the docs section, the manual pass checklist and the size rows, read against the adapter)
+Last reviewed: `8d95de3d` (2026-11-15, ticket 120: the web-only names left out of the native types and tables, and the keyboard focus findings)
 
 ## Settled
 
@@ -31,6 +31,10 @@ Last reviewed: `ba4b47e0` (2026-11-15, ticket 55: the docs section, the manual p
 
 - `aria-labelledby` and `aria-describedby` are dropped by the translation until names land (ticket 7 of the build plan).
 - **Shared names keep core's web wording in the docs tables**: the native types and `TypeTable`s leave out the web-only names (#120), but descriptions of shared ones still mention forms, like `defaultChecked`'s form reset, `disabled`'s `<fieldset>`, and the `reset` and `restore` reasons that can't happen on native.
+- **Switch's `value` does nothing on native** but stays in its types and `TypeTable`: it only says what the hidden input submits. Removing it changes a public shape, so it waits for a decision (Checkbox keeps it, since it names an item in a group).
+- **The hidden form slots are listed by hand** in `use-primitive.tsx` (`FormInputOwner` and the excluded names): a new hidden input in core type-checks as a part until it's added there.
+- **A disabled switch may still be a Full Keyboard Access stop on iOS**: `canBecomeFocused` accepts the `switch` role without checking disabled. Not checked on a device.
+- **Native `TypeTable`s drop rows by name** (`container`, `shortcut`, `name`, `form`), so a future table with a real `name` field, like a state type, would lose it.
 - **A part that is only `aria-disabled` leaves Android's Tab order too**: the translation turns it into `accessibilityState.disabled`, which disables the view. Core uses `aria-disabled` alone where a disabled item should stay focusable; the components that do (menus, lists) need to decide this when they land.
 - **Switch's basic example names the switch twice on iOS**: its visible `Text` sits outside the `Pressable` and is its own accessible element. Putting the text inside `Switch` would make one element and widen the press target.
 - **The install commands name `@ui-sdk/*`**, which the fork publishes as `@rn-ui-sdk/*`; the docs follow upstream's names until the owner decides.

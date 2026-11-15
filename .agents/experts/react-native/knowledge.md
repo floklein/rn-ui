@@ -21,7 +21,7 @@ Last checked: 2026-11-15, against `packages/react-native` and `node_modules/reac
 
 - Accessibility focus can be moved with `AccessibilityInfo.sendAccessibilityEvent(ref, 'focus')` but never observed: nothing tells JavaScript where the screen reader is.
 - A `View` receives no key events in a stable build on either platform; `onKeyDown`, `onKeyUp` and `ref.focus()` on a `View` sit behind native feature flags that are off.
-- Android: hardware-keyboard focus traversal (Tab, arrows) over focusable views, `onFocus`/`onBlur` on `Pressable`, Enter or Space clicks the focused view. `tabIndex={-1}` sets `focusable={false}` and takes a view out of traversal.
+- Android: hardware-keyboard focus traversal (Tab, arrows) over focusable views, `onFocus`/`onBlur` on `Pressable`, Enter or Space clicks the focused view. `tabIndex={-1}` sets `focusable={false}`, which takes a view out of traversal only when it isn't `accessible`: `accessible` sets `isFocusable` (`ReactViewManager.setAccessible`). A disabled `accessibilityState` calls `setEnabled(false)`, and Android's focus search skips a disabled view.
 - iOS: Full Keyboard Access traverses accessible elements with Tab and activates with Space; `Pressable` gets no focus events from it.
 - `Pressable` reports `pressed` to a style function, and hover through `onHoverIn`/`onHoverOut` where a pointer exists.
 

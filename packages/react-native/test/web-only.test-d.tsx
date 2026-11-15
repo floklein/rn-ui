@@ -1,6 +1,10 @@
+import { checkboxGroup } from "@ui-sdk/core/checkbox"
 import { combobox } from "@ui-sdk/core/combobox"
 import { dialog as dialogPrimitive } from "@ui-sdk/core/dialog"
 import { radioGroup } from "@ui-sdk/core/radio"
+import { rating } from "@ui-sdk/core/rating"
+import { segmentedControl } from "@ui-sdk/core/segmented-control"
+import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
@@ -33,6 +37,14 @@ createParts(switchPrimitive, { root: Pressable, input: View })
 
 // @ts-expect-error A radio's hidden input can't be given a host.
 createParts(radioGroup, { item: Pressable, input: View })
+// @ts-expect-error A rating's hidden radios can't be given a host.
+createParts(rating, { input: View })
+// @ts-expect-error A segmented control's hidden radios can't be given a host.
+createParts(segmentedControl, { input: View })
+// @ts-expect-error A checkbox group's hidden input can't be given a host.
+createParts(checkboxGroup, { "group-input": View })
+// @ts-expect-error A select's hidden value input can't be given a host.
+createParts(select, { "value-input": View })
 
 const { Input: ComboboxInput } = createParts(combobox, {
   input: TextInput,
