@@ -10,6 +10,13 @@ import type {
   StateOf,
   TypesOf,
 } from "@ui-sdk/core"
+import type { CheckboxPrimitive } from "@ui-sdk/core/checkbox"
+import type { FileInputPrimitive } from "@ui-sdk/core/file-input"
+import type { RadioGroupPrimitive } from "@ui-sdk/core/radio"
+import type { RatingPrimitive } from "@ui-sdk/core/rating"
+import type { SegmentedControlPrimitive } from "@ui-sdk/core/segmented-control"
+import type { SliderPrimitive } from "@ui-sdk/core/slider"
+import type { SwitchPrimitive } from "@ui-sdk/core/switch"
 import {
   attrs,
   commit,
@@ -37,6 +44,36 @@ import {
   type Interaction,
   type RenderProp,
 } from "./render-element"
+
+type WebOnlyName = "container" | "shortcut" | "name" | "form"
+
+// Options and slot props as native takes them: without the web-only names,
+// and without `modal="trap-focus"`, which the `Modal`'s isolation replaces.
+type Native<T> = {
+  [K in keyof T as K extends WebOnlyName ? never : K]: K extends "modal"
+    ? Exclude<T[K], "trap-focus">
+    : T[K]
+}
+
+// Their `input` slot is the hidden input a form submits, while core's other
+// `input` slots are text fields. Kept by hand: a new hidden `input` goes here.
+type FormInputOwner =
+  | CheckboxPrimitive
+  | FileInputPrimitive
+  | RadioGroupPrimitive
+  | RatingPrimitive
+  | SegmentedControlPrimitive
+  | SliderPrimitive
+  | SwitchPrimitive
+
+type NativeSlot<P extends Primitive> = Exclude<
+  SlotName<P>,
+  | "hidden-input"
+  | "form-input"
+  | "value-input"
+  | "group-input"
+  | (P extends FormInputOwner ? "input" : never)
+>
 
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
@@ -67,7 +104,7 @@ type PrimitiveHandle<P extends Primitive> = {
  */
 function usePrimitive<P extends Primitive>(
   primitive: P,
-  options: OptionsOf<P>
+  options: Native<OptionsOf<P>>
 ) {
   const id = `ui-sdk-${React.useId()}`
   // Without its controller until it commits, so StrictMode's second
@@ -239,10 +276,10 @@ type PartState<P extends Primitive, S extends SlotName<P>> =
  * }
  * @experimental
  */
-function usePart<P extends Primitive, S extends SlotName<P>>(
+function usePart<P extends Primitive, S extends NativeSlot<P>>(
   handle: P | PrimitiveHandle<P>,
   slot: S,
-  slotProps: PropsOf<P, S> = {} as PropsOf<P, S>,
+  slotProps: Native<PropsOf<P, S>> = {} as Native<PropsOf<P, S>>,
   props: Omit<PartProps<React.ElementType, PartState<P, S>>, "ref"> & {
     ref?: React.Ref<any>
   } = {},
@@ -368,11 +405,13 @@ type DefaultOf<G extends PrimitiveGeneric, K extends "T" | "U"> = G extends {
 }
   ? D & G[K]
   : G[K]
-type OptionsIn<P extends Primitive, A> = [A] extends [never]
-  ? OptionsOf<P>
-  : A extends { options: infer O }
-    ? O
-    : OptionsOf<P>
+type OptionsIn<P extends Primitive, A> = Native<
+  [A] extends [never]
+    ? OptionsOf<P>
+    : A extends { options: infer O }
+      ? O
+      : OptionsOf<P>
+>
 type StateIn<P extends Primitive, S extends SlotName<P>, A> = [A] extends [
   never,
 ]
@@ -380,13 +419,13 @@ type StateIn<P extends Primitive, S extends SlotName<P>, A> = [A] extends [
   : A extends { state: Record<S, infer State> }
     ? State
     : StateOf<P, S>
-type PropsIn<P extends Primitive, S extends SlotName<P>, A> = [A] extends [
-  never,
-]
-  ? PropsOf<P, S>
-  : A extends { props: Record<S, infer Named> }
-    ? Named
-    : PropsOf<P, S>
+type PropsIn<P extends Primitive, S extends SlotName<P>, A> = Native<
+  [A] extends [never]
+    ? PropsOf<P, S>
+    : A extends { props: Record<S, infer Named> }
+      ? Named
+      : PropsOf<P, S>
+>
 
 type RootOf<P extends Primitive, H extends Host | undefined> = [
   GenericOf<P>,
@@ -430,7 +469,7 @@ interface PartComponent<
 > {
   (
     props: Props<
-      PropsOf<P, S>,
+      Native<PropsOf<P, S>>,
       [GenericOf<P>] extends [never]
         ? StateOf<P, S>
         : StateIn<P, S, GenericOf<P>>,
@@ -451,7 +490,9 @@ interface GenericPartComponent<
 > {
   <A extends GenericOf<P>["T"] = DefaultOf<GenericOf<P>, "T">>(
     props: Props<
-      (Applied<GenericOf<P>, A, unknown>["props"] & Record<S, unknown>)[S],
+      Native<
+        (Applied<GenericOf<P>, A, unknown>["props"] & Record<S, unknown>)[S]
+      >,
       StateIn<P, S, Applied<GenericOf<P>, A, unknown>>,
       H
     >
@@ -462,15 +503,17 @@ interface GenericPartComponent<
  * The components `createParts` makes: `Root`, and one per slot given a host, named in Pascal case.
  * @experimental
  */
-type Parts<P extends Primitive, Hosts extends { [S in SlotName<P>]?: Host }> = {
+type Parts<
+  P extends Primitive,
+  Hosts extends { [S in NativeSlot<P>]?: Host },
+> = {
   Root: RootOf<P, Hosts extends { root: Host } ? Hosts["root"] : undefined>
 } & {
   [
-    S in keyof TypesOf<P>["slots"] as S extends Exclude<keyof Hosts, "root"> &
-      string
+    S in NativeSlot<P> as S extends Exclude<keyof Hosts, "root">
       ? Pascal<S>
       : never
-  ]: PartOf<P, S & SlotName<P>, Extract<Hosts[S & keyof Hosts], Host>>
+  ]: PartOf<P, S, Extract<Hosts[S & keyof Hosts], Host>>
 }
 
 /**
@@ -488,8 +531,11 @@ type Parts<P extends Primitive, Hosts extends { [S in SlotName<P>]?: Host }> = {
  */
 function createParts<
   P extends Primitive,
-  Hosts extends { [S in SlotName<P>]?: Host },
->(primitive: P, hosts: Hosts) {
+  Hosts extends { [S in NativeSlot<P>]?: Host },
+>(
+  primitive: P,
+  hosts: Hosts & Record<Exclude<keyof Hosts, NativeSlot<P>>, never>
+) {
   const schema = schemaOf(primitive)
   const { context, provides, keyed } = scopeOf(primitive)
   for (const [slot, props] of Object.entries(schema.slots)) {
@@ -511,11 +557,12 @@ function createParts<
     const [options, rest] = split(props, schema.options)
     const handle = usePrimitive(
       primitive,
-      options as OptionsOf<P>
+      options as Native<OptionsOf<P>>
     ) as unknown as PrimitiveHandle<Primitive>
-    if (hosts.root) {
+    const { root } = hosts as { root?: Host }
+    if (root) {
       const [slotProps, own] = split(rest, schema.slots.root ?? {})
-      return usePart(handle, "root", slotProps, own, hosts.root)
+      return usePart(handle, "root", slotProps, own, root)
     }
     return <HandleScope handle={handle}>{props.children}</HandleScope>
   }
@@ -562,7 +609,7 @@ function createParts<
       }
       return usePart(
         primitive,
-        slot as SlotName<P>,
+        slot as NativeSlot<P>,
         slotProps as never,
         rest,
         host

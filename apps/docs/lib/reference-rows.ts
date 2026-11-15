@@ -156,7 +156,7 @@ async function typeRows({
   return docs.map((doc) => ({
     id: doc.id,
     label: doc.name,
-    rows: doc.entries.map((entry) => {
+    rows: nativeEntries(doc.entries, framework).map((entry) => {
       const fallback = entry.tags.find((tag) => tag.name === "default")?.text
       const isEvent = events && isCallback(entry.name)
       return {
@@ -185,6 +185,32 @@ async function typeRows({
       }
     }),
   }))
+}
+
+// What `@ui-sdk/react-native`'s types leave out: options with no native
+// meaning, and `modal="trap-focus"`, which the `Modal`'s isolation replaces.
+function nativeEntries<Entry extends { name: string; type: string }>(
+  entries: Entry[],
+  framework: Framework
+) {
+  if (framework !== "react-native") {
+    return entries
+  }
+  return entries
+    .filter(
+      (entry) => !["container", "shortcut", "name", "form"].includes(entry.name)
+    )
+    .map((entry) =>
+      entry.name === "modal"
+        ? {
+            ...entry,
+            type: entry.type
+              .split(" | ")
+              .filter((member) => member !== '"trap-focus"')
+              .join(" | "),
+          }
+        : entry
+    )
 }
 
 // The declared type, without the `undefined` that optional props add. A
