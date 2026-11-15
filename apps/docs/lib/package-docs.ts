@@ -25,6 +25,7 @@ const packageFrameworks: Record<string, Framework | undefined> = {
   svelte: "svelte",
   solid: "solid",
   web: "web-components",
+  "react-native": undefined,
 }
 
 const guidesByFramework = new Map(

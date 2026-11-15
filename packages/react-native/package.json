@@ -1,0 +1,67 @@
+{
+  "name": "@ui-sdk/react-native",
+  "version": "0.0.0",
+  "private": true,
+  "description": "UI SDK for React Native.",
+  "keywords": [
+    "react-native",
+    "ui",
+    "ui-sdk",
+    "behaviors",
+    "accessibility",
+    "a11y",
+    "headless",
+    "unstyled",
+    "components"
+  ],
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    "./primitive": "./src/primitive.ts",
+    "./switch": "./src/switch.tsx"
+  },
+  "sideEffects": [
+    "./src/native-host.ts",
+    "./dist/native-host.js"
+  ],
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "publishConfig": {
+    "exports": {
+      "./primitive": {
+        "types": "./dist/primitive.d.ts",
+        "default": "./dist/primitive.js"
+      },
+      "./switch": {
+        "types": "./dist/switch.d.ts",
+        "default": "./dist/switch.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/build/build-package.mjs",
+    "prepack": "cp ../../LICENSE LICENSE",
+    "typecheck": "node ../../scripts/tsgo.mjs --noEmit && node ../../scripts/tsgo.mjs --noEmit -p tsconfig.test.json",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "@ui-sdk/core": "workspace:^",
+    "react": ">=19",
+    "react-native": ">=0.88"
+  },
+  "devDependencies": {
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/jest-preset": "0.88.1",
+    "@testing-library/react-native": "14.1.0",
+    "@types/jest": "^29.5.14",
+    "@types/react": "~19.3.0",
+    "@ui-sdk/core": "workspace:*",
+    "jest": "^29.7.0",
+    "react": "catalog:",
+    "react-native": "0.88.1",
+    "test-renderer": "^1.0.0"
+  }
+}

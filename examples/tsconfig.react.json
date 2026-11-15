@@ -6,6 +6,7 @@
     "node_modules",
     "*/solid",
     "*/vue",
+    "components/*/react-native",
     "components/*/solid",
     "components/*/vue",
     "mount/vue.ts"
