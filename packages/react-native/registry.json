@@ -98,6 +98,41 @@
       "mirrors": ["scripts/public-exports.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native in documentedPackages."
+    },
+    {
+      "kind": "edit",
+      "file": ".github/workflows/ci.yml",
+      "mirrors": [".github/workflows/ci.yml"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The device specs jobs: a plan, then Android and iOS runs, with Android's result read by CI passed."
+    },
+    {
+      "kind": "edit",
+      "file": "package.json",
+      "mirrors": ["package.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The test:device and test:device:sweep scripts."
+    },
+    {
+      "kind": "edit",
+      "file": "scripts/size.mjs",
+      "mirrors": ["scripts/size.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Core's native entry is skipped like renderer and testing, since no app ships it."
+    },
+    {
+      "kind": "edit",
+      "file": "tests/README.md",
+      "mirrors": ["tests/README.md"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The native playground's and Appium's ports, a row for device specs and a section on running them."
+    },
+    {
+      "kind": "edit",
+      "file": "tests/package.json",
+      "mirrors": ["tests/package.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "webdriverio, which the device specs drive Appium with."
     }
   ],
   "components": {
