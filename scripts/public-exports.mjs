@@ -11,7 +11,15 @@ import ts from "typescript"
 const notPublic = ["./renderer"]
 
 // Packages whose public entries make up the surface.
-const documentedPackages = ["core", "react", "solid", "vue", "svelte", "web"]
+const documentedPackages = [
+  "core",
+  "react",
+  "solid",
+  "vue",
+  "svelte",
+  "web",
+  "react-native",
+]
 
 /**
  * `declarations` holds each export's first name, its declaration and its file.

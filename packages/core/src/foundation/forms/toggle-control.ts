@@ -8,6 +8,7 @@ import {
   submitImplicitly,
   valueMissingMessage,
 } from "./form"
+import { focusPart } from "../focus/focus-part"
 import { checkedAttrs } from "../kernel/attrs"
 import type { ChangeDetails, ChangeOptions } from "../kernel/details"
 import type { PrimitiveContext, SlotFactory } from "../kernel/primitive-types"
@@ -156,9 +157,10 @@ function toggleControl<
   {
     store,
     element,
+    parts,
   }: Pick<
     PrimitiveContext<AnyOptions, ToggleState, string>,
-    "store" | "element"
+    "store" | "element" | "parts"
   >,
   change: (
     key: "checked",
@@ -217,7 +219,7 @@ function toggleControl<
     toggle(details: Details = {}) {
       return setState(store.get().checked !== true, details)
     },
-    focus: () => element("root")?.focus(),
+    focus: () => focusPart(() => element("root"), parts, "root"),
     form: formOwner,
     internal: {
       // The state a form restores after a reload, as `String(checked)` saved

@@ -17,6 +17,7 @@
     "image",
     "storage",
     "platform",
+    "native-host",
     "mobile",
     "behaviors",
     "---Tools---",

@@ -1,0 +1,32 @@
+---
+title: Native Host
+description: What core asks of React Native, and how a native adapter answers.
+---
+
+On React Native, a part is a view, not an HTML element. Core never imports `react-native`. When it needs something only the app's views can do, such as moving a screen reader's focus to a part, it asks the **native host**, which `@ui-sdk/react-native` implements.
+
+You don't call anything here to use the components. This page is for building an adapter, or for reading what a native component does under the hood.
+
+## The Host Interface
+
+`@ui-sdk/core/native` exports the `NativeHost` type and `setNativeHost`, which registers the host. `@ui-sdk/react-native` calls it once, as it loads:
+
+```ts
+import { setNativeHost } from "@ui-sdk/core/native"
+import { AccessibilityInfo } from "react-native"
+
+setNativeHost({
+  focus(part) {
+    const view = viewOf(part)
+    if (view) {
+      AccessibilityInfo.sendAccessibilityEvent(view, "focus")
+    }
+  },
+})
+```
+
+- `focus(part)` requests accessibility focus on the part's mounted view. A request is never treated as done: with no screen reader running, nothing moves. A part with no view asks nothing, so a controller's `focus()` after its component unmounts does nothing.
+
+## Focus From a Controller
+
+A controller's `focus()`, like Switch's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view.

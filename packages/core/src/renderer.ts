@@ -65,6 +65,7 @@ export {
 } from "./foundation/forms/form-internals"
 export { writeFromScript } from "./foundation/forms/value"
 export { canceledAction } from "./foundation/kernel/action"
+export { withSource } from "./foundation/kernel/details"
 export { createListSnapshots } from "./foundation/kernel/controlled-lists"
 export { on } from "./foundation/kernel/events"
 export {
@@ -82,6 +83,7 @@ export {
   directNames,
   followed,
   handlers,
+  liveAttrs,
   partState,
   present,
   press,

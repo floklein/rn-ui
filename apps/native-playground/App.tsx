@@ -1,47 +1,55 @@
-import { switchPrimitive } from "@ui-sdk/core/switch"
-import { useSyncExternalStore } from "react"
-import { Pressable, StyleSheet, Text, View } from "react-native"
-
-const playgroundSwitch = switchPrimitive({ id: "playground-switch" })
+import { useState } from "react"
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { screens, type Screen } from "./screens"
 
 function App() {
-  const checked = useSyncExternalStore(
-    playgroundSwitch.subscribe,
-    playgroundSwitch.api.getChecked
-  )
+  const [open, setOpen] = useState<Screen>()
+  if (open) {
+    return (
+      <View style={styles.screen}>
+        <Pressable
+          accessibilityRole="button"
+          testID="back"
+          onPress={() => setOpen(undefined)}
+          style={styles.back}
+        >
+          <Text>Back</Text>
+        </Pressable>
+        <Text accessibilityRole="header" style={styles.title}>
+          {open.component} / {open.example}
+        </Text>
+        <View style={styles.example}>
+          <open.Example />
+        </View>
+      </View>
+    )
+  }
   return (
-    <View style={styles.screen}>
-      <Pressable
-        accessibilityRole="switch"
-        accessibilityState={{ checked }}
-        onPress={() => playgroundSwitch.api.toggle({ reason: "press" })}
-        style={[styles.switch, checked && styles.switchChecked]}
-      >
-        <Text style={styles.label}>checked: {String(checked)}</Text>
-      </Pressable>
-    </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.list}>
+      {screens.map((screen) => (
+        <Pressable
+          key={`${screen.component}/${screen.example}`}
+          accessibilityRole="button"
+          testID={`screen-${screen.component}-${screen.example}`}
+          onPress={() => setOpen(screen)}
+          style={styles.item}
+        >
+          <Text>
+            {screen.component} / {screen.example}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  switch: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: "#e5e5e5",
-  },
-  switchChecked: {
-    backgroundColor: "#bbf7d0",
-  },
-  label: {
-    fontSize: 20,
-  },
+  screen: { flex: 1, paddingTop: 64, backgroundColor: "#ffffff" },
+  list: { padding: 16, gap: 8 },
+  item: { padding: 14, borderRadius: 8, backgroundColor: "#f4f4f5" },
+  back: { alignSelf: "flex-start", marginHorizontal: 16, padding: 8 },
+  title: { marginHorizontal: 16, marginVertical: 12, fontSize: 18 },
+  example: { flex: 1, alignItems: "center", justifyContent: "center" },
 })
 
 export { App }

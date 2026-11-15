@@ -104,6 +104,7 @@
     "./history": "./src/page/history/history.ts",
     "./gesture": "./src/foundation/motion/gesture.ts",
     "./renderer": "./src/renderer.ts",
+    "./native": "./src/native.ts",
     "./testing": "./src/testing.ts",
     "./internal/*": "./src/*.ts",
     "./web.css": "./src/web.css"
@@ -409,6 +410,10 @@
       "./renderer": {
         "types": "./dist/renderer.d.ts",
         "default": "./dist/renderer.js"
+      },
+      "./native": {
+        "types": "./dist/native.d.ts",
+        "default": "./dist/native.js"
       },
       "./testing": {
         "types": "./dist/testing.d.ts",

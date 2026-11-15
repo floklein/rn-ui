@@ -1,6 +1,15 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "types": ["expo/types"],
+    "paths": {
+      "@ui-sdk/react-native/*": ["../../packages/react-native/src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../examples/components/*/react-native/*.tsx"
+  ]
 }

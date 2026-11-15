@@ -62,6 +62,7 @@ const { values: flags } = parseArgs({
 const peers = [
   "react",
   "react-dom",
+  "react-native",
   "@types/react",
   "@types/react-dom",
   "vue",
@@ -92,6 +93,9 @@ const frameworkOptions = {
   react: { jsx: "react-jsx" },
   // Solid 2 ships its JSX runtime in @solidjs/web, not solid-js.
   solid: { jsx: "preserve", jsxImportSource: "@solidjs/web" },
+  // React Native's globals clash with the DOM lib core's types need, so its
+  // apps set `skipLibCheck`, as Expo's base config does.
+  "react-native": { jsx: "react-jsx", skipLibCheck: true },
 }
 
 if (flags.build) {
