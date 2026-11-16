@@ -112,11 +112,8 @@ function toNativeProps(
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
   const role =
-    attrs.role === undefined
-      ? attrs.type === "button"
-        ? "button"
-        : undefined
-      : roles[attrs.role]
+    (attrs.role === undefined ? undefined : roles[attrs.role]) ??
+    (attrs.type === "button" ? "button" : undefined)
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined

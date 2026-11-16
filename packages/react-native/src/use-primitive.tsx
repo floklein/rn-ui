@@ -296,8 +296,8 @@ function viewRef(part: Part, behavior: NativeBehavior | undefined) {
   return ref
 }
 
-// As on the web, core's attribute wins over the user's only where it has a
-// value, so `<Button role="link">` stays a link.
+// As on the web, core's attribute wins only where it has a value, so
+// `<Button role="link">` stays a link.
 function ariaOf(
   part: Part,
   slotProps: object,
@@ -308,9 +308,9 @@ function ariaOf(
     { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
     (name) => aria[name] !== undefined
   )
-  const merged = { ...aria, ...own }
+  const merged = { ...own }
   for (const name in aria) {
-    merged[name] = own[name] ?? aria[name]
+    merged[name] ??= aria[name]
   }
   return {
     ...merged,

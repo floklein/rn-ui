@@ -212,4 +212,13 @@ describe("Button", () => {
     expect(screen.getByRole("link", { name: "Get Started" })).toBeOnTheScreen()
     expect(screen.queryByRole("button")).toBeNull()
   })
+
+  test("a role React Native has no counterpart for leaves it a button", async () => {
+    await render(
+      <Button role="group">
+        <Text>Save</Text>
+      </Button>
+    )
+    expect(screen.getByRole("button", { name: "Save" })).toBeOnTheScreen()
+  })
 })
