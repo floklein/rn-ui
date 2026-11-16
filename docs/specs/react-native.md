@@ -62,7 +62,7 @@ From [Where native names diverge from @ui-sdk/react][names] and [How state reach
 - The part forwards the resolved `className` as a string, `ref`, `disabled` and unknown props without reading them.
 - Host props are React Native's own (`onPress`, `style`, `testID`), forwarded as they are.
 - A user's `role` and `aria-*` props go through the same translation as core's and are consumed by it. A user's `accessibility*` props win over the translation field by field: `accessibilityState={{ busy: true }}` merges over core's `checked` and `expanded`.
-- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form` and the hidden `input` part ([What forms become on the native host][forms]).
+- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form`, the hidden `input` part and Switch's `value` ([What forms become on the native host][forms]).
 - Native-only names: `OverlayHost` with `children` and `insets`; the `interaction` argument; File Input's `pick`; `onExit` ([How presence and exit animation work on native][presence]); the `/sheet` entry.
 
 ### Default hosts and `render`
@@ -364,6 +364,7 @@ Every difference the resolutions record, by subject.
 - With a hardware keyboard there are no arrow keys inside a composite, no Home, End or typeahead, no combobox arrow keys, no keyboard shortcuts, no keyboard focus trap, and Escape only where the OS routes it ([How focus works on the native host][focus]).
 - A part core keeps focusable but inert (`aria-disabled`: a pending Button, a disabled menu item, option or tab) is disabled on Android, since React Native has no way to say "disabled" to TalkBack without disabling the view. It leaves Android's keyboard order and a focused one loses keyboard focus; TalkBack still reaches it and says "disabled". iOS is unaffected ([aria-disabled on Android][aria-disabled]).
 - On Android, busy and a mixed checked state are spoken from the view's description, so they need the part's own `aria-label`. A mixed checkbox or toggle named by its text reads as unchecked on Android (ticket 60).
+- Android's keyboard Tab order follows the view tree, and Fabric removes a layout-only `View` from it. A part that isn't pressed and has a role or a label keeps its view (`collapsable={false}`), so a group's members stay together and in order. An app's own layout `View` can still be flattened, which lets Tab jump between its children and their neighbors; the app marks it `collapsable={false}` (#125).
 
 **Popups**
 
