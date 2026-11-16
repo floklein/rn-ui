@@ -24,6 +24,7 @@
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
     "./meter": "./src/meter.tsx",
+    "./pagination": "./src/pagination.tsx",
     "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
     "./progress": "./src/progress.tsx",
@@ -74,6 +75,10 @@
       "./meter": {
         "types": "./dist/meter.d.ts",
         "default": "./dist/meter.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
       },
       "./password-input": {
         "types": "./dist/password-input.d.ts",

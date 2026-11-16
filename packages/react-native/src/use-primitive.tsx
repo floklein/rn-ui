@@ -74,7 +74,7 @@ import {
   type RenderProp,
 } from "./render-element"
 
-type WebOnlyName = "container" | "shortcut" | "name" | "form"
+type WebOnlyName = "container" | "shortcut" | "name" | "form" | "getHref"
 
 // Options and slot props as native takes them: without the web-only names,
 // and without `modal="trap-focus"`, which the `Modal`'s isolation replaces.

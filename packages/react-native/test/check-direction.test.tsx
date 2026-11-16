@@ -19,6 +19,12 @@ import {
   ProgressValue,
 } from "../src/progress"
 import {
+  Pagination,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../src/pagination"
+import {
   PasswordInput,
   PasswordInputControl,
   PasswordInputToggle,
@@ -102,6 +108,25 @@ describe("checkDirection on the native host", () => {
                 <SliderThumb index={1} aria-label="Maximum" />
               </SliderControl>
             </Slider>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a pagination", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Pagination aria-label="Pagination" pageCount={3}>
+              <PaginationPrevious aria-label="Previous" />
+              <PaginationLink page={1} />
+              <PaginationLink page={2} />
+              <PaginationNext aria-label="Next" />
+            </Pagination>
           )
           return screen.container
         },
