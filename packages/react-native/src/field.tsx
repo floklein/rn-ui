@@ -143,7 +143,7 @@ function Field({
     <FieldContext value={field}>
       <DescribedContext value={field}>
         <DisabledContext value={around}>
-          {usePart(field, "root", {}, props, View)}
+          {usePart(field, "root", {}, props as Record<string, unknown>, View)}
         </DisabledContext>
       </DescribedContext>
     </FieldContext>
@@ -294,7 +294,7 @@ function FieldSet({
   return (
     <DescribedContext value={set}>
       <DisabledContext value={around}>
-        {usePart(set, "set", {}, props, View)}
+        {usePart(set, "set", {}, props as Record<string, unknown>, View)}
       </DisabledContext>
     </DescribedContext>
   )
@@ -305,7 +305,13 @@ function FieldSet({
  * @experimental
  */
 function FieldLegend(props: PartProps<typeof Text, FieldSetState>) {
-  return usePart(fieldSet, "legend", { id: props.id }, props, Text)
+  return usePart(
+    fieldSet,
+    "legend",
+    { id: props.id },
+    props as Record<string, unknown>,
+    Text
+  )
 }
 
 /**
@@ -313,7 +319,13 @@ function FieldLegend(props: PartProps<typeof Text, FieldSetState>) {
  * @experimental
  */
 function FieldGroup(props: PartProps<typeof View>) {
-  return usePart(usePrimitive(fieldGroup, {}), "group", {}, props, View)
+  return usePart(
+    usePrimitive(fieldGroup, {}),
+    "group",
+    {},
+    props as Record<string, unknown>,
+    View
+  )
 }
 
 export {
