@@ -29,6 +29,9 @@ function nativeField({
   // and Android's caret at the end when a press on a slot focused the field.
   let refused = false
   let focusCaret: Selection | undefined
+  // After a tap, the caret the field puts under the finger loses to the slot
+  // pressed. Android first echoes the slot's selection, which is let pass.
+  let tapped = false
 
   return {
     // Only the whole new text arrives, so what was inserted is found against
@@ -36,6 +39,7 @@ function nativeField({
     typeText(text: string) {
       const { pattern, maxLength, value: previous, selection } = store.get()
       afterDelete = text.length < previous.length
+      tapped = false
       let next = text
       if (next !== previous && !isValidCode(next, pattern, maxLength)) {
         const inserted = text.slice(
@@ -69,6 +73,12 @@ function nativeField({
         refused = false
         return
       }
+      if (tapped) {
+        const { selection } = store.get()
+        tapped =
+          current.start === selection.start && current.end === selection.end
+        return
+      }
       const deleted = afterDelete && current.start === current.end
       afterDelete = false
       const { selection, value, maxLength } = store.get()
@@ -89,6 +99,7 @@ function nativeField({
       if (focused === store.get().focused) {
         return
       }
+      tapped &&= focused
       store.set(
         focused
           ? {
@@ -110,6 +121,7 @@ function nativeField({
       if (isDisabled(store.get())) {
         return
       }
+      tapped = true
       const selection = pressSelection(index, value.length, maxLength)
       if (focused) {
         store.set({ selection })
