@@ -43,10 +43,10 @@ function sourceKey(source: ImageSourcePropType | null | undefined) {
  * The root: a box for the image and its fallback.
  * @experimental
  */
-function Avatar({ onLoadingStatusChange, debug, ...props }: AvatarProps) {
+function Avatar({ onLoadingStatusChange, debug, ref, ...props }: AvatarProps) {
   const handle = usePrimitive(avatar, { onLoadingStatusChange, debug })
   React.useEffect(() => handle.api.internal.startDelay(), [handle])
-  return usePart(handle, "root", {}, props, View)
+  return usePart(handle, "root", {}, mergeProps(props, { ref }), View)
 }
 
 /**
@@ -118,8 +118,14 @@ function AvatarImage({ render, ref, alt, ...props }: AvatarImageProps) {
  * Shown while there's no loaded image, after its `delay`.
  * @experimental
  */
-function AvatarFallback({ delay, ...props }: AvatarFallbackPartProps) {
-  return usePart(avatar, "fallback", { delay }, props, View)
+function AvatarFallback({ delay, ref, ...props }: AvatarFallbackPartProps) {
+  return usePart(
+    avatar,
+    "fallback",
+    { delay },
+    mergeProps(props, { ref }),
+    View
+  )
 }
 
 export type {
