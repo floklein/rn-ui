@@ -433,6 +433,7 @@
   "@ui-sdk/react-native/field": 12600,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 12371,
+  "@ui-sdk/react-native/label": 9235,
   "@ui-sdk/react-native/meter": 9958,
   "@ui-sdk/react-native/otp-input": 15360,
   "@ui-sdk/react-native/pagination": 12060,

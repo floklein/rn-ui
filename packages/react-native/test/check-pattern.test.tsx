@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Label } from "../src/label"
 import { Meter, MeterLabel, MeterValue } from "../src/meter"
 import {
   Progress,
@@ -249,6 +250,27 @@ describe("checkPattern on the native host", () => {
         /react-native|test-renderer|testing-library|^react/.test(name)
       )
     ).toEqual([])
+  })
+})
+
+describe("checkPattern on controls a Label names", () => {
+  test("passes on a switch, a checkbox and a text field, each named by its label", async () => {
+    await render(
+      <View>
+        <Switch id="wifi">
+          <SwitchThumb />
+        </Switch>
+        <Label htmlFor="wifi">Wi-Fi</Label>
+        <Checkbox id="terms" />
+        <Label htmlFor="terms">Accept the terms</Label>
+        <Label htmlFor="city">City</Label>
+        <Input id="city" />
+      </View>
+    )
+    await act(() => new Promise((resolve) => setTimeout(resolve)))
+    await expect(check()).resolves.toBeUndefined()
+    await expect(checkCheckbox()).resolves.toBeUndefined()
+    await expect(checkTextbox()).resolves.toBeUndefined()
   })
 })
 
