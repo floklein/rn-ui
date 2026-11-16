@@ -385,11 +385,16 @@ const settled: PresenceState = { startingStyle: false, endingStyle: false }
 // Follows whether the part is shown, as its slot's `present` says without
 // `keepMounted`. The render that hides it already holds it for `onExit`.
 function usePresence(
+  part: Part,
   shown: boolean,
   onExit: OnExit | undefined,
   rerender: () => void
 ) {
-  const [presence] = React.useState(() => createPresence(rerender))
+  const current = React.useRef(part)
+  current.current = part
+  const [presence] = React.useState(() =>
+    createPresence(rerender, () => current.current)
+  )
   const was = React.useRef(shown)
   const exit = React.useRef(onExit)
   exit.current = onExit
@@ -501,8 +506,15 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   }, [disabling, part, owner])
   const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
   const { onExit, ...hostProps } = props as typeof props & ExitProps
+  // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted.
   const presence = usePresence(
-    animates && present(part, { ...slotProps, keepMounted: false }),
+    part,
+    animates &&
+      present(part, {
+        ...slotProps,
+        keepMounted: false,
+        hiddenUntilFound: false,
+      }),
     onExit,
     rerender
   )
@@ -555,37 +567,55 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   if (shown) {
     const set = (change: Partial<Interaction>) => () =>
       setInteraction((current) => ({ ...current, ...change }))
-    const handlers =
-      activate || host === Pressable
-        ? {
-            onPress:
-              activate &&
-              !presence.exiting &&
-              (() => withSource(pressSource(), activate)),
-            onPressIn: set({ pressed: true }),
-            onPressOut: set({ pressed: false }),
-            onHoverIn: set({ hovered: true }),
-            onHoverOut: set({ hovered: false }),
-            onFocus: set({ focused: true }),
-            onBlur: set({ focused: false }),
-          }
+    const pressable = activate || host === Pressable
+    const handlers = pressable
+      ? {
+          onPress:
+            activate &&
+            !presence.exiting &&
+            (() => withSource(pressSource(), activate)),
+          onPressIn: set({ pressed: true }),
+          onPressOut: set({ pressed: false }),
+          onHoverIn: set({ hovered: true }),
+          onHoverOut: set({ hovered: false }),
+          onFocus: set({ focused: true }),
+          onBlur: set({ focused: false }),
+        }
+      : {}
+    const own = mergeProps(
+      translated,
+      { ...rest, children: content },
+      mergeAccessibility(translated, rest)
+    )
+    // Core keeps an aria-disabled part focusable and refuses its press, but
+    // Pressability reads only `disabled`: without it the part shows feedback.
+    const disabled = pressable && own.accessibilityState?.disabled === true
+    const { role } = merged
+    // Fabric flattens a view with only a role or a label, and Android then
+    // orders keyboard Tab by its children's edges across the whole screen.
+    const container =
+      !pressable &&
+      ((role && role !== "none" && role !== "presentation") ||
+        own.accessibilityRole ||
+        own.accessibilityLabel)
+        ? { collapsable: false }
         : {}
     element = renderElement(
       host,
       mergeProps(
         handlers,
-        mergeProps(
-          translated,
-          { ...rest, children: content },
-          mergeAccessibility(translated, rest)
-        ),
+        disabled ? { disabled } : {},
+        container,
+        own,
         { ref: viewRef(part, behaviors.get(owner.instance)) },
         host === TextInput ? { ref: textInputRef } : {},
         { ref }
       ),
       render,
       state,
-      interaction
+      disabled
+        ? { ...interaction, pressed: false, hovered: false }
+        : interaction
     )
   }
   if (provided === scope) {

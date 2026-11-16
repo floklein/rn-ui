@@ -22,7 +22,7 @@ const parts: SwitchParts = createParts(switchPrimitive, { thumb: View })
 
 /**
  * A control that turns a setting on or off: a `Pressable` with the switch
- * role. It takes part in no form, so it has no hidden input. Inside a Field,
+ * role. It takes part in no form, so it has no hidden input and no `value`. Inside a Field,
  * the field's label names it and presses it.
  * @experimental
  */
@@ -33,11 +33,10 @@ function Switch({
   disabled,
   readOnly,
   required,
-  value,
   controller,
   debug,
   ...props
-}: Omit<SwitchOptions, "name" | "form"> &
+}: Omit<SwitchOptions, "name" | "form" | "value"> &
   PartProps<typeof Pressable, SwitchState>) {
   const handle = usePrimitive(switchPrimitive, {
     checked,
@@ -46,7 +45,6 @@ function Switch({
     disabled,
     readOnly,
     required,
-    value,
     controller,
     debug,
   })

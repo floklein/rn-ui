@@ -12,7 +12,7 @@ import {
   Pressable,
   View,
 } from "react-native"
-import type { Interaction } from "./render-element"
+import { withState } from "./render-element"
 import {
   createParts,
   type PartProps,
@@ -199,13 +199,7 @@ const TabsTabIcon: TabsParts["TabIcon"] = parts.TabIcon
  * placed in it.
  * @experimental
  */
-function TabsIndicator({
-  style,
-  className,
-  children,
-  render,
-  ...props
-}: PartProps<typeof View, TabsIndicatorState>) {
+function TabsIndicator(props: PartProps<typeof View, TabsIndicatorState>) {
   const handle = useHandle(tabs)
   const layouts = React.useContext(LayoutsContext)
   const value = React.useSyncExternalStore(
@@ -217,28 +211,14 @@ function TabsIndicator({
     layouts?.version ?? unmeasured
   )
   const active = layouts?.activeTab(value)
-  const withActive =
-    <Result,>(
-      resolve: (state: TabsIndicatorState, interaction: Interaction) => Result
-    ) =>
-    (state: TabsIndicatorCoreState, interaction: Interaction) =>
-      resolve({ ...state, ...active }, interaction)
   return (
     <parts.Indicator
       {...props}
-      style={typeof style === "function" ? withActive(style) : style}
-      className={
-        typeof className === "function" ? withActive(className) : className
-      }
-      render={
-        typeof render === "function"
-          ? (props, state, interaction) =>
-              render(props, { ...state, ...active }, interaction)
-          : render
-      }
-    >
-      {typeof children === "function" ? withActive(children) : children}
-    </parts.Indicator>
+      {...withState<TabsIndicatorCoreState, Partial<TabsIndicatorState>>(
+        props,
+        () => ({ ...active })
+      )}
+    />
   )
 }
 

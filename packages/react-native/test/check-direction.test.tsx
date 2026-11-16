@@ -4,7 +4,13 @@ import { Platform, Text, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
@@ -86,6 +92,27 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  test("passes on a radio group", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <RadioGroup aria-label="Size" defaultValue="small">
+              <Radio value="small" aria-label="Small">
+                <RadioIndicator />
+              </Radio>
+              <Radio value="large" aria-label="Large">
+                <RadioIndicator />
+              </Radio>
+            </RadioGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
   test("passes on a rating, and on a read-only one", async () => {
     for (const readOnly of [false, true]) {
       await expect(
@@ -138,6 +165,27 @@ describe("checkDirection on the native host", () => {
                 <Text>Profile panel</Text>
               </TabsPanel>
             </Tabs>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a collapsible", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Collapsible defaultOpen>
+              <CollapsibleTrigger>
+                <Text>Order #4189</Text>
+              </CollapsibleTrigger>
+              <CollapsiblePanel>
+                <Text>Linen shirt</Text>
+              </CollapsiblePanel>
+            </Collapsible>
           )
           return screen.container
         },
