@@ -51,28 +51,38 @@ function useGroup(
 }
 
 // Always controlled, so a canceled change or a controlled value puts the text back.
+function typing(field: {
+  state: { value: string }
+  api: {
+    setValue: (value: string, options: { reason: "input-change" }) => boolean
+  }
+}) {
+  return {
+    value: field.state.value,
+    onChangeText: (text: string) =>
+      withSource("keyboard", () =>
+        field.api.setValue(text, { reason: "input-change" })
+      ),
+  }
+}
+
 function useTextField(
   handle: PrimitiveHandle<InputPrimitive> | PrimitiveHandle<TextareaPrimitive>,
   { disabled, readOnly, required, ...props }: TextFieldProps
 ) {
   const field = handle as PrimitiveHandle<InputPrimitive>
   useGroup(field, { disabled, readOnly })
-  const type = (text: string) =>
-    withSource("keyboard", () =>
-      field.api.setValue(text, { reason: "input-change" })
-    )
   return usePart(
     field,
     "root",
     { disabled, readOnly, required },
     mergeProps(props, {
-      value: field.state.value,
+      ...typing(field),
       editable: !disabled && !readOnly,
       "aria-disabled": disabled || undefined,
-      onChangeText: type,
     }),
     TextInput
   )
 }
 
-export { GroupContext, type TextFieldProps, useTextField }
+export { GroupContext, type TextFieldProps, typing, useTextField }

@@ -1,11 +1,12 @@
-// The one place core's attribute map becomes React Native props, in
-// `accessibility*` names only: React Native lets `role` override
-// `accessibilityRole`, and reads only some `aria-*` props.
+// The one place core's attribute map becomes React Native props, with
+// accessibility in `accessibility*` names only: React Native lets `role`
+// override `accessibilityRole`, and reads only some `aria-*` props.
 import type { Attrs } from "@ui-sdk/core"
 import type {
   AccessibilityRole,
   AccessibilityState,
   AccessibilityValue,
+  TextInputProps,
 } from "react-native"
 
 type OS = "ios" | "android"
@@ -27,6 +28,11 @@ type NativeProps = {
   disabled?: boolean
   pointerEvents?: "none"
   style?: { display?: "none"; transform?: [{ scaleX: -1 }] }
+  secureTextEntry?: boolean
+  autoComplete?: TextInputProps["autoComplete"]
+  autoCapitalize?: TextInputProps["autoCapitalize"]
+  autoCorrect?: boolean
+  spellCheck?: boolean
 }
 
 const roles: Record<string, AccessibilityRole> = {
@@ -153,6 +159,18 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
       props.pointerEvents = "none"
     } else if (name === "aria-modal" && given === "true" && os === "ios") {
       props.accessibilityViewIsModal = true
+    } else if (name === "type" && (given === "password" || given === "text")) {
+      props.secureTextEntry = given === "password"
+    } else if (name === "autocomplete") {
+      props.autoComplete = given as TextInputProps["autoComplete"]
+    } else if (name === "autocapitalize") {
+      props.autoCapitalize = (
+        given === "off" ? "none" : given
+      ) as TextInputProps["autoCapitalize"]
+    } else if (name === "autocorrect") {
+      props.autoCorrect = given !== "off"
+    } else if (name === "spellcheck") {
+      props.spellCheck = given === "true"
     } else if (name === "aria-live" && os === "android") {
       props.accessibilityLiveRegion =
         given === "off" ? "none" : (given as "polite")

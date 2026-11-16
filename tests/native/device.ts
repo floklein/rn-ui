@@ -14,6 +14,7 @@ type Node = {
   enabled: boolean
   text?: string
   value?: string
+  secure?: true
 }
 
 const platform: Platform =
@@ -72,6 +73,7 @@ const roles: Record<string, string> = {
   XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeTextField: "textbox",
+  XCUIElementTypeSecureTextField: "textbox",
   XCUIElementTypeTextView: "textbox",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
@@ -191,6 +193,13 @@ function parseTree(source: string) {
     }
     if (role === "textbox") {
       node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
+      const secure =
+        platform === "ios"
+          ? type === "XCUIElementTypeSecureTextField"
+          : attrs.password === "true"
+      if (secure) {
+        node.secure = true
+      }
     }
     // React Native's iOS value says "expanded", and nothing while collapsed.
     if (platform === "ios" && attrs.value?.split(", ").includes("expanded")) {

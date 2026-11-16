@@ -13,6 +13,11 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import {
+  PasswordInput,
+  PasswordInputControl,
+  PasswordInputToggle,
+} from "../src/password-input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Separator } from "../src/separator"
@@ -261,6 +266,27 @@ describe("checkPattern's textbox pattern on the native host", () => {
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
+  })
+
+  test("passes on a password input, enabled, read-only or disabled, as a textbox and its toggle as a button", async () => {
+    await render(
+      <View>
+        <PasswordInput defaultValue="hunter2">
+          <PasswordInputControl aria-label="Password" />
+          <PasswordInputToggle aria-label="Show password" />
+        </PasswordInput>
+        <PasswordInput readOnly>
+          <PasswordInputControl aria-label="Read-only" />
+          <PasswordInputToggle aria-label="Show read-only" />
+        </PasswordInput>
+        <PasswordInput disabled>
+          <PasswordInputControl aria-label="Disabled" />
+          <PasswordInputToggle aria-label="Show disabled" />
+        </PasswordInput>
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+    await expect(checkButton()).resolves.toBeUndefined()
   })
 
   test("fails with no text field", async () => {
