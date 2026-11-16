@@ -1,5 +1,6 @@
 // A part reads its slot's declarative fields and delivers `press`. It never
 // runs `bind`, `asleep`, `connect` or the `on` handlers, which need the DOM.
+import type { NativeBehavior } from "@ui-sdk/core/native"
 import type {
   OptionsOf,
   Part,
@@ -36,9 +37,15 @@ import {
   yieldToAuthor,
 } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { Platform, Pressable, View, type HostInstance } from "react-native"
+import {
+  I18nManager,
+  Platform,
+  Pressable,
+  View,
+  type HostInstance,
+} from "react-native"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
-import { pressSource, views } from "./native-host"
+import { pressSource, renders, views } from "./native-host"
 import {
   idle,
   mergeProps,
@@ -77,6 +84,8 @@ type NativeSlot<P extends Primitive> = Exclude<
   | (P extends FormInputOwner ? "input" : never)
 >
 
+const behaviors = new WeakMap<object, NativeBehavior>()
+
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
  * @experimental
@@ -96,6 +105,8 @@ type PrimitiveHandle<P extends Primitive> = {
  * Creates an instance of a primitive for this component, keeps its options
  * current on every render, and destroys it when the component leaves. Render
  * its root with `usePart`, which shares the instance with the parts inside.
+ * `behavior` is the primitive's behavior on the native host, from
+ * `@ui-sdk/core/native`, whose functions run while their parts are mounted.
  *
  * @example
  * function MuteButton({ onMutedChange, ...props }: PartProps<typeof Pressable, MuteButtonState> & { onMutedChange?: (muted: boolean) => void }) {
@@ -106,7 +117,8 @@ type PrimitiveHandle<P extends Primitive> = {
  */
 function usePrimitive<P extends Primitive>(
   primitive: P,
-  options: Native<OptionsOf<P>>
+  options: Native<OptionsOf<P>>,
+  behavior?: NativeBehavior<TypesOf<P>["api"]>
 ) {
   const id = `ui-sdk-${React.useId()}`
   // Without its controller until it commits, so StrictMode's second
@@ -117,6 +129,9 @@ function usePrimitive<P extends Primitive>(
         primitive({ ...options, controller: undefined, id }) as ReturnType<P>
     )
   )
+  if (behavior) {
+    behaviors.set(instance, behavior)
+  }
   React.useLayoutEffect(() => {
     keep(instance)
     return () => release(instance)
@@ -223,14 +238,17 @@ type ViewRef = (view: HostInstance | null) => () => void
 const viewRefs = new WeakMap<Part, ViewRef>()
 
 // Forgetting the view as it unmounts keeps a later focus request from asking.
-function viewRef(part: Part) {
+// The slot's native behavior runs while the view is mounted, as `bind` does.
+function viewRef(part: Part, behavior: NativeBehavior | undefined) {
   let ref = viewRefs.get(part)
   if (!ref) {
     ref = (view) => {
       if (view) {
         views.set(part, view)
       }
+      const cleanup = view ? behavior?.[part.slot]?.(part) : undefined
       return () => {
+        cleanup?.()
         if (views.get(part) === view) {
           views.delete(part)
         }
@@ -257,10 +275,13 @@ function nativeProps(
       ),
       ...(exiting && { inert: "" }),
     },
-    Platform.OS === "android" ? "android" : "ios"
+    Platform.OS === "android" ? "android" : "ios",
+    I18nManager.isRTL
   )
   return mergeProps(translated, rest, mergeAccessibility(translated, rest))
 }
+
+let rendered = 0
 
 type OnExit = (done: () => void) => void
 
@@ -376,8 +397,18 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     : inside
 
   const part = owner.instance.part(slot, slotProps, true) as Part
-  const [, rerender] = React.useReducer((count: number) => count + 1, 0)
+  const [changes, rerender] = React.useReducer((count: number) => count + 1, 0)
   const [interaction, setInteraction] = React.useState(idle)
+  // A parent renders its children in tree order, so only a render it drives
+  // restamps the part: one from the part's own state would move it last.
+  const last = React.useRef<[number, Interaction]>(null)
+  if (
+    !last.current ||
+    (last.current[0] === changes && last.current[1] === interaction)
+  ) {
+    renders.set(part, ++rendered)
+  }
+  last.current = [changes, interaction]
   React.useLayoutEffect(() => {
     commit(part, slotProps)
   })
@@ -417,7 +448,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       mergeProps(
         handlers,
         nativeProps(part, slotProps, user, presence.exiting),
-        { ref: viewRef(part) },
+        { ref: viewRef(part, behaviors.get(owner.instance)) },
         { ref }
       ),
       render,
@@ -604,7 +635,9 @@ type Parts<
  * `react-native` host, named in Pascal case, like `TabIcon` for `tab-icon`.
  * Without a `root` host, `Root` renders only its children. Every part takes
  * `render`, and styles, class names and children that may be functions of its
- * state and interaction.
+ * state and interaction. `behavior` is the primitive's behavior on the native
+ * host, from `@ui-sdk/core/native`, whose functions run while their parts
+ * are mounted.
  *
  * @example
  * const { Root: Playlist, Track: PlaylistTrack } = createParts(playlist, { root: View, track: Pressable })
@@ -615,7 +648,8 @@ function createParts<
   Hosts extends { [S in NativeSlot<P>]?: Host },
 >(
   primitive: P,
-  hosts: Hosts & Record<Exclude<keyof Hosts, NativeSlot<P>>, never>
+  hosts: Hosts & Record<Exclude<keyof Hosts, NativeSlot<P>>, never>,
+  behavior?: NativeBehavior<TypesOf<P>["api"]>
 ) {
   const schema = schemaOf(primitive)
   const { context, provides, keyed } = scopeOf(primitive)
@@ -638,7 +672,8 @@ function createParts<
     const [options, rest] = split(props, schema.options)
     const handle = usePrimitive(
       primitive,
-      options as Native<OptionsOf<P>>
+      options as Native<OptionsOf<P>>,
+      behavior
     ) as unknown as PrimitiveHandle<Primitive>
     const { root } = hosts as { root?: Host }
     if (root) {

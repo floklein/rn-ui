@@ -5,7 +5,9 @@
  *
  * @module
  */
+export { toggleNative } from "./components/toggle/toggle-native"
 export {
+  type NativeBehavior,
   type NativeHost,
   nativeHost,
   setNativeHost,

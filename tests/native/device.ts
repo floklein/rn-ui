@@ -60,8 +60,14 @@ const roles: Record<string, string> = {
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
   "android.widget.Button": "button",
+  "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
   "android.view.ViewGroup": "group",
+}
+
+const pressedValues: Record<string, boolean> = {
+  checked: true,
+  unchecked: false,
 }
 
 const byId = (id: string) =>
@@ -119,7 +125,7 @@ function parseTree(source: string) {
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
       enabled: attrs.enabled === "true",
     }
-    if (role === "switch") {
+    if (role === "switch" || role === "togglebutton") {
       node.checked =
         platform === "ios" ? attrs.value === "1" : attrs.checked === "true"
     }
@@ -128,6 +134,12 @@ function parseTree(source: string) {
       if (node.checked === "mixed" && platform === "android") {
         node.label = node.label.slice(0, -androidMixed.length)
       }
+    }
+    // React Native gives iOS no toggle trait: a toggle button is a button
+    // whose value starts with "checked" or "unchecked" (English simulators).
+    const pressed = attrs.value?.split(", ")[0] ?? ""
+    if (platform === "ios" && role === "button" && pressed in pressedValues) {
+      node.checked = pressedValues[pressed]
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text

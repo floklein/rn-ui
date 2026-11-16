@@ -50,7 +50,8 @@ export {
   trackInput,
   trackModality,
 } from "./modality"
-export { nativeHost, type NativeHost } from "./native-host"
+export { nativeElement } from "./native-element"
+export { type NativeBehavior, nativeHost, type NativeHost } from "./native-host"
 export { createOrder, documentOrder, inDocumentOrder, isAfter } from "./order"
 export {
   aliasReferences,

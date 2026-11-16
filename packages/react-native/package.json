@@ -21,7 +21,8 @@
     "./checkbox": "./src/checkbox.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./toggle": "./src/toggle.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -52,6 +53,10 @@
       "./testing": {
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
+      },
+      "./toggle": {
+        "types": "./dist/toggle.d.ts",
+        "default": "./dist/toggle.js"
       },
       "./package.json": "./package.json"
     }

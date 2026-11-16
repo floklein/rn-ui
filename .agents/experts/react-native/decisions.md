@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `5b29dbdc` (2026-11-16, ticket 60: Checkbox and presence)
+Last reviewed: `74d3ea70` (2026-11-16, ticket 78: Toggle, native behavior files, member order and the iOS toggle reading)
 
 ## Settled
 
@@ -26,6 +26,8 @@ Last reviewed: `5b29dbdc` (2026-11-16, ticket 60: Checkbox and presence)
 - **Budgets** (#33): a byte budget per native entry in `size-budget.json`, measured by `scripts/size.mjs` with `react` and `react-native` external and core included. No performance budget.
 - **Upstream** (#35): a registry maps twins, native behavior files, reroutes and additive edits to upstream files and commits; `pending` is one list, read by the parity, size and example checks.
 - **Keyboard focus findings** (#120). iOS: React Native 0.88.1 never reports Full Keyboard Access focus to JS. `RCTViewComponentView` bridges UIKit focus updates (`didUpdateFocusInContext`) to `onFocus` only under `TARGET_OS_TV`, and fires `onFocus` only behind `enableImperativeFocus`, off by default. Without native code `interaction.focused` stays off on iOS, as the docs say. Android: a disabled part is no Tab stop. The translation's `accessibilityState.disabled` makes React Native call `setEnabled(false)`, and Android's focus search skips disabled views (checked on an emulator). `focusable={false}` wouldn't help: `accessible` keeps the view focusable.
+- **Native behavior files and member order** (#78): what a slot's `bind` orchestrates is a `NativeBehavior` in core, run from the part's view ref while it's mounted; a group member joins through `nativeElement(part)`, and `order.native.ts` sorts members by `NativeHost.compare`. The adapter compares views with `compareDocumentPosition`; where views can't compare (a test renderer), it falls back to the order of renders a parent drove.
+- **A mirrored icon's flip is in the translation** (#78): `data-mirror` becomes `transform: [{ scaleX: -1 }]` when `I18nManager.isRTL`, merged before the user's style, so a user's own `transform` wins, as any class wins over the web's lowest-layer rule.
 - **Publishing** (#11): packed as `@rn-ui-sdk/*` tarballs with the fork's version; core gets a `dist/native` build with each twin in its module's place.
 
 ## Known and open (don't report again, check whether fixed)
@@ -44,3 +46,7 @@ Last reviewed: `5b29dbdc` (2026-11-16, ticket 60: Checkbox and presence)
 - **Switch's basic example names the switch twice on iOS**: its visible `Text` sits outside the `Pressable` and is its own accessible element. Putting the text inside `Switch` would make one element and widen the press target.
 - **The install commands name `@ui-sdk/*`**, which the fork publishes as `@rn-ui-sdk/*`; the docs follow upstream's names until the owner decides.
 - `scripts/check-packages.mjs` builds the adapter with `skipLibCheck: true`, since React Native's globals clash with `lib.dom` (ticket 17 revisits it).
+- **A toggle group's `aria-label` probably reaches no screen reader** (#78): it becomes `accessibilityLabel` on a container with no role, and Fabric flattens a `View` whose only props are a label and a role (`ViewShadowNode.cpp`'s `initialize()` doesn't count them), unless a `testID` keeps it. Not checked on a device, and it reaches every group container.
+- **An inline `ref` callback on a group member rejoins the group on every render** (#78): `mergeRefs` is keyed by ref identity, so a new ref detaches and reattaches the view, running the behavior's cleanup and join again. Symmetric, untested.
+- **Android's Tab order isn't the screen's order** (manual pass of #78, also on the Button and Switch fixtures): on an Android 15 emulator, Tab went Bookmark, Add Strikethrough, Italic, Center, Underline, End, Back, Bold, Start. Suspected: Fabric flattens the layout-only containers, so every stop is a sibling, and Android's `FocusFinder` sorts them as one row by left then right edge. Candidate fix: `collapsable={false}` on group containers, to discuss and prove on the emulator.
+- **In a test renderer, a member inserted between memoized siblings sorts last** (#78): views can't compare there, and only the inserted member renders. Devices order it by the view tree (the toggle fixture's "add-strike" spec).
