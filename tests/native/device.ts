@@ -55,10 +55,12 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeToggle: "togglebutton",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
   "android.widget.Button": "button",
+  "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
   "android.view.ViewGroup": "group",
 }
@@ -100,7 +102,7 @@ function parseTree(source: string) {
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
       enabled: attrs.enabled === "true",
     }
-    if (role === "switch") {
+    if (role === "switch" || role === "togglebutton") {
       node.checked =
         platform === "ios" ? attrs.value === "1" : attrs.checked === "true"
     }
