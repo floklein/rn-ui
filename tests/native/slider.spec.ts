@@ -51,7 +51,7 @@ test("a press on the track moves the nearest thumb there", async () => {
   assert.match(text, /saved \d+ by track-press$/)
 })
 
-test("inside a scroll view along the same axis, a drag moves the slider and the view stays", async () => {
+test("inside a scroll view along the same axis that stops scrolling while dragging, a drag moves the slider and the view stays", async () => {
   const thumb = center(await device.rectNamed("Balance"))
   const control = await device.rect("balance-control")
   await device.drag(thumb, { x: thumb.x - control.width * 0.3, y: thumb.y })
@@ -78,12 +78,20 @@ test("beside the slider, the same swipe scrolls the view", async () => {
   })
 })
 
-test("a vertical slider in a vertical scroll view grows upward and the view stays", async () => {
+test("a vertical slider in a vertical scroll view that stops scrolling while dragging grows upward and the view stays", async () => {
   const thumb = center(await device.rectNamed("Level"))
   const control = await device.rect("level-control")
   await device.drag(thumb, { x: thumb.x, y: thumb.y - control.height * 0.3 })
   await expectNear("scroll-readout", /level (\d+)/, 80)
-  assert.match(await readout("scroll-readout"), /lifted 0$/)
+  assert.match(await readout("scroll-readout"), /lifted 0;/)
+})
+
+test("a horizontal slider in a vertical scroll view moves and the view stays", async () => {
+  const thumb = center(await device.rectNamed("Tilt"))
+  const control = await device.rect("tilt-control")
+  await device.drag(thumb, { x: thumb.x + control.width * 0.3, y: thumb.y })
+  await expectNear("scroll-readout", /tilt (\d+)/, 80)
+  assert.match(await readout("scroll-readout"), /lifted 0;/)
 })
 
 test("values format in the device's language", async () => {

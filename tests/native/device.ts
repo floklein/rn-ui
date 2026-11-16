@@ -199,6 +199,9 @@ function parseTree(source: string) {
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
     }
+    if (role === "slider" && platform === "ios") {
+      node.value = attrs.value ?? ""
+    }
     if (role === "textbox") {
       node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
       const secure =

@@ -97,7 +97,8 @@ setNativeHost({
 })
 
 // Refusing termination and blocking native responders are meant to keep a
-// scroll view from taking the touch; iOS's scroll view pans anyway (#71).
+// scroll view from taking the touch; iOS pans a same-axis one anyway, so
+// the app turns its scrollEnabled off (#71).
 function responder(part: Part) {
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,

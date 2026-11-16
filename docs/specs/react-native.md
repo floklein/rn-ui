@@ -397,6 +397,7 @@ Every difference the resolutions record, by subject.
 - Trigger Menu anchors to the field's box, not the caret ([How text entry components work on TextInput][text-entry]).
 - A multiline field has no modifier-plus-Enter submit, and Number Input has no arrow-key stepping ([How text entry components work on TextInput][text-entry]).
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
+- A drag inside a plain `ScrollView` that scrolls along the same axis needs the app to pass `scrollEnabled={!dragging}`, with `dragging` set from the drag part's responder grant, release and termination. On iOS the scroll view otherwise pans along with the drag, since Fabric only stops it for a responder above it, not inside it. A perpendicular scroll view needs nothing, and the library's Scroll Area stops its own scrolling ([council batch 3][council-3]).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
 
@@ -443,7 +444,7 @@ Nothing in the resolutions was run on a device, apart from the playground and th
 
 **Drags** ([How drags and canvas components work on native][drags])
 
-- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android.
+- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android. Resolved for Slider on iOS: the app passes `scrollEnabled={!dragging}` and the view stays while the slider moves, and a perpendicular scroll view needs nothing ([council batch 3][council-3]). Android is checked in #124.
 - Pinch computed from the responder's touches.
 
 **Locale** ([How direction and locale are read on native][direction])
@@ -516,3 +517,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [gate]: https://github.com/floklein/rn-ui/issues/119
 [aria-disabled]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6904500686
 [council-1]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6909822604
+[council-3]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6922314446

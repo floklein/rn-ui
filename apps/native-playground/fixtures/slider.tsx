@@ -17,11 +17,14 @@ function Fixture() {
   const [scrolled, setScrolled] = useState(0)
   const [level, setLevel] = useState(50)
   const [lifted, setLifted] = useState(0)
+  const [tilt, setTilt] = useState(50)
+  const [sliding, setSliding] = useState(false)
+  const [raising, setRaising] = useState(false)
   return (
     <View style={styles.fixture}>
       <Text testID="readout">{`Volume ${volume}, ${saved}`}</Text>
       <Text testID="scroll-readout">
-        {`Balance ${balance}, scrolled ${scrolled}; level ${level}, lifted ${lifted}`}
+        {`Balance ${balance}, scrolled ${scrolled}; level ${level}, lifted ${lifted}; tilt ${tilt}`}
       </Text>
       <Text testID="locale">{`Locale ${pageLocale()}`}</Text>
       <Slider
@@ -41,6 +44,7 @@ function Fixture() {
       </Slider>
       <ScrollView
         horizontal
+        scrollEnabled={!sliding}
         testID="sideways"
         onScroll={(event) =>
           setScrolled(Math.round(event.nativeEvent.contentOffset.x))
@@ -54,7 +58,11 @@ function Fixture() {
             onValueChange={setBalance}
             style={styles.slider}
           >
-            <SliderControl testID="balance-control" style={styles.control}>
+            <SliderControl
+              testID="balance-control"
+              {...dragging(setSliding)}
+              style={styles.control}
+            >
               <SliderTrack style={styles.track}>
                 <SliderIndicator style={styles.indicator} />
                 <SliderThumb aria-label="Balance" style={styles.thumb} />
@@ -64,6 +72,7 @@ function Fixture() {
         </View>
       </ScrollView>
       <ScrollView
+        scrollEnabled={!raising}
         testID="upright"
         onScroll={(event) =>
           setLifted(Math.round(event.nativeEvent.contentOffset.y))
@@ -78,10 +87,22 @@ function Fixture() {
             onValueChange={setLevel}
             style={styles.vertical}
           >
-            <SliderControl testID="level-control" style={styles.column}>
+            <SliderControl
+              testID="level-control"
+              {...dragging(setRaising)}
+              style={styles.column}
+            >
               <SliderTrack style={styles.rail}>
                 <SliderIndicator style={styles.indicator} />
                 <SliderThumb aria-label="Level" style={styles.thumb} />
+              </SliderTrack>
+            </SliderControl>
+          </Slider>
+          <Slider defaultValue={50} onValueChange={setTilt}>
+            <SliderControl testID="tilt-control" style={styles.short}>
+              <SliderTrack style={styles.track}>
+                <SliderIndicator style={styles.indicator} />
+                <SliderThumb aria-label="Tilt" style={styles.thumb} />
               </SliderTrack>
             </SliderControl>
           </Slider>
@@ -98,6 +119,12 @@ function Fixture() {
     </View>
   )
 }
+
+const dragging = (set: (dragging: boolean) => void) => ({
+  onResponderGrant: () => set(true),
+  onResponderRelease: () => set(false),
+  onResponderTerminate: () => set(false),
+})
 
 const styles = StyleSheet.create({
   fixture: { alignSelf: "stretch", paddingHorizontal: 16, gap: 8 },
@@ -117,7 +144,15 @@ const styles = StyleSheet.create({
   sideways: { height: 60, flexGrow: 0, backgroundColor: "#f4f4f5" },
   wide: { width: 800, paddingHorizontal: 24, justifyContent: "center" },
   upright: { height: 180, flexGrow: 0, backgroundColor: "#f4f4f5" },
-  tall: { height: 600, paddingVertical: 20, paddingHorizontal: 24 },
+  tall: {
+    height: 600,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+  },
+  short: { width: 200, height: 44, justifyContent: "center" },
   vertical: { height: 140 },
   column: { width: 44, height: "100%", alignItems: "center" },
   rail: { width: 4, height: "100%", backgroundColor: "#d4d4d8" },
