@@ -3,17 +3,21 @@ import { createSwitchController } from "@ui-sdk/core/switch"
 import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
-import { Platform, Pressable, Text, View } from "react-native"
+import { Platform, Pressable, Text, TextInput, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { Input, InputClear, InputGroup } from "../src/input"
 import { Switch, SwitchThumb } from "../src/switch"
+import { Textarea } from "../src/textarea"
 import { checkPattern } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
 const checkButton = () => checkPattern(screen.container, "button", { os, act })
+const checkTextbox = () =>
+  checkPattern(screen.container, "textbox", { os, act })
 const checkCheckbox = () =>
   checkPattern(screen.container, "checkbox", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
@@ -223,6 +227,57 @@ describe("checkPattern's button pattern on the native host", () => {
     )
     await expect(checkButton()).rejects.toThrow(
       "has no element with the button role"
+    )
+  })
+})
+
+describe("checkPattern's textbox pattern on the native host", () => {
+  test("passes on an input in a group with a clear button, a disabled input and a textarea", async () => {
+    await render(
+      <View>
+        <InputGroup>
+          <Text>https://</Text>
+          <Input aria-label="Website" defaultValue="example.com" />
+          <InputClear aria-label="Clear website" />
+        </InputGroup>
+        <Input aria-label="Account" disabled />
+        <Textarea aria-label="Notes" />
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+  })
+
+  test("fails with no text field", async () => {
+    await render(<Text>Website</Text>)
+    await expect(checkTextbox()).rejects.toThrow("has no text field")
+  })
+
+  test("fails on a text field with no name", async () => {
+    await render(<Input />)
+    await expect(checkTextbox()).rejects.toThrow("the TextInput has no name")
+  })
+
+  test("fails on a text field inside an accessible element", async () => {
+    await render(
+      <View accessible accessibilityLabel="Website">
+        <Input aria-label="Website" />
+      </View>
+    )
+    await expect(checkTextbox()).rejects.toThrow(
+      'the TextInput "Website" isn\'t an accessible element of its own'
+    )
+  })
+
+  test("fails on a disabled text field that can still be edited", async () => {
+    await render(
+      <Input
+        aria-label="Account"
+        disabled
+        render={(props) => <TextInput {...props} editable />}
+      />
+    )
+    await expect(checkTextbox()).rejects.toThrow(
+      "is disabled for the screen reader but can still be edited"
     )
   })
 })

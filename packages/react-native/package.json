@@ -20,9 +20,11 @@
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
+    "./input": "./src/input.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
     "./testing": "./src/testing.ts",
+    "./textarea": "./src/textarea.tsx",
     "./toggle": "./src/toggle.tsx"
   },
   "sideEffects": [
@@ -47,6 +49,10 @@
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
       },
+      "./input": {
+        "types": "./dist/input.d.ts",
+        "default": "./dist/input.js"
+      },
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
@@ -58,6 +64,10 @@
       "./testing": {
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
+      },
+      "./textarea": {
+        "types": "./dist/textarea.d.ts",
+        "default": "./dist/textarea.js"
       },
       "./toggle": {
         "types": "./dist/toggle.d.ts",

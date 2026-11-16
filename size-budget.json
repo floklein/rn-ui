@@ -425,8 +425,10 @@
   "@ui-sdk/react-native/button": 8767,
   "@ui-sdk/react-native/button (lazy)": 182,
   "@ui-sdk/react-native/checkbox": 14959,
+  "@ui-sdk/react-native/input": 10783,
   "@ui-sdk/react-native/primitive": 5010,
   "@ui-sdk/react-native/switch": 11263,
-  "@ui-sdk/react-native/testing": 3351,
+  "@ui-sdk/react-native/testing": 3554,
+  "@ui-sdk/react-native/textarea": 10425,
   "@ui-sdk/react-native/toggle": 14456
 }

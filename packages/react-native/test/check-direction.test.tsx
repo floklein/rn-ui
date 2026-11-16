@@ -4,6 +4,7 @@ import { Platform, Text, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
+import { Input, InputClear, InputGroup } from "../src/input"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkDirection } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
@@ -108,6 +109,23 @@ describe("checkDirection on the native host", () => {
             <Button>
               <Text>Save</Text>
             </Button>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an input in a group with a clear button", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <InputGroup>
+              <Input aria-label="Search" defaultValue="Lisbon" />
+              <InputClear aria-label="Clear search" />
+            </InputGroup>
           )
           return screen.container
         },

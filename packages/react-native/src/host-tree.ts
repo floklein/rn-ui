@@ -64,10 +64,12 @@ const hiddenOn = (node: HostNode, os: OS) =>
 
 const otherOS = (os: OS) => (os === "ios" ? "android" : "ios")
 
+// Text and text fields are accessible elements unless they say otherwise.
 // TalkBack reads a named image by its description, though it's no Tab stop.
 const isAccessible = (node: HostNode, os: OS) =>
   node.props.accessible === true ||
-  (node.type === "Text" && node.props.accessible !== false) ||
+  ((node.type === "Text" || node.type === "TextInput") &&
+    node.props.accessible !== false) ||
   (os === "android" &&
     roleOf(node) === "image" &&
     !!node.props.accessibilityLabel)
@@ -168,6 +170,7 @@ async function performWatched(
       requests.push(part)
       host?.focus(part)
     },
+    field: (part) => host?.field(part),
     announce: (text, priority) => host?.announce(text, priority),
     compare: (a, b) => host?.compare(a, b) ?? 0,
   })

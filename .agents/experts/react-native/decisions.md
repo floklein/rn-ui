@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `15ec149a` (2026-11-16, ticket 123: Avatar ignores the blank placeholder Android loads for an image with no source, no findings; ticket 78: Toggle, native behavior files, member order and the iOS toggle reading; ticket 84: Avatar at `d5efadab`, with its findings fixed; ticket 60's review at `5b29dbdc`; ticket 122: Checkbox's group on the order twin at `67d2cdfc`)
+Last reviewed: `15ec149a` (2026-11-16, ticket 123: Avatar ignores the blank placeholder Android loads for an image with no source, no findings; ticket 78: Toggle, native behavior files, member order and the iOS toggle reading; ticket 84: Avatar at `d5efadab`, with its findings fixed; ticket 60's review at `5b29dbdc`; ticket 122: Checkbox's group on the order twin at `67d2cdfc`; ticket 62: Input, Textarea and the group-field twin at `c3c92204`)
 
 ## Settled
 
@@ -32,6 +32,10 @@ Last reviewed: `15ec149a` (2026-11-16, ticket 123: Avatar ignores the blank plac
 
 ## Known and open (don't report again, check whether fixed)
 
+- **A read-only text field is disabled for screen readers and the keyboard** (ticket 62): `readOnly` sets `editable={false}`, which React Native turns into `isEnabled = false` on Android and `enabled = NO` on a single-line iOS field, so it's announced as disabled and leaves Tab's order. A multiline iOS field stays enabled. React Native has no read-only field that stays enabled; rejecting every edit instead brings up the keyboard. Documented on the Input and Textarea pages.
+- **A change canceled mid-composition ends the composition** (ticket 62, not checked on a device): React Native reports no composition events, so a canceled `onValueChange` writes the old text back at once and kills an IME's composition. The web waits for it to end. The Input page warns against cancel for anything but directly typed characters.
+- **Two fields in one InputGroup**: native reaches the one mounted last, the web the first in the DOM.
+- **A controller's `focus()` on a disabled text field still moves the screen reader** to it; on the web it does nothing.
 - **An inline callback `ref` reruns a part's native behavior on every render** (#122): `mergeRefs` in `render-element.ts` returns a new function when a ref's identity changes, so `<Checkbox ref={(view) => …}>` leaves and rejoins its group each render. Correct, a little wasted work; the fix belongs in the adapter's ref merging, for every behavior.
 - **A pending Button loses Android keyboard focus**: its `aria-disabled` becomes `accessibilityState.disabled`, which disables the view, so Space on a button whose action is pending moves focus to the first focusable view (seen on an emulator, ticket 58). The web keeps focus on it. Same question as the `aria-disabled` item below; `focusableWhenDisabled` does nothing for Android's Tab either.
 - **Busy and mixed on Android only with a label**: Android writes both into the view's description and rewrites it only from a state that names busy (`BaseViewManager.setViewState`). So on Android the translation leaves `busy` out for a part with no `aria-label`, and sends `checked: false` for its mixed, which then reads as unchecked (tickets 58 and 60). A labelled part with `aria-busy` or a checked state always names `busy`, `false` when it isn't busy, so the description follows each change; without it a checkbox kept "…, mixed" after it was checked (seen on an emulator, ticket 60). Name a mixed checkbox with `aria-label`.

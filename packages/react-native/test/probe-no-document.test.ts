@@ -14,7 +14,7 @@ const probe = (args: string[] = []) =>
   )
 
 describe("the no-document probe", () => {
-  test("lists the six press throws, each against its component, and none for switch", () => {
+  test("lists the press throws of core as native resolves it, each against its component, and none for switch or input", () => {
     const { status, stdout } = probe()
     const throws = stdout
       .split("\n")
@@ -24,11 +24,11 @@ describe("the no-document probe", () => {
       "field (pending): field label press",
       "combobox (pending): combobox label press",
       "autocomplete (pending): autocomplete label press",
-      "input (pending): inputGroup group press",
       "password-input (pending): passwordInput root press",
       "tree (pending): tree item press",
     ])
     expect(stdout).not.toMatch(/^switch/m)
+    expect(stdout).not.toMatch(/^input/m)
     expect(status).toBe(0)
   })
 
