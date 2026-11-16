@@ -8,6 +8,7 @@ import {
   performWatched,
   readTree,
   roleOf,
+  shownNodes,
   stateOf,
 } from "./host-tree"
 
@@ -16,7 +17,13 @@ import {
  * or by its role where the Practices have none, like `"img"`.
  * @experimental
  */
-type NativePattern = "button" | "checkbox" | "img" | "switch" | "textbox"
+type NativePattern =
+  | "button"
+  | "checkbox"
+  | "img"
+  | "switch"
+  | "tabs"
+  | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -184,6 +191,70 @@ async function switchPattern(context: Context) {
   }
 }
 
+// Each tab is its own accessible element, reached by swiping, with no roving
+// tab stop, so every tab on screen must be one.
+async function tabsPattern(context: Context) {
+  const shown = shownNodes(context.root)
+  if (!shown.some((node) => roleOf(node) === "tablist")) {
+    context.problem(
+      context.root,
+      "has no element with the tablist role, so it isn't tabs (APG tabs)."
+    )
+    return
+  }
+  const elements = context.elements()
+  for (const tab of shown.filter((node) => roleOf(node) === "tab")) {
+    if (!elements.includes(tab)) {
+      context.problem(
+        tab,
+        "can't be reached; each tab is its own accessible element (APG tabs)."
+      )
+    }
+  }
+  const tabs = context.withRole("tab")
+  for (const tab of tabs) {
+    requireName(context, tab, "tab")
+    if (typeof stateOf(tab).selected !== "boolean") {
+      context.problem(
+        tab,
+        "has no selected state; the active tab is selected, true, and the others false (APG tabs)."
+      )
+    }
+  }
+  const selected = tabs.filter((tab) => stateOf(tab).selected === true)
+  if (tabs.length && selected.length !== 1) {
+    context.problem(
+      context.root,
+      selected.length
+        ? `has ${selected.length} selected tabs; one tab is active (APG tabs).`
+        : "has no selected tab; one tab is active (APG tabs)."
+    )
+  }
+  for (const index of tabs.keys()) {
+    const tab = context.withRole("tab")[index]
+    if (isDisabled(tab) || stateOf(tab).selected === true) {
+      continue
+    }
+    await performWatched(tab, "activate", context.act)
+    const after = context.withRole("tab")
+    if (stateOf(after[index]).selected !== true) {
+      context.problem(
+        after[index],
+        "isn't selected after the activate action; activating a tab selects it (APG tabs)."
+      )
+    } else if (
+      after.some(
+        (other, at) => at !== index && stateOf(other).selected === true
+      )
+    ) {
+      context.problem(
+        after[index],
+        "leaves another tab selected after the activate action; one tab is active (APG tabs)."
+      )
+    }
+  }
+}
+
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textFieldsIn(node: HostNode): HostNode[] {
   const inside = (node.children ?? []).flatMap((child) =>
@@ -222,6 +293,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   checkbox: checkboxPattern,
   img: imgPattern,
   switch: switchPattern,
+  tabs: tabsPattern,
   textbox: textboxPattern,
 }
 

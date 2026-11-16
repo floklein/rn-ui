@@ -5,6 +5,7 @@ import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
 import { switchPrimitive } from "@ui-sdk/core/switch"
+import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
 import { checkCreation } from "../src/testing"
 
@@ -43,6 +44,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(toggle, { disabled: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { multiple: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { disabled: true })).not.toThrow()
+  })
+
+  test("passes on tabs, controlled or not", () => {
+    expect(() => checkCreation(tabs, {})).not.toThrow()
+    expect(() =>
+      checkCreation(tabs, { value: "a", orientation: "vertical" })
+    ).not.toThrow()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {

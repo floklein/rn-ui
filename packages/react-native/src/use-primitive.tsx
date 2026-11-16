@@ -292,7 +292,8 @@ function nativeProps(
         { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
         (name) => aria[name] !== undefined
       ),
-      ...(exiting && { inert: "" }),
+      // A part that animates out stays on screen, where its slot already hides it.
+      ...(exiting && { inert: "", hidden: undefined }),
     },
     Platform.OS === "android" ? "android" : "ios",
     I18nManager.isRTL

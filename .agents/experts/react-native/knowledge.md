@@ -12,7 +12,7 @@ Last checked: 2026-11-16, against `packages/react-native` and `node_modules/reac
 - `aria-modal` does nothing on a `View` in 0.88: only `Pressable` maps it. Use `accessibilityViewIsModal`. iOS only; Android isolates with a `Modal` or `importantForAccessibility="no-hide-descendants"` on siblings.
 - The `Role` type lacks `listbox`, `menuitemcheckbox`, `menuitemradio`, `gridcell`, `textbox` and `search`; an unknown string logs an error and becomes no role.
 - iOS turns a role into traits. Only `button`, `link`, `image`, `header`, `search`, `adjustable`, `switch`, `tabbar`, `summary`, `progressbar`, `text`, `keyboardkey`, `imagebutton` and `togglebutton` give one. `togglebutton` gives the Button trait, like `button`, and its checked state is spoken as checked or unchecked from the value. Checkbox and radio are spoken as words React Native writes into the value. `expanded: false` says nothing in 0.88. A range value is read as `now / (max - min)`, so pass `text` when `min` isn't 0.
-- Android turns a role into a class name TalkBack knows (button, check box, radio button, switch, seek bar, ...) or a role description. `dialog`, `option`, `tabpanel`, `group`, `tooltip`, `tree` and `listitem` map to nothing. `expanded` adds the expand or collapse action, which is how TalkBack knows the state.
+- Android turns a role into a class name TalkBack knows (button, check box, radio button, switch, seek bar, ...) or a role description, like "Tab" and "Tab List" for `tab` and `tablist` (`ReactAccessibilityDelegate.kt`). `dialog`, `option`, `tabpanel`, `group`, `tooltip`, `tree` and `listitem` map to nothing. `expanded` adds the expand or collapse action, which is how TalkBack knows the state.
 - `accessibilityActions` with `onAccessibilityAction` is the only way to do anything but activate: `increment`/`decrement` (Adjustable on iOS, scroll actions on Android), `expand`/`collapse` (Android only), `escape` (iOS only, the two-finger scrub), `magicTap` (iOS only), `longpress` (Android only), and custom actions with a `label`.
 - No relationships: no `aria-controls`, `describedby`, `activedescendant`, `owns`, `haspopup`, `posinset`, `setsize`. `aria-labelledby` is Android only, one id.
 - Live regions are Android only. iOS has only `AccessibilityInfo.announceForAccessibility`.
@@ -24,13 +24,14 @@ Last checked: 2026-11-16, against `packages/react-native` and `node_modules/reac
 - Accessibility focus can be moved with `AccessibilityInfo.sendAccessibilityEvent(ref, 'focus')` but never observed: nothing tells JavaScript where the screen reader is.
 - A `View` receives no key events in a stable build on either platform; `onKeyDown`, `onKeyUp` and `ref.focus()` on a `View` sit behind native feature flags that are off.
 - Android: hardware-keyboard focus traversal (Tab, arrows) over focusable views, `onFocus`/`onBlur` on `Pressable`, Enter or Space clicks the focused view. `tabIndex={-1}` sets `focusable={false}`, which takes a view out of traversal only when it isn't `accessible`: `accessible` sets `isFocusable` (`ReactViewManager.setAccessible`). A disabled `accessibilityState` calls `setEnabled(false)`, and Android's focus search skips a disabled view.
-- iOS: Full Keyboard Access traverses accessible elements with Tab and activates with Space; `Pressable` gets no focus events from it.
+- iOS: Full Keyboard Access traverses accessible elements with Tab and activates with Space; `Pressable` gets no focus events from it. `tab` is one of the roles `RCTViewComponentView` counts as interactive, so a tab is a stop although it gets no trait.
 - `Pressable` reports `pressed` to a style function, and hover through `onHoverIn`/`onHoverOut` where a pointer exists.
 
 ### Direction
 
 - `Image` makes itself `accessible` for any `alt` (`Image.ios.js`, `Image.android.js`), and on iOS `aria-hidden` on an `Image` needs `accessible={false}`, since `accessibilityElementsHidden` isn't enough. On Android `Image`'s `accessible` is the view's `isFocusable`, a Tab stop. Jest's `Image` mock skips all of it: unmock `react-native/Libraries/Image/Image` to test it.
 - `I18nManager.isRTL` is app wide and fixed at startup; changing it needs a reload. Flexbox `start`/`end` and `row` follow it.
+- With `doLeftAndRightSwapInRTL`, on by default on both OSes, the `left` and `right` styles (position, margin, padding, border) mean start and end when the app runs right to left, while `onLayout` reports a physical `x` (`YogaLayoutableShadowNode.cpp`).
 
 ### React on native
 
