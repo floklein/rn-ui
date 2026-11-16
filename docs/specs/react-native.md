@@ -321,7 +321,7 @@ Small rules every implementation ticket shares, so that no ticket decides them a
 5. **Sources.** A change reports `touch` for a press and for Android back, and `virtual` for the iOS escape gesture, for an accessibility action, and for a press while a screen reader is running.
 6. **The exit timeout** is two seconds, fixed, with no option.
 7. **`presentation="sheet"` without the sheet entry:** the component uses its own form, and development warns.
-8. **Context across a `Modal`.** A Dialog's Backdrop and Content share one `Modal` by being moved into an outlet the root renders, so React context from a provider placed between the root and the content doesn't reach the content. A provider goes above the root or inside the content. A non-modal popup renders in the topmost host (`OverlayHost`, or an open `Modal`'s), so a provider it reads goes above that host. A modal popup renders its `Modal` in place, unless a `Modal` it isn't inside is up, when it renders in that `Modal`'s host and reads context from there.
+8. **Context across a `Modal`.** A Dialog's Backdrop and Content share one `Modal` by being moved into an outlet the root renders, so React context from a provider placed between the root and the content doesn't reach the content. A provider goes above the root or inside the content. The adapter's own contexts, like a disabled FieldSet's, are carried across: the outlet provides them again inside the `Modal` with the values they have where the content renders (#131). A non-modal popup renders in the topmost host (`OverlayHost`, or an open `Modal`'s), so a provider of the app's it reads goes above that host; the adapter's own contexts are carried there too. A modal popup renders its `Modal` in place, unless a `Modal` it isn't inside is up, when it renders in that `Modal`'s host.
 9. **Gesture Handler's root view.** The app renders its own at its root, as Gesture Handler asks of every app. Drawer's entry and the sheet entry render the one inside their `Modal` themselves.
 10. **Development warnings.** The native build of core resolves `#dev` and `#name-check` to their real modules and guards them with React Native's `__DEV__`, so warnings work with no app configuration and release bundles drop them.
 11. **New public names** in core and the adapter get a docs page and a stability label like any public name, in the ticket that introduces them.
@@ -405,6 +405,7 @@ Every difference the resolutions record, by subject.
 - Trigger Menu anchors to the field's box, not the caret ([How text entry components work on TextInput][text-entry]).
 - A multiline field has no modifier-plus-Enter submit, and Number Input has no arrow-key stepping ([How text entry components work on TextInput][text-entry]).
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
+- A drag inside a plain `ScrollView` that scrolls along the same axis needs the app to pass `scrollEnabled={!dragging}`, with `dragging` set from the drag part's responder grant, release and termination. On iOS the scroll view otherwise pans along with the drag, since Fabric only stops it for a responder above it, not inside it. A perpendicular scroll view needs nothing, and the library's Scroll Area stops its own scrolling ([council batch 3][council-3]).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
 
@@ -451,12 +452,12 @@ Nothing in the resolutions was run on a device, apart from the playground and th
 
 **Drags** ([How drags and canvas components work on native][drags])
 
-- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android.
+- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android. Resolved for Slider on iOS: the app passes `scrollEnabled={!dragging}` and the view stays while the slider moves, and a perpendicular scroll view needs nothing ([council batch 3][council-3]). Android is checked in #124.
 - Pinch computed from the responder's touches.
 
 **Locale** ([How direction and locale are read on native][direction])
 
-- Whether `Intl` reports the device's locale on iOS and Android. If it doesn't on one, the locale comes through the host interface.
+- Whether `Intl` reports the device's locale on iOS and Android. If it doesn't on one, the locale comes through the host interface. Resolved on iOS (#71): after the simulator's language and region changed from French to German, the relaunched app read `en-DE` instead of `en-FR` and formatted 1234.5 as `1.234,5` instead of `1 234,5`; the language stays English because the app has only an English localization. Android is owed.
 
 **The seam** ([What the seam's ADR records][adr-ticket], [Does the host seam hold for Switch and Dialog][prototype])
 
@@ -529,3 +530,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [aria-disabled]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6904500686
 [council-1]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6909822604
 [council-2]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6920083782
+[council-3]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6922314446

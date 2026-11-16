@@ -294,7 +294,7 @@
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, nativeElement and Twin."
+      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement and Twin."
     },
     {
       "kind": "edit",
@@ -525,7 +525,39 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input and otp-input."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog and alert-dialog."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/platform/env.native.ts",
+      "mirrors": ["packages/core/src/foundation/platform/env.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads the direction from the native host (I18nManager.isRTL) for the whole app, ignoring the element, where the DOM module reads the element's computed direction. There's no browser, so isBrowser and isIOS are false."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/text/locale.native.ts",
+      "mirrors": ["packages/core/src/foundation/text/locale.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The page's and the user's language are the device's, from Intl, where the DOM module reads the nearest lang attribute and navigator.languages."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/slider/slider-native.ts",
+      "mirrors": [
+        "packages/core/src/components/slider/slider.ts",
+        "packages/core/src/components/slider/slider-api.ts",
+        "packages/core/src/foundation/drag-and-drop/pointer.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind, the control's pointerdown and the thumb input's input event orchestrate: the root reads the locale, the control follows the responder's touches with begin, move and end (measured on the track), cancelling on a cancelled, taken or unmounted responder, and each thumb takes a screen reader's increment and decrement as an adjustment."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/slider/slider-api.ts",
+      "mirrors": ["packages/core/src/components/slider/slider-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of the thumb input's focus(). Additive: internal.cancel(), which puts the value back and commits nothing, and adjust()'s event is optional."
     },
     {
       "kind": "twin",
@@ -673,7 +705,7 @@
       "slots": {
         "progress.root": {
           "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
-          "reason": "Its bind reads the page's language, which gauge-native.ts asks for as the root mounts; until the locale twin lands it reads none and formats in English unless the locale option is given. Its missing-name warning comes with the names work."
+          "reason": "Its bind reads the page's language, which gauge-native.ts asks the locale twin for as the root mounts: the device's language, unless the locale option is given. Its missing-name warning comes with the names work."
         },
         "progress.label": {
           "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
@@ -890,6 +922,27 @@
         }
       }
     },
+    "slider": {
+      "entry": "packages/react-native/src/slider.tsx",
+      "slots": {
+        "slider.root": {
+          "covered": "packages/core/src/components/slider/slider-native.ts",
+          "reason": "Its bind reads the page's language, which slider-native.ts asks the locale twin for as the root mounts, and makes the slider take part in a form, which native doesn't have."
+        },
+        "slider.control": {
+          "covered": "packages/core/src/components/slider/slider-native.ts",
+          "reason": "Its pointerdown follows a pointer drag; slider-native.ts follows the responder's touches on the control with the same begin, move and end api calls, and cancels on a cancelled, taken or unmounted responder."
+        },
+        "slider.thumb-input": {
+          "covered": "packages/core/src/components/slider/slider-native.ts",
+          "reason": "Its input event is a screen reader's adjustment, which slider-native.ts takes from the increment and decrement actions. Its keys move the value with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards). Its bind writes the range input's value, which the translation reads from the attributes instead."
+        },
+        "slider.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
     "dialog": {
       "entry": "packages/react-native/src/dialog.tsx",
       "slots": {
@@ -996,7 +1049,6 @@
     "resizable",
     "scroll-area",
     "select",
-    "slider",
     "time-input",
     "timeline",
     "toast",
@@ -1221,6 +1273,18 @@
     {
       "component": "field",
       "example": "field-set-rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "slider",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
+      "component": "slider",
+      "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },

@@ -2,6 +2,7 @@
 // parts and their attributes are in slider.ts, the pure decisions in slider-values.ts.
 import { orientationOf } from "../../foundation/focus/collection"
 import { createDragSession } from "../../foundation/drag-and-drop/pointer"
+import { focusPart } from "../../foundation/focus/focus-part"
 import { isRTL } from "../../foundation/platform/env"
 import {
   dispatchChange,
@@ -174,7 +175,7 @@ type Gesture = {
 function sliderApiBody(
   context: PrimitiveContext<SliderOptions, State, string>
 ) {
-  const { store, options, element } = context
+  const { store, options, element, parts } = context
   const change = createChange(context)
   const commitValue = createCommit(context)
   const drags = createDragSession(context.onDestroy)
@@ -269,7 +270,8 @@ function sliderApiBody(
       value: number | number[],
       { reason = "imperative", event }: SliderChangeOptions = {}
     ) => !isLocked(store.get()) && setValue(value, reason, event),
-    focus: (thumb = 0) => thumbInput(thumb)?.focus(),
+    focus: (thumb = 0) =>
+      focusPart(() => thumbInput(thumb), parts, "thumb-input", String(thumb)),
     internal: {
       // A press on the web: the track's box is read once, so moves never read layout.
       press(event: PointerEvent, control: HTMLElement) {
@@ -365,9 +367,19 @@ function sliderApiBody(
           commit(ended.start, ended.reason, event, ended.index)
         }
       },
+      // A touch the native host took away, like for a scroll: the value goes
+      // back and nothing commits.
+      cancel() {
+        const ended = gesture
+        gesture = undefined
+        store.set({ active: null })
+        if (ended && !sameValue(ended.start, store.get().value)) {
+          setValues(valuesOf(ended.start), ended.reason, undefined, ended.index)
+        }
+      },
       // A screen reader's adjustment through the thumb's native range input,
       // like a swipe on iOS. It commits at once.
-      adjust(index: number, target: number, event: Event) {
+      adjust(index: number, target: number, event?: Event) {
         if (store.get().readOnly) {
           return
         }

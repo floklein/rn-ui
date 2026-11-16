@@ -1,0 +1,400 @@
+---
+title: Slider
+description: Adjust a number or a range by dragging thumbs along a track.
+---
+
+Use a slider to pick a number or a range along a scale, like a volume or a price range, by dragging a thumb or with a screen reader's adjust gestures.
+
+<ComponentExample
+  name="slider/basic"
+  caption="Drag the thumb, or swipe up or down on it with VoiceOver or TalkBack, to adjust Volume."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Slider`:
+
+```text
+Slider
+├── SliderValue
+└── SliderControl
+    └── SliderTrack
+        ├── SliderIndicator
+        └── SliderThumb
+```
+
+A control takes the touches around the track. Put a thumb on that track for each value.
+
+- **Slider** holds the value and renders a `View` around the thumbs.
+- **SliderControl** is where touches land, a `View`. A touch moves the nearest thumb there and starts a drag. Give it some height around a thin track, like 44 points.
+- **SliderTrack** is the rail the thumbs move along, a `View`. Thumbs and the indicator are placed in percentages of it, so give it a size.
+- **SliderIndicator** fills the track up to a single thumb, or between the first and last thumb of a range.
+- **SliderThumb** is what you drag, a `View`. Give each one a size. It holds the element screen readers adjust, which reaches 12 points past the thumb on every side.
+- **SliderValue** shows the formatted value in a `Text`, and a range joined with an en dash. It's optional, and hidden from screen readers, since each thumb says its own value.
+
+A single thumb is named by a `FieldLabel` in a `Field`, or by `aria-label` on the thumb. In a range, give each thumb its own `aria-label`, like "Minimum price".
+
+## Usage
+
+Import the parts and put them together. Give the parts their sizes and colors with styles:
+
+```tsx
+import {
+  Slider,
+  SliderControl,
+  SliderIndicator,
+  SliderThumb,
+  SliderTrack,
+  SliderValue,
+} from "@ui-sdk/react-native/slider"
+import { StyleSheet } from "react-native"
+
+function Example() {
+  return (
+    <Slider defaultValue={50}>
+      <SliderValue />
+      <SliderControl style={styles.control}>
+        <SliderTrack style={styles.track}>
+          <SliderIndicator style={styles.indicator} />
+          <SliderThumb aria-label="Volume" style={styles.thumb} />
+        </SliderTrack>
+      </SliderControl>
+    </Slider>
+  )
+}
+
+const styles = StyleSheet.create({
+  control: { width: 240, height: 44, justifyContent: "center" },
+  track: { height: 4, backgroundColor: "#d4d4d8" },
+  indicator: { backgroundColor: "#18181b" },
+  thumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#18181b",
+  },
+})
+
+export { Example }
+```
+
+## Inside a Scroll View
+
+A drag keeps its touch from a scroll view around it. On Android that's enough. On iOS, a `ScrollView` that scrolls along the slider's axis, like a horizontal slider in a horizontal `ScrollView`, still scrolls while the thumb moves, since React Native stops a scroll view only for a touch held by a view above it, not inside it. Turn its scrolling off for the length of the drag: set `dragging` from the control's responder events and pass `scrollEnabled={!dragging}`.
+
+```tsx
+const [dragging, setDragging] = useState(false)
+
+return (
+  <ScrollView horizontal scrollEnabled={!dragging}>
+    <Slider defaultValue={50}>
+      <SliderControl
+        onResponderGrant={() => setDragging(true)}
+        onResponderRelease={() => setDragging(false)}
+        onResponderTerminate={() => setDragging(false)}
+        style={styles.control}
+      >
+        <SliderTrack style={styles.track}>
+          <SliderIndicator style={styles.indicator} />
+          <SliderThumb aria-label="Balance" style={styles.thumb} />
+        </SliderTrack>
+      </SliderControl>
+    </Slider>
+  </ScrollView>
+)
+```
+
+The grant runs only when the control takes the touch, so a disabled slider leaves the scroll view alone. A scroll view across the slider's axis, like a vertical `ScrollView` around a horizontal slider, needs nothing. Every other drag works the same way: pass the three handlers to the part you drag.
+
+## Range
+
+Pass an array for a range, then render one thumb per number. Give each thumb its `index`, from 0, and its own name, like "Minimum price". The indicator fills the space between the first and the last thumb.
+
+<ComponentExample
+  name="slider/range"
+  caption="Move either end of Price. The thumbs stay in order."
+/>
+
+## Multiple Thumbs
+
+Any number of thumbs works the same way. They never pass each other, and a touch on the track moves the nearest one.
+
+<ComponentExample
+  name="slider/multiple"
+  caption="Adjust Low, Medium and High, without moving one past another."
+/>
+
+## Vertical
+
+Set `orientation="vertical"` and give the slider a height. The bottom is the minimum, and every part's state has `orientation`, so a style function can lay out the vertical axis.
+
+<ComponentExample
+  name="slider/vertical"
+  caption="Drag up or down to adjust Bass and Treble."
+/>
+
+## Field
+
+Put the slider in a `Field`. The label's text names every thumb, and the description becomes its hint. `SliderValue` shows the value beside the label.
+
+<ComponentExample
+  name="slider/field"
+  caption="With VoiceOver or TalkBack, the thumb is called Volume."
+/>
+
+## Disabled
+
+Set `disabled`. A disabled slider can't be dragged or adjusted, and screen readers announce its thumbs as dimmed or disabled. A disabled `FieldSet` around it disables it too.
+
+<ComponentExample
+  name="slider/disabled"
+  caption="Brightness keeps its value, but a drag doesn't move it."
+/>
+
+## Controlled
+
+Pass `value` and `onValueChange` to control the slider. The value keeps its shape: a number stays a number and an array stays an array. Every change carries a [reason](#reasons), like `drag` or `track-press`, and `details.thumb` says which thumb moved. Call `details.cancel()` to keep the current value.
+
+<ComponentExample
+  name="slider/controlled"
+  caption="Drag either Temperature thumb to log the range and its reason. Reset sets the value from outside."
+/>
+
+## Step and Bounds
+
+`min` and `max` set the bounds, 0 and 100 by default, and `step` sets how far one step moves, counted from `min`. Decimal steps avoid floating-point drift, so a 0.1 step can reach 0.3 cleanly. When the steps from `min` don't land on `max`, the highest step below it is the end.
+
+<ComponentExample
+  name="slider/step"
+  caption="Move Year in steps of five, and Opacity in steps of 0.05."
+/>
+
+## Large Step
+
+`largeStep` is how far Page Up, Page Down and Shift with an arrow key move a thumb on the web. React Native delivers no keys to views, so on native it changes nothing: a drag lands on any step, and a screen reader moves one `step` at a time.
+
+<ComponentExample
+  name="slider/large-step"
+  caption="Swipe up on Zoom with VoiceOver or TalkBack. It moves one step."
+/>
+
+## Distance Between Thumbs
+
+Set `minStepsBetweenThumbs` to keep neighbouring thumbs that many steps apart. A thumb stops at its neighbour.
+
+<ComponentExample
+  name="slider/min-steps"
+  caption="Move either end of Opening hours. The thumbs stay at least four hours apart."
+/>
+
+## Format and Locale
+
+`format` takes `Intl.NumberFormat` options, like `{ style: "currency", currency: "USD" }` or `{ style: "percent" }`, or a function of the value. It sets what `SliderValue` shows and what screen readers announce for each thumb, while the value stays a plain number. `locale` sets separators, digits and symbol placement. Without it, the slider formats in the device's language, as `Intl` reports it.
+
+<ComponentExample
+  name="slider/format"
+  caption="Adjust Budget, Opacity, Weight, Duration and Preis to compare currency, a percentage, a unit, a custom function and German formatting."
+/>
+
+## Saving on Commit
+
+`onValueChange` runs on every step of a drag. `onValueCommit` runs once, when the touch that changed the value lifts, or when a screen reader adjusts it. Use the commit callback to save once per interaction. A touch that doesn't change the value commits nothing, and neither does a drag taken away, like by a system gesture: the value goes back to where it started.
+
+<ComponentExample
+  name="slider/commit"
+  caption="Drag Brightness and lift your finger. The value is logged once."
+/>
+
+## Controller
+
+A controller, from `createSliderController()`, moves the slider from anywhere with `setValue()`, reads it with `getValue()` and moves a screen reader's focus to a thumb with `focus()`. Values set through it are clamped, snapped to the step and sorted, and reported with the `imperative` reason.
+
+<ComponentExample
+  name="slider/controller"
+  caption="Use Mute, Louder and Focus to operate Volume from outside the slider. Each change is logged with the imperative reason, and Read logs the value."
+/>
+
+## Forms
+
+A native view takes part in no form, so the slider has no `name` or `form` prop and renders no hidden input. Read the value from `onValueChange`, `onValueCommit` or a controller. `required` stays in the state for your styles and labels.
+
+## Read-Only
+
+Set `readOnly` to keep the slider reachable by screen readers, while drags and their adjustments leave its value alone.
+
+```tsx
+<Field>
+  <FieldLabel>Storage</FieldLabel>
+  <Slider defaultValue={50} readOnly>
+    <SliderControl style={styles.control}>
+      <SliderTrack style={styles.track}>
+        <SliderIndicator style={styles.indicator} />
+        <SliderThumb style={styles.thumb} />
+      </SliderTrack>
+    </SliderControl>
+  </Slider>
+  <FieldDescription>Set by your plan.</FieldDescription>
+</Field>
+```
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state, like whether a thumb is being dragged, its `thumbValue` and its `percent` along the track. Here the thumb's children add a bubble with its value, and `SliderValue`'s children add a percent sign.
+
+<ComponentExample
+  name="slider/render"
+  caption="Drag the Brightness thumb. It grows, and its value shows above it."
+/>
+
+## Styling
+
+Parts are unstyled, apart from the positions they need: thumbs and the indicator are placed absolutely along the track, in percent. Give the control some height around a thin track, the track a size and a background, and each thumb a size.
+
+Style each part with a function of its state, like `(state) => [styles.thumb, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### Slider [#part-state-slider]
+
+<PartStateTable
+  component="slider"
+  part="root"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderState"
+/>
+
+### SliderValue [#part-state-slidervalue]
+
+<PartStateTable
+  component="slider"
+  part="value"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderValueState"
+/>
+
+### SliderControl [#part-state-slidercontrol]
+
+<PartStateTable
+  component="slider"
+  part="control"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderState"
+/>
+
+### SliderTrack [#part-state-slidertrack]
+
+<PartStateTable
+  component="slider"
+  part="track"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderState"
+/>
+
+### SliderIndicator [#part-state-sliderindicator]
+
+<PartStateTable
+  component="slider"
+  part="indicator"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderState"
+/>
+
+With where the fill sits along the track, in percent, the web's CSS variables:
+
+| Field            | Type     | Description                                           |
+| ---------------- | -------- | ----------------------------------------------------- |
+| `indicatorStart` | `number` | Where the fill starts along the track, from 0 to 100. |
+| `indicatorSize`  | `number` | How much of the track the fill covers, from 0 to 100. |
+
+### SliderThumb [#part-state-sliderthumb]
+
+<PartStateTable
+  component="slider"
+  part="thumb"
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderThumbState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Slider
+
+<TypeTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderOptions"
+/>
+
+### SliderThumb
+
+<TypeTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderThumbProps"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the slider's state.
+
+<StateTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderState"
+/>
+
+Thumbs add their own fields, and have their own value, `thumbValue`, in place of the whole `value`:
+
+<StateTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderThumbState"
+/>
+
+`SliderValue` adds the formatted text:
+
+<StateTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderValueState"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed. On native it's `"drag"`, `"track-press"`, `"accessibility-adjust"` or `"imperative"`: no keys reach the thumbs, and there's no form to reset or restore.
+
+<ReasonTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createSliderController()` and pass it as `controller`.
+
+`setValue()` takes an optional `{ reason }`, runs the change callback like a drag, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/slider/slider.ts"
+  name="SliderController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details.
+
+| Prop            | On       | Receives                                                                           |
+| --------------- | -------- | ---------------------------------------------------------------------------------- |
+| `onValueChange` | `Slider` | `(value, details)`: the new value, the [reason](#reasons) and `details.thumb`      |
+| `onValueCommit` | `Slider` | `(value, details)`: the value once the touch lifts, its reason and `details.thumb` |
+
+## Accessibility
+
+The slider follows the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/), and the [multi-thumb slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/) for ranges, translated to React Native's accessibility props. Each thumb is its own element with the `adjustable` role, named by a `FieldLabel` or its own `aria-label`, and says its value as `format` writes it. VoiceOver adjusts it with a swipe up or down, and TalkBack with its adjust gestures: each moves one `step` and commits at once.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through the thumbs in order. React Native delivers no arrow keys, Page Up, Page Down, Home or End to views, so a keyboard can't move a thumb.

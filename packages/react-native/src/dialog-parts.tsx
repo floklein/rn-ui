@@ -13,6 +13,7 @@ import { dialogNative, pressTrigger } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Modal, Pressable, Text, View } from "react-native"
+import { Carried, carry, useCarried } from "./carried-context"
 import { useControllerEntry, useControllerTarget } from "./controller-target"
 import { layerInput, pressSource } from "./native-host"
 import { landIn, ModalHost, useHosted } from "./overlay-host"
@@ -83,12 +84,16 @@ function createOutlet() {
   return outlet
 }
 
-const OutletContext = React.createContext<Outlet | null>(null)
+const OutletContext = carry("Outlet", React.createContext<Outlet | null>(null))
 
 function useOutlet(slot: "backdrop" | "content", element: React.ReactNode) {
   const outlet = React.useContext(OutletContext)!
+  const values = useCarried()
   React.useLayoutEffect(() => {
-    outlet.set(slot, element)
+    outlet.set(
+      slot,
+      element ? <Carried values={values}>{element}</Carried> : null
+    )
   })
   React.useLayoutEffect(() => () => outlet.set(slot, null), [outlet, slot])
   return null
@@ -111,31 +116,27 @@ function DialogLayer({
     () => handle.state.mounted
   )
   const modal = handle.state.modal !== false
-  const layer = (
-    <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
-      {modal ? (
-        <Modal
-          visible={mounted && !!content}
-          transparent
-          animationType="none"
-          statusBarTranslucent
-          navigationBarTranslucent
-          onRequestClose={() => {
-            layerInput()?.back()
-          }}
-        >
-          <ModalHost>
-            {backdrop}
-            {content}
-          </ModalHost>
-        </Modal>
-      ) : (
-        <>
-          {backdrop}
-          {content}
-        </>
-      )}
-    </HandleScope>
+  const layer = modal ? (
+    <Modal
+      visible={mounted && !!content}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={() => {
+        layerInput()?.back()
+      }}
+    >
+      <ModalHost>
+        {backdrop}
+        {content}
+      </ModalHost>
+    </Modal>
+  ) : (
+    <>
+      {backdrop}
+      {content}
+    </>
   )
   return useHosted(layer, mounted, {
     component: handle.primitive.name,

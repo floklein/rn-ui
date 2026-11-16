@@ -127,6 +127,7 @@ function touchEnd({ nativeEvent }: GestureResponderEvent) {
   }
 }
 
+// Not carried into a Modal, whose own host it names inside it.
 const HostContext = React.createContext<Host | null>(null)
 
 function HostView({

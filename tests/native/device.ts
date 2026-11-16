@@ -83,6 +83,7 @@ const roles: Record<string, string> = {
   XCUIElementTypeSecureTextField: "textbox",
   XCUIElementTypeTextView: "textbox",
   XCUIElementTypeOther: "group",
+  XCUIElementTypeSlider: "slider",
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
   "android.widget.RadioButton": "radio",
@@ -92,6 +93,7 @@ const roles: Record<string, string> = {
   "android.widget.TextView": "text",
   "android.widget.EditText": "textbox",
   "android.view.ViewGroup": "group",
+  "android.widget.SeekBar": "slider",
 }
 
 const pressedValues: Record<string, boolean> = {
@@ -101,6 +103,13 @@ const pressedValues: Record<string, boolean> = {
 
 const byId = (id: string) =>
   platform === "ios" ? `~${id}` : `android=new UiSelector().resourceId("${id}")`
+
+// Android writes an accessibility value's text into the description after
+// the name, like "Volume, 20".
+const named = (label: string) =>
+  platform === "ios"
+    ? `~${label}`
+    : `android=new UiSelector().descriptionMatches("\\\\Q${label}\\\\E(, .*)?")`
 
 // UiAutomator only finds what's on screen, so a screen low in the list is
 // scrolled to first.
@@ -169,7 +178,17 @@ function parseTree(source: string) {
       platform === "ios" && radioValue.test(attrs.value ?? "")
         ? attrs.value.replace(radioValue, "")
         : undefined
-    const role = checkbox ? "checkbox" : radio ? "radio" : (roles[type] ?? type)
+    // Nor a slider: an adjustable view has the Adjustable trait.
+    const adjustable =
+      platform === "ios" &&
+      (attrs.traits ?? "").split(", ").includes("Adjustable")
+    const role = checkbox
+      ? "checkbox"
+      : radio
+        ? "radio"
+        : adjustable
+          ? "slider"
+          : (roles[type] ?? type)
     const node: Node = {
       role,
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
@@ -197,6 +216,15 @@ function parseTree(source: string) {
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
+    }
+    if (role === "slider") {
+      if (platform === "ios") {
+        node.value = attrs.value ?? ""
+      } else {
+        const [label, ...value] = node.label.split(", ")
+        node.label = label
+        node.value = value.join(", ")
+      }
     }
     if (role === "textbox") {
       node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
@@ -271,6 +299,38 @@ function useDevice(name: string) {
     async size(id: string) {
       return driver.$(byId(id)).getSize()
     },
+    /** The element's box on screen, in the driver's units: points on iOS, pixels on Android. */
+    async rect(id: string) {
+      const element = driver.$(byId(id))
+      return { ...(await element.getLocation()), ...(await element.getSize()) }
+    },
+    /** The box of the element named `label`, for a part that takes no test ID. */
+    async rectNamed(label: string) {
+      const element = driver.$(named(label))
+      return { ...(await element.getLocation()), ...(await element.getSize()) }
+    },
+    /** A finger pressed at `from`, held `hold` ms, moved to `to` in steps, then lifted. */
+    async drag(
+      from: { x: number; y: number },
+      to: { x: number; y: number },
+      duration = 600,
+      hold = 100
+    ) {
+      const steps = 6
+      const finger = driver
+        .action("pointer", { parameters: { pointerType: "touch" } })
+        .move({ x: Math.round(from.x), y: Math.round(from.y) })
+        .down()
+        .pause(hold)
+      for (let step = 1; step <= steps; step++) {
+        finger.move({
+          duration: Math.round(duration / steps),
+          x: Math.round(from.x + ((to.x - from.x) * step) / steps),
+          y: Math.round(from.y + ((to.y - from.y) * step) / steps),
+        })
+      }
+      await finger.up().perform()
+    },
     /** The element's attributes as the OS reports them, for what `tree` leaves out. */
     async attributes(id: string) {
       for (const [, , tag] of (await driver.getPageSource()).matchAll(
@@ -292,13 +352,7 @@ function useDevice(name: string) {
     },
     /** Presses the element named `label`, for a part that takes no test ID. */
     async pressNamed(label: string) {
-      await driver
-        .$(
-          platform === "ios"
-            ? `~${label}`
-            : `android=new UiSelector().description("${label}")`
-        )
-        .click()
+      await driver.$(named(label)).click()
     },
     /** Taps the screen at a point, in the driver's units, for a part out of the accessibility tree. Holds for `hold` ms. */
     async tapAt(x: number, y: number, hold = 50) {

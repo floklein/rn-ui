@@ -48,6 +48,7 @@ import {
   type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
+import { carry } from "./carried-context"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
 import {
   idsOf,
@@ -57,7 +58,15 @@ import {
   useReferences,
   useText,
 } from "./names"
-import { pressSource, renders, textInputs, views } from "./native-host"
+import {
+  parts as viewParts,
+  pressSource,
+  renders,
+  responder,
+  steps,
+  textInputs,
+  views,
+} from "./native-host"
 import {
   idle,
   mergeProps,
@@ -100,10 +109,13 @@ const behaviors = new WeakMap<object, NativeBehavior>()
 
 // A disabled FieldSet or Field around a component disables its controls, as
 // a disabled <fieldset> does on the web. `owner` is the instance that provides it.
-const DisabledContext = React.createContext<{
-  disabled: boolean
-  owner: object
-} | null>(null)
+const DisabledContext = carry(
+  "Disabled",
+  React.createContext<{
+    disabled: boolean
+    owner: object
+  } | null>(null)
+)
 
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
@@ -200,7 +212,10 @@ function scopeOf(primitive: Primitive) {
   let found = scopes.get(primitive)
   if (!found) {
     found = {
-      context: React.createContext<Scope | null>(null),
+      context: carry(
+        `${primitive.name}Scope`,
+        React.createContext<Scope | null>(null)
+      ),
       provides: new Set(),
       keyed: new Set(),
     }
@@ -286,10 +301,14 @@ function viewRef(part: Part, behavior: NativeBehavior | undefined) {
     ref = (view) => {
       if (view) {
         views.set(part, view)
+        viewParts.set(view, part)
       }
       const cleanup = view ? behavior?.[part.slot]?.(part) : undefined
       return () => {
         cleanup?.()
+        if (view) {
+          viewParts.delete(view)
+        }
         if (views.get(part) === view) {
           views.delete(part)
         }
@@ -625,15 +644,26 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       mergeAccessibility(translated, rest)
     )
     const actions =
-      activate && !presence.exiting && own.accessibilityActions
+      !presence.exiting && own.accessibilityActions
         ? {
             onAccessibilityAction: (event: AccessibilityActionEvent) => {
               const { actionName } = event.nativeEvent
+              const step = steps.get(part)
+              if (
+                step &&
+                (actionName === "increment" || actionName === "decrement")
+              ) {
+                withSource("virtual", () =>
+                  step(actionName === "increment" ? 1 : -1)
+                )
+                return
+              }
               const expanded =
                 attrs(part, slotProps)["aria-expanded"] === "true"
               if (
-                (actionName === "expand" && !expanded) ||
-                (actionName === "collapse" && expanded)
+                activate &&
+                ((actionName === "expand" && !expanded) ||
+                  (actionName === "collapse" && expanded))
               ) {
                 withSource("virtual", activate)
               }
@@ -653,10 +683,18 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
         own.accessibilityLabel)
         ? { collapsable: false }
         : {}
+    // A part the web drags with a pointer follows touches with the responder.
+    const slots = primitive.slots as
+      Record<string, { on?: object } | undefined> | undefined
+    const drags =
+      !pressable && slots?.[slot]?.on && "pointerdown" in slots[slot].on
+        ? responder(part)
+        : {}
     element = renderElement(
       host,
       mergeProps(
         handlers,
+        drags,
         actions,
         disabled ? { disabled } : {},
         container,

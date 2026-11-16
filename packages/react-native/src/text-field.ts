@@ -8,6 +8,7 @@ import type {
 import { withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { TextInput } from "react-native"
+import { carry } from "./carried-context"
 import { useFieldControl, useInheritedDisabled } from "./field-context"
 import { fields } from "./native-host"
 import { mergeProps } from "./render-element"
@@ -19,8 +20,10 @@ type TextFieldProps = Omit<
 > &
   ControlProps
 
-const GroupContext =
+const GroupContext = carry(
+  "InputGroup",
   React.createContext<PrimitiveHandle<InputGroupPrimitive> | null>(null)
+)
 
 // What the group's `bind` reads from the element on the web.
 function useGroup(

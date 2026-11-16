@@ -32,6 +32,7 @@ type NativePattern =
   | "progressbar"
   | "radio-group"
   | "separator"
+  | "slider"
   | "switch"
   | "tabs"
   | "textbox"
@@ -664,6 +665,89 @@ async function barPattern(context: Context, pattern: "progressbar" | "meter") {
   }
 }
 
+const valueOf = (node: HostNode) =>
+  (node.props.accessibilityValue ?? {}) as {
+    min?: number
+    max?: number
+    now?: number
+    text?: string
+  }
+
+// A thumb is found again after each action by its place among the thumbs.
+async function checkAdjusts(
+  context: Context,
+  index: number,
+  action: "increment" | "decrement"
+) {
+  const thumb = () => context.withRole("adjustable")[index]
+  const { min, max, now } = valueOf(thumb())
+  if (now === undefined || now === (action === "increment" ? max : min)) {
+    return
+  }
+  await performWatched(thumb(), action, context.act)
+  const after = valueOf(thumb()).now
+  const moved =
+    after !== undefined && (after - now) * (action === "increment" ? 1 : -1) > 0
+  if (!moved) {
+    context.problem(
+      thumb(),
+      `stays at ${now} after the ${action} action; a screen reader's ${action} moves a slider a step.`
+    )
+    return
+  }
+  await performWatched(
+    thumb(),
+    action === "increment" ? "decrement" : "increment",
+    context.act
+  )
+}
+
+// Each thumb is one adjustable element: VoiceOver's swipes and TalkBack's
+// adjustments arrive as the increment and decrement actions.
+async function sliderPattern(context: Context) {
+  const thumbs = context.withRole("adjustable")
+  if (!thumbs.length) {
+    context.problem(
+      context.root,
+      "has no accessible element with the adjustable role, so it isn't a slider."
+    )
+    return
+  }
+  for (const [index, thumb] of thumbs.entries()) {
+    requireName(context, thumb, "slider")
+    const { min, max, now, text } = valueOf(thumb)
+    if (now === undefined || min === undefined || max === undefined) {
+      context.problem(
+        thumb,
+        "has no current value and range; a slider always has them."
+      )
+      continue
+    }
+    if (now < min || now > max) {
+      context.problem(
+        thumb,
+        `is ${now}, outside its range of ${min} to ${max}.`
+      )
+    }
+    if (text === undefined) {
+      context.problem(
+        thumb,
+        "has no value text, so VoiceOver reads its value as a fraction of its range."
+      )
+    }
+    for (const action of ["increment", "decrement"] as const) {
+      if (!actionsOf(thumb).includes(action)) {
+        context.problem(
+          thumb,
+          `doesn't declare the ${action} action, which a screen reader adjusts a slider with.`
+        )
+      } else if (!isDisabled(thumb)) {
+        await checkAdjusts(context, index, action)
+      }
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
@@ -676,6 +760,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   progressbar: (context) => barPattern(context, "progressbar"),
   "radio-group": radioGroupPattern,
   separator: separatorPattern,
+  slider: sliderPattern,
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,

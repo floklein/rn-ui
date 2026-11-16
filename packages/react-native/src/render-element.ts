@@ -27,7 +27,8 @@ function prevented(event: unknown) {
  * Later props win, except where they combine: a className joins, styles
  * become an array in order, never flattened, refs merge, and both handlers
  * run, the later one first, which can call preventDefault() to skip the
- * earlier. Undefined never replaces a value.
+ * earlier; the later one's result stands unless it's undefined, so a
+ * responder handler's `true` survives. Undefined never replaces a value.
  * @experimental
  */
 function mergeProps(...sources: Record<string, any>[]) {
@@ -57,10 +58,12 @@ function mergeProps(...sources: Record<string, any>[]) {
         typeof value === "function"
       ) {
         result[key] = (...args: unknown[]) => {
-          value(...args)
-          if (!prevented(args[0])) {
-            earlier(...args)
+          const later = value(...args)
+          if (prevented(args[0])) {
+            return later
           }
+          const result = earlier(...args)
+          return later ?? result
         }
       } else {
         result[key] = value

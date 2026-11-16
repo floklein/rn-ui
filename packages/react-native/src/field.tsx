@@ -18,6 +18,7 @@ import {
   useInheritedDisabled,
   useLabelPress,
 } from "./field-context"
+import { carry } from "./carried-context"
 import { textOf, useReferences } from "./names"
 import { mergeProps, renderElement } from "./render-element"
 import {
@@ -66,9 +67,10 @@ type FieldErrorProps = {
 type FieldHandle = PrimitiveHandle<typeof fieldPrimitive>
 type FieldSetHandle = PrimitiveHandle<typeof fieldSet>
 
-const DescribedContext = React.createContext<
-  FieldHandle | FieldSetHandle | null
->(null)
+const DescribedContext = carry(
+  "Described",
+  React.createContext<FieldHandle | FieldSetHandle | null>(null)
+)
 
 type FieldSlot = "label" | "description" | "error" | "control"
 

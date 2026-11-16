@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../src/dialog"
+import { carry } from "../src/carried-context"
 import { OverlayHost } from "../src/overlays"
 
 const warn = jest.spyOn(console, "warn").mockImplementation(() => {})
@@ -150,6 +151,31 @@ describe("OverlayHost", () => {
     )
     await open("profile")
     expect(screen.getByTestId("theme")).toHaveTextContent("dark")
+  })
+
+  test("the adapter's own contexts reach a non-modal dialog's content in the host", async () => {
+    const Scope = carry("TestScope", createContext("missing"))
+    function Read() {
+      return <Text testID="scope">{useContext(Scope)}</Text>
+    }
+    await render(
+      <OverlayHost>
+        <Dialog modal={false}>
+          <DialogTrigger>
+            <Text>Open notes</Text>
+          </DialogTrigger>
+          <Scope value="between">
+            <DialogContent testID="notes-content">
+              <DialogTitle>Notes</DialogTitle>
+              <Read />
+            </DialogContent>
+          </Scope>
+        </Dialog>
+      </OverlayHost>
+    )
+    await open("notes")
+    expect(modals("notes-content")).toBe(0)
+    expect(screen.getByTestId("scope")).toHaveTextContent("between")
   })
 
   test("a dialog opened from a modal dialog renders inside its Modal", async () => {
