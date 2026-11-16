@@ -224,6 +224,37 @@ const rows: [Record<string, string | undefined>, object, object][] = [
     { accessibilityValue: { now: 5, min: 0, max: 10, text: "Half" } },
     { accessibilityValue: { now: 5, min: 0, max: 10, text: "Half" } },
   ],
+  [
+    {
+      role: "progressbar",
+      "aria-valuemin": "0",
+      "aria-valuemax": "100",
+      "aria-valuetext": undefined,
+    },
+    {
+      accessibilityRole: "progressbar",
+      accessible: true,
+      accessibilityValue: { min: 0, max: 100 },
+    },
+    {
+      accessibilityRole: "progressbar",
+      collapsable: false,
+      accessibilityValue: { min: 0, max: 100, text: "" },
+    },
+  ],
+  [
+    { role: "meter", "aria-valuenow": "40", "aria-valuetext": "40%" },
+    {
+      accessibilityRole: "progressbar",
+      accessible: true,
+      accessibilityValue: { now: 40, text: "40%" },
+    },
+    {
+      accessibilityRole: "progressbar",
+      collapsable: false,
+      accessibilityValue: { now: 40, text: "40%" },
+    },
+  ],
   [{ "aria-modal": "true" }, { accessibilityViewIsModal: true }, {}],
   [{ "aria-modal": "false" }, {}, {}],
   [{ "aria-live": "polite" }, {}, { accessibilityLiveRegion: "polite" }],
@@ -368,7 +399,7 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
       native
         ? {
             accessibilityRole: native,
-            ...(role === "img" &&
+            ...((native === "image" || native === "progressbar") &&
               (os === "ios" ? { accessible: true } : { collapsable: false })),
           }
         : {}

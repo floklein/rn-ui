@@ -429,14 +429,16 @@
   "@ui-sdk/react-native/field": 12409,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 12185,
+  "@ui-sdk/react-native/meter": 9826,
   "@ui-sdk/react-native/password-input": 13018,
   "@ui-sdk/react-native/primitive": 6313,
+  "@ui-sdk/react-native/progress": 9944,
   "@ui-sdk/react-native/radio": 15586,
   "@ui-sdk/react-native/rating": 15375,
   "@ui-sdk/react-native/separator": 8652,
   "@ui-sdk/react-native/switch": 11529,
   "@ui-sdk/react-native/tabs": 19206,
-  "@ui-sdk/react-native/testing": 4617,
+  "@ui-sdk/react-native/testing": 4979,
   "@ui-sdk/react-native/textarea": 12017,
   "@ui-sdk/react-native/toggle": 15499
 }
