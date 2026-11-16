@@ -18,7 +18,7 @@ import {
  * @experimental
  */
 type NativePattern =
-  "button" | "checkbox" | "img" | "switch" | "tabs" | "textbox"
+  "button" | "checkbox" | "img" | "radio-group" | "switch" | "tabs" | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -156,6 +156,54 @@ async function imgPattern(context: Context) {
   }
 }
 
+// Activating a radio checks it and unchecks the one checked before.
+async function radioGroupPattern(context: Context) {
+  const radios = context.withRole("radio")
+  if (!radios.length) {
+    context.problem(
+      context.root,
+      "has no element with the radio role, so it isn't a radio group (APG radio group)."
+    )
+    return
+  }
+  for (const radio of radios) {
+    requireName(context, radio, "radio")
+    if (typeof stateOf(radio).checked !== "boolean") {
+      context.problem(
+        radio,
+        "has no checked state; a radio is checked, true, or unchecked, false (APG radio group)."
+      )
+    }
+  }
+  const checked = radios.filter((radio) => stateOf(radio).checked === true)
+  if (checked.length > 1) {
+    context.problem(
+      context.root,
+      `has ${checked.length} checked radios; one is checked at most (APG radio group).`
+    )
+    return
+  }
+  const index = radios.findIndex(
+    (radio) => stateOf(radio).checked === false && !isDisabled(radio)
+  )
+  if (index === -1) {
+    return
+  }
+  await performWatched(radios[index], "activate", context.act)
+  const after = context.withRole("radio")
+  if (
+    after[index] &&
+    after.some(
+      (radio, at) => (stateOf(radio).checked === true) !== (at === index)
+    )
+  ) {
+    context.problem(
+      after[index],
+      "isn't the only checked radio after the activate action; activating a radio checks it and unchecks the others (APG radio group)."
+    )
+  }
+}
+
 async function switchPattern(context: Context) {
   const switches = context.withRole("switch")
   if (!switches.length) {
@@ -287,6 +335,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
   img: imgPattern,
+  "radio-group": radioGroupPattern,
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,

@@ -4,6 +4,7 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
+import { rating } from "@ui-sdk/core/rating"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
@@ -44,6 +45,14 @@ describe("checkCreation", () => {
     expect(() => checkCreation(toggle, { disabled: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { multiple: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { disabled: true })).not.toThrow()
+  })
+
+  test("passes on a rating, read-only or with half stars", () => {
+    expect(() => checkCreation(rating, { defaultValue: 3 })).not.toThrow()
+    expect(() =>
+      checkCreation(rating, { readOnly: true, defaultValue: 4.2 })
+    ).not.toThrow()
+    expect(() => checkCreation(rating, { step: 0.5 })).not.toThrow()
   })
 
   test("passes on tabs, controlled or not", () => {
