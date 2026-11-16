@@ -10,6 +10,9 @@ const react = path.dirname(
   })
 )
 
+// Core's development build, as an app in development loads it.
+const core = path.resolve(__dirname, "../core")
+
 const project = (os) => ({
   ...preset,
   displayName: os,
@@ -18,6 +21,8 @@ const project = (os) => ({
     ...preset.moduleNameMapper,
     "^react$": react,
     "^react/(.*)$": `${react}/$1`,
+    "^#dev$": `${core}/src/foundation/kernel/dev.ts`,
+    "^#name-check$": `${core}/src/foundation/text/name-check.ts`,
   },
   testMatch: ["<rootDir>/test/**/*.test.ts?(x)"],
 })

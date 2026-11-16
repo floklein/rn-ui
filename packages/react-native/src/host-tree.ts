@@ -190,6 +190,7 @@ async function performWatched(
     },
     field: (part) => host?.field(part),
     announce: (text, priority) => host?.announce(text, priority),
+    activate: (part) => host?.activate(part),
     compare: (a, b) => host?.compare(a, b) ?? 0,
   })
   try {

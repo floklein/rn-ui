@@ -27,6 +27,7 @@ describe("focusing a part", () => {
       focus,
       field: vi.fn(),
       announce: vi.fn(),
+      activate: vi.fn(),
       compare: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
@@ -46,6 +47,7 @@ describe("focusing a part", () => {
       focus,
       field: vi.fn(),
       announce: vi.fn(),
+      activate: vi.fn(),
       compare: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
@@ -66,6 +68,7 @@ describe("focusing a part", () => {
       focus,
       field: vi.fn(),
       announce: vi.fn(),
+      activate: vi.fn(),
       compare: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })

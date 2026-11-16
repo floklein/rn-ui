@@ -8,6 +8,7 @@ import type {
 import { withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { TextInput } from "react-native"
+import { useFieldControl, useInheritedDisabled } from "./field-context"
 import { fields } from "./native-host"
 import { mergeProps } from "./render-element"
 import { type PartProps, type PrimitiveHandle, usePart } from "./use-primitive"
@@ -71,16 +72,24 @@ function useTextField(
   { disabled, readOnly, required, ...props }: TextFieldProps
 ) {
   const field = handle as PrimitiveHandle<InputPrimitive>
-  useGroup(field, { disabled, readOnly })
+  const inherited = useInheritedDisabled()
+  const off = disabled || inherited
+  const editable = !off && !readOnly
+  useGroup(field, { disabled: off, readOnly })
   return usePart(
     field,
     "root",
-    { disabled, readOnly, required },
-    mergeProps(props, {
-      ...typing(field),
-      editable: !disabled && !readOnly,
-      "aria-disabled": disabled || undefined,
-    }),
+    { disabled: off, readOnly, required },
+    mergeProps(
+      useFieldControl(props, () => field.api.focus()),
+      {
+        ...typing(field),
+        editable,
+        // Android keeps a TextInput disabled when its disabled state is left
+        // out, and enables a read-only one, which then takes typing, when it's false.
+        accessibilityState: { disabled: !editable, ...props.accessibilityState },
+      }
+    ),
     TextInput
   )
 }

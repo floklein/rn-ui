@@ -86,8 +86,8 @@ describe("Input", () => {
     expect(screen.getByLabelText("Disabled")).toBeDisabled()
     expect(screen.getByLabelText("Read-only").props.editable).toBe(false)
     expect(
-      screen.getByLabelText("Read-only").props.accessibilityState?.disabled
-    ).toBeUndefined()
+      screen.getByLabelText("Read-only").props.accessibilityState.disabled
+    ).toBe(false)
   })
 
   test("its state says whether it's filled, disabled, read-only and required", async () => {

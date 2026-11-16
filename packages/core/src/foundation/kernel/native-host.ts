@@ -26,6 +26,8 @@ type NativeHost = {
   field: (part: Part) => NativeTextField | undefined
   /** Has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it. */
   announce: (text: string, priority: "polite" | "assertive") => void
+  /** Activates the control that joined the Field of `part`, as a press on its label does: starts editing a text field, and presses any other control. */
+  activate: (part: { api: object }) => void
   /** Where two mounted parts render: negative when `a` comes first, positive when `b` does. */
   compare: (a: Part, b: Part) => number
 }

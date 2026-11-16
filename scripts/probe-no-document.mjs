@@ -31,6 +31,7 @@ native.setNativeHost({
   focus() {},
   field() {},
   announce() {},
+  activate() {},
   compare: () => 0,
 })
 
