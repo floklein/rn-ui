@@ -20,10 +20,12 @@ import type { SwitchPrimitive } from "@ui-sdk/core/switch"
 import {
   attrs,
   commit,
+  createPresence,
   type PrimitiveGeneric,
   keep,
   liveAttrs,
   partState,
+  type PresenceState,
   present,
   press,
   release,
@@ -254,7 +256,8 @@ function viewRef(part: Part) {
 function nativeProps(
   part: Part,
   slotProps: object,
-  user: Record<string, unknown>
+  user: Record<string, unknown>,
+  exiting: boolean
 ) {
   const { aria, rest } = splitAria(user)
   const translated = toNativeProps(
@@ -264,15 +267,79 @@ function nativeProps(
         { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
         (name) => aria[name] !== undefined
       ),
+      ...(exiting && { inert: "" }),
     },
     Platform.OS === "android" ? "android" : "ios"
   )
   return mergeProps(translated, rest, mergeAccessibility(translated, rest))
 }
 
+type OnExit = (done: () => void) => void
+
+// A part animates in and out when its slot takes `keepMounted`.
+type Animates<
+  P extends Primitive,
+  S extends SlotName<P>,
+> = "keepMounted" extends keyof PropsOf<P, S> ? true : false
+
+type PresenceOf<P extends Primitive, S extends SlotName<P>> =
+  Animates<P, S> extends true ? PresenceState : {}
+
 // A slot's state, or none for a slot that hands render functions nothing.
-type PartState<P extends Primitive, S extends SlotName<P>> =
-  unknown extends StateOf<P, S> ? {} : StateOf<P, S>
+type PartState<
+  P extends Primitive,
+  S extends SlotName<P>,
+> = (unknown extends StateOf<P, S> ? {} : StateOf<P, S>) & PresenceOf<P, S>
+
+/**
+ * The native-only prop of a part that animates out: `onExit`, called with
+ * `done` when the part starts leaving. The part stays mounted, takes no input
+ * and is hidden from accessibility until `done` is called or two seconds
+ * pass. Without it, the part leaves at once.
+ * @experimental
+ */
+type ExitProps = {
+  /** Called with `done` when the part starts leaving. Call `done` once its exit animation ends. */
+  onExit?: OnExit
+}
+
+type ExitPropsOf<P extends Primitive, S extends SlotName<P>> =
+  Animates<P, S> extends true ? ExitProps : {}
+
+const settled: PresenceState = { startingStyle: false, endingStyle: false }
+
+// Follows whether the part is shown, as its slot's `present` says without
+// `keepMounted`. The render that hides it already holds it for `onExit`.
+function usePresence(
+  shown: boolean,
+  onExit: OnExit | undefined,
+  rerender: () => void
+) {
+  const [presence] = React.useState(() => createPresence(rerender))
+  const was = React.useRef(shown)
+  const exit = React.useRef(onExit)
+  exit.current = onExit
+  React.useLayoutEffect(() => {
+    if (was.current === shown) {
+      return
+    }
+    was.current = shown
+    if (shown) {
+      presence.enter()
+    } else {
+      presence.exit(exit.current)
+    }
+  })
+  React.useEffect(() => presence.stop, [presence])
+  if (was.current === shown) {
+    const { exiting, startingStyle, endingStyle } = presence.get()
+    return { exiting, state: { startingStyle, endingStyle } }
+  }
+  if (shown) {
+    return { exiting: false, state: { ...settled, startingStyle: true } }
+  }
+  return { exiting: !!onExit, state: { ...settled, endingStyle: !!onExit } }
+}
 
 /**
  * Renders one part of a primitive written by hand: its host, with the slot's
@@ -294,7 +361,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   slotProps: Native<PropsOf<P, S>> = {} as Native<PropsOf<P, S>>,
   props: Omit<PartProps<React.ElementType, PartState<P, S>>, "ref"> & {
     ref?: React.Ref<any>
-  } = {},
+  } & ExitPropsOf<P, S> = {},
   Host?: React.ElementType
 ) {
   const primitive = typeof handle === "function" ? handle : handle.primitive
@@ -335,10 +402,18 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     }
     return unsubscribe
   }, [part])
+  React.useLayoutEffect(() => subscribe(part, rerender), [part])
+  const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
+  const { onExit, ...hostProps } = props as typeof props & ExitProps
+  const presence = usePresence(
+    animates && present(part, { ...slotProps, keepMounted: false }),
+    onExit,
+    rerender
+  )
 
   let element: React.ReactElement | null = null
-  if (present(part, slotProps)) {
-    const { render, ref, ...user } = props
+  if (present(part, slotProps) || presence.exiting) {
+    const { render, ref, ...user } = hostProps
     const activate = press(part, slotProps)
     const host = Host ?? (activate ? Pressable : View)
     const set = (change: Partial<Interaction>) => () =>
@@ -346,7 +421,10 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     const handlers =
       activate || host === Pressable
         ? {
-            onPress: activate && (() => withSource(pressSource(), activate)),
+            onPress:
+              activate &&
+              !presence.exiting &&
+              (() => withSource(pressSource(), activate)),
             onPressIn: set({ pressed: true }),
             onPressOut: set({ pressed: false }),
             onHoverIn: set({ hovered: true }),
@@ -359,13 +437,15 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       host,
       mergeProps(
         handlers,
-        nativeProps(part, slotProps, user),
+        nativeProps(part, slotProps, user, presence.exiting),
         { ref: viewRef(part) },
         host === TextInput ? { ref: textInputRef } : {},
         { ref }
       ),
       render,
-      partState(part, slotProps) as PartState<P, S>,
+      (animates
+        ? { ...partState(part, slotProps), ...presence.state }
+        : partState(part, slotProps)) as PartState<P, S>,
       interaction
     )
   }
@@ -490,10 +570,11 @@ interface PartComponent<
 > {
   (
     props: Props<
-      Native<PropsOf<P, S>>,
-      [GenericOf<P>] extends [never]
+      Native<PropsOf<P, S>> & ExitPropsOf<P, S>,
+      ([GenericOf<P>] extends [never]
         ? StateOf<P, S>
-        : StateIn<P, S, GenericOf<P>>,
+        : StateIn<P, S, GenericOf<P>>) &
+        PresenceOf<P, S>,
       H
     >
   ): React.ReactElement | null
@@ -513,8 +594,9 @@ interface GenericPartComponent<
     props: Props<
       Native<
         (Applied<GenericOf<P>, A, unknown>["props"] & Record<S, unknown>)[S]
-      >,
-      StateIn<P, S, Applied<GenericOf<P>, A, unknown>>,
+      > &
+        ExitPropsOf<P, S>,
+      StateIn<P, S, Applied<GenericOf<P>, A, unknown>> & PresenceOf<P, S>,
       H
     >
   ): React.ReactElement | null
@@ -644,6 +726,7 @@ function createParts<
 
 export {
   createParts,
+  type ExitProps,
   type GenericPartComponent,
   type PartComponent,
   type PartProps,

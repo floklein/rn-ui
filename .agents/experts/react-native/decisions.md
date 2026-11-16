@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `c3c92204` (2026-11-16, ticket 62: Input, Textarea and the group-field twin)
+Last reviewed: `5b29dbdc` (2026-11-16, ticket 60: Checkbox and presence) and `c3c92204` (2026-11-16, ticket 62: Input, Textarea and the group-field twin)
 
 ## Settled
 
@@ -17,7 +17,8 @@ Last reviewed: `c3c92204` (2026-11-16, ticket 62: Input, Textarea and the group-
 - **Hardware keyboards** (#21): each OS's own navigation over correctly exposed elements, no native code for key events. Arrow keys in composites, shortcuts, a keyboard trap and Escape where the OS doesn't route it are a scope exception, revisited when React Native delivers key events to views in a stable build.
 - **Popups** (#17): a popup modal at open renders in React Native's `Modal`, a non-modal one in the nearest host (`OverlayHost`, or the open `Modal`'s own host). Android back closes the topmost layer with the `"back"` reason.
 - **Forms** (#23): no form participation and no hidden input. `required`, `disabled` and `readOnly` stay in state; `required` and `readOnly` aren't announced. The adapter adds no words of its own to a label.
-- **Presence** (#24): a part that animates out takes `onExit(done)`; a fixed two-second timeout; the adapter ships no animation. Panels expose their measured size as state.
+- **Presence** (#24): a part that animates out takes `onExit(done)`; a fixed two-second timeout; the adapter ships no animation. Panels expose their measured size as state. A part "animates" when its slot takes `keepMounted` (`usePart`, ticket 60); while it exits it is `inert`, so it's hidden and takes no touches, and it keeps its host.
+- **Examples draw marks with views** (ticket 60): text inside an accessible part joins its name, so a ✓ glyph would be read and would change the name with the state.
 - **Direction** (#32): read from `I18nManager` at startup, app wide. No direction for part of the screen.
 - **Sources** (rule 5): `touch` for a press and Android back, `virtual` for the iOS escape gesture, an accessibility action, or a press while a screen reader runs.
 - **Checking** (#19, #8, #119, device specs in `tests/native/`): the native pattern check from `@ui-sdk/react-native/testing` on a host tree with no renderer; Jest with React Native Testing Library; device specs with Appium, Android blocking and iOS reporting; no spec with a screen reader on, a manual pass per component instead (`contributing/native-manual-pass.md`). A missing VoiceOver pass may be recorded as outstanding.
@@ -35,7 +36,9 @@ Last reviewed: `c3c92204` (2026-11-16, ticket 62: Input, Textarea and the group-
 - **A controller's `focus()` on a disabled text field still moves the screen reader** to it; on the web it does nothing.
 
 - **A pending Button loses Android keyboard focus**: its `aria-disabled` becomes `accessibilityState.disabled`, which disables the view, so Space on a button whose action is pending moves focus to the first focusable view (seen on an emulator, ticket 58). The web keeps focus on it. Same question as the `aria-disabled` item below; `focusableWhenDisabled` does nothing for Android's Tab either.
-- **Busy on Android only with a label**: the translation leaves `busy` out of `accessibilityState` on Android for a part with no `aria-label`, since it would replace the text inside (ticket 58). A labelled part gets `busy: false` once it's over, to clear the description.
+- **Busy and mixed on Android only with a label**: Android writes both into the view's description and rewrites it only from a state that names busy (`BaseViewManager.setViewState`). So on Android the translation leaves `busy` out for a part with no `aria-label`, and sends `checked: false` for its mixed, which then reads as unchecked (tickets 58 and 60). A labelled part with `aria-busy` or a checked state always names `busy`, `false` when it isn't busy, so the description follows each change; without it a checkbox kept "…, mixed" after it was checked (seen on an emulator, ticket 60). Name a mixed checkbox with `aria-label`.
+- **A group's order is the order its checkboxes joined** (ticket 60): `joinCheckboxGroup` hands the group a stand-in element ordered by a join counter, so a checkbox mounted later between two others sorts last, for the group's value order and its `focus`. Lists will need the same decision.
+- **The first-frame flag may be cleared before its frame is on screen** (ticket 60): `startingStyle` clears on the next `requestAnimationFrame`, and Fabric commits on the UI thread, so a style transition might never see that frame. Needs a device check.
 - `aria-labelledby` and `aria-describedby` are dropped by the translation until names land (ticket 7 of the build plan).
 - **Shared names keep core's web wording in the docs tables**: the native types and `TypeTable`s leave out the web-only names (#120), but descriptions of shared ones still mention forms, like `defaultChecked`'s form reset, `disabled`'s `<fieldset>`, and the `reset` and `restore` reasons that can't happen on native.
 - **Switch's `value` does nothing on native** but stays in its types and `TypeTable`: it only says what the hidden input submits. Removing it changes a public shape, so it waits for a decision (Checkbox keeps it, since it names an item in a group).

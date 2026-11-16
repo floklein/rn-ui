@@ -1,0 +1,350 @@
+---
+title: Checkbox
+description: Choose one or more options, individually or as a group.
+---
+
+Use a checkbox for a choice someone can check or uncheck. Use a group when several choices belong to one value.
+
+<ComponentExample
+  name="checkbox/basic"
+  caption="Tap the row, or double-tap it with VoiceOver or TalkBack, to accept the terms."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Checkbox`:
+
+```text
+CheckboxGroup
+├── Checkbox
+│   └── CheckboxIndicator
+└── Checkbox
+    └── CheckboxIndicator
+```
+
+`Checkbox` renders a `Pressable`, and `CheckboxIndicator` and `CheckboxGroup` render a `View`. A checkbox works on its own too, without a group.
+
+## Usage
+
+Import the parts and put them together. A native view has no `<label>` to wrap it in, so put the label's text inside the checkbox: it names the checkbox, and a tap anywhere on the row checks it.
+
+```tsx
+import { Checkbox, CheckboxIndicator } from "@ui-sdk/react-native/checkbox"
+import { Text, View } from "react-native"
+
+function Example() {
+  return (
+    <Checkbox>
+      <View style={styles.box}>
+        <CheckboxIndicator>
+          <View style={styles.check} />
+        </CheckboxIndicator>
+      </View>
+      <Text>Accept terms and conditions</Text>
+    </Checkbox>
+  )
+}
+
+export { Example }
+```
+
+The indicator is mounted while the checkbox is checked or indeterminate. Draw the check with views, not a text glyph like ✓: text inside the checkbox becomes part of its name, so screen readers would read the glyph too.
+
+## Description
+
+`aria-description` gives the checkbox a hint that screen readers read after its name.
+
+<ComponentExample
+  name="checkbox/description"
+  caption="VoiceOver and TalkBack read the hint after the checkbox's name."
+/>
+
+## Disabled
+
+`disabled` prevents presses and changes, takes the checkbox out of Tab's order on Android, and screen readers announce it as dimmed or disabled.
+
+<ComponentExample
+  name="checkbox/disabled"
+  caption="Security alerts is disabled, so a tap leaves it checked."
+/>
+
+## Read-Only
+
+`readOnly` keeps the checkbox focusable while preventing the user from changing it. Use it for a setting managed somewhere else. It isn't announced, so say why in the label or nearby text.
+
+<ComponentExample
+  name="checkbox/read-only"
+  caption="A tap leaves the checkbox checked, since your organization requires it."
+/>
+
+## Indeterminate
+
+An indeterminate checkbox represents a partly checked set. Screen readers announce it as mixed. A press checks it; only your code puts it back into the mixed state.
+
+On Android, TalkBack reads the mixed state from the checkbox's own `aria-label`, so give a checkbox that can be mixed one. Named only by the text inside it, it reads as unchecked there.
+
+Start with `defaultChecked="indeterminate"`, or pass `"indeterminate"` as the controlled value. The indicator's state tells it which mark to show. A [parent checkbox](#parent-checkbox) derives this state from a group for you.
+
+```tsx
+<Checkbox aria-label="Select all" defaultChecked="indeterminate">
+  <CheckboxIndicator>
+    {(state) => (
+      <View style={state.indeterminate ? styles.dash : styles.check} />
+    )}
+  </CheckboxIndicator>
+</Checkbox>
+```
+
+## Controlled
+
+Pass `checked` and `onCheckedChange` to own the value. A [controller](#checkbox-controller) from `createCheckboxController()` changes it from anywhere, like the Toggle button below.
+
+<ComponentExample
+  name="checkbox/controlled"
+  caption="Change the checkbox, or press Toggle. The console logs each change and its reason."
+/>
+
+## Forms
+
+A native view takes part in no form, so the checkbox and the group have no `name` or `form` prop and render no hidden input. Read the value from `onCheckedChange`, `onValueChange` or a controller. `required` stays in the state for your styles and labels.
+
+## Group
+
+`CheckboxGroup` keeps one list of checked values. Each checkbox supplies its `value`, and the group returns the checked values in the order the checkboxes mounted. Name the group with `aria-label`.
+
+<ComponentExample
+  name="checkbox/group"
+  caption="Choose several toppings. The group keeps one list of checked values."
+/>
+
+## Parent Checkbox
+
+Add a checkbox with `parent` to check or uncheck the group. It's checked when every value is selected, unchecked when none are, and mixed in between.
+
+Pass `allValues` to the group so the parent has the right state on the first render. Otherwise it finds the values after the checkboxes mount.
+
+<ComponentExample
+  name="checkbox/group-parent"
+  caption="Select all checks every topping. Uncheck one topping to put Select all into its mixed state."
+/>
+
+## Disabled Group
+
+Disable the group to lock every checkbox, or disable one child to keep just that value fixed. A parent changes only enabled children.
+
+<ComponentExample
+  name="checkbox/group-disabled"
+  caption="The Backups group is disabled. In Sync folders, Select all changes the enabled folders while Desktop stays checked."
+/>
+
+## Controlled Group
+
+Pass `value` and `onValueChange` to own the checked values. A [controller](#checkboxgroup-controller) can replace that list, as Select Weekdays and Clear do below.
+
+<ComponentExample
+  name="checkbox/group-controlled"
+  caption="Choose working days, or press Select Weekdays or Clear. The console logs the group's value and the reason it changed."
+/>
+
+## Table
+
+The same parent checkbox can select rows from a table header. Each row supplies its value and its own `aria-label`.
+
+<ComponentExample
+  name="checkbox/table"
+  caption="Select rows one by one, or use Select all in the header. The console logs how many are selected."
+/>
+
+## Animation
+
+The indicator leaves through `onExit`. When the checkbox unchecks, the indicator calls `onExit` with a `done` function and stays mounted until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once. Checking the checkbox again before `done` cancels the exit, and a late `done` does nothing.
+
+Start your exit animation in `onExit` and pass `done` as its completion:
+
+```tsx
+const opacity = useRef(new Animated.Value(1)).current
+
+<CheckboxIndicator
+  onExit={(done) =>
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(done)
+  }
+  render={<Animated.View style={{ opacity }} />}
+/>
+```
+
+The indicator's state also has `startingStyle`, true for its first frame after it appears, and `endingStyle`, true while it leaves, so a style can start from one and end at the other. `keepMounted` keeps the indicator mounted while unchecked: unchecking still calls `onExit`, and the indicator stays once `done` runs.
+
+<ComponentExample
+  name="checkbox/indicator"
+  caption="Check and uncheck a task. The check fades in, and fades out before it unmounts."
+/>
+
+## Custom Rendering
+
+`render` replaces the `Pressable` with your own element, here a chip whose fill shows its state.
+
+<ComponentExample
+  name="checkbox/render"
+  caption="Tap a topic to follow it or stop following it. The chip's fill shows which ones you follow."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.box, state.checked && styles.checked]`. Each part receives the fields listed under [Part State](#part-state). The checkbox gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### Checkbox [#part-state-checkbox]
+
+<PartStateTable
+  component="checkbox"
+  part="root"
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxState"
+/>
+
+### CheckboxIndicator [#part-state-checkboxindicator]
+
+<PartStateTable
+  component="checkbox"
+  part="indicator"
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation).
+
+### CheckboxGroup [#part-state-checkboxgroup]
+
+<PartStateTable
+  component="checkbox-group"
+  part="group"
+  path="../../packages/core/src/components/checkbox/checkbox-group.ts"
+  name="CheckboxGroupState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Checkbox
+
+<TypeTable
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxOptions"
+/>
+
+### CheckboxIndicator
+
+<TypeTable
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxIndicatorProps"
+/>
+
+<TypeTable
+  path="../../packages/react-native/src/use-primitive.tsx"
+  name="ExitProps"
+/>
+
+### CheckboxGroup
+
+<TypeTable
+  path="../../packages/core/src/components/checkbox/checkbox-group.ts"
+  name="CheckboxGroupOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxState"
+/>
+
+The indicator receives the same state, with the first-frame and closing flags.
+
+<StateTable
+  path="../../packages/core/src/foundation/motion/presence-native.ts"
+  name="PresenceState"
+/>
+
+The group:
+
+<StateTable
+  path="../../packages/core/src/components/checkbox/checkbox-group.ts"
+  name="CheckboxGroupState"
+/>
+
+### Reasons
+
+`details.reason` says why the checked state changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxCheckedChangeReason"
+/>
+
+For a group, it says why the checked values changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/checkbox/checkbox-group.ts"
+  name="CheckboxGroupValueChangeReason"
+/>
+
+### Checkbox Controller
+
+Create one with `createCheckboxController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, runs the change callback like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/checkbox/checkbox.ts"
+  name="CheckboxController"
+/>
+
+### CheckboxGroup Controller
+
+Create one with `createCheckboxGroupController()` and pass it as `controller`.
+
+Its write methods work like the checkbox controller's.
+
+<ControllerTable
+  path="../../packages/core/src/components/checkbox/checkbox-group.ts"
+  name="CheckboxGroupController"
+/>
+
+### Events
+
+Callbacks get the new state or value first, then the details.
+
+| Prop              | On                  | Receives                                                                               |
+| ----------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| `onCheckedChange` | `Checkbox`          | `(checked, details)`: `true`, `false` or `"indeterminate"`, and the [reason](#reasons) |
+| `onValueChange`   | `CheckboxGroup`     | `(value, details)`: the checked values, and the [reason](#reasons)                     |
+| `onExit`          | `CheckboxIndicator` | `(done)`: call it when the exit animation ends                                         |
+
+## Accessibility
+
+The checkbox follows the [WAI-ARIA checkbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/), translated to React Native's accessibility props, and a group's parent checkbox follows its [mixed checkbox example](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/examples/checkbox-mixed/). `Checkbox` has the `checkbox` role and its checked and disabled state, so VoiceOver and TalkBack announce it as a checkbox that's checked, unchecked or mixed, and a double-tap toggles it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Checks or unchecks it, or checks a mixed one                 |
+| Enter      | Checks or unchecks it, on Android only                       |

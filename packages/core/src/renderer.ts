@@ -75,6 +75,10 @@ export {
 } from "./foundation/kernel/live"
 export { inDocumentOrder } from "./foundation/kernel/order"
 export {
+  createPresence,
+  type PresenceState,
+} from "./foundation/motion/presence-native"
+export {
   attrs,
   bind,
   commit,

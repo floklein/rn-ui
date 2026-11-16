@@ -421,10 +421,11 @@
   "@ui-sdk/web/waterfall": 22841,
   "@ui-sdk/web (perf pages)": 108369,
   "@ui-sdk/web (perf pages) (lazy)": 13395,
-  "@ui-sdk/react-native/button": 8049,
+  "@ui-sdk/react-native/button": 8643,
   "@ui-sdk/react-native/button (lazy)": 182,
-  "@ui-sdk/react-native/input": 10332,
-  "@ui-sdk/react-native/primitive": 4338,
-  "@ui-sdk/react-native/switch": 10596,
-  "@ui-sdk/react-native/textarea": 9912
+  "@ui-sdk/react-native/checkbox": 14797,
+  "@ui-sdk/react-native/input": 10783,
+  "@ui-sdk/react-native/primitive": 4875,
+  "@ui-sdk/react-native/switch": 11121,
+  "@ui-sdk/react-native/textarea": 10425
 }

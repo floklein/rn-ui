@@ -48,7 +48,7 @@ describe("the native example check", () => {
 
   test("doesn't hold a pending component to its examples", () => {
     const { status, stdout } = check()
-    expect(stdout).not.toMatch(/^checkbox/m)
+    expect(stdout).not.toMatch(/^waterfall/m)
     expect(status).toBe(0)
   })
 

@@ -18,6 +18,7 @@
   "license": "Apache-2.0",
   "exports": {
     "./button": "./src/button.tsx",
+    "./checkbox": "./src/checkbox.tsx",
     "./input": "./src/input.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
@@ -37,6 +38,10 @@
       "./button": {
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"
+      },
+      "./checkbox": {
+        "types": "./dist/checkbox.d.ts",
+        "default": "./dist/checkbox.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",
