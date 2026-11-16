@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `74d3ea70` (2026-11-16, ticket 78: Toggle, native behavior files, member order and the iOS toggle reading)
+Last reviewed: `74d3ea70` (2026-11-16, ticket 78: Toggle, native behavior files, member order and the iOS toggle reading; ticket 84: Avatar at `d5efadab`, with its findings fixed; ticket 60's review at `5b29dbdc`)
 
 ## Settled
 
@@ -45,6 +45,8 @@ Last reviewed: `74d3ea70` (2026-11-16, ticket 78: Toggle, native behavior files,
 - **A part that is only `aria-disabled` leaves Android's Tab order too**: the translation turns it into `accessibilityState.disabled`, which disables the view. Core uses `aria-disabled` alone where a disabled item should stay focusable; the components that do (menus, lists) need to decide this when they land.
 - **Switch's basic example names the switch twice on iOS**: its visible `Text` sits outside the `Pressable` and is its own accessible element. Putting the text inside `Switch` would make one element and widen the press target.
 - **The install commands name `@ui-sdk/*`**, which the fork publishes as `@rn-ui-sdk/*`; the docs follow upstream's names until the owner decides.
+- **A loaded avatar image is no Tab stop on Android, and TalkBack reading it is unchecked**: `AvatarImage` keeps `accessible` false there, since `Image` turns `accessible` into `isFocusable` (ticket 84). TalkBack should read the `contentDescription` of a non-focusable view; it needs the manual pass.
+- **The avatar fallback may flash a frame for a cached image**: `Image` reports `onLoad` asynchronously even from its cache, where the web knows at bind. Not checked on a device; a `delay` hides it.
 - `scripts/check-packages.mjs` builds the adapter with `skipLibCheck: true`, since React Native's globals clash with `lib.dom` (ticket 17 revisits it).
 - **A toggle group's `aria-label` probably reaches no screen reader** (#78): it becomes `accessibilityLabel` on a container with no role, and Fabric flattens a `View` whose only props are a label and a role (`ViewShadowNode.cpp`'s `initialize()` doesn't count them), unless a `testID` keeps it. Not checked on a device, and it reaches every group container.
 - **An inline `ref` callback on a group member rejoins the group on every render** (#78): `mergeRefs` is keyed by ref identity, so a new ref detaches and reattaches the view, running the behavior's cleanup and join again. Symmetric, untested.

@@ -82,6 +82,13 @@
       "why": "The controller's focus() calls focusPart instead of element(\"root\")?.focus()."
     },
     {
+      "kind": "reroute",
+      "file": "packages/core/src/components/avatar/avatar.ts",
+      "mirrors": ["packages/core/src/components/avatar/avatar.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.reportImageStatus, the image's load, error and source decisions as an api method, which a native Image's events call where watchImage's handlers read an <img>."
+    },
+    {
       "kind": "edit",
       "file": "AGENTS.md",
       "mirrors": ["AGENTS.md"],
@@ -366,10 +373,21 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle and tabs."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, tabs and testing."
     }
   ],
   "components": {
+    "avatar": {
+      "entry": "packages/react-native/src/avatar.tsx",
+      "slots": {
+        "avatar.root": {
+          "covered": "packages/react-native/src/avatar.tsx"
+        },
+        "avatar.image": {
+          "covered": "packages/react-native/src/avatar.tsx"
+        }
+      }
+    },
     "button": {
       "entry": "packages/react-native/src/button.tsx",
       "slots": {
@@ -462,7 +480,6 @@
     "accordion",
     "alert-dialog",
     "autocomplete",
-    "avatar",
     "calendar",
     "carousel",
     "collapsible",
@@ -535,6 +552,12 @@
     },
     {
       "component": "button",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "avatar",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

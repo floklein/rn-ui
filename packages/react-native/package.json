@@ -17,6 +17,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "exports": {
+    "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./primitive": "./src/primitive.ts",
@@ -35,6 +36,10 @@
   ],
   "publishConfig": {
     "exports": {
+      "./avatar": {
+        "types": "./dist/avatar.d.ts",
+        "default": "./dist/avatar.js"
+      },
       "./button": {
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"

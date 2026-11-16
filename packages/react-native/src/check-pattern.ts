@@ -13,10 +13,11 @@ import {
 } from "./host-tree"
 
 /**
- * A pattern the native check knows, by its WAI-ARIA Authoring Practices name.
+ * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
+ * or by its role where the Practices have none, like `"img"`.
  * @experimental
  */
-type NativePattern = "button" | "checkbox" | "switch" | "tabs"
+type NativePattern = "button" | "checkbox" | "img" | "switch" | "tabs"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -44,7 +45,7 @@ function requireName(context: Context, node: HostNode, role: string) {
   if (!nameOf(node)) {
     context.problem(
       node,
-      `has no name; a ${role} needs an accessibilityLabel or text inside it.`
+      `has no name; ${/^[aeiou]/.test(role) ? "an" : "a"} ${role} needs an accessibilityLabel or text inside it.`
     )
   }
 }
@@ -137,6 +138,20 @@ async function checkboxPattern(context: Context) {
         (node) => stateOf(node).checked
       )
     }
+  }
+}
+
+// An image still loading or that failed is hidden, and its fallback is read.
+async function imgPattern(context: Context) {
+  const images = context.withRole("image")
+  for (const image of images) {
+    requireName(context, image, "image")
+  }
+  if (!images.length && !context.elements().some((node) => nameOf(node))) {
+    context.problem(
+      context.root,
+      "has no image and no text, so a screen reader reads nothing."
+    )
   }
 }
 
@@ -235,6 +250,7 @@ async function tabsPattern(context: Context) {
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
+  img: imgPattern,
   switch: switchPattern,
   tabs: tabsPattern,
 }

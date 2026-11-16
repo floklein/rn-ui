@@ -1,0 +1,191 @@
+---
+title: Avatar
+description: Show an image with a fallback while it loads or if it fails.
+---
+
+Use an Avatar for a person or a team, like in a comment, a member list or an account menu. It shows initials or an icon until the image loads, and keeps showing them if the image fails.
+
+<ComponentExample
+  name="avatar/basic"
+  caption="The image replaces the initials once it loads. VoiceOver and TalkBack read the person's name in either state."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build an `Avatar`:
+
+```text
+Avatar
+├── AvatarImage
+└── AvatarFallback
+```
+
+- `Avatar` renders a `View` and shares the image's loading state with its parts.
+- `AvatarImage` renders an `Image`.
+- `AvatarFallback` renders a `View`, shown when no image is loaded.
+
+The image stays mounted from the first render, so it starts loading at once, but it's out of sight and out of the accessibility tree until it loads. The fallback stays visible until then; if loading fails, the fallback remains.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@ui-sdk/react-native/avatar"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Avatar>
+      <AvatarImage
+        source={{ uri: "https://github.com/shadcn.png" }}
+        alt="shadcn"
+      />
+      <AvatarFallback>
+        <Text>CN</Text>
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+export { Example }
+```
+
+## Fallback Delay
+
+Set `delay` on the fallback to wait before showing it. This avoids flashing initials when an image loads quickly. Without a delay, the fallback appears immediately.
+
+```tsx
+<Avatar>
+  <AvatarImage source={{ uri: "https://github.com/shadcn.png" }} alt="shadcn" />
+  <AvatarFallback delay={600}>
+    <Text>CN</Text>
+  </AvatarFallback>
+</Avatar>
+```
+
+## Image Props
+
+`AvatarImage` takes every `Image` prop, like `source`, `resizeMode` and `cache` on iOS. A `source` with no `uri`, or none at all, fails at once, so the fallback stays.
+
+## Loading Status
+
+`onLoadingStatusChange` receives the new status and change details. The possible statuses are `loading`, `loaded`, `error`, and `idle`, which the status returns to when the image leaves.
+
+```tsx
+<Avatar
+  onLoadingStatusChange={(status, details) => {
+    if (status === "error") reportBrokenImage(details.reason)
+  }}
+>
+  <AvatarImage source={{ uri: user.image }} alt={user.name} />
+  <AvatarFallback>
+    <Text>{user.initials}</Text>
+  </AvatarFallback>
+</Avatar>
+```
+
+When you replace a loaded image's `source`, the loaded image keeps showing while the next one loads. A failed replacement shows the fallback. `details.event` is always undefined on native, since an `Image` reports its load with no DOM event.
+
+## Styling
+
+Give the root a size, `overflow: "hidden"` and a radius, and let the image and fallback fill it. Each part's style can be a function of the fields listed under [Part State](#part-state), like `(state) => [styles.image, state.loadingStatus === "loaded" && styles.loaded]`. The image's own hidden style comes after yours until it loads.
+
+## Part State
+
+### Avatar [#part-state-avatar]
+
+<PartStateTable
+  component="avatar"
+  part="root"
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarState"
+/>
+
+### AvatarImage [#part-state-avatarimage]
+
+<PartStateTable
+  component="avatar"
+  part="image"
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarState"
+/>
+
+### AvatarFallback [#part-state-avatarfallback]
+
+<PartStateTable
+  component="avatar"
+  part="fallback"
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Avatar
+
+<TypeTable
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarOptions"
+/>
+
+### AvatarImage
+
+The image. Renders an `Image` and takes its props.
+
+### AvatarFallback
+
+<TypeTable
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarFallbackProps"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the same state.
+
+<StateTable
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarState"
+/>
+
+### Reasons
+
+`details.reason` says why the status changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/avatar/avatar.ts"
+  name="AvatarLoadingStatusChangeReason"
+/>
+
+### Events
+
+Callbacks get the new status first, then the details.
+
+| Prop                    | On       | Receives                                                           |
+| ----------------------- | -------- | ------------------------------------------------------------------ |
+| `onLoadingStatusChange` | `Avatar` | `(status, details)`: the image's status and the [reason](#reasons) |
+
+## Accessibility
+
+A loaded image has the `image` role and is named by its `alt`. Until it loads, it's hidden from VoiceOver and TalkBack, which read the fallback instead. Like an image on the web, it's never a stop for Tab on a hardware keyboard. Make the fallback read the person's name too: give it `accessible` and an `aria-label`, so a screen reader says the name rather than the initials.
+
+```tsx
+<AvatarFallback accessible aria-label="shadcn">
+  <Text>CN</Text>
+</AvatarFallback>
+```
+
+When a visible name beside the avatar already identifies the person, give the image an empty `alt`, which leaves it decorative, and hide the fallback with `aria-hidden`.
