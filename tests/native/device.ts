@@ -31,6 +31,7 @@ const limits = {
   wdaLaunch: 120_000,
   response: 300_000,
   newCommand: 300,
+  adb: 120_000,
 }
 
 const capabilities =
@@ -59,6 +60,10 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        // A loaded host's emulator answered adb past the driver's 20 s.
+        "appium:adbExecTimeout": limits.adb,
+        "appium:androidInstallTimeout": limits.adb,
+        "appium:uiautomator2ServerInstallTimeout": limits.adb,
         // An emulator from simlock sits behind its own adb server.
         ...(process.env.ANDROID_ADB_SERVER_PORT && {
           "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
