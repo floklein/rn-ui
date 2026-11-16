@@ -7,13 +7,20 @@ import { Platform, Pressable, Text, TextInput, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
 import {
   PasswordInput,
   PasswordInputControl,
   PasswordInputToggle,
 } from "../src/password-input"
+import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
+import { Separator } from "../src/separator"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -31,6 +38,10 @@ const checkRadioGroup = () =>
   checkPattern(screen.container, "radio-group", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
+const checkSeparator = () =>
+  checkPattern(screen.container, "separator", { os, act })
+const checkDisclosure = () =>
+  checkPattern(screen.container, "disclosure", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -454,6 +465,25 @@ describe("checkPattern's button pattern on toggle buttons", () => {
 })
 
 describe("checkPattern's radio group pattern on the native host", () => {
+  test("passes on a radio group, checked or not, disabled or with a disabled radio", async () => {
+    for (const props of [{ defaultValue: "small" }, {}, { disabled: true }]) {
+      await render(
+        <RadioGroup aria-label="Size" {...props}>
+          <Radio value="small" aria-label="Small">
+            <RadioIndicator />
+          </Radio>
+          <Radio value="large" aria-label="Large" disabled>
+            <RadioIndicator />
+          </Radio>
+          <Radio value="medium" aria-label="Medium">
+            <RadioIndicator />
+          </Radio>
+        </RadioGroup>
+      )
+      await expect(checkRadioGroup()).resolves.toBeUndefined()
+    }
+  })
+
   test("passes on a rating, and on one with half stars", async () => {
     const onValueChange = jest.fn()
     await render(
@@ -645,6 +675,110 @@ describe("checkPattern's tabs pattern on the native host", () => {
     await render(<HandTabs selected={["Profile"]} stuck />)
     await expect(checkTabs()).rejects.toThrow(
       'the tab "Billing" isn\'t selected after the activate action'
+    )
+  })
+})
+
+describe("checkPattern's disclosure pattern on the native host", () => {
+  test("passes on a collapsible, opening and closing it, and on a disabled one", async () => {
+    await render(
+      <Collapsible>
+        <CollapsibleTrigger>
+          <Text>Order #4189</Text>
+        </CollapsibleTrigger>
+        <CollapsiblePanel>
+          <Text>Linen shirt</Text>
+        </CollapsiblePanel>
+      </Collapsible>
+    )
+    await expect(checkDisclosure()).resolves.toBeUndefined()
+    await render(
+      <Collapsible disabled>
+        <CollapsibleTrigger>
+          <Text>Order #4189</Text>
+        </CollapsibleTrigger>
+      </Collapsible>
+    )
+    await expect(checkDisclosure()).resolves.toBeUndefined()
+  })
+
+  test("fails with no button that has an expanded state", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Order #4189</Text>
+      </Pressable>
+    )
+    await expect(checkDisclosure()).rejects.toThrow(
+      "has no button with an expanded state"
+    )
+  })
+
+  test("fails on a disclosure button with no name", async () => {
+    await render(
+      <Collapsible>
+        <CollapsibleTrigger />
+      </Collapsible>
+    )
+    await expect(checkDisclosure()).rejects.toThrow("the button has no name")
+  })
+
+  test("fails on a button whose expanded state doesn't change after the activate action", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: false }}
+        onPress={() => {}}
+      >
+        <Text>Order #4189</Text>
+      </Pressable>
+    )
+    await expect(checkDisclosure()).rejects.toThrow(
+      "stays collapsed after the activate action"
+    )
+  })
+})
+
+describe("checkPattern's separator pattern on the native host", () => {
+  test("passes on separators, decorative or not, in either orientation", async () => {
+    await render(
+      <View>
+        <Separator />
+        <Separator orientation="vertical" />
+        <Separator decorative />
+      </View>
+    )
+    await expect(checkSeparator()).resolves.toBeUndefined()
+  })
+
+  test("fails on a separator a screen reader stops on", async () => {
+    await render(<Separator accessible aria-label="Section break" />)
+    await expect(checkSeparator()).rejects.toThrow(
+      'the View "Section break" is an element a screen reader stops on; a separator is structure, never read on its own.'
+    )
+  })
+
+  test("fails on a separator the keyboard stops on", async () => {
+    await render(<Separator focusable />)
+    await expect(checkSeparator()).rejects.toThrow(
+      "the View is a keyboard stop; a separator is never focusable."
+    )
+  })
+
+  test("fails on a separator with a role", async () => {
+    await render(<Separator accessibilityRole="button" />)
+    await expect(checkSeparator()).rejects.toThrow(
+      'the button has the button role; a separator has no role on native, or "none".'
+    )
+  })
+
+  test("fails on text inside a separator, which a screen reader reads", async () => {
+    await render(
+      <Separator>
+        <Text>or</Text>
+      </Separator>
+    )
+    await expect(checkSeparator()).rejects.toThrow(
+      'the Text "or" is an element a screen reader stops on'
     )
   })
 })

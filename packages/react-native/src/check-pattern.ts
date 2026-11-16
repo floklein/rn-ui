@@ -14,11 +14,20 @@ import {
 
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
- * or by its role where the Practices have none, like `"img"`.
+ * or by its role where the Practices have none, like `"img"`. Pass a
+ * separator's own view as the root of `"separator"`, since nothing marks one.
  * @experimental
  */
 type NativePattern =
-  "button" | "checkbox" | "img" | "radio-group" | "switch" | "tabs" | "textbox"
+  | "button"
+  | "checkbox"
+  | "disclosure"
+  | "img"
+  | "radio-group"
+  | "separator"
+  | "switch"
+  | "tabs"
+  | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -139,6 +148,41 @@ async function checkboxPattern(context: Context) {
         (node) => stateOf(node).checked
       )
     }
+  }
+}
+
+// A disclosure's button says with its expanded state whether its content
+// shows, and activating it shows or hides the content (APG disclosure).
+async function disclosurePattern(context: Context) {
+  const buttons = () =>
+    context
+      .withRole("button")
+      .filter((node) => typeof stateOf(node).expanded === "boolean")
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no button with an expanded state, so it isn't a disclosure (APG disclosure)."
+    )
+    return
+  }
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  for (const index of buttons().keys()) {
+    const button = buttons()[index]
+    if (isDisabled(button)) {
+      continue
+    }
+    const before = stateOf(button).expanded
+    await performWatched(button, "activate", context.act)
+    if (stateOf(buttons()[index]).expanded === before) {
+      context.problem(
+        buttons()[index],
+        `stays ${before ? "expanded" : "collapsed"} after the activate action; activating a disclosure button shows or hides its content (APG disclosure).`
+      )
+      continue
+    }
+    await performWatched(buttons()[index], "activate", context.act)
   }
 }
 
@@ -331,11 +375,39 @@ async function textboxPattern(context: Context) {
   }
 }
 
+// Neither platform has a separator role, so a separator is checked for what
+// it must not be: an element read on its own, or a keyboard stop.
+async function separatorPattern(context: Context) {
+  for (const node of context.elements()) {
+    context.problem(
+      node,
+      "is an element a screen reader stops on; a separator is structure, never read on its own."
+    )
+  }
+  for (const node of shownNodes(context.root)) {
+    const role = roleOf(node)
+    if (role !== undefined && role !== "none") {
+      context.problem(
+        node,
+        `has the ${role} role; a separator has no role on native, or "none".`
+      )
+    }
+    if (node.props.focusable === true) {
+      context.problem(
+        node,
+        "is a keyboard stop; a separator is never focusable."
+      )
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
+  disclosure: disclosurePattern,
   img: imgPattern,
   "radio-group": radioGroupPattern,
+  separator: separatorPattern,
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,

@@ -10,6 +10,7 @@ type Node = {
   label: string
   checked?: boolean | "mixed"
   selected?: true
+  expanded?: true
   enabled: boolean
   text?: string
   value?: string
@@ -114,6 +115,11 @@ function attributes(tag: string) {
   )
 }
 
+const idOf = (attrs: Record<string, string>) =>
+  platform === "ios"
+    ? attrs.name
+    : attrs["resource-id"]?.replace(/^.*:id\//, "")
+
 const checkedOf = (value: string) =>
   value === "mixed" ? "mixed" : value === "checked"
 
@@ -145,10 +151,7 @@ function parseTree(source: string) {
     if (unreached) {
       continue
     }
-    const id =
-      platform === "ios"
-        ? attrs.name
-        : attrs["resource-id"]?.replace(/^.*:id\//, "")
+    const id = idOf(attrs)
     // iOS has no checkbox element: React Native puts the role in the value.
     const checkbox =
       platform === "ios" && /^checkbox, /.test(attrs.value ?? "")
@@ -198,6 +201,10 @@ function parseTree(source: string) {
         node.secure = true
       }
     }
+    // React Native's iOS value says "expanded", and nothing while collapsed.
+    if (platform === "ios" && attrs.value?.split(", ").includes("expanded")) {
+      node.expanded = true
+    }
     const selected =
       platform === "ios"
         ? (attrs.traits ?? "").split(", ").includes("Selected")
@@ -245,6 +252,22 @@ function useDevice(name: string) {
         }
         await new Promise((done) => setTimeout(done, 250))
       }
+    },
+    /** The element's size on screen, for a part whose state only shows in its style. */
+    async size(id: string) {
+      return driver.$(byId(id)).getSize()
+    },
+    /** The element's attributes as the OS reports them, for what `tree` leaves out. */
+    async attributes(id: string) {
+      for (const [, , tag] of (await driver.getPageSource()).matchAll(
+        /<([\w.]+)\s([^>]*?)\/?>/g
+      )) {
+        const attrs = attributes(tag)
+        if (idOf(attrs) === id) {
+          return attrs
+        }
+      }
+      throw new Error(`No element with the test ID ${id} in the tree.`)
     },
     async press(id: string) {
       await driver.$(byId(id)).click()

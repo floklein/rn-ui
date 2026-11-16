@@ -1,0 +1,123 @@
+---
+title: Separator
+description: Divide groups of content with a horizontal or vertical line.
+---
+
+Use a separator between groups of content that a reader should take as separate, like a profile's header and its bio.
+
+<ComponentExample
+  name="separator/basic"
+  caption="The line divides Hollis Grant's name and email from the bio below. VoiceOver and TalkBack read the text on each side and pass over the line."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Usage
+
+Import the separator and put it between two groups of content. It renders a `View` with no size or color, so give it a style:
+
+```tsx
+import { Separator } from "@ui-sdk/react-native/separator"
+import { StyleSheet, Text, View } from "react-native"
+
+function Profile() {
+  return (
+    <View>
+      <Text>Hollis Grant</Text>
+      <Separator style={styles.line} />
+      <Text>Designs the billing and onboarding flows.</Text>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  line: { height: 1, backgroundColor: "#e4e4e7" },
+})
+
+export { Profile }
+```
+
+## Vertical
+
+Set `orientation="vertical"` for a line between items in a row. Give it a width, and it takes the row's height, since a row stretches its children by default.
+
+<ComponentExample
+  name="separator/vertical"
+  caption="A vertical line sits between Privacy, Terms and Cookies. Each link is its own stop for VoiceOver and TalkBack, and the lines are not."
+/>
+
+## Stacked Content
+
+A vertical separator stretches to the tallest item in its row, so it spans a number and its label.
+
+<ComponentExample
+  name="separator/menu"
+  caption="Compare the lines with the stats. Each one runs the full height of Projects, Followers and Following."
+/>
+
+## Rows
+
+Put a separator between each pair of rows to divide a list of details.
+
+<ComponentExample
+  name="separator/list"
+  caption="Lines divide Plan, Seats and Renews. A screen reader reads each label and its value in turn."
+/>
+
+## Decorative
+
+Set `decorative` when the line adds no information. Here, the word “or” already says the two ways to sign in are separate.
+
+<ComponentExample
+  name="separator/decorative"
+  caption="Swipe from Sign In with Passkey to Email Me a Link with VoiceOver or TalkBack. It reads “or” and skips the lines."
+/>
+
+A decorative separator gets the `none` role. Neither platform reads a separator either way, so `decorative` mostly records your intent and keeps the code the same as on the web.
+
+## Custom Rendering
+
+The separator takes `render`, an element or a function of the native props and its state. Spread the props on another host, such as an `Animated.View`, so it keeps its style and, when decorative, its `none` role.
+
+## Styling
+
+The separator is unstyled. Give it a background, a height when it's horizontal and a width when it's vertical. Its style can be a function of its state, so one style serves both orientations: `(state) => [styles.line, state.orientation === "vertical" ? styles.vertical : styles.horizontal]`.
+
+## Part State
+
+### Separator [#part-state-separator]
+
+<PartStateTable
+  component="separator"
+  part="root"
+  path="../../packages/core/src/components/separator/separator.ts"
+  name="SeparatorState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props.
+
+### Separator
+
+<TypeTable
+  path="../../packages/core/src/components/separator/separator.ts"
+  name="SeparatorOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/separator/separator.ts"
+  name="SeparatorState"
+/>
+
+## Accessibility
+
+On the web, a separator has the [WAI-ARIA separator role](https://www.w3.org/TR/wai-aria-1.2/#separator) and its orientation. Neither iOS nor Android announces a separator role, so the line is a plain `View`: VoiceOver and TalkBack pass over it and read the content on each side, and it never takes focus, so Tab moves past it on a hardware keyboard. Where the division matters to a screen reader user, say it in the content itself, with a heading or a label for each group.

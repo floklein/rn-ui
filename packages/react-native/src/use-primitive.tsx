@@ -340,11 +340,16 @@ const settled: PresenceState = { startingStyle: false, endingStyle: false }
 // Follows whether the part is shown, as its slot's `present` says without
 // `keepMounted`. The render that hides it already holds it for `onExit`.
 function usePresence(
+  part: Part,
   shown: boolean,
   onExit: OnExit | undefined,
   rerender: () => void
 ) {
-  const [presence] = React.useState(() => createPresence(rerender))
+  const current = React.useRef(part)
+  current.current = part
+  const [presence] = React.useState(() =>
+    createPresence(rerender, () => current.current)
+  )
   const was = React.useRef(shown)
   const exit = React.useRef(onExit)
   exit.current = onExit
@@ -443,8 +448,15 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   }, [part])
   const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
   const { onExit, ...hostProps } = props as typeof props & ExitProps
+  // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted.
   const presence = usePresence(
-    animates && present(part, { ...slotProps, keepMounted: false }),
+    part,
+    animates &&
+      present(part, {
+        ...slotProps,
+        keepMounted: false,
+        hiddenUntilFound: false,
+      }),
     onExit,
     rerender
   )
@@ -472,6 +484,10 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
         }
       : {}
     const translated = nativeProps(part, slotProps, user, presence.exiting)
+    // Core keeps an aria-disabled part focusable and refuses its press, but
+    // Pressability reads only `disabled`: without it the part shows feedback.
+    const disabled =
+      pressable && translated.accessibilityState?.disabled === true
     const { role } = { ...attrs(part, slotProps), ...user } as { role?: string }
     // Fabric flattens a view with only a role or a label, and Android then
     // orders keyboard Tab by its children's edges across the whole screen.
@@ -486,6 +502,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       host,
       mergeProps(
         handlers,
+        disabled ? { disabled } : {},
         container,
         translated,
         { ref: viewRef(part, behaviors.get(owner.instance)) },
@@ -496,7 +513,9 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       (animates
         ? { ...partState(part, slotProps), ...presence.state }
         : partState(part, slotProps)) as PartState<P, S>,
-      interaction
+      disabled
+        ? { ...interaction, pressed: false, hovered: false }
+        : interaction
     )
   }
   if (provided === scope) {

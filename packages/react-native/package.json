@@ -20,10 +20,13 @@
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
+    "./collapsible": "./src/collapsible.tsx",
     "./input": "./src/input.tsx",
     "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
+    "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
+    "./separator": "./src/separator.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
@@ -52,6 +55,10 @@
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
       },
+      "./collapsible": {
+        "types": "./dist/collapsible.d.ts",
+        "default": "./dist/collapsible.js"
+      },
       "./input": {
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
@@ -64,9 +71,17 @@
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
       },
+      "./radio": {
+        "types": "./dist/radio.d.ts",
+        "default": "./dist/radio.js"
+      },
       "./rating": {
         "types": "./dist/rating.d.ts",
         "default": "./dist/rating.js"
+      },
+      "./separator": {
+        "types": "./dist/separator.d.ts",
+        "default": "./dist/separator.js"
       },
       "./switch": {
         "types": "./dist/switch.d.ts",

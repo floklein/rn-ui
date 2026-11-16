@@ -1,0 +1,249 @@
+---
+title: Collapsible
+description: Show and hide a panel, preserve its contents, and animate its height.
+---
+
+Use a collapsible to show and hide one panel of content.
+
+<ComponentExample
+  name="collapsible/basic"
+  caption="Tap Order #4189, or swipe to it with VoiceOver or TalkBack and double-tap, to show the items."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Collapsible`:
+
+```text
+Collapsible
+├── CollapsibleTrigger
+└── CollapsiblePanel
+```
+
+`CollapsibleTrigger` renders a `Pressable` with the button role, expanded while the panel is open. `Collapsible` and `CollapsiblePanel` render a `View`. Put other content around them, like a heading or a summary that always shows.
+
+## Usage
+
+Import the parts and put them together. Text inside the trigger goes in a `Text`, and names it:
+
+```tsx
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "@ui-sdk/react-native/collapsible"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger>
+        <Text>Order details</Text>
+      </CollapsibleTrigger>
+      <CollapsiblePanel>
+        <Text>2 × Linen shirt</Text>
+      </CollapsiblePanel>
+    </Collapsible>
+  )
+}
+
+export { Example }
+```
+
+## Disabled
+
+Set `disabled` on the root to stop its trigger from opening or closing the panel. Screen readers still reach the trigger and announce it as dimmed or disabled. On Android the disabled state disables the view, so Tab skips it.
+
+```tsx
+<Collapsible disabled>
+  <CollapsibleTrigger>
+    <Text>Gift options</Text>
+  </CollapsibleTrigger>
+  <CollapsiblePanel>
+    <Text>Add a gift message and wrapping.</Text>
+  </CollapsiblePanel>
+</Collapsible>
+```
+
+## Keep Mounted
+
+Panels unmount when they close. Set `keepMounted` on the panel to keep it mounted and hidden, so a field keeps what you typed into it. Native has no find in page, so `hiddenUntilFound` only keeps the panel mounted, like `keepMounted`.
+
+<ComponentExample
+  name="collapsible/keep-mounted"
+  caption="Open Add a delivery note, type a note, then close and reopen the panel. Your note is still there."
+/>
+
+## Controlled
+
+Pass `open` and update it in `onOpenChange`. Call `details.cancel()` in the callback to cancel the change.
+
+For a button elsewhere on the screen, create a [controller](#controller) with `createCollapsibleController()` and pass it as `controller`. Its `focus()` moves VoiceOver's or TalkBack's focus to the trigger. Create one controller per mounted collapsible.
+
+<ComponentExample
+  name="collapsible/controlled"
+  caption="Open Recovery codes with Toggle or its trigger, then tap Done. The log shows each change and its reason."
+/>
+
+The callback receives the new state and `details`, whose `reason` is `"trigger-press"` or `"imperative"`, and whose `source` is `"touch"`, or `"virtual"` while a screen reader runs.
+
+## Animation
+
+The panel's state holds its size, `panelHeight` and `panelWidth`, in place of the web's `--collapsible-panel-*` variables. The panel lays its children out in a view of its own and measures that view, so the size is the content's whatever height the panel's style gives it. Animate the panel's height to `panelHeight` with `overflow: "hidden"`. The panel's `flexDirection`, `gap` and alignment lay out its children as usual, but its padding sits outside the measured view, so put padding on the content rather than the panel.
+
+The panel leaves through `onExit`. When it closes, it calls `onExit` with a `done` function and stays on screen until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once, or hides with `keepMounted`.
+
+`Grow` is the example's own: an effect that animates the height to the size it's given.
+
+While it leaves, `panelHeight` is the height the panel had when it began closing, so a closing that interrupts an opening animates back from where it was, not from the content's full height. Once closed it is `0`. The state also has `startingStyle`, true for the panel's first frame after it appears, and `endingStyle`, true while it leaves.
+
+```tsx
+const [height] = useState(() => new Animated.Value(0))
+
+<CollapsiblePanel
+  render={<Animated.View style={{ height, overflow: "hidden" }} />}
+  onExit={(done) =>
+    Animated.timing(height, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start(() => done())
+  }
+>
+  {(state) => <Grow height={height} to={state.panelHeight} />}
+</CollapsiblePanel>
+```
+
+Opening settles at once, so `onOpenChangeComplete(true)` runs as the panel appears, before an opening animation ends. `onOpenChangeComplete(false)` runs once `done` is called, or at once without `onExit`. A panel open from the start reports neither.
+
+<ComponentExample
+  name="collapsible/animation"
+  caption="Open and close Release notes. The panel grows and shrinks, and the log shows when opening and closing finish."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its role, expanded state and press.
+
+<ComponentExample
+  name="collapsible/render"
+  caption="Tap Track parcel. The summary changes from Arrives Thursday to 3 updates, and the trigger shades while open."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.trigger, state.open && styles.open]`. Each part receives the fields listed under [Part State](#part-state). The trigger gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### Collapsible [#part-state-collapsible]
+
+<PartStateTable
+  component="collapsible"
+  part="root"
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsibleState"
+/>
+
+### CollapsibleTrigger [#part-state-collapsibletrigger]
+
+<PartStateTable
+  component="collapsible"
+  part="trigger"
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsibleTriggerState"
+/>
+
+### CollapsiblePanel [#part-state-collapsiblepanel]
+
+<PartStateTable
+  component="collapsible"
+  part="panel"
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsiblePanelState"
+/>
+
+With `startingStyle` and `endingStyle`, and its size in pixels, described under [Animation](#animation):
+
+| Field         | Type     | Description                                                                                                     |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `panelHeight` | `number` | The content's height while open, the panel's height when it began closing while it leaves, and `0` once closed. |
+| `panelWidth`  | `number` | The same for the width, which follows the panel's own.                                                          |
+
+Both are unset until the content has been laid out.
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `CollapsibleTrigger` also takes `Pressable`'s props, and the other parts take `View`'s.
+
+### Collapsible
+
+<TypeTable
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsibleOptions"
+/>
+
+### CollapsibleTrigger
+
+The trigger takes no options of its own, only `Pressable`'s props.
+
+### CollapsiblePanel
+
+<TypeTable
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsiblePanelProps"
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why the panel opened or closed. `"find-in-page"` never happens on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsibleOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createCollapsibleController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, and returns `false` when the change was canceled or changed nothing.
+
+<ControllerTable
+  path="../../packages/core/src/components/collapsible/collapsible.ts"
+  name="CollapsibleController"
+/>
+
+### Events
+
+Callbacks get the new state first, then the details.
+
+| Prop                   | On            | Receives                                                     |
+| ---------------------- | ------------- | ------------------------------------------------------------ |
+| `onOpenChange`         | `Collapsible` | `(open, details)`: the new state, and the [reason](#reasons) |
+| `onOpenChangeComplete` | `Collapsible` | `(open)`, as described under [Animation](#animation)         |
+
+## Accessibility
+
+The collapsible follows the [WAI-ARIA disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/), translated to React Native's accessibility props: the trigger has the button role and its expanded and disabled state. TalkBack says whether it's expanded or collapsed. React Native 0.88 says nothing on iOS for a collapsed trigger, so VoiceOver reads only its name until the panel opens. A double-tap opens or closes the panel. The panel is a `View` with no role, and while closed or leaving, screen readers skip it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Opens or closes the panel from the trigger                   |
+| Enter      | Opens or closes the panel, on Android only                   |
+
+Native never reports where the screen reader's focus is, so closing a panel with focus inside it leaves focus to the OS rather than moving it back to the trigger.

@@ -7,6 +7,7 @@ import {
   openAttrs,
   triggerKeydown,
 } from "../../foundation/disclosure/disclosure"
+import { focusPart } from "../../foundation/focus/focus-part"
 import { isDisabled, watchFormDisabled } from "../../foundation/forms/form"
 import { stateAndRenders } from "../../foundation/motion/panel"
 import { createController } from "../../foundation/kernel/controller"
@@ -175,7 +176,7 @@ const collapsiblePrimitive = /* @__PURE__ */ definePrimitive({
     ...(options.open === undefined ? {} : { open: options.open }),
   }),
   api(context) {
-    const { id, store, options, element } = context
+    const { id, store, options, element, parts } = context
     const change = createChange(context)
     // Why the panel opened after mount, until it settles. Undefined while it's
     // open from the first paint, so it doesn't animate.
@@ -227,7 +228,7 @@ const collapsiblePrimitive = /* @__PURE__ */ definePrimitive({
       open: (cause?: Cause) => setOpen(true, cause),
       close: (cause?: Cause) => setOpen(false, cause),
       toggle: (cause?: Cause) => setOpen(!store.get().open, cause),
-      focus: () => element("trigger")?.focus(),
+      focus: () => focusPart(() => element("trigger"), parts, "trigger"),
       internal: {
         triggerElement: () => element("trigger"),
         // Find in page shows its match at once, without an animation.
