@@ -2,14 +2,17 @@ import {
   input as inputPrimitive,
   inputGroup,
   type InputGroupOptions,
+  type InputGroupPrimitive,
   type InputGroupState,
   type InputOptions,
 } from "@ui-sdk/core/input"
 import { Pressable, View } from "react-native"
+import { mergeProps } from "./render-element"
 import { GroupContext, type TextFieldProps, useTextField } from "./text-field"
 import {
   createParts,
   type PartProps,
+  type Parts,
   usePart,
   usePrimitive,
 } from "./use-primitive"
@@ -37,11 +40,13 @@ function Input({
   return useTextField(input, props)
 }
 
-const parts = createParts(inputGroup, { clear: Pressable })
+type InputGroupParts = Parts<InputGroupPrimitive, { clear: typeof Pressable }>
+
+const parts: InputGroupParts = createParts(inputGroup, { clear: Pressable })
 
 /**
- * Holds an Input or Textarea with text, icons and buttons around it: a `View`
- * that isn't an accessible element itself. A press on its text and icons
+ * Holds an Input or Textarea with text, icons and buttons around it: a
+ * `Pressable` that isn't an accessible element itself. A press on its text and icons
  * starts editing the field.
  * @experimental
  */
@@ -56,7 +61,7 @@ function InputGroup({
         group,
         "group",
         {},
-        { accessible: false, focusable: false, ...props },
+        mergeProps({ accessible: false, focusable: false }, props),
         Pressable
       )}
     </GroupContext>
@@ -68,7 +73,7 @@ function InputGroup({
  * the button role, shown while there's text to clear.
  * @experimental
  */
-const InputClear = parts.Clear
+const InputClear: InputGroupParts["Clear"] = parts.Clear
 
 export { createInputController } from "@ui-sdk/core/input"
 export type {
