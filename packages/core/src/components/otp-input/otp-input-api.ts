@@ -239,6 +239,9 @@ function otpInputApiBody(
   let pointerType = ""
   // Where a native press on a slot puts the selection once the field has focus.
   let pressed: Selection | undefined
+  // Whether the field's next selection report is one the state overrides: the
+  // caret of refused text, or Android's caret at the end on focus after a press.
+  let keepSelection = false
 
   // A reset or a restored page puts a code back; nobody just entered it.
   function complete(
@@ -639,10 +642,10 @@ function otpInputApiBody(
             ? insertCode(previous, selection, code, maxLength)
             : previous
         }
-        if (
+        keepSelection =
           next === previous ||
           !change("value", next, { reason: "input-change" })
-        ) {
+        if (keepSelection) {
           return
         }
         if (!isControlled()) {
@@ -653,7 +656,8 @@ function otpInputApiBody(
       // Its selection, moved onto the character under a collapsed caret as
       // `syncSelection` does. A deletion's caret stays where the character was.
       selectText(current: Selection) {
-        if (!store.get().focused) {
+        if (!store.get().focused || keepSelection) {
+          keepSelection = false
           return
         }
         const deleted = afterDelete && current.start === current.end
@@ -679,6 +683,7 @@ function otpInputApiBody(
               }
             : { focused }
         )
+        keepSelection = !!pressed
         pressed = undefined
       },
       // A press on a slot selects it, focusing the field first.

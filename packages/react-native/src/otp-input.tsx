@@ -12,9 +12,9 @@ import {
   Text,
   TextInput,
   type TextInputProps,
+  type TextInputSelectionChangeEvent,
   View,
 } from "react-native"
-import { pressSource } from "./native-host"
 import { type Interaction, mergeProps } from "./render-element"
 import {
   createParts,
@@ -42,7 +42,9 @@ type ControlProps = Pick<TextInputProps, "id" | "autoFocus" | "aria-label"> & {
   "aria-invalid"?: boolean
 }
 
-// The field's own text, caret and selection are hidden: the slots draw them.
+// The slots draw the field's text, caret and selection. iOS draws selection
+// handles whatever `selectionColor` says, so the field is nearly transparent:
+// above 0.01, UIKit still hit-tests it and screen readers still reach it.
 const hidden = StyleSheet.create({
   control: {
     position: "absolute",
@@ -56,6 +58,7 @@ const hidden = StyleSheet.create({
     backgroundColor: "transparent",
     color: "transparent",
     fontSize: 16,
+    opacity: 0.011,
   },
 })
 
@@ -74,19 +77,17 @@ function OTPInputControl(props: ControlProps) {
       selection: focused ? selection : undefined,
       editable,
       caretHidden: true,
-      contextMenuHidden: false,
       selectionColor: "transparent",
       underlineColorAndroid: "transparent",
       style: hidden.control,
       onChangeText: (text: string) =>
         withSource("keyboard", () => internal.typeText(text)),
-      onSelectionChange: ({
-        nativeEvent,
-      }: {
-        nativeEvent: { selection: { start: number; end: number } }
-      }) => internal.selectText(nativeEvent.selection),
+      onSelectionChange: ({ nativeEvent }: TextInputSelectionChangeEvent) =>
+        internal.selectText(nativeEvent.selection),
       onFocus: () => internal.focusText(true),
       onBlur: () => internal.focusText(false),
+      // Android enables a read-only TextInput, which then takes typing, when
+      // its disabled state is false.
       accessibilityState: { disabled: !editable },
     }),
     TextInput
@@ -197,10 +198,7 @@ function OTPInputSlot({
     mergeProps(
       { accessible: false, focusable: false },
       { ...props, children },
-      {
-        onPress: () =>
-          withSource(pressSource(), () => otp.api.internal.pressSlot(index)),
-      }
+      { onPress: () => otp.api.internal.pressSlot(index) }
     ),
     Pressable
   )

@@ -58,7 +58,7 @@ test("focus() starts editing, and typing fills the slots from the keyboard", asy
   await device.press("focus-code")
   await expectFocused()
   await device.type("12")
-  await expectSlots("1 2 _* _")
+  await expectSlots("1, 2, empty active, empty")
   await device.expectTree((tree) =>
     assert.match(tree.get("changes")?.text ?? "", /value:input-change:keyboard/)
   )
@@ -69,19 +69,19 @@ test("a press on a slot of the field being edited selects it, and typing replace
   await expectFocused()
   await device.type("123")
   await pressSlot(1)
-  await expectSlots("1 2* 3 _")
+  await expectSlots("1, 2 active, 3, empty")
   await device.type("9")
-  await expectSlots("1 9 3* _")
+  await expectSlots("1, 9, 3 active, empty")
 })
 
 test("a press on a slot of a field not being edited starts editing with that slot selected", async () => {
   await device.press("fill-code")
-  await expectSlots("1 2 3 4")
+  await expectSlots("1, 2, 3, 4")
   await pressSlot(2)
   await expectFocused()
-  await expectSlots("1 2 3* 4")
+  await expectSlots("1, 2, 3 active, 4")
   await device.type("7")
-  await expectSlots("1 2 7 4*")
+  await expectSlots("1, 2, 7, 4 active")
 })
 
 test("a deletion leaves the caret where the character was", async () => {
@@ -89,16 +89,16 @@ test("a deletion leaves the caret where the character was", async () => {
   await expectFocused()
   await device.type("123")
   await pressSlot(1)
-  await expectSlots("1 2* 3 _")
+  await expectSlots("1, 2 active, 3, empty")
   await device.type(backspace)
-  await expectSlots("1 3* _ _")
+  await expectSlots("1, 3 active, empty, empty")
 })
 
 test("filling every slot commits the code", async () => {
   await device.press("focus-code")
   await expectFocused()
   await device.type("4321")
-  await expectSlots("4 3 2 1*")
+  await expectSlots("4, 3, 2, 1 active")
   await device.expectTree((tree) =>
     assert.match(tree.get("changes")?.text ?? "", /commit:4321:input-change/)
   )
@@ -108,7 +108,7 @@ test("characters that don't fit the pattern are refused", async () => {
   await device.press("focus-code")
   await expectFocused()
   await device.type("1a")
-  await expectSlots("1 _* _ _")
+  await expectSlots("1, empty active, empty, empty")
 })
 
 test("a disabled code takes no press", async () => {
@@ -120,7 +120,7 @@ test("a disabled code takes no press", async () => {
   await field.click()
   assert.equal(await device.driver.isKeyboardShown(), false)
   await device.expectTree((tree) =>
-    assert.equal(tree.get("disabled-slots")?.text, "1 2 _ _")
+    assert.equal(tree.get("disabled-slots")?.text, "1, 2, empty, empty")
   )
 })
 

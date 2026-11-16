@@ -427,6 +427,7 @@
   "@ui-sdk/react-native/checkbox": 15194,
   "@ui-sdk/react-native/collapsible": 13125,
   "@ui-sdk/react-native/input": 11175,
+  "@ui-sdk/react-native/otp-input": 14242,
   "@ui-sdk/react-native/password-input": 12325,
   "@ui-sdk/react-native/primitive": 5299,
   "@ui-sdk/react-native/radio": 15731,

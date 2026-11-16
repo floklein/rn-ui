@@ -123,6 +123,12 @@ describe("OTPInput", () => {
     expect(field().props.selection).toBeUndefined()
     await fireEvent(field(), "focus")
     expect(field().props.selection).toEqual({ start: 1, end: 2 })
+    // Android reports the caret it put at the end on focus.
+    await select(3)
+    expect(field().props.selection).toEqual({ start: 1, end: 2 })
+    await fireEvent.changeText(field(), "173")
+    await select(2)
+    expect(drawn()).toBe("1|7|3*|")
   })
 
   test("typing over a selected slot replaces that character, and a deletion leaves the caret where it was", async () => {
@@ -149,6 +155,16 @@ describe("OTPInput", () => {
     expect(field().props.value).toBe("9876")
     await fireEvent.changeText(field(), "9876 is your code")
     expect(field().props.value).toBe("9876")
+  })
+
+  test("a refused character keeps the selection, which the field gets back", async () => {
+    await render(<Code defaultValue="123" />)
+    await fireEvent(field(), "focus")
+    await fireEvent.press(slot(1))
+    await fireEvent.changeText(field(), "1a3")
+    await select(2)
+    expect(field().props.value).toBe("123")
+    expect(field().props.selection).toEqual({ start: 1, end: 2 })
   })
 
   test("filling every slot commits the code", async () => {

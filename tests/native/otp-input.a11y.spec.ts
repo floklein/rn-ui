@@ -23,7 +23,7 @@ test("the platform tree at first: one text field per code, and no slot", async (
 test("the platform tree with a code filled", async () => {
   await device.press("fill-code")
   await device.expectTree((tree) =>
-    assert.equal(tree.get("code-slots")?.text, "1 2 3 4")
+    assert.equal(tree.get("code-slots")?.text, "1, 2, 3, 4")
   )
   await device.saveTree("filled")
   assert.deepEqual((await fields())[0], {

@@ -14,8 +14,8 @@ type Commit = NonNullable<OTPInputOptions["onValueCommit"]>
 
 const drawn = (state: OTPInputState) =>
   state.slots
-    .map((slot) => `${slot.char ?? "_"}${slot.active ? "*" : ""}`)
-    .join(" ")
+    .map((slot) => `${slot.char ?? "empty"}${slot.active ? " active" : ""}`)
+    .join(", ")
 
 function Slots() {
   return (
