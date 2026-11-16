@@ -583,7 +583,8 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
         merged,
         Platform.OS === "android" ? "android" : "ios",
         I18nManager.isRTL,
-        single ? resolveIds : undefined
+        single ? resolveIds : undefined,
+        host === Pressable
       )
     : {}
   const content =

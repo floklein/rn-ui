@@ -5,6 +5,7 @@ import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
+import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
 import { otpInput } from "@ui-sdk/core/otp-input"
@@ -49,6 +50,10 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(meter, { value: 3, min: -10, max: 10, locale: "de-DE" })
     ).not.toThrow()
+  })
+
+  test("passes on a label", () => {
+    expect(() => checkCreation(label, {})).not.toThrow()
   })
 
   test("passes on a separator, decorative or vertical", () => {

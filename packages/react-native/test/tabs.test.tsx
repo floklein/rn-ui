@@ -3,6 +3,7 @@ import { createRef } from "react"
 import {
   AccessibilityInfo,
   I18nManager,
+  Platform,
   StyleSheet,
   Text,
   type HostInstance,
@@ -34,7 +35,7 @@ function Account({
 }) {
   return (
     <Tabs {...props}>
-      <TabsList aria-label="Account">
+      <TabsList aria-label="Account" testID="list">
         <TabsTab value="profile" disabled={disabled}>
           <Text>Profile</Text>
         </TabsTab>
@@ -53,6 +54,17 @@ function Account({
 }
 
 describe("Tabs", () => {
+  test("the tab list is a tab bar on iOS and a tab list on Android, its tabs staying their own elements", async () => {
+    await render(<Account defaultValue="profile" />)
+    const list = screen.getByTestId("list")
+    expect(list.props.accessibilityRole).toBe(
+      Platform.OS === "ios" ? "tabbar" : "tablist"
+    )
+    expect(list.props.accessible).toBeUndefined()
+    expect(tabNamed("Profile")).toBeOnTheScreen()
+    expect(tabNamed("Billing")).toBeOnTheScreen()
+  })
+
   test("a press selects a tab and shows its panel, from a touch and with no event", async () => {
     const onValueChange = jest.fn()
     await render(
@@ -114,7 +126,7 @@ describe("Tabs", () => {
     let done = () => {}
     await render(
       <Tabs defaultValue="profile">
-        <TabsList aria-label="Account">
+        <TabsList aria-label="Account" testID="list">
           <TabsTab value="profile">
             <Text>Profile</Text>
           </TabsTab>
@@ -151,7 +163,7 @@ describe("Tabs", () => {
   test("a kept panel is hidden while its tab isn't selected", async () => {
     await render(
       <Tabs defaultValue="billing">
-        <TabsList aria-label="Account">
+        <TabsList aria-label="Account" testID="list">
           <TabsTab value="profile">
             <Text>Profile</Text>
           </TabsTab>

@@ -478,10 +478,12 @@ async function switchPattern(context: Context) {
 // tab stop, so every tab on screen must be one.
 async function tabsPattern(context: Context) {
   const shown = shownNodes(context.root)
-  if (!shown.some((node) => roleOf(node) === "tablist")) {
+  // VoiceOver hears a tab list only from `tabbar`, TalkBack only from `tablist`.
+  const listRole = context.os === "ios" ? "tabbar" : "tablist"
+  if (!shown.some((node) => roleOf(node) === listRole)) {
     context.problem(
       context.root,
-      "has no element with the tablist role, so it isn't tabs (APG tabs)."
+      `has no element with the ${listRole} role, so it isn't tabs (APG tabs).`
     )
     return
   }

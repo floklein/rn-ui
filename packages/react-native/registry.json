@@ -869,6 +869,15 @@
         }
       }
     },
+    "label": {
+      "entry": "packages/react-native/src/label.tsx",
+      "slots": {
+        "label.root": {
+          "covered": "packages/react-native/src/label.tsx",
+          "reason": "Its bind finds the control by htmlFor or inside the label and writes the label's id into the control's aria-labelledby. Label registers its id for its htmlFor (names.ts), and the control that joins through useFieldControl in field-context.ts takes it as its aria-labelledby and registers what a press activates by its id. Its press looks the control up in the document, so Label presses the control registered for its htmlFor; a disabled one ignores it. Its mousedown keeps a double click from selecting the label's text, which a Text never does."
+        }
+      }
+    },
     "otp-input": {
       "entry": "packages/react-native/src/otp-input.tsx",
       "slots": {
@@ -975,7 +984,6 @@
     "file-input",
     "hover-card",
     "image-cropper",
-    "label",
     "listbox",
     "menu",
     "menubar",
@@ -1290,6 +1298,24 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "label",
+      "example": "basic",
+      "feature": "A label for a radio group, with a label wrapping each radio",
+      "reason": "Native Label reaches no radio group and wraps no control: a radio holds its own text. The input example shows a Label for a text field instead."
+    },
+    {
+      "component": "label",
+      "example": "wrap",
+      "feature": "A label wrapping its control",
+      "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
+    },
+    {
+      "component": "label",
+      "example": "slider",
+      "feature": "A label for a Slider",
+      "reason": "Slider isn't on native yet; the example comes with it (#71)."
     }
   ]
 }

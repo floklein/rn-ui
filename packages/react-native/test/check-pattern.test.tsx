@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Label } from "../src/label"
 import { Meter, MeterLabel, MeterValue } from "../src/meter"
 import {
   Progress,
@@ -259,6 +260,27 @@ describe("checkPattern on the native host", () => {
         /react-native|test-renderer|testing-library|^react/.test(name)
       )
     ).toEqual([])
+  })
+})
+
+describe("checkPattern on controls a Label names", () => {
+  test("passes on a switch, a checkbox and a text field, each named by its label", async () => {
+    await render(
+      <View>
+        <Switch id="wifi">
+          <SwitchThumb />
+        </Switch>
+        <Label htmlFor="wifi">Wi-Fi</Label>
+        <Checkbox id="terms" />
+        <Label htmlFor="terms">Accept the terms</Label>
+        <Label htmlFor="city">City</Label>
+        <Input id="city" />
+      </View>
+    )
+    await act(() => new Promise((resolve) => setTimeout(resolve)))
+    await expect(check()).resolves.toBeUndefined()
+    await expect(checkCheckbox()).resolves.toBeUndefined()
+    await expect(checkTextbox()).resolves.toBeUndefined()
   })
 })
 
@@ -638,6 +660,8 @@ describe("checkPattern's img pattern on a read-only rating", () => {
   })
 })
 
+const listRole = os === "ios" ? "tabbar" : "tablist"
+
 // Tabs written by hand, whose selection follows `selected` and ignores presses when `stuck`.
 function HandTabs({
   selected,
@@ -648,7 +672,7 @@ function HandTabs({
 }) {
   const [value, setValue] = useState(selected)
   return (
-    <View accessibilityRole="tablist">
+    <View accessibilityRole={listRole}>
       {["Profile", "Billing"].map((name) => (
         <Pressable
           key={name}
@@ -703,7 +727,23 @@ describe("checkPattern's tabs pattern on the native host", () => {
       </Pressable>
     )
     await expect(checkTabs()).rejects.toThrow(
-      "has no element with the tablist role"
+      `has no element with the ${listRole} role`
+    )
+  })
+
+  test("fails on a tab list with the other OS's role, which its screen reader doesn't hear", async () => {
+    await render(
+      <View accessibilityRole={os === "ios" ? "tablist" : "tabbar"}>
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: true }}
+        >
+          <Text>Profile</Text>
+        </Pressable>
+      </View>
+    )
+    await expect(checkTabs()).rejects.toThrow(
+      `has no element with the ${listRole} role`
     )
   })
 
@@ -731,7 +771,7 @@ describe("checkPattern's tabs pattern on the native host", () => {
 
   test("fails on a tab with no selected state, and on two selected tabs", async () => {
     await render(
-      <View accessibilityRole="tablist">
+      <View accessibilityRole={listRole}>
         <Pressable accessibilityRole="tab">
           <Text>Profile</Text>
         </Pressable>
