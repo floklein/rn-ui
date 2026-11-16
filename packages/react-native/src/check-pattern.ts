@@ -14,7 +14,8 @@ import {
 
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
- * or by its role where the Practices have none, like `"img"`. Pass a
+ * or by its role where the Practices have none, like `"img"`. A meter has
+ * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one.
  * @experimental
  */
@@ -23,6 +24,8 @@ type NativePattern =
   | "checkbox"
   | "disclosure"
   | "img"
+  | "meter"
+  | "progressbar"
   | "radio-group"
   | "separator"
   | "switch"
@@ -401,11 +404,68 @@ async function separatorPattern(context: Context) {
   }
 }
 
+// Without value text, VoiceOver reads the value as a share of max minus min.
+async function barPattern(context: Context, pattern: "progressbar" | "meter") {
+  const bars = shownNodes(context.root).filter(
+    (node) => roleOf(node) === "progressbar"
+  )
+  if (!bars.length) {
+    context.problem(
+      context.root,
+      `has no element with the progressbar role, so it isn't a ${pattern}.`
+    )
+    return
+  }
+  const elements = context.elements()
+  for (const bar of bars) {
+    if (!elements.includes(bar)) {
+      context.problem(
+        bar,
+        `isn't an accessible element; a screen reader reads a ${pattern} as one element with its value.`
+      )
+      continue
+    }
+    requireName(context, bar, pattern)
+    if (
+      bar.props.focusable === true ||
+      (context.os === "android" && bar.props.accessible === true)
+    ) {
+      context.problem(
+        bar,
+        `is a keyboard stop; a ${pattern} is read, never focused.`
+      )
+    }
+    const { min, max, now, text } = (bar.props.accessibilityValue ?? {}) as {
+      min?: number
+      max?: number
+      now?: number
+      text?: string
+    }
+    if (now === undefined) {
+      if (pattern === "meter") {
+        context.problem(bar, "has no current value; a meter always has one.")
+      }
+      continue
+    }
+    if (min !== undefined && max !== undefined && (now < min || now > max)) {
+      context.problem(bar, `is ${now}, outside its range of ${min} to ${max}.`)
+    }
+    if (!text) {
+      context.problem(
+        bar,
+        "has no value text, so VoiceOver reads its value as a fraction of its range."
+      )
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
   disclosure: disclosurePattern,
   img: imgPattern,
+  meter: (context) => barPattern(context, "meter"),
+  progressbar: (context) => barPattern(context, "progressbar"),
   "radio-group": radioGroupPattern,
   separator: separatorPattern,
   switch: switchPattern,

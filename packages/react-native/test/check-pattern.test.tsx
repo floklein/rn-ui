@@ -13,6 +13,14 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Meter, MeterLabel, MeterValue } from "../src/meter"
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "../src/progress"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Separator } from "../src/separator"
@@ -35,6 +43,9 @@ const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
+const checkProgress = () =>
+  checkPattern(screen.container, "progressbar", { os, act })
+const checkMeter = () => checkPattern(screen.container, "meter", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -753,6 +764,113 @@ describe("checkPattern's separator pattern on the native host", () => {
     )
     await expect(checkSeparator()).rejects.toThrow(
       'the Text "or" is an element a screen reader stops on'
+    )
+  })
+})
+
+describe("checkPattern's progressbar and meter patterns on the native host", () => {
+  test("passes on progress bars, determinate or not, named by a label or aria-label", async () => {
+    await render(
+      <View>
+        <Progress value={60}>
+          <ProgressLabel>Uploading photos</ProgressLabel>
+          <ProgressValue />
+          <ProgressTrack>
+            <ProgressIndicator />
+          </ProgressTrack>
+        </Progress>
+        <Progress value={null} aria-label="Connecting">
+          <ProgressTrack>
+            <ProgressIndicator />
+          </ProgressTrack>
+        </Progress>
+        <Progress value={null}>
+          <ProgressLabel>Connecting to server</ProgressLabel>
+        </Progress>
+      </View>
+    )
+    await expect(checkProgress()).resolves.toBeUndefined()
+  })
+
+  test("passes on a meter whose range doesn't start at 0", async () => {
+    await render(
+      <Meter value={-5} min={-10} max={10}>
+        <MeterLabel>Balance</MeterLabel>
+        <MeterValue />
+      </Meter>
+    )
+    await expect(checkMeter()).resolves.toBeUndefined()
+  })
+
+  test("fails with no progress bar", async () => {
+    await render(<Text>60%</Text>)
+    await expect(checkProgress()).rejects.toThrow(
+      "The tree has no element with the progressbar role, so it isn't a progressbar."
+    )
+  })
+
+  test("fails on a bar named only by its value", async () => {
+    await render(
+      <Progress value={60}>
+        <ProgressValue />
+      </Progress>
+    )
+    await expect(checkProgress()).rejects.toThrow(
+      "the progressbar has no name; a progressbar needs an accessibilityLabel or text inside it."
+    )
+  })
+
+  test("fails on a value outside its range, or read as a fraction", async () => {
+    await render(
+      <View
+        accessible
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Balance"
+        accessibilityValue={{ min: -10, max: 10, now: 12 }}
+      />
+    )
+    await expect(checkMeter()).rejects.toThrow(
+      /is 12, outside its range of -10 to 10[^]*has no value text/
+    )
+  })
+
+  test("fails on a meter with no value", async () => {
+    await render(
+      <View
+        accessible
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Battery"
+        accessibilityValue={{ min: 0, max: 100, text: "" }}
+      />
+    )
+    await expect(checkMeter()).rejects.toThrow(
+      "has no current value; a meter always has one."
+    )
+  })
+
+  test("fails on a bar the keyboard stops on", async () => {
+    await render(
+      <Progress value={60} aria-label="Upload" focusable>
+        <ProgressValue />
+      </Progress>
+    )
+    await expect(checkProgress()).rejects.toThrow(
+      'the progressbar "Upload" is a keyboard stop; a progressbar is read, never focused.'
+    )
+  })
+
+  test("fails on a bar a screen reader can't reach as one element", async () => {
+    await render(
+      <View
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: 100 }}
+      />
+    )
+    await expect(checkProgress()).rejects.toThrow(
+      "isn't an accessible element; a screen reader reads a progressbar as one element with its value."
     )
   })
 })

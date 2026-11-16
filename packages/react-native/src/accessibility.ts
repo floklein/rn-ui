@@ -106,9 +106,9 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
         ? "togglebutton"
         : role
   }
-  // VoiceOver reads an image as one element. On Android `accessible` would
-  // make it a Tab stop, and Fabric would flatten it away with its label.
-  if (role === "image") {
+  // VoiceOver reads an image or a bar as one element. On Android `accessible`
+  // would make it a Tab stop, and Fabric would flatten it away with its label.
+  if (role === "image" || role === "progressbar") {
     if (os === "ios") {
       props.accessible = true
     } else {
@@ -170,6 +170,11 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
     } else if ("aria-busy" in attrs || state.checked !== undefined) {
       state.busy ??= false
     }
+  }
+  // Android writes the value's text into the description and rewrites it only
+  // from a value that has one, so a bar turning indeterminate sends it empty.
+  if (os === "android" && "aria-valuetext" in attrs) {
+    value.text ??= ""
   }
   if (Object.keys(state).length) {
     props.accessibilityState = state

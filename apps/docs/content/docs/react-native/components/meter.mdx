@@ -1,0 +1,203 @@
+---
+title: Meter
+description: Show a measurement within a known range, such as storage used or battery level.
+---
+
+<ComponentExample
+  name="meter/basic"
+  caption="Read the storage meter. VoiceOver reads Storage used and 68% as one element."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Meter`:
+
+```text
+Meter
+├── MeterLabel
+├── MeterValue
+└── MeterTrack
+    └── MeterIndicator
+```
+
+- `Meter` holds the value and range, and renders a `View`.
+- `MeterLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead.
+- `MeterValue` displays the formatted value, as a `Text`.
+- `MeterTrack` gives the meter its size, and `MeterIndicator` fills it. Both are `View`s.
+
+The root carries the value for screen readers, so `MeterValue` is hidden from them and the value isn't read twice.
+
+## Usage
+
+Import the parts and put them together. The parts have no size or color, so give the track and the indicator a style:
+
+```tsx
+import {
+  Meter,
+  MeterIndicator,
+  MeterLabel,
+  MeterTrack,
+  MeterValue,
+} from "@ui-sdk/react-native/meter"
+import { StyleSheet } from "react-native"
+
+function Storage() {
+  return (
+    <Meter value={68}>
+      <MeterLabel>Storage used</MeterLabel>
+      <MeterValue />
+      <MeterTrack style={styles.track}>
+        <MeterIndicator style={styles.indicator} />
+      </MeterTrack>
+    </Meter>
+  )
+}
+
+const styles = StyleSheet.create({
+  track: { flexDirection: "row", height: 8, backgroundColor: "#f4f4f5" },
+  indicator: { height: "100%", backgroundColor: "#18181b" },
+})
+
+export { Storage }
+```
+
+## Label
+
+Give every meter a name with `MeterLabel`, or `aria-label` when there's no visible label.
+
+<ComponentExample
+  name="meter/label"
+  caption="Read the Battery meter. Its label names the 42% reading."
+/>
+
+## Bounds
+
+`min` and `max` default to 0 and 100. A value outside them is clamped for the fill, the percentage and the value screen readers hear, while the state's `value` keeps it as you passed it.
+
+<ComponentExample
+  name="meter/min-max"
+  caption="Read the credit score of 720 between 300 and 850. The fill sits where 720 falls in that range."
+/>
+
+## Format and Locale
+
+Pass `Intl.NumberFormat` options to `format` for units, currency or decimal places. A function can return custom text.
+
+<ComponentExample
+  name="meter/format"
+  caption="Compare the readings. They show storage in gigabytes, a budget in dollars, seats taken, and a localized percentage."
+/>
+
+A percent format reports the value's position between `min` and `max`. Other formats use the value itself.
+
+`locale` controls digits and separators. Without it, the value is formatted in English for now: reading the device's language is still to come on native.
+
+The track fills from its start, so it fills from the right when the app runs right to left.
+
+## Value Label
+
+Use `getValueLabel` to give screen readers more context than the visible number. Its details include `formatted`, `percent`, `min`, and `max`.
+
+<ComponentExample
+  name="meter/value-label"
+  caption="Read API requests with a screen reader. It announces 750 of 1000 requests and 75%, while the visible value stays compact."
+/>
+
+Use [Progress](./progress) for a task that will finish, rather than a reading.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props and its state. Spread the props on the host you render, so the indicator keeps its width.
+
+<ComponentExample
+  name="meter/render"
+  caption="The disk meter turns red at 90% or more, from the indicator's state, and its value reads 91% used."
+/>
+
+## Styling
+
+Give the track a height, background and width, and the indicator a height and color. The indicator's width is a percentage of the track, from its start. Every part's style can be a function of its state, such as a color from `percent`.
+
+## Part State
+
+### Meter [#part-state-meter]
+
+<PartStateTable
+  component="meter"
+  part="root"
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterState"
+/>
+
+### MeterLabel [#part-state-meterlabel]
+
+<PartStateTable
+  component="meter"
+  part="label"
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterState"
+/>
+
+### MeterValue [#part-state-metervalue]
+
+<PartStateTable
+  component="meter"
+  part="value"
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterValueState"
+/>
+
+### MeterTrack [#part-state-metertrack]
+
+<PartStateTable
+  component="meter"
+  part="track"
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterState"
+/>
+
+### MeterIndicator [#part-state-meterindicator]
+
+<PartStateTable
+  component="meter"
+  part="indicator"
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props.
+
+### Meter
+
+<TypeTable
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the same state.
+
+<StateTable
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterState"
+/>
+
+`MeterValue` adds the formatted text:
+
+<StateTable
+  path="../../packages/core/src/components/meter/meter.ts"
+  name="MeterValueState"
+/>
+
+## Accessibility
+
+On the web, the root has the [WAI-ARIA meter role](https://www.w3.org/TR/wai-aria-1.2/#meter). Neither iOS nor Android has a meter role, so a meter has the progress bar role, as Progress does. On iOS the meter is one element: VoiceOver reads its label from the text inside it and the formatted value. On Android the meter keeps its view with the progress bar role and range. Its description is the formatted value, and the label's text stays in the tree beside it. Neither platform makes a meter a keyboard stop.

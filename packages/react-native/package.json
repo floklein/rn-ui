@@ -22,7 +22,9 @@
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./input": "./src/input.tsx",
+    "./meter": "./src/meter.tsx",
     "./primitive": "./src/primitive.ts",
+    "./progress": "./src/progress.tsx",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
     "./separator": "./src/separator.tsx",
@@ -62,9 +64,17 @@
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
       },
+      "./meter": {
+        "types": "./dist/meter.d.ts",
+        "default": "./dist/meter.js"
+      },
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
+      },
+      "./progress": {
+        "types": "./dist/progress.d.ts",
+        "default": "./dist/progress.js"
       },
       "./radio": {
         "types": "./dist/radio.d.ts",
