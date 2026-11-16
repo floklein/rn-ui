@@ -2,6 +2,7 @@ import { dialog } from "@ui-sdk/core/dialog"
 import {
   type BackdropPartProps,
   type ContentPartProps,
+  type DialogParts,
   dialogParts,
   type RootProps,
   type TriggerPartProps,
@@ -54,20 +55,20 @@ const DialogContent: (props: ContentPartProps) => React.ReactElement | null =
  * and takes the screen reader's focus when it opens.
  * @experimental
  */
-const DialogTitle = parts.Title
+const DialogTitle: DialogParts["Title"] = parts.Title
 
 /**
  * Describes the dialog while it's rendered, in a `Text`.
  * @experimental
  */
-const DialogDescription = parts.Description
+const DialogDescription: DialogParts["Description"] = parts.Description
 
 /**
  * A `Pressable` that closes the dialog. An `action` runs first, and a
  * Promise it returns keeps the dialog open until it settles.
  * @experimental
  */
-const DialogClose = parts.Close
+const DialogClose: DialogParts["Close"] = parts.Close
 
 export { createDialogController } from "@ui-sdk/core/dialog"
 export type {

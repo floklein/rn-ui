@@ -4,6 +4,7 @@ import { alertDialog } from "@ui-sdk/core/alert-dialog"
 import {
   type BackdropPartProps,
   type ContentPartProps,
+  type DialogParts,
   dialogParts,
   type RootProps,
   type TriggerPartProps,
@@ -63,13 +64,13 @@ const AlertDialogContent: (
  * way, on the first Close part, the least destructive answer.
  * @experimental
  */
-const AlertDialogTitle = parts.Title
+const AlertDialogTitle: DialogParts["Title"] = parts.Title
 
 /**
  * Describes the alert dialog while it's rendered, in a `Text`.
  * @experimental
  */
-const AlertDialogDescription = parts.Description
+const AlertDialogDescription: DialogParts["Description"] = parts.Description
 
 /**
  * A `Pressable` that answers the alert dialog and closes it with its
@@ -77,7 +78,7 @@ const AlertDialogDescription = parts.Description
  * until it settles.
  * @experimental
  */
-const AlertDialogClose = parts.Close
+const AlertDialogClose: DialogParts["Close"] = parts.Close
 
 export {
   confirm,

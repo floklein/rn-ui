@@ -21,6 +21,7 @@ import {
   type ExitProps,
   HandleScope,
   type PartProps,
+  type Parts,
   type PrimitiveHandle,
   useHandle,
   useNearest,
@@ -45,6 +46,11 @@ type RootProps = Omit<DialogOptions, "container" | "modal"> & {
   modal?: boolean
   children?: React.ReactNode
 }
+
+type DialogParts = Parts<
+  typeof dialogPrimitive,
+  { title: typeof Text; description: typeof Text; close: typeof Pressable }
+>
 
 // The backdrop and content of a modal dialog, which render in one `Modal`
 // the root renders, so the backdrop sits under the content.
@@ -126,7 +132,7 @@ function DialogModal({
 
 // Dialog and AlertDialog render the same parts over their own primitive.
 function dialogParts(primitive: typeof dialogPrimitive) {
-  const parts = createParts(
+  const parts: DialogParts = createParts(
     primitive,
     { title: Text, description: Text, close: Pressable },
     dialogNative
@@ -223,11 +229,19 @@ function dialogParts(primitive: typeof dialogPrimitive) {
     return useOutlet("content", element, handle.state.modal !== false)
   }
 
-  function Title(props: React.ComponentProps<typeof parts.Title>) {
+  function Title(props: React.ComponentProps<DialogParts["Title"]>) {
     return <parts.Title role="heading" {...props} />
   }
 
-  return {
+  const made: {
+    Root: (props: RootProps) => React.ReactElement
+    Trigger: (props: TriggerPartProps) => React.ReactElement | null
+    Backdrop: (props: BackdropPartProps) => React.ReactElement | null
+    Content: (props: ContentPartProps) => React.ReactElement | null
+    Title: DialogParts["Title"]
+    Description: DialogParts["Description"]
+    Close: DialogParts["Close"]
+  } = {
     Root,
     Trigger,
     Backdrop,
@@ -236,11 +250,13 @@ function dialogParts(primitive: typeof dialogPrimitive) {
     Description: parts.Description,
     Close: parts.Close,
   }
+  return made
 }
 
 export {
   type BackdropPartProps,
   type ContentPartProps,
+  type DialogParts,
   dialogParts,
   type RootProps,
   type TriggerPartProps,
