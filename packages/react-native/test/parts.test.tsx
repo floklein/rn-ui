@@ -4,6 +4,7 @@ import { createRef } from "react"
 import { Pressable, Text, View, type HostInstance } from "react-native"
 import type { TestInstance } from "test-renderer"
 import { createParts, type Interaction } from "../src/primitive"
+import { Toggle, ToggleGroup, ToggleIcon } from "../src/toggle"
 
 const parts = createParts(switchPrimitive, { root: Pressable, thumb: View })
 
@@ -174,5 +175,48 @@ describe("a part's props", () => {
     await fireEvent.press(screen.getByTestId("root"))
     expect(onPress).toHaveBeenCalledTimes(1)
     expect(onCheckedChange).toHaveBeenCalledTimes(1)
+  })
+
+  test("a container with a role or a label survives view flattening, and a pressed part is left as it is", async () => {
+    let pressed: Record<string, unknown> = {}
+    await render(
+      <ToggleGroup aria-label="Text formatting" testID="group">
+        <Toggle aria-label="Bold">
+          <ToggleIcon testID="icon" />
+        </Toggle>
+      </ToggleGroup>
+    )
+    expect(screen.getByTestId("group").props.collapsable).toBe(false)
+    expect(
+      screen.getByTestId("icon", { includeHiddenElements: true }).props
+        .collapsable
+    ).toBeUndefined()
+    await render(
+      <parts.Root
+        aria-label="Wi-Fi"
+        render={(props) => {
+          pressed = props
+          return <View {...props} />
+        }}
+      />
+    )
+    expect(pressed.accessibilityRole).toBe("switch")
+    expect("collapsable" in pressed).toBe(false)
+  })
+
+  test("a part with no role or label can still be flattened", async () => {
+    await render(
+      <parts.Root aria-label="Wi-Fi">
+        <parts.Thumb testID="thumb" />
+      </parts.Root>
+    )
+    expect(screen.getByTestId("thumb").props.collapsable).toBeUndefined()
+  })
+
+  test("the user's collapsable wins", async () => {
+    await render(
+      <ToggleGroup aria-label="Text formatting" testID="group" collapsable />
+    )
+    expect(screen.getByTestId("group").props.collapsable).toBe(true)
   })
 })

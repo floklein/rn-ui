@@ -455,26 +455,35 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     const host = Host ?? (activate ? Pressable : View)
     const set = (change: Partial<Interaction>) => () =>
       setInteraction((current) => ({ ...current, ...change }))
-    const handlers =
-      activate || host === Pressable
-        ? {
-            onPress:
-              activate &&
-              !presence.exiting &&
-              (() => withSource(pressSource(), activate)),
-            onPressIn: set({ pressed: true }),
-            onPressOut: set({ pressed: false }),
-            onHoverIn: set({ hovered: true }),
-            onHoverOut: set({ hovered: false }),
-            onFocus: set({ focused: true }),
-            onBlur: set({ focused: false }),
-          }
+    const pressable = activate || host === Pressable
+    const handlers = pressable
+      ? {
+          onPress:
+            activate &&
+            !presence.exiting &&
+            (() => withSource(pressSource(), activate)),
+          onPressIn: set({ pressed: true }),
+          onPressOut: set({ pressed: false }),
+          onHoverIn: set({ hovered: true }),
+          onHoverOut: set({ hovered: false }),
+          onFocus: set({ focused: true }),
+          onBlur: set({ focused: false }),
+        }
+      : {}
+    const translated = nativeProps(part, slotProps, user, presence.exiting)
+    // Fabric flattens a view with only a role or a label, and Android then
+    // orders keyboard Tab by its children's edges across the whole screen.
+    const container =
+      !pressable &&
+      (translated.accessibilityRole || translated.accessibilityLabel)
+        ? { collapsable: false }
         : {}
     element = renderElement(
       host,
       mergeProps(
         handlers,
-        nativeProps(part, slotProps, user, presence.exiting),
+        container,
+        translated,
         { ref: viewRef(part, behaviors.get(owner.instance)) },
         host === TextInput ? { ref: textInputRef } : {},
         { ref }

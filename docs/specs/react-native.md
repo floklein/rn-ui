@@ -364,6 +364,7 @@ Every difference the resolutions record, by subject.
 - With a hardware keyboard there are no arrow keys inside a composite, no Home, End or typeahead, no combobox arrow keys, no keyboard shortcuts, no keyboard focus trap, and Escape only where the OS routes it ([How focus works on the native host][focus]).
 - A part core keeps focusable but inert (`aria-disabled`: a pending Button, a disabled menu item, option or tab) is disabled on Android, since React Native has no way to say "disabled" to TalkBack without disabling the view. It leaves Android's keyboard order and a focused one loses keyboard focus; TalkBack still reaches it and says "disabled". iOS is unaffected ([aria-disabled on Android][aria-disabled]).
 - On Android, busy and a mixed checked state are spoken from the view's description, so they need the part's own `aria-label`. A mixed checkbox or toggle named by its text reads as unchecked on Android (ticket 60).
+- Android's keyboard Tab order follows the view tree, and Fabric removes a layout-only `View` from it. A part that isn't pressed and has a role or a label keeps its view (`collapsable={false}`), so a group's members stay together and in order. An app's own layout `View` can still be flattened, which lets Tab jump between its children and their neighbors; the app marks it `collapsable={false}` (#125).
 
 **Popups**
 
