@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `74d3ea70` (2026-11-16, ticket 78: Toggle, native behavior files, member order and the iOS toggle reading; ticket 84: Avatar at `d5efadab`, with its findings fixed; ticket 60's review at `5b29dbdc`; ticket 122: Checkbox's group on the order twin at `67d2cdfc`)
+Last reviewed: `15ec149a` (2026-11-16, ticket 123: Avatar ignores the blank placeholder Android loads for an image with no source, no findings; ticket 78: Toggle, native behavior files, member order and the iOS toggle reading; ticket 84: Avatar at `d5efadab`, with its findings fixed; ticket 60's review at `5b29dbdc`; ticket 122: Checkbox's group on the order twin at `67d2cdfc`)
 
 ## Settled
 
