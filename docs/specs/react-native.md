@@ -62,7 +62,7 @@ From [Where native names diverge from @ui-sdk/react][names] and [How state reach
 - The part forwards the resolved `className` as a string, `ref`, `disabled` and unknown props without reading them.
 - Host props are React Native's own (`onPress`, `style`, `testID`), forwarded as they are.
 - A user's `role` and `aria-*` props go through the same translation as core's and are consumed by it. A user's `accessibility*` props win over the translation field by field: `accessibilityState={{ busy: true }}` merges over core's `checked` and `expanded`.
-- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form` and the hidden `input` part ([What forms become on the native host][forms]).
+- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form`, the hidden `input` part and Switch's `value` ([What forms become on the native host][forms]).
 - Native-only names: `OverlayHost` with `children` and `insets`; the `interaction` argument; File Input's `pick`; `onExit` ([How presence and exit animation work on native][presence]); the `/sheet` entry.
 
 ### Default hosts and `render`
