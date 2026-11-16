@@ -1,12 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
 import { Text, TextInput, type TextInputInstance } from "react-native"
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-  FieldSet,
-} from "../src/field"
+import { Field, FieldDescription, FieldLabel, FieldSet } from "../src/field"
 import {
   createOTPInputController,
   OTPInput,
