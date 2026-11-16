@@ -112,7 +112,29 @@ const rows: [Record<string, string | undefined>, object, object][] = [
   [
     { "aria-checked": "mixed" },
     { accessibilityState: { checked: "mixed" } },
-    { accessibilityState: { checked: "mixed" } },
+    { accessibilityState: { checked: false } },
+  ],
+  [
+    { "aria-checked": "mixed", "aria-label": "Select all" },
+    {
+      accessibilityLabel: "Select all",
+      accessibilityState: { checked: "mixed" },
+    },
+    {
+      accessibilityLabel: "Select all",
+      accessibilityState: { checked: "mixed", busy: false },
+    },
+  ],
+  [
+    { "aria-checked": "true", "aria-label": "Select all" },
+    {
+      accessibilityLabel: "Select all",
+      accessibilityState: { checked: true },
+    },
+    {
+      accessibilityLabel: "Select all",
+      accessibilityState: { checked: true, busy: false },
+    },
   ],
   [
     { "aria-selected": "true" },
@@ -150,7 +172,7 @@ const rows: [Record<string, string | undefined>, object, object][] = [
   [
     { "aria-pressed": "mixed" },
     { accessibilityState: { checked: "mixed" } },
-    { accessibilityState: { checked: "mixed" } },
+    { accessibilityState: { checked: false } },
   ],
   [
     {

@@ -1,5 +1,6 @@
 import { definePrimitive } from "@ui-sdk/core"
 import { button } from "@ui-sdk/core/button"
+import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { nativeHost } from "@ui-sdk/core/native"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { checkCreation } from "../src/testing"
@@ -14,6 +15,14 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(button, { disabled: true, focusableWhenDisabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on a checkbox and a checkbox group", () => {
+    expect(() => checkCreation(checkbox, {})).not.toThrow()
+    expect(() =>
+      checkCreation(checkbox, { checked: "indeterminate", disabled: true })
+    ).not.toThrow()
+    expect(() => checkCreation(checkboxGroup, {})).not.toThrow()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {

@@ -7,6 +7,7 @@ import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
+import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
@@ -95,9 +96,26 @@ function NativeDialog() {
   return usePart(handle, "content", { initialFocus: "title" })
 }
 
+const exits = [
+  <Checkbox>
+    <CheckboxIndicator
+      keepMounted
+      onExit={(done) => done()}
+      style={(state) => state.endingStyle && { opacity: 0 }}
+    />
+  </Checkbox>,
+  // @ts-expect-error A checkbox has no hidden input on native.
+  <Checkbox name="terms" />,
+  // @ts-expect-error A part that never leaves takes no `onExit`.
+  <SwitchThumb onExit={() => {}} />,
+  // @ts-expect-error A group takes part in no form on native.
+  <CheckboxGroup name="toppings" />,
+]
+
 export {
   ComboboxInput,
   dialogs,
+  exits,
   NativeDialog,
   NativeSwitch,
   switches,

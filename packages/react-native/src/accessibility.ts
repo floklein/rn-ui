@@ -135,13 +135,16 @@ function toNativeProps(attrs: Attrs, os: OS) {
         given === "off" ? "none" : (given as "polite")
     }
   }
-  // Android writes busy into the view's description, which hides the text
-  // inside it and is rewritten only from a state that names busy. So busy
-  // goes only on a part with its own label, and says false once it's over.
+  // Android writes busy and mixed into the view's description, which hides
+  // the text inside it and is rewritten only from a state that names busy. So
+  // they go only on a part with its own label, which then always names busy.
   if (os === "android") {
     if (attrs["aria-label"] === undefined) {
       delete state.busy
-    } else if ("aria-busy" in attrs) {
+      if (state.checked === "mixed") {
+        state.checked = false
+      }
+    } else if ("aria-busy" in attrs || state.checked !== undefined) {
       state.busy ??= false
     }
   }

@@ -2,6 +2,7 @@ import { act, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
 import { Button } from "../src/button"
+import { Checkbox, CheckboxIndicator } from "../src/checkbox"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkDirection } from "../src/testing"
 
@@ -34,6 +35,22 @@ describe("checkDirection on the native host", () => {
             <Switch aria-label="Wi-Fi">
               <SwitchThumb />
             </Switch>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a checkbox", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Checkbox aria-label="Accept">
+              <CheckboxIndicator />
+            </Checkbox>
           )
           return screen.container
         },

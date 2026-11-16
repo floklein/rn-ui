@@ -44,10 +44,10 @@ describe("the registry's parity check", () => {
 
   test("fails when a component leaves pending with no native entry", () => {
     const file = registryFile((copy) => {
-      copy.pending = copy.pending.filter((name: string) => name !== "checkbox")
+      copy.pending = copy.pending.filter((name: string) => name !== "waterfall")
     })
     const { status, stderr } = run(["parity", "--registry", file])
-    expect(stderr).toContain("checkbox has no native entry and isn't pending")
+    expect(stderr).toContain("waterfall has no native entry and isn't pending")
     expect(status).toBe(1)
   })
 

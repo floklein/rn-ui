@@ -15,7 +15,7 @@ import {
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name.
  * @experimental
  */
-type NativePattern = "button" | "switch"
+type NativePattern = "button" | "checkbox" | "switch"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -89,6 +89,37 @@ async function buttonPattern(context: Context) {
   }
 }
 
+async function checkboxPattern(context: Context) {
+  const checkboxes = context.withRole("checkbox")
+  if (!checkboxes.length) {
+    context.problem(
+      context.root,
+      "has no element with the checkbox role, so it isn't a checkbox (APG checkbox)."
+    )
+    return
+  }
+  for (const control of checkboxes) {
+    requireName(context, control, "checkbox")
+    const { checked } = stateOf(control)
+    if (typeof checked !== "boolean" && checked !== "mixed") {
+      context.problem(
+        control,
+        'has no checked state; a checkbox is checked, true, unchecked, false, or partly checked, "mixed" (APG checkbox).'
+      )
+    }
+  }
+  for (const [index, control] of checkboxes.entries()) {
+    if (!isDisabled(control)) {
+      await checkActivationToggles(
+        context,
+        "checkbox",
+        index,
+        (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
 async function switchPattern(context: Context) {
   const switches = context.withRole("switch")
   if (!switches.length) {
@@ -121,6 +152,7 @@ async function switchPattern(context: Context) {
 
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
+  checkbox: checkboxPattern,
   switch: switchPattern,
 }
 
