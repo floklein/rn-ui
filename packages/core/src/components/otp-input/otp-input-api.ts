@@ -239,9 +239,10 @@ function otpInputApiBody(
   let pointerType = ""
   // Where a native press on a slot puts the selection once the field has focus.
   let pressed: Selection | undefined
-  // Whether the field's next selection report is one the state overrides: the
-  // caret of refused text, or Android's caret at the end on focus after a press.
-  let keepSelection = false
+  // Native selection reports the state overrides: the caret of refused text,
+  // and Android's caret at the end when a press on a slot focused the field.
+  let refused = false
+  let focusCaret: Selection | undefined
 
   // A reset or a restored page puts a code back; nobody just entered it.
   function complete(
@@ -642,10 +643,10 @@ function otpInputApiBody(
             ? insertCode(previous, selection, code, maxLength)
             : previous
         }
-        keepSelection =
+        refused =
           next === previous ||
           !change("value", next, { reason: "input-change" })
-        if (keepSelection) {
+        if (refused) {
           return
         }
         if (!isControlled()) {
@@ -656,13 +657,24 @@ function otpInputApiBody(
       // Its selection, moved onto the character under a collapsed caret as
       // `syncSelection` does. A deletion's caret stays where the character was.
       selectText(current: Selection) {
-        if (!store.get().focused || keepSelection) {
-          keepSelection = false
+        const expected = focusCaret
+        focusCaret = undefined
+        if (
+          !store.get().focused ||
+          refused ||
+          (expected?.start === current.start && expected.end === current.end)
+        ) {
+          refused = false
           return
         }
         const deleted = afterDelete && current.start === current.end
         afterDelete = false
         const { selection, value, maxLength } = store.get()
+        // A controlled owner may not have taken the text the caret is in.
+        if (current.end > value.length) {
+          store.set({ selection: focusSelection(value.length, maxLength) })
+          return
+        }
         const next = deleted
           ? null
           : slotSelection(current, selection, value.length, maxLength)
@@ -683,12 +695,16 @@ function otpInputApiBody(
               }
             : { focused }
         )
-        keepSelection = !!pressed
+        focusCaret =
+          focused && pressed
+            ? { start: value.length, end: value.length }
+            : undefined
         pressed = undefined
       },
       // A press on a slot selects it, focusing the field first.
       pressSlot(index: number) {
         afterDelete = false
+        focusCaret = undefined
         const { value, maxLength, focused } = store.get()
         if (isDisabled(store.get())) {
           return

@@ -132,6 +132,25 @@ describe("OTPInput", () => {
     expect(drawn()).toBe("1|7|3*|")
   })
 
+  test("a press that focuses the field leaves a later caret move alone when Android reports no end caret", async () => {
+    await render(<Code defaultValue="123" />)
+    await fireEvent.press(slot(2))
+    await fireEvent(field(), "focus")
+    expect(field().props.selection).toEqual({ start: 2, end: 3 })
+    await select(0)
+    expect(field().props.selection).toEqual({ start: 0, end: 1 })
+  })
+
+  test("a change its controlled owner doesn't take leaves the active slot within the code", async () => {
+    await render(<Code value="12" onValueChange={() => {}} />)
+    await fireEvent(field(), "focus")
+    await fireEvent.changeText(field(), "123")
+    await select(3)
+    expect(field().props.value).toBe("12")
+    expect(field().props.selection).toEqual({ start: 2, end: 2 })
+    expect(drawn()).toBe("1|2|*|")
+  })
+
   test("typing over a selected slot replaces that character, and a deletion leaves the caret where it was", async () => {
     await render(<Code defaultValue="123" />)
     await fireEvent(field(), "focus")
@@ -202,9 +221,10 @@ describe("OTPInput", () => {
     expect(field().props.selection).toBeUndefined()
   })
 
-  test("a read-only code can't be edited and stays enabled for screen readers", async () => {
+  test("a read-only code can't be edited, and reads as disabled since React Native has no read-only field", async () => {
     await render(<Code readOnly defaultValue="1" />)
     expect(field().props.editable).toBe(false)
+    expect(field().props.accessibilityState).toMatchObject({ disabled: true })
   })
 
   test("the controller reads, writes and clears the code and focuses the field", async () => {

@@ -140,7 +140,7 @@ const [code] = useState(createOTPInputController)
 
 ## Forms and Keys
 
-A native view takes part in no form, so there's no `name`, `form`, submission or reset: read the code from `onValueChange`, `onValueCommit` or the controller. `TextInput` reports no arrow keys, Home or End, so those don't move between slots, and there's no undo history of the component's own. A paste is reported as `input-change`, like typing.
+A native view takes part in no form, so there's no `name`, `form`, submission or reset: read the code from `onValueChange`, `onValueCommit` or the controller. The component handles no keys itself, since `TextInput` reports none, and keeps no undo history of its own. A paste is reported as `input-change`, like typing.
 
 ## Custom Rendering
 
