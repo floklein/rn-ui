@@ -19,8 +19,10 @@ import {
  * @experimental
  */
 type NativePattern =
+  | "alertdialog"
   | "button"
   | "checkbox"
+  | "dialog"
   | "disclosure"
   | "img"
   | "radio-group"
@@ -184,6 +186,104 @@ async function disclosurePattern(context: Context) {
     }
     await performWatched(buttons()[index], "activate", context.act)
   }
+}
+
+// A modal dialog renders in a `Modal`, which isolates it for screen readers,
+// and is named by its title, a header. Native has no dialog role.
+function openDialog(context: Context) {
+  const modal = shownNodes(context.root).find(
+    (node) => node.type === "Modal" && node.props.visible !== false
+  )
+  const title =
+    modal && shownNodes(modal).find((node) => roleOf(node) === "header")
+  return modal && title ? { modal, title } : undefined
+}
+
+// Opening and closing move the screen reader's focus, and the dialog closes
+// from a Close part and from back on Android, the escape gesture on iOS.
+async function dialogPattern(context: Context, kind: string) {
+  const buttons = context.withRole("button")
+  for (const button of buttons) {
+    requireName(context, button, "button")
+  }
+  let trigger: number | undefined
+  for (const [index, button] of buttons.entries()) {
+    if (isDisabled(button)) {
+      continue
+    }
+    const requests = await performWatched(button, "activate", context.act)
+    if (openDialog(context)) {
+      trigger = index
+      if (!requests.length) {
+        context.problem(
+          button,
+          `requests no accessibility focus when it opens the ${kind}; the screen reader moves into it.`
+        )
+      }
+      break
+    }
+  }
+  const open = () => openDialog(context)
+  const reopen = () =>
+    performWatched(
+      context.withRole("button")[trigger!],
+      "activate",
+      context.act
+    )
+  if (trigger === undefined) {
+    context.problem(
+      context.root,
+      `has no button that opens a ${kind} in a Modal, named by its title with the header role.`
+    )
+    return
+  }
+  requireName(context, open()!.title, "title")
+  const closes = async (label: string, run: () => Promise<unknown[]>) => {
+    const requests = await run()
+    if (open()) {
+      context.problem(context.root, `stays open after ${label}.`)
+      return
+    }
+    if (!requests.length) {
+      context.problem(
+        context.root,
+        `requests no accessibility focus after ${label}; focus returns to the trigger.`
+      )
+    }
+    await reopen()
+  }
+  const close = context
+    .elements()
+    .find(
+      (node) =>
+        roleOf(node) === "button" &&
+        shownNodes(open()!.modal).includes(node) &&
+        !isDisabled(node)
+    )
+  if (close) {
+    await closes(`${describe(close)}'s activate action`, () =>
+      performWatched(close, "activate", context.act)
+    )
+  }
+  if (context.os === "android") {
+    await closes("Android's back", () =>
+      performWatched(open()!.modal, "back", context.act)
+    )
+    return
+  }
+  const escapable = shownNodes(open()!.modal).find(
+    (node) => typeof node.props.onAccessibilityEscape === "function"
+  )
+  if (!escapable) {
+    context.problem(
+      open()!.modal,
+      `has no view that takes VoiceOver's escape gesture, which closes the ${kind}.`
+    )
+    return
+  }
+  await closes("the escape action", () =>
+    performWatched(escapable, "escape", context.act)
+  )
 }
 
 // An image still loading or that failed is hidden, and its fallback is read.
@@ -402,8 +502,10 @@ async function separatorPattern(context: Context) {
 }
 
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
+  alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
   checkbox: checkboxPattern,
+  dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: disclosurePattern,
   img: imgPattern,
   "radio-group": radioGroupPattern,

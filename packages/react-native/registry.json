@@ -782,11 +782,92 @@
           "reason": "Its bind records the element, which is always a button on native. Its mousedown keeps focus in the field, which a Pressable never takes on native, and its keydown and keyup activate a non-button element, where the OS activates the Pressable."
         }
       }
+    },
+    "dialog": {
+      "entry": "packages/react-native/src/dialog.tsx",
+      "slots": {
+        "dialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "dialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "dialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "dialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "dialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "dialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        },
+        "alertDialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "alertDialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "alertDialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "alertDialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        }
+      }
+    },
+    "alert-dialog": {
+      "entry": "packages/react-native/src/alert-dialog.tsx",
+      "slots": {
+        "alertDialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "alertDialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "alertDialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "alertDialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        }
+      }
     }
   },
   "pending": [
     "accordion",
-    "alert-dialog",
     "autocomplete",
     "calendar",
     "carousel",
@@ -795,7 +876,6 @@
     "command",
     "date-input",
     "date-picker",
-    "dialog",
     "drawer",
     "file-input",
     "hover-card",

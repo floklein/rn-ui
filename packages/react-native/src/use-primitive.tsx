@@ -443,6 +443,21 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   } & ExitPropsOf<P, S> = {},
   Host?: React.ElementType
 ) {
+  return usePressedPart(handle, slot, slotProps, props, Host)
+}
+
+// `usePart`, with the press a part delivers in place of its slot's, like a
+// popup trigger's, which passes the opener its source stands for.
+function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
+  handle: P | PrimitiveHandle<P>,
+  slot: S,
+  slotProps: Native<PropsOf<P, S>> = {} as Native<PropsOf<P, S>>,
+  props: Omit<PartProps<React.ElementType, PartState<P, S>>, "ref"> & {
+    ref?: React.Ref<any>
+  } & ExitPropsOf<P, S> = {},
+  Host?: React.ElementType,
+  pressOf?: (part: Part) => () => void
+) {
   const primitive = typeof handle === "function" ? handle : handle.primitive
   const { context, provides, keyed } = scopeOf(primitive)
   const scope = React.useContext(context)
@@ -506,10 +521,13 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   }, [disabling, part, owner])
   const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
   const { onExit, ...hostProps } = props as typeof props & ExitProps
-  // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted.
+  const slotState = partState(part, slotProps) as { open?: boolean }
+  // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted. A
+  // popup's content leaves as it closes: core keeps it mounted until it has.
   const presence = usePresence(
     part,
     animates &&
+      slotState.open !== false &&
       present(part, {
         ...slotProps,
         keepMounted: false,
@@ -525,7 +543,11 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   const merged: Record<string, string | undefined> = shown
     ? ariaOf(part, slotProps, aria, presence.exiting)
     : {}
-  const activate = shown ? press(part, slotProps) : undefined
+  const activate = shown
+    ? pressOf
+      ? pressOf(part)
+      : press(part, slotProps)
+    : undefined
   const host = Host ?? (activate ? Pressable : View)
   const single = shown && isSingleElement(host, rest)
   const labelledBy = single ? idsOf(merged["aria-labelledby"]) : []
@@ -538,9 +560,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     id: owner.instance.id,
   })
   const state = (
-    animates
-      ? { ...partState(part, slotProps), ...presence.state }
-      : partState(part, slotProps)
+    animates ? { ...slotState, ...presence.state } : slotState
   ) as PartState<P, S>
   const translated = shown
     ? toNativeProps(
@@ -900,6 +920,7 @@ function createParts<
 export {
   createParts,
   DisabledContext,
+  HandleScope,
   type ExitProps,
   type GenericPartComponent,
   type PartComponent,
@@ -908,5 +929,6 @@ export {
   type PrimitiveHandle,
   useHandle,
   usePart,
+  usePressedPart,
   usePrimitive,
 }
