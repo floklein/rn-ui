@@ -1,0 +1,218 @@
+---
+title: Progress
+description: Show a task’s progress, or an indeterminate state while its progress is unknown.
+---
+
+<ComponentExample
+  name="progress/basic"
+  caption="Read the export bar. VoiceOver and TalkBack read Exporting video and 60% from the bar."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Progress`:
+
+```text
+Progress
+├── ProgressLabel
+├── ProgressValue
+└── ProgressTrack
+    └── ProgressIndicator
+```
+
+- `Progress` holds the value and range, and renders a `View`.
+- `ProgressLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead.
+- `ProgressValue` displays the formatted value, as a `Text`.
+- `ProgressTrack` gives the bar its size, and `ProgressIndicator` fills it. Both are `View`s.
+
+The root carries the value for screen readers, so `ProgressValue` is hidden from them and the value isn't read twice.
+
+## Usage
+
+Import the parts and put them together. The parts have no size or color, so give the track and the indicator a style:
+
+```tsx
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "@ui-sdk/react-native/progress"
+import { StyleSheet } from "react-native"
+
+function Upload() {
+  return (
+    <Progress value={40}>
+      <ProgressLabel>Uploading photos</ProgressLabel>
+      <ProgressValue />
+      <ProgressTrack style={styles.track}>
+        <ProgressIndicator style={styles.indicator} />
+      </ProgressTrack>
+    </Progress>
+  )
+}
+
+const styles = StyleSheet.create({
+  track: { flexDirection: "row", height: 8, backgroundColor: "#f4f4f5" },
+  indicator: { height: "100%", backgroundColor: "#18181b" },
+})
+
+export { Upload }
+```
+
+## Indeterminate
+
+Pass `value={null}` when you don't know how much work is complete. The state's `status` is `"indeterminate"`, and screen readers hear no value.
+
+The indicator has no width in this state, so give it one from its style. This example shows a still, partial fill.
+
+<ComponentExample
+  name="progress/indeterminate"
+  caption="Read the Connecting to server bar. It shows an ongoing task without a percentage."
+/>
+
+## Changing the Value
+
+Pass the latest `value` as your task progresses. The state's `status` is `"progressing"` while the value is below `max`, and `"complete"` when it reaches the end.
+
+<ComponentExample
+  name="progress/controlled"
+  caption="Press Upload Next to add one photo, or 20%, and watch the console count them. At 100%, the button stops advancing the bar. Press Reset to start at 0%."
+/>
+
+Progress displays your state; it has no `onValueChange` callback.
+
+## Bounds
+
+`min` and `max` default to 0 and 100. A value outside that range is clamped for the fill, the percentage and the value screen readers hear, but the state's `value` and a format other than percent keep it as you passed it. A value of 3 between 1 and 5 fills half the track.
+
+<ComponentExample
+  name="progress/min-max"
+  caption="Compare step 3 of 5 with the fill. Because the range starts at 1, the value is halfway through the range."
+/>
+
+## Format and Locale
+
+Pass `Intl.NumberFormat` options to `format` for units or decimal places. A function can return custom text, such as the time remaining.
+
+<ComponentExample
+  name="progress/format"
+  caption="Compare the progress readings. They show downloaded data, a precise percentage, time remaining, and a localized percentage."
+/>
+
+A percent format reports the value's position between `min` and `max`. Other formats use the value itself.
+
+`locale` controls digits and separators. Without it, the value is formatted in English for now: reading the device's language is still to come on native.
+
+The track fills from its start, so it fills from the right when the app runs right to left.
+
+## Value Label
+
+Use `getValueLabel` to give screen readers more context than the visible number. Its details include `formatted`, `percent`, `min`, and `max`. Handle a `null` value when the task can be indeterminate; `percent` is also `null` and `formatted` is empty then.
+
+<ComponentExample
+  name="progress/value-label"
+  caption="Read Copying files with a screen reader. It announces 3 of 12 files and 25%, while the visible value stays compact."
+/>
+
+Use [Meter](./meter) for a reading such as storage used, rather than a task that will finish.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props and its state. Spread the props on the host you render, so the indicator keeps its width.
+
+<ComponentExample
+  name="progress/render"
+  caption="The battery bar turns red below 20%, from the indicator's state, and its value reads 18% charged."
+/>
+
+## Styling
+
+Give the track a height, background and width, and the indicator a height and color. The indicator's width is a percentage of the track, from its start. Every part's style can be a function of its state, so `status` styles a task whose progress is unknown or done.
+
+## Part State
+
+### Progress [#part-state-progress]
+
+<PartStateTable
+  component="progress"
+  part="root"
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressState"
+/>
+
+### ProgressLabel [#part-state-progresslabel]
+
+<PartStateTable
+  component="progress"
+  part="label"
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressState"
+/>
+
+### ProgressValue [#part-state-progressvalue]
+
+<PartStateTable
+  component="progress"
+  part="value"
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressValueState"
+/>
+
+### ProgressTrack [#part-state-progresstrack]
+
+<PartStateTable
+  component="progress"
+  part="track"
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressState"
+/>
+
+### ProgressIndicator [#part-state-progressindicator]
+
+<PartStateTable
+  component="progress"
+  part="indicator"
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props.
+
+### Progress
+
+<TypeTable
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the same state.
+
+<StateTable
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressState"
+/>
+
+`ProgressValue` adds the formatted text:
+
+<StateTable
+  path="../../packages/core/src/components/progress/progress.ts"
+  name="ProgressValueState"
+/>
+
+## Accessibility
+
+On the web, the root has the [WAI-ARIA progressbar role](https://www.w3.org/TR/wai-aria-1.2/#progressbar) with its range and formatted value. On iOS the bar is one element: VoiceOver reads its label and the formatted value, and React Native gives it no role word, only the trait for a value that changes often. On Android the root keeps its view with the progress bar role and range. TalkBack reads its description, the label and the formatted value, and the label's text stays in the tree beside it. Neither platform makes a bar a keyboard stop.
+
+Name the bar with `ProgressLabel` or `aria-label`, and use `getValueLabel` when the value needs more explanation.

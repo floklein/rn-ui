@@ -4,7 +4,9 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
+import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
@@ -28,6 +30,14 @@ describe("checkCreation", () => {
 
   test("passes on an avatar", () => {
     expect(() => checkCreation(avatar, {})).not.toThrow()
+  })
+
+  test("passes on a progress bar, determinate or not, and a meter", () => {
+    expect(() => checkCreation(progress, { value: 40 })).not.toThrow()
+    expect(() => checkCreation(progress, { value: null })).not.toThrow()
+    expect(() =>
+      checkCreation(meter, { value: 3, min: -10, max: 10, locale: "de-DE" })
+    ).not.toThrow()
   })
 
   test("passes on a separator, decorative or vertical", () => {
