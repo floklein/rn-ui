@@ -5,6 +5,7 @@ import { beforeEach, test } from "node:test"
 import { useDevice } from "./device.ts"
 
 const device = useDevice("toggle")
+const toggleRole = device.platform === "ios" ? "button" : "togglebutton"
 
 const expectText = (id: string, text: string) =>
   device.expectTree((tree) => assert.equal(tree.get(id)?.text, text))
@@ -55,7 +56,11 @@ test("each example opens", async () => {
   for (const file of readdirSync(folder)) {
     await device.open(`screen-toggle-${path.basename(file, ".tsx")}`)
     await device.expectTree((tree) =>
-      assert.ok([...tree.values()].some((node) => node.checked !== undefined))
+      assert.ok(
+        [...tree.values()].some(
+          (node) => node.role === toggleRole && node.checked !== undefined
+        )
+      )
     )
   }
 })

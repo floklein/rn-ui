@@ -111,13 +111,10 @@ function parseTree(source: string) {
         platform === "ios" ? attrs.value === "1" : attrs.checked === "true"
     }
     // React Native gives iOS no toggle trait: a toggle button is a button
-    // whose value says "checked" or "unchecked".
-    if (
-      platform === "ios" &&
-      role === "button" &&
-      attrs.value in pressedValues
-    ) {
-      node.checked = pressedValues[attrs.value]
+    // whose value starts with "checked" or "unchecked" (English simulators).
+    const pressed = attrs.value?.split(", ")[0] ?? ""
+    if (platform === "ios" && role === "button" && pressed in pressedValues) {
+      node.checked = pressedValues[pressed]
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
