@@ -54,6 +54,11 @@ import {
 } from "../src/password-input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
+import {
+  SegmentedControl,
+  SegmentedControlIndicator,
+  SegmentedControlItem,
+} from "../src/segmented-control"
 import { Separator } from "../src/separator"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
@@ -577,6 +582,26 @@ describe("checkPattern's radio group pattern on the native host", () => {
             <RadioIndicator />
           </Radio>
         </RadioGroup>
+      )
+      await expect(checkRadioGroup()).resolves.toBeUndefined()
+    }
+  })
+
+  test("passes on a segmented control, checked or not, disabled or with a disabled item", async () => {
+    for (const props of [{ defaultValue: "list" }, {}, { disabled: true }]) {
+      await render(
+        <SegmentedControl aria-label="View" {...props}>
+          <SegmentedControlIndicator />
+          <SegmentedControlItem value="list">
+            <Text>List</Text>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="grid" disabled>
+            <Text>Grid</Text>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="board">
+            <Text>Board</Text>
+          </SegmentedControlItem>
+        </SegmentedControl>
       )
       await expect(checkRadioGroup()).resolves.toBeUndefined()
     }

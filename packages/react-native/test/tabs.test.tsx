@@ -270,6 +270,34 @@ describe("Tabs", () => {
     isRTL.restore()
   })
 
+  test("the indicator's box is measured inside the list's border", async () => {
+    await render(
+      <Tabs defaultValue="profile">
+        <TabsList aria-label="Account" testID="list" style={{ borderWidth: 2 }}>
+          <TabsTab value="profile">
+            <Text>Profile</Text>
+          </TabsTab>
+          <TabsIndicator
+            testID="indicator"
+            style={(state) => ({
+              left: state.activeTabLeft,
+              top: state.activeTabTop,
+            })}
+          />
+        </TabsList>
+      </Tabs>
+    )
+    await fireEvent(screen.getByTestId("list"), "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 44 } },
+    })
+    await fireEvent(tabNamed("Profile"), "layout", {
+      nativeEvent: { layout: { x: 2, y: 2, width: 100, height: 40 } },
+    })
+    expect(
+      screen.getByTestId("indicator", { includeHiddenElements: true })
+    ).toHaveStyle({ left: 0, top: 0 })
+  })
+
   test("a tab whose value changes keeps its box under the new value", async () => {
     function Renamed({ value }: { value: string }) {
       return (

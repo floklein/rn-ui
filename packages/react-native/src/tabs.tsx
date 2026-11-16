@@ -5,13 +5,14 @@ import {
   type TabsPrimitive,
 } from "@ui-sdk/core/tabs"
 import * as React from "react"
+import { type LayoutChangeEvent, Pressable, View } from "react-native"
 import {
-  I18nManager,
-  type LayoutChangeEvent,
-  type LayoutRectangle,
-  Pressable,
-  View,
-} from "react-native"
+  createLayouts,
+  type Layouts,
+  measuredStyle,
+  useActiveBox,
+  useItemLayout,
+} from "./indicator-layouts"
 import { withState } from "./render-element"
 import {
   createParts,
@@ -67,63 +68,7 @@ type TabsIndicatorState = TabsIndicatorCoreState & {
   activeTabHeight?: number
 }
 
-// The layouts of a list and its tabs, which the indicator reads.
-function createLayouts() {
-  const tabBoxes = new Map<string, LayoutRectangle>()
-  const listeners = new Set<() => void>()
-  let list: LayoutRectangle | undefined
-  let version = 0
-  const changed = () => {
-    version++
-    listeners.forEach((listener) => listener())
-  }
-  return {
-    list(box: LayoutRectangle) {
-      list = box
-      changed()
-    },
-    tab(value: string, box: LayoutRectangle | undefined) {
-      if (box) {
-        tabBoxes.set(value, box)
-      } else {
-        tabBoxes.delete(value)
-      }
-      changed()
-    },
-    subscribe(listener: () => void) {
-      listeners.add(listener)
-      return () => {
-        listeners.delete(listener)
-      }
-    },
-    version: () => version,
-    activeTab(value: string | null) {
-      const box = value === null ? undefined : tabBoxes.get(value)
-      if (!box || !list) {
-        return undefined
-      }
-      const left = box.x
-      const right = list.width - box.x - box.width
-      // React Native reads `left` and `right` as start and end right to left.
-      const swap = I18nManager.isRTL && I18nManager.doLeftAndRightSwapInRTL
-      return {
-        activeTabLeft: swap ? right : left,
-        activeTabRight: swap ? left : right,
-        activeTabTop: box.y,
-        activeTabBottom: list.height - box.y - box.height,
-        activeTabWidth: box.width,
-        activeTabHeight: box.height,
-      }
-    },
-  }
-}
-
-const LayoutsContext = React.createContext<ReturnType<
-  typeof createLayouts
-> | null>(null)
-
-const noLayouts = () => () => {}
-const unmeasured = () => 0
+const LayoutsContext = React.createContext<Layouts | null>(null)
 
 /**
  * Layered sections of content, one shown at a time, in a `View`.
@@ -138,6 +83,7 @@ const Tabs: TabsParts["Root"] = parts.Root
  * @experimental
  */
 const TabsList = function TabsList({
+  style,
   onLayout,
   ...props
 }: React.ComponentProps<TabsParts["List"]>) {
@@ -146,8 +92,9 @@ const TabsList = function TabsList({
     <LayoutsContext value={layouts}>
       <parts.List
         {...props}
+        style={measuredStyle(layouts, style)}
         onLayout={(event: LayoutChangeEvent) => {
-          layouts.list(event.nativeEvent.layout)
+          layouts.container(event.nativeEvent.layout)
           onLayout?.(event)
         }}
       />
@@ -164,26 +111,12 @@ const TabsTab = function TabsTab({
   onLayout,
   ...props
 }: React.ComponentProps<TabsParts["Tab"]>) {
-  const layouts = React.useContext(LayoutsContext)
-  const { value } = props
-  // A new value lays nothing out again, so the box carries over to it.
-  const box = React.useRef<LayoutRectangle>(undefined)
-  React.useEffect(() => {
-    if (box.current) {
-      layouts?.tab(value, box.current)
-    }
-    return () => layouts?.tab(value, undefined)
-  }, [layouts, value])
-  return (
-    <parts.Tab
-      {...props}
-      onLayout={(event: LayoutChangeEvent) => {
-        box.current = event.nativeEvent.layout
-        layouts?.tab(value, box.current)
-        onLayout?.(event)
-      }}
-    />
+  const layout = useItemLayout(
+    React.useContext(LayoutsContext),
+    props.value,
+    onLayout
   )
+  return <parts.Tab {...props} onLayout={layout} />
 } as TabsParts["Tab"]
 
 /**
@@ -201,16 +134,19 @@ const TabsTabIcon: TabsParts["TabIcon"] = parts.TabIcon
  */
 function TabsIndicator(props: PartProps<typeof View, TabsIndicatorState>) {
   const handle = useHandle(tabs)
-  const layouts = React.useContext(LayoutsContext)
   const value = React.useSyncExternalStore(
     handle.instance.subscribe,
     () => handle.state.value
   )
-  React.useSyncExternalStore(
-    layouts?.subscribe ?? noLayouts,
-    layouts?.version ?? unmeasured
-  )
-  const active = layouts?.activeTab(value)
+  const box = useActiveBox(React.useContext(LayoutsContext), value)
+  const active = box && {
+    activeTabLeft: box.left,
+    activeTabRight: box.right,
+    activeTabTop: box.top,
+    activeTabBottom: box.bottom,
+    activeTabWidth: box.width,
+    activeTabHeight: box.height,
+  }
   return (
     <parts.Indicator
       {...props}
