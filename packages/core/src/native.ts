@@ -14,6 +14,7 @@ export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"
+export { toolbarNative } from "./components/toolbar/toolbar-native"
 export {
   type NativeBehavior,
   type NativeHost,

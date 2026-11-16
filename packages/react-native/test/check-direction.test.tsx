@@ -44,6 +44,7 @@ import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
+import { Toolbar, ToolbarButton, ToolbarSeparator } from "../src/toolbar"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 
@@ -232,6 +233,24 @@ describe("checkDirection on the native host", () => {
               <Toggle value="bold" aria-label="Bold" />
               <Toggle value="italic" aria-label="Italic" />
             </ToggleGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a toolbar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Toolbar aria-label="Formatting">
+              <Toggle aria-label="Bold" />
+              <ToolbarSeparator />
+              <ToolbarButton aria-label="Insert link" />
+            </Toolbar>
           )
           return screen.container
         },

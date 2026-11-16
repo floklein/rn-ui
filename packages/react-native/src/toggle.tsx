@@ -10,6 +10,7 @@ import {
 } from "@ui-sdk/core/toggle"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { useToolbarScope } from "./toolbar-context"
 import {
   createParts,
   type PartProps,
@@ -43,7 +44,14 @@ function Toggle(
   props: ToggleOptions & PartProps<typeof Pressable, ToggleState>
 ) {
   const group = React.useContext(ToggleGroupContext)
-  return <parts.Root {...props} group={group ? () => group.api : undefined} />
+  const toolbar = useToolbarScope()
+  return (
+    <parts.Root
+      {...props}
+      group={group ? () => group.api : undefined}
+      toolbar={toolbar}
+    />
+  )
 }
 
 /**
@@ -72,6 +80,7 @@ function ToggleGroup<T extends string = string>({
   debug,
   ...props
 }: ToggleGroupOptions<T> & PartProps<typeof View, ToggleGroupState<T>>) {
+  const toolbar = useToolbarScope()
   const group = usePrimitive(toggleGroup, {
     value,
     defaultValue,
@@ -83,6 +92,7 @@ function ToggleGroup<T extends string = string>({
     loop,
     controller: controller as ToggleGroupController | undefined,
     debug,
+    toolbar,
   })
   // The state holds only values of type `T`, which the primitive types as strings.
   return (

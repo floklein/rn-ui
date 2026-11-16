@@ -59,6 +59,14 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
 import { checkPattern } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+  ToolbarInput,
+  ToolbarLink,
+  ToolbarSeparator,
+} from "../src/toolbar"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
@@ -78,6 +86,8 @@ const checkPagination = () =>
 const checkProgress = () =>
   checkPattern(screen.container, "progressbar", { os, act })
 const checkMeter = () => checkPattern(screen.container, "meter", { os, act })
+const checkToolbar = () =>
+  checkPattern(screen.container, "toolbar", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -1222,6 +1232,87 @@ describe("checkPattern's dialog patterns on the native host", () => {
       os === "ios"
         ? "stays open after the escape action."
         : "stays open after Android's back."
+    )
+  })
+})
+
+describe("checkPattern's toolbar pattern on the native host", () => {
+  test("passes on a toolbar whose buttons, toggles, links and fields are each their own element", async () => {
+    const onPressedChange = jest.fn()
+    await render(
+      <Toolbar aria-label="Formatting">
+        <Toggle aria-label="Bold" onPressedChange={onPressedChange} />
+        <ToggleGroup aria-label="Alignment" defaultValue={["left"]}>
+          <Toggle value="left" aria-label="Align left" />
+          <Toggle value="right" aria-label="Align right" />
+        </ToggleGroup>
+        <ToolbarSeparator />
+        <ToolbarGroup disabled aria-label="History">
+          <ToolbarButton aria-label="Undo" />
+        </ToolbarGroup>
+        <ToolbarLink>
+          <Text>Help</Text>
+        </ToolbarLink>
+        <ToolbarInput aria-label="Find" />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).resolves.toBeUndefined()
+    expect(onPressedChange.mock.calls.map(([pressed]) => pressed)).toEqual([
+      true,
+      false,
+    ])
+  })
+
+  test("fails with no toolbar role", async () => {
+    await render(
+      <View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Bold" />
+      </View>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "has no view with the toolbar role"
+    )
+  })
+
+  test("fails on a toolbar read as one element, which hides its controls", async () => {
+    await render(
+      <Toolbar aria-label="Formatting" accessible>
+        <ToolbarButton aria-label="Bold" />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "is one accessible element; each control in a toolbar is its own"
+    )
+  })
+
+  test("fails on a toolbar with no control, and on a control with no name", async () => {
+    await render(
+      <Toolbar aria-label="Empty">
+        <ToolbarSeparator />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow("holds no control")
+    await render(
+      <Toolbar aria-label="Formatting">
+        <ToolbarButton />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow("the button has no name")
+  })
+
+  test("fails on two toolbars when one has no name", async () => {
+    await render(
+      <View>
+        <Toolbar aria-label="Formatting">
+          <ToolbarButton aria-label="Bold" />
+        </Toolbar>
+        <Toolbar>
+          <ToolbarButton aria-label="Undo" />
+        </Toolbar>
+      </View>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
     )
   })
 })
