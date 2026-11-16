@@ -11,6 +11,15 @@ import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
+import { Toggle } from "../src/toggle"
+
+const { Root: Radio } = createParts(radioGroup, { root: Pressable })
+
+const values = [
+  <Checkbox value="terms" />,
+  <Radio value="small" />,
+  <Toggle value="bold" />,
+]
 
 const switches = [
   <Switch
@@ -19,11 +28,12 @@ const switches = [
     disabled
     readOnly
     required
-    value="on"
     onCheckedChange={() => {}}
   >
     <SwitchThumb />
   </Switch>,
+  // @ts-expect-error A switch submits no value on native.
+  <Switch value="on" />,
   // @ts-expect-error `name` has no native meaning.
   <Switch name="notifications" />,
   // @ts-expect-error `form` has no native meaning.
@@ -120,4 +130,5 @@ export {
   NativeSwitch,
   switches,
   type SwitchInput,
+  values,
 }
