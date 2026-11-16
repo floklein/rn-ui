@@ -597,8 +597,6 @@ async function separatorPattern(context: Context) {
   }
 }
 
-// A toolbar is a container whose controls are each their own element, so it
-// holds the role but is never read as one.
 async function toolbarPattern(context: Context) {
   const bars = shownNodes(context.root).filter(
     (node) => roleOf(node) === "toolbar"
@@ -635,15 +633,14 @@ async function toolbarPattern(context: Context) {
     }
     inside.forEach((node) => controls.add(node))
   }
+  const isButton = (node: HostNode) =>
+    roleOf(node) === "button" || roleOf(node) === "togglebutton"
   for (const control of controls) {
-    const role = roleOf(control)
-    if (role !== "button" && role !== "togglebutton") {
-      requireName(context, control, role ?? "control")
+    if (!isButton(control)) {
+      requireName(context, control, roleOf(control) ?? "control")
     }
   }
-  if (
-    [...controls].some((node) => /^(toggle)?button$/.test(roleOf(node) ?? ""))
-  ) {
+  if ([...controls].some(isButton)) {
     await buttonPattern(context)
   }
 }
