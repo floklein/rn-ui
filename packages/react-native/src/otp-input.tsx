@@ -6,8 +6,10 @@ import {
   type OTPInputState,
 } from "@ui-sdk/core/otp-input"
 import { withSource } from "@ui-sdk/core/renderer"
+import { createContext, useCallback, useContext, useRef } from "react"
 import {
-  Pressable,
+  type GestureResponderEvent,
+  type HostInstance,
   StyleSheet,
   Text,
   TextInput,
@@ -43,9 +45,39 @@ type ControlProps = Pick<TextInputProps, "id" | "autoFocus" | "aria-label"> & {
   "aria-invalid"?: boolean
 }
 
-// The slots draw the field's text, caret and selection. iOS draws selection
-// handles whatever `selectionColor` says, so the field is nearly transparent:
-// above 0.01, UIKit still hit-tests it and screen readers still reach it.
+type Views = { root: HostInstance | null; slots: Map<number, HostInstance> }
+
+const ViewsContext = createContext<Views>({ root: null, slots: new Map() })
+
+// Groups and separators offset slots, so each is measured from the root,
+// as the field is. Fabric measures synchronously.
+function slotAt({ root, slots }: Views, field: HostInstance | null, x: number) {
+  if (!root || !field) {
+    return undefined
+  }
+  let fieldStart = 0
+  field.measureLayout(root, (left) => {
+    fieldStart = left
+  })
+  let nearest: number | undefined
+  let distance = Infinity
+  for (const [index, view] of slots) {
+    view.measureLayout(root, (left, _top, width) => {
+      const start = left - fieldStart
+      const away = Math.max(start - x, x - start - width, 0)
+      if (away < distance) {
+        distance = away
+        nearest = index
+      }
+    })
+  }
+  return nearest
+}
+
+// The slots draw the field's text, caret and selection, and the field lies
+// over them so a long press anywhere offers Paste. iOS draws selection handles
+// whatever `selectionColor` says, so the field is nearly transparent: above
+// 0.01, UIKit still hit-tests it and screen readers still reach it.
 const hidden = StyleSheet.create({
   control: {
     position: "absolute",
@@ -69,6 +101,11 @@ function OTPInputControl(props: ControlProps) {
     otp.state
   const editable = !disabled && !formDisabled && !readOnly
   const { internal } = otp.api
+  const views = useContext(ViewsContext)
+  const field = useRef<HostInstance>(null)
+  // A tap on the unfocused field selects its slot once the press ends, so a
+  // scroll that starts on the code doesn't focus it.
+  const pressed = useRef<number>(undefined)
   return usePart(
     otp,
     "control",
@@ -85,18 +122,32 @@ function OTPInputControl(props: ControlProps) {
         withSource("keyboard", () => internal.typeText(text)),
       onSelectionChange: ({ nativeEvent }: TextInputSelectionChangeEvent) =>
         internal.selectText(nativeEvent.selection),
+      onPressIn: ({ nativeEvent }: GestureResponderEvent) => {
+        pressed.current = slotAt(views, field.current, nativeEvent.locationX)
+        if (focused && pressed.current !== undefined) {
+          internal.pressSlot(pressed.current)
+          pressed.current = undefined
+        }
+      },
+      onPress: () => {
+        if (pressed.current !== undefined) {
+          internal.pressSlot(pressed.current)
+        }
+        pressed.current = undefined
+      },
       onFocus: () => internal.focusText(true),
       onBlur: () => internal.focusText(false),
       // Android enables a read-only TextInput, which then takes typing, when
       // its disabled state is false.
       accessibilityState: { disabled: !editable },
+      ref: field,
     }),
     TextInput
   )
 }
 
 /**
- * Holds the slots, and one `TextInput` under them that takes focus, holds the
+ * Holds the slots, and one `TextInput` over them that takes focus, holds the
  * code and offers one-time codes. `id`, `autoFocus` and the `aria-*` naming
  * props go to that field. It takes part in no form, so it has no `name`.
  * @experimental
@@ -143,6 +194,13 @@ function OTPInput({
     controller,
     debug,
   })
+  const views = useRef<Views>({ root: null, slots: new Map() }).current
+  const rootRef = useCallback(
+    (view: HostInstance | null) => {
+      views.root = view
+    },
+    [views]
+  )
   const control = (
     <OTPInputControl
       id={id}
@@ -153,22 +211,24 @@ function OTPInput({
       aria-invalid={invalid}
     />
   )
-  return usePart(
+  const root = usePart(
     otp,
     "root",
     {},
     mergeProps(props as Record<string, unknown>, {
       children: (state: OTPInputState, interaction: Interaction) => (
         <>
-          {control}
           {typeof children === "function"
             ? children(state, interaction)
             : children}
+          {control}
         </>
       ),
+      ref: rootRef,
     }),
     View
   )
+  return <ViewsContext.Provider value={views}>{root}</ViewsContext.Provider>
 }
 
 /**
@@ -181,7 +241,7 @@ const char = (slot: OTPInputSlotState) =>
   slot.char === null ? null : <Text>{slot.char}</Text>
 
 /**
- * One character of the code, drawn over the field. A press selects it.
+ * One character of the code, drawn under the field. A tap over it selects it.
  * Without children, it shows the character in a `Text`.
  * @experimental
  */
@@ -189,8 +249,20 @@ function OTPInputSlot({
   index,
   children = char,
   ...props
-}: OTPInputSlotProps & PartProps<typeof Pressable, OTPInputSlotState>) {
+}: OTPInputSlotProps & PartProps<typeof View, OTPInputSlotState>) {
   const otp = useHandle(otpInput)
+  const { slots } = useContext(ViewsContext)
+  const ref = useCallback(
+    (view: HostInstance | null) => {
+      if (view) {
+        slots.set(index, view)
+        return () => {
+          slots.delete(index)
+        }
+      }
+    },
+    [slots, index]
+  )
   return usePart(
     otp,
     "slot",
@@ -198,9 +270,9 @@ function OTPInputSlot({
     mergeProps(
       { accessible: false, focusable: false },
       { ...props, children },
-      { onPress: () => otp.api.internal.pressSlot(index) }
+      { ref }
     ),
-    Pressable
+    View
   )
 }
 

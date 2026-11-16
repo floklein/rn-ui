@@ -27,7 +27,7 @@ OTPInput
     └── OTPInputSlot
 ```
 
-`OTPInput` renders a `View` holding the code, with one `TextInput` under the slots. That field takes focus, holds the whole code and is what screen readers reach. `OTPInputGroup` lays out a run of slots. Each `OTPInputSlot` draws the character at its zero-based `index`, and a tap on it selects that character. Add `OTPInputSeparator` between groups when the code is easier to read in sections.
+`OTPInput` renders a `View` holding the code, with one transparent `TextInput` over the slots. That field takes focus, holds the whole code and is what screen readers reach, and a long press anywhere on the code offers Paste. `OTPInputGroup` lays out a run of slots. Each `OTPInputSlot` is a `View` that draws the character at its zero-based `index`, and a tap over it selects that character. Add `OTPInputSeparator` between groups when the code is easier to read in sections.
 
 Name the code with a `FieldLabel` inside a [Field](/docs/react-native/components/field), whose label tap starts editing it, or with `aria-label`. Groups, slots and separators are only drawn: they're hidden from screen readers and aren't keyboard stops. The field asks for `one-time-code`, so iOS offers a code from Messages or Mail above the keyboard, and Android's autofill service can offer one from an SMS.
 

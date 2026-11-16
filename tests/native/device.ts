@@ -283,13 +283,13 @@ function useDevice(name: string) {
         )
         .click()
     },
-    /** Taps the screen at a point, in the driver's units, for a part out of the accessibility tree. */
-    async tapAt(x: number, y: number) {
+    /** Taps the screen at a point, in the driver's units, for a part out of the accessibility tree. Holds for `hold` ms. */
+    async tapAt(x: number, y: number, hold = 50) {
       await driver
         .action("pointer", { parameters: { pointerType: "touch" } })
         .move({ x: Math.round(x), y: Math.round(y) })
         .down()
-        .pause(50)
+        .pause(hold)
         .up()
         .perform()
     },
