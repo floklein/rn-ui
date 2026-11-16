@@ -254,6 +254,8 @@ The indicator receives the radio's state, with the first-frame and closing flags
   name="RadioGroupValueChangeReason"
 />
 
+`list-navigation` doesn't happen on native, which builds no arrow keys, and neither do `reset` and `restore`, which come from a form.
+
 ### Controller
 
 Create one with `createRadioGroupController()` and pass it as `controller`.
@@ -276,7 +278,7 @@ Callbacks get the new value first, then the details.
 
 ## Accessibility
 
-Radio groups follow the [WAI-ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/), translated to React Native's accessibility props. Each radio has the `radio` role with its checked and disabled state, so VoiceOver and TalkBack announce it as a radio button that's selected or not, and a double-tap checks it. Each radio is its own accessible element, reached by swiping.
+Radio groups follow the [WAI-ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/), translated to React Native's accessibility props. Each radio has the `radio` role with its checked and disabled state, so VoiceOver and TalkBack announce it as a radio button, checked or unchecked, and a double-tap checks it. Each radio is its own accessible element, reached by swiping.
 
 ### Keyboard
 

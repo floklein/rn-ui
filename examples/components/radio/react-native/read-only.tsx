@@ -19,13 +19,7 @@ function Example() {
         style={styles.stack}
       >
         {plans.map((plan) => (
-          <Radio
-            key={plan.value}
-            value={plan.value}
-            aria-label={plan.label}
-            aria-description="Ask an admin to change plans."
-            style={styles.row}
-          >
+          <Radio key={plan.value} value={plan.value} style={styles.row}>
             {(state) => (
               <>
                 <View
