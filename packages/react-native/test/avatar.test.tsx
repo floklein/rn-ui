@@ -72,6 +72,20 @@ describe("Avatar", () => {
     )
   })
 
+  test("an image with no source stays failed when Android loads its blank placeholder", async () => {
+    const onLoadingStatusChange = jest.fn()
+    await render(
+      <Person image={null} onLoadingStatusChange={onLoadingStatusChange} />
+    )
+    await fireEvent(screen.getByTestId("image", hidden), "load")
+    expect(screen.getByText("AL")).toBeOnTheScreen()
+    expect(onLoadingStatusChange).toHaveBeenCalledTimes(1)
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith(
+      "error",
+      expect.objectContaining({ reason: "image-error" })
+    )
+  })
+
   test("the image stays out of sight until it loads", async () => {
     await render(<Person />)
     const image = screen.getByTestId("image", hidden)
