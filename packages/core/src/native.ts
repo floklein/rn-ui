@@ -10,3 +10,4 @@ export {
   nativeHost,
   setNativeHost,
 } from "./foundation/kernel/native-host"
+export { joinCheckboxGroup } from "./components/checkbox/checkbox-native"
