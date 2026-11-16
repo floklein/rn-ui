@@ -5,8 +5,6 @@ import {
   type LayoutRectangle,
 } from "react-native"
 
-// The layouts of a container and its items, which an indicator over the
-// active item reads.
 function createLayouts() {
   const items = new Map<string, LayoutRectangle>()
   const listeners = new Set<() => void>()
@@ -59,8 +57,7 @@ function createLayouts() {
 
 type Layouts = ReturnType<typeof createLayouts>
 
-// Reports an item's layout under its value. A new value lays nothing out
-// again, so the box carries over to it.
+// A new value lays nothing out again, so the box carries over to it.
 function useItemLayout(
   layouts: Layouts | null,
   value: string,
