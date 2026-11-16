@@ -6,6 +6,7 @@
  * @module
  */
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export { radioNative } from "./components/radio/radio-native"
 export { ratingNative } from "./components/rating/rating-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"

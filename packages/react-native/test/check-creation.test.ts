@@ -4,6 +4,7 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
+import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
@@ -45,6 +46,14 @@ describe("checkCreation", () => {
     expect(() => checkCreation(toggle, { disabled: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { multiple: true })).not.toThrow()
     expect(() => checkCreation(toggleGroup, { disabled: true })).not.toThrow()
+  })
+
+  test("passes on a radio group, checked, read-only or disabled", () => {
+    expect(() => checkCreation(radioGroup, {})).not.toThrow()
+    expect(() =>
+      checkCreation(radioGroup, { defaultValue: "small", readOnly: true })
+    ).not.toThrow()
+    expect(() => checkCreation(radioGroup, { disabled: true })).not.toThrow()
   })
 
   test("passes on a rating, read-only or with half stars", () => {

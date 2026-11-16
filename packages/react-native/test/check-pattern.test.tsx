@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
@@ -428,6 +429,25 @@ describe("checkPattern's button pattern on toggle buttons", () => {
 })
 
 describe("checkPattern's radio group pattern on the native host", () => {
+  test("passes on a radio group, checked or not, disabled or with a disabled radio", async () => {
+    for (const props of [{ defaultValue: "small" }, {}, { disabled: true }]) {
+      await render(
+        <RadioGroup aria-label="Size" {...props}>
+          <Radio value="small" aria-label="Small">
+            <RadioIndicator />
+          </Radio>
+          <Radio value="large" aria-label="Large" disabled>
+            <RadioIndicator />
+          </Radio>
+          <Radio value="medium" aria-label="Medium">
+            <RadioIndicator />
+          </Radio>
+        </RadioGroup>
+      )
+      await expect(checkRadioGroup()).resolves.toBeUndefined()
+    }
+  })
+
   test("passes on a rating, and on one with half stars", async () => {
     const onValueChange = jest.fn()
     await render(

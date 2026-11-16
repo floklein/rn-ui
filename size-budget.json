@@ -427,6 +427,7 @@
   "@ui-sdk/react-native/checkbox": 15051,
   "@ui-sdk/react-native/input": 11040,
   "@ui-sdk/react-native/primitive": 5153,
+  "@ui-sdk/react-native/radio": 15581,
   "@ui-sdk/react-native/rating": 15391,
   "@ui-sdk/react-native/switch": 11396,
   "@ui-sdk/react-native/tabs": 18057,

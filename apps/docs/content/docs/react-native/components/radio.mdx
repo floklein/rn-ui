@@ -1,0 +1,292 @@
+---
+title: Radio
+description: Choose one option from a short list.
+---
+
+Use radios for a short list of choices where only one can be picked, like a shipping speed or a plan. The group keeps one value, and each radio is its own accessible element.
+
+<ComponentExample
+  name="radio/basic"
+  caption="Tap Express, or double-tap it with VoiceOver or TalkBack. Standard unchecks."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `RadioGroup`:
+
+```text
+RadioGroup
+├── Radio
+│   └── RadioIndicator
+└── Radio
+    └── RadioIndicator
+```
+
+`Radio` renders a `Pressable`, and `RadioGroup` and `RadioIndicator` render a `View`.
+
+## Usage
+
+Import the parts and put them together. A native view has no `<label>` to wrap it in, so put the label's text inside the radio: it names the radio, and a tap anywhere on the row checks it.
+
+```tsx
+import { Radio, RadioGroup, RadioIndicator } from "@ui-sdk/react-native/radio"
+import { Text, View } from "react-native"
+
+function Example() {
+  return (
+    <RadioGroup aria-label="Shipping speed" defaultValue="standard">
+      <Radio value="standard">
+        <View style={styles.circle}>
+          <RadioIndicator style={styles.dot} />
+        </View>
+        <Text>Standard</Text>
+      </Radio>
+      <Radio value="express">
+        <View style={styles.circle}>
+          <RadioIndicator style={styles.dot} />
+        </View>
+        <Text>Express</Text>
+      </Radio>
+    </RadioGroup>
+  )
+}
+
+export { Example }
+```
+
+The indicator is mounted while its radio is checked. Draw it with views, not a text glyph: text inside the radio becomes part of its name.
+
+Name the group with `aria-label`, and show the same words as a heading above it. A group's name may reach no screen reader yet, since React Native has no way to give a container one, so make each radio's own name clear without it.
+
+## Description
+
+`aria-description` gives a radio a hint that screen readers read after its name. Pass `aria-label` too, or the hint's text inside the radio joins its name.
+
+<ComponentExample
+  name="radio/description"
+  caption="VoiceOver and TalkBack read the line under each option after its name."
+/>
+
+## Choice Card
+
+Style the radio as a card with a function of its state. The whole card is the radio, so a tap anywhere on it checks it.
+
+<ComponentExample
+  name="radio/choice-card"
+  caption="Tap anywhere on the Pro card to choose it."
+/>
+
+## Heading and Description
+
+A native view has no fieldset or legend. Put a heading and a description above the group, and keep each radio's name complete on its own.
+
+<ComponentExample
+  name="radio/legend"
+  caption="Choose Yearly. The heading and the line under it describe both billing periods."
+/>
+
+## Disabled
+
+Set `disabled` on the group or on one radio. A disabled radio ignores presses, leaves Tab's order on Android, and screen readers announce it as dimmed or disabled.
+
+<ComponentExample
+  name="radio/disabled"
+  caption="The Theme group is disabled. In Backups, Hourly is disabled, so a tap leaves Daily checked."
+/>
+
+## Read-Only
+
+Set `readOnly` on the group to keep its value while people still reach and read the options. It isn't announced, so say why in the labels or nearby text.
+
+<ComponentExample
+  name="radio/read-only"
+  caption="Tap Team. Pro stays checked, since an admin manages the plan."
+/>
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. Call `details.cancel()` in the callback to keep the current value. A [controller](#controller) from `createRadioGroupController()` checks a radio from anywhere, like the Choose Team button below. Create one controller per mounted group.
+
+<ComponentExample
+  name="radio/controlled"
+  caption="Choose Starter, then press Choose Team. The console logs each change and its reason."
+/>
+
+## Forms
+
+A native view takes part in no form, so the group has no `name` or `form` prop and renders no hidden input. Read the value from `onValueChange` or a controller, and reset it by setting it. `required` stays in the state for your styles and labels.
+
+## Animation
+
+The indicator leaves through `onExit`. When its radio unchecks, the indicator calls `onExit` with a `done` function and stays mounted until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once.
+
+```tsx
+const scale = useRef(new Animated.Value(1)).current
+
+<RadioIndicator
+  onExit={(done) =>
+    Animated.timing(scale, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(done)
+  }
+  render={<Animated.View style={{ transform: [{ scale }] }} />}
+/>
+```
+
+The indicator's state also has `startingStyle`, true for its first frame after it appears, and `endingStyle`, true while it leaves. `keepMounted` keeps the indicator mounted while unchecked, so its style can follow `checked`.
+
+<ComponentExample
+  name="radio/indicator"
+  caption="Choose Light. Every indicator stays mounted, and only the checked one shows its dot."
+/>
+
+## Custom Rendering
+
+`render` replaces a part's host with your own element, here a full-width option that shows a check from its state.
+
+<ComponentExample
+  name="radio/render"
+  caption="Choose Nothing. Each radio renders its own Pressable, with a check when it's chosen."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.circle, state.checked && styles.checked]`. Each part receives the fields listed under [Part State](#part-state). The radio gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### RadioGroup [#part-state-radiogroup]
+
+<PartStateTable
+  component="radio"
+  part="group"
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioGroupState"
+/>
+
+### Radio [#part-state-radio]
+
+<PartStateTable
+  component="radio"
+  part="root"
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioState"
+/>
+
+### RadioIndicator [#part-state-radioindicator]
+
+<PartStateTable
+  component="radio"
+  part="indicator"
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioIndicatorState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation).
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### RadioGroup
+
+<TypeTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioGroupOptions"
+/>
+
+`loop` changes nothing on native, which builds no arrow keys between radios.
+
+### Radio
+
+<TypeTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioProps"
+/>
+
+### RadioIndicator
+
+<TypeTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioIndicatorProps"
+/>
+
+<TypeTable
+  path="../../packages/react-native/src/use-primitive.tsx"
+  name="ExitProps"
+/>
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioGroupState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioState"
+/>
+
+The indicator receives the radio's state, with the first-frame and closing flags.
+
+<StateTable
+  path="../../packages/core/src/foundation/motion/presence-native.ts"
+  name="PresenceState"
+/>
+
+### Reasons
+
+`details.reason` says why the checked value changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioGroupValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createRadioGroupController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, runs the change callback like a press, and returns `false` when the change is canceled. `focus()` asks VoiceOver or TalkBack to move to the checked radio, or the first enabled one.
+
+<ControllerTable
+  path="../../packages/core/src/components/radio/radio.ts"
+  name="RadioGroupController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details.
+
+| Prop            | On               | Receives                                                          |
+| --------------- | ---------------- | ----------------------------------------------------------------- |
+| `onValueChange` | `RadioGroup`     | `(value, details)`: the checked value, and the [reason](#reasons) |
+| `onExit`        | `RadioIndicator` | `(done)`: call it when the exit animation ends                    |
+
+## Accessibility
+
+Radio groups follow the [WAI-ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/), translated to React Native's accessibility props. Each radio has the `radio` role with its checked and disabled state, so VoiceOver and TalkBack announce it as a radio button that's selected or not, and a double-tap checks it. Each radio is its own accessible element, reached by swiping.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                        |
+| ---------- | ----------------------------------------------------------- |
+| Tab        | Moves to the next radio, and Shift-Tab to the previous one  |
+| Arrow keys | Move between radios, on Android only, without checking them |
+| Space      | Checks the focused radio                                    |
+| Enter      | Checks the focused radio, on Android only                   |
+
+Every radio is its own stop: React Native delivers no arrow keys to views, so the group's single tab stop and its arrow keys, which check a radio as they move, aren't built.
