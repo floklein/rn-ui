@@ -430,6 +430,7 @@
   "@ui-sdk/react-native/primitive": 5299,
   "@ui-sdk/react-native/radio": 15731,
   "@ui-sdk/react-native/rating": 15536,
+  "@ui-sdk/react-native/separator": 7663,
   "@ui-sdk/react-native/switch": 11538,
   "@ui-sdk/react-native/tabs": 18211,
   "@ui-sdk/react-native/testing": 4235,

@@ -510,6 +510,10 @@
         }
       }
     },
+    "separator": {
+      "entry": "packages/react-native/src/separator.tsx",
+      "slots": {}
+    },
     "switch": {
       "entry": "packages/react-native/src/switch.tsx",
       "slots": {
@@ -656,7 +660,6 @@
     "scroll-area",
     "segmented-control",
     "select",
-    "separator",
     "slider",
     "time-input",
     "timeline",
@@ -701,6 +704,12 @@
     },
     {
       "component": "avatar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "separator",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
