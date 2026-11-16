@@ -9,6 +9,7 @@ export { checkboxNative } from "./components/checkbox/checkbox-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { radioNative } from "./components/radio/radio-native"
+export { dialogNative } from "./components/dialog/dialog-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
 export { tabsNative } from "./components/tabs/tabs-native"
@@ -17,6 +18,8 @@ export {
   type NativeBehavior,
   type NativeHost,
   nativeHost,
+  type NativeInput,
   type NativeTextField,
   setNativeHost,
 } from "./foundation/kernel/native-host"
+export { pressTrigger } from "./foundation/popups/popup-native"

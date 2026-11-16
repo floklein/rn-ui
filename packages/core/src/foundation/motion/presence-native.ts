@@ -98,4 +98,64 @@ function createPresence(onChange: () => void, part: () => Part) {
   }
 }
 
-export { createPresence, onSettled, type PresenceState }
+// Owners, like a popup's store, whose close waits for a part's exit.
+const exits = new WeakMap<object, { held: number; done?: () => void }>()
+
+/**
+ * Holds `owner` mounted as it closes while a part of it that animates out is
+ * mounted, as a native behavior does for a popup's content. Returns the
+ * release, which ends an exit still waiting.
+ */
+function holdExit(owner: object) {
+  const exit = exits.get(owner) ?? { held: 0 }
+  exits.set(owner, exit)
+  exit.held++
+  let released = false
+  return () => {
+    if (released) {
+      return
+    }
+    released = true
+    exit.held--
+    if (!exit.held) {
+      endExit(owner)
+    }
+  }
+}
+
+const exitHeld = (owner: object) => !!exits.get(owner)?.held
+
+// Runs `done` once a held part's exit ends, or at once with none held.
+function awaitExit(owner: object, done: () => void) {
+  const exit = exits.get(owner)
+  if (!exit?.held) {
+    done()
+    return undefined
+  }
+  exit.done = done
+  return () => {
+    if (exit.done === done) {
+      exit.done = undefined
+    }
+  }
+}
+
+/** Ends the exit `owner`'s close waits on, as the held part settles hidden. */
+function endExit(owner: object) {
+  const exit = exits.get(owner)
+  const done = exit?.done
+  if (exit) {
+    exit.done = undefined
+  }
+  done?.()
+}
+
+export {
+  awaitExit,
+  createPresence,
+  endExit,
+  exitHeld,
+  holdExit,
+  onSettled,
+  type PresenceState,
+}

@@ -84,11 +84,15 @@ const placement = {
 function pressOpening(core: PopupCore) {
   const { store, preset } = core
 
-  function press(key: string, props: PopupTriggerProps, event?: Event) {
+  function press(
+    key: string,
+    props: PopupTriggerProps,
+    event?: Event,
+    by = openerOf(event)
+  ) {
     if (props.disabled) {
       return
     }
-    const by = openerOf(event)
     if (!store.get().open) {
       return core.control.show({
         event,

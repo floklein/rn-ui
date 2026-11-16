@@ -65,6 +65,7 @@ describe("the form twin", () => {
       field: vi.fn(),
       announce: vi.fn(),
       activate: vi.fn(),
+      listen: vi.fn(),
       compare: vi.fn(),
     })
     const el = nativeElement(part)

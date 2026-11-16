@@ -378,6 +378,10 @@ Every difference the resolutions record, by subject.
 - The iOS escape gesture stands for Escape, with the `"escape-key"` reason ([How native popups layer, dismiss and place themselves][popups]).
 - `presentation="auto"` is the sheet only when the app imports the sheet entry ([How native popups layer, dismiss and place themselves][popups]).
 - The sheet presentation is a separate entry ([Which dependencies the native adapter may take][dependencies]).
+- React Native has no dialog role: a dialog is announced by its title, a header, and on iOS its content is `accessibilityViewIsModal` (ticket 65).
+- An alert dialog opened with a touch asks for focus on its title, as the web focuses the popup itself for touch; opened another way, on its first Close part (ticket 65).
+- A closed modal dialog's `keepMounted` content leaves the screen anyway: React Native's `Modal` renders nothing while hidden (ticket 65).
+- `persistentElements` does nothing on native, where nothing outside a `Modal` takes touches (ticket 65).
 - Insets are a value the app passes ([Which dependencies the native adapter may take][dependencies]).
 
 **Presence and motion**
