@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -21,6 +22,8 @@ const checkTextbox = () =>
   checkPattern(screen.container, "textbox", { os, act })
 const checkCheckbox = () =>
   checkPattern(screen.container, "checkbox", { os, act })
+const checkRadioGroup = () =>
+  checkPattern(screen.container, "radio-group", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 
@@ -421,6 +424,85 @@ describe("checkPattern's button pattern on toggle buttons", () => {
     await expect(checkButton()).rejects.toThrow(
       "has no pressed state; a toggle button's checked state is true or false"
     )
+  })
+})
+
+describe("checkPattern's radio group pattern on the native host", () => {
+  test("passes on a rating, and on one with half stars", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <Rating
+        aria-label="Rating"
+        defaultValue={2}
+        onValueChange={onValueChange}
+      />
+    )
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+    expect(onValueChange).toHaveBeenCalled()
+    await render(<Rating aria-label="Rating" step={0.5} max={3} />)
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+  })
+
+  test("passes on a disabled rating, which ignores the activation", async () => {
+    await render(<Rating aria-label="Rating" disabled defaultValue={3} />)
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+  })
+
+  test("fails with no radio", async () => {
+    await render(<Rating readOnly defaultValue={3} />)
+    await expect(checkRadioGroup()).rejects.toThrow(
+      "has no element with the radio role, so it isn't a radio group"
+    )
+  })
+
+  test("fails on a radio with no name or no checked state", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityState={{ checked: false }}
+        />
+        <Pressable accessibilityRole="radio" accessibilityLabel="Small" />
+      </View>
+    )
+    await expect(checkRadioGroup()).rejects.toThrow("the radio has no name")
+    await expect(checkRadioGroup()).rejects.toThrow(
+      'the radio "Small" has no checked state'
+    )
+  })
+
+  test("fails on two checked radios", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityLabel="Small"
+          accessibilityState={{ checked: true }}
+        />
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityLabel="Large"
+          accessibilityState={{ checked: true }}
+        />
+      </View>
+    )
+    await expect(checkRadioGroup()).rejects.toThrow(
+      "has 2 checked radios; one is checked at most"
+    )
+  })
+
+  test("fails on a radio that isn't the only one checked after the activate action", async () => {
+    await render(<Rating aria-label="Rating" value={1} />)
+    await expect(checkRadioGroup()).rejects.toThrow(
+      'the radio "2 stars" isn\'t the only checked radio after the activate action'
+    )
+  })
+})
+
+describe("checkPattern's img pattern on a read-only rating", () => {
+  test("passes on a read-only rating, one image named by its score", async () => {
+    await render(<Rating readOnly defaultValue={4.2} />)
+    await expect(checkImage()).resolves.toBeUndefined()
   })
 })
 

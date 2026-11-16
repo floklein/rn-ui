@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -83,6 +84,22 @@ describe("checkDirection on the native host", () => {
         { os, act }
       )
     ).resolves.toBeUndefined()
+  })
+
+  test("passes on a rating, and on a read-only one", async () => {
+    for (const readOnly of [false, true]) {
+      await expect(
+        checkDirection(
+          async () => {
+            await render(
+              <Rating aria-label="Rating" readOnly={readOnly} step={0.5} />
+            )
+            return screen.container
+          },
+          { os, act }
+        )
+      ).resolves.toBeUndefined()
+    }
   })
 
   test("passes on a toggle group", async () => {

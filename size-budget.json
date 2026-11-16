@@ -427,9 +427,10 @@
   "@ui-sdk/react-native/checkbox": 15010,
   "@ui-sdk/react-native/input": 10996,
   "@ui-sdk/react-native/primitive": 5105,
+  "@ui-sdk/react-native/rating": 15370,
   "@ui-sdk/react-native/switch": 11352,
   "@ui-sdk/react-native/tabs": 18012,
-  "@ui-sdk/react-native/testing": 3898,
+  "@ui-sdk/react-native/testing": 4086,
   "@ui-sdk/react-native/textarea": 10641,
   "@ui-sdk/react-native/toggle": 14553
 }
