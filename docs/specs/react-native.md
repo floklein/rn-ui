@@ -389,7 +389,6 @@ Every difference the resolutions record, by subject.
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
-- A checkbox group orders its checkboxes by when they mounted, not by their place in the tree, since native views have no document order (ticket 60).
 
 **Forms**
 

@@ -96,6 +96,16 @@ test("a group's checkboxes and its parent follow one value", async () => {
   })
 })
 
+test("a checkbox that renders between memoized siblings takes its place in the value", async () => {
+  await device.press("checkbox-nuts")
+  await device.press("add-crisps")
+  await device.press("checkbox-crisps")
+  await device.press("checkbox-chips")
+  await device.expectTree((tree) =>
+    assert.equal(tree.get("snacks-value")?.text, "chips,crisps,nuts")
+  )
+})
+
 test("each example opens", async () => {
   const folder = path.join(
     import.meta.dirname,
