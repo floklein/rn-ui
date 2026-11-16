@@ -1,7 +1,8 @@
 import type { FieldPrimitive } from "@ui-sdk/core/field"
 import { attrs } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { controls } from "./native-host"
+import { useLabel } from "./names"
+import { controls, controlsById } from "./native-host"
 import { DisabledContext, type PrimitiveHandle } from "./use-primitive"
 
 const FieldContext =
@@ -14,31 +15,42 @@ const none = () => undefined
 const useInheritedDisabled = () =>
   React.useContext(DisabledContext)?.disabled ?? false
 
-// What a press on the nearest Field's label does.
-function useLabelPress(
-  field: PrimitiveHandle<FieldPrimitive> | null,
+function useActivation<Key>(
+  registry: {
+    get: (key: Key) => (() => void) | undefined
+    set: (key: Key, run: () => void) => unknown
+    delete: (key: Key) => unknown
+  },
+  key: Key | null | undefined,
   activate: () => void
 ) {
   const latest = React.useRef(activate)
   latest.current = activate
   React.useLayoutEffect(() => {
-    if (!field) {
+    if (key == null) {
       return
     }
     const run = () => latest.current()
-    controls.set(field.api, run)
+    registry.set(key, run)
     return () => {
-      if (controls.get(field.api) === run) {
-        controls.delete(field.api)
+      if (registry.get(key) === run) {
+        registry.delete(key)
       }
     }
-  }, [field])
+  }, [registry, key])
 }
+
+// What a press on the nearest Field's label does.
+const useLabelPress = (
+  field: PrimitiveHandle<FieldPrimitive> | null,
+  activate: () => void
+) => useActivation(controls, field?.api, activate)
 
 /**
  * A control inside a Field: its props with the field's label and
  * descriptions, its own description first. `activate` is what a press on the
- * field's label does. Outside a Field, the props as they are.
+ * field's label, or on a Label for its id, does. Outside a Field, named by
+ * the Label for its id unless it has a name of its own.
  */
 function useFieldControl<Props extends Record<string, unknown>>(
   props: Props,
@@ -46,13 +58,18 @@ function useFieldControl<Props extends Record<string, unknown>>(
 ) {
   const field = React.useContext(FieldContext)
   useLabelPress(field, activate)
+  const id = (props.id ?? props.nativeID) as string | undefined
+  useActivation(controlsById, id, activate)
+  const label = useLabel(id)
   React.useSyncExternalStore(
     field ? field.instance.subscribe : noop,
     field ? field.instance.get : none,
     field ? field.instance.get : none
   )
   if (!field) {
-    return props
+    return props["aria-label"] || props["aria-labelledby"]
+      ? props
+      : { ...props, "aria-labelledby": label }
   }
   const part = field.instance.part("control", {
     describedBy: props["aria-describedby"] as string | undefined,
@@ -60,7 +77,8 @@ function useFieldControl<Props extends Record<string, unknown>>(
   const own = attrs(part)
   return {
     ...props,
-    "aria-labelledby": props["aria-labelledby"] ?? own["aria-labelledby"],
+    "aria-labelledby":
+      props["aria-labelledby"] ?? own["aria-labelledby"] ?? label,
     "aria-describedby": own["aria-describedby"],
   }
 }

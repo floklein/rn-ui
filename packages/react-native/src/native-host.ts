@@ -7,6 +7,7 @@ const textInputs: WeakSet<HostInstance> = new WeakSet()
 const fields: WeakMap<object, NativeTextField> = new WeakMap()
 const renders: WeakMap<Part, number> = new WeakMap()
 const controls: WeakMap<object, () => void> = new WeakMap()
+const controlsById: Map<string, () => void> = new Map()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -51,4 +52,12 @@ setNativeHost({
   },
 })
 
-export { controls, fields, pressSource, renders, textInputs, views }
+export {
+  controls,
+  controlsById,
+  fields,
+  pressSource,
+  renders,
+  textInputs,
+  views,
+}

@@ -1,0 +1,78 @@
+---
+title: Label
+description: Name a control with a label beside it, and let a press on the label reach it.
+---
+
+A native view has no `<label>`. Label names a control by its `htmlFor`, so a screen reader reads the control by the label's text, and a press on the label reaches the control.
+
+<ComponentExample
+  name="label/basic"
+  caption="Press Shipping city. The field starts editing, and VoiceOver and TalkBack read it as Shipping city."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Usage
+
+Import the label and point its `htmlFor` at the control's `id`:
+
+```tsx
+import { Input } from "@ui-sdk/react-native/input"
+import { Label } from "@ui-sdk/react-native/label"
+import { View } from "react-native"
+
+function City() {
+  return (
+    <View>
+      <Label htmlFor="city">City</Label>
+      <Input id="city" />
+    </View>
+  )
+}
+
+export { City }
+```
+
+Label renders a `Text`. Its children must be plain text, which becomes the control's name. A press on the label starts editing a text field, and presses a switch or a checkbox. It reaches [Input](./input), [Textarea](./textarea), [Switch](./switch) and [Checkbox](./checkbox).
+
+An `id` names one control for the whole app, since a native screen has no document of its own. When two mounted screens use the same `id`, the label and the control mounted last are the ones that count, so give each screen its own ids. A control has one label: a second label for the same `id` takes over until it unmounts.
+
+Inside a [Field](./field), use `FieldLabel`, which also ties the field's description and errors to the control.
+
+## Switch
+
+Point the label at a switch beside it. A press on the label turns the switch on and off.
+
+<ComponentExample
+  name="label/switch"
+  caption="Press Email me product updates. The switch turns on, and a screen reader reads it as Email me product updates."
+/>
+
+## Wrapping a Control
+
+A label can't wrap its control on native. VoiceOver reads a `Text` as one element, so a control inside it can't be reached. Put the text inside the control instead, like a [checkbox](./checkbox) with its text beside the box, or point a label beside it with `htmlFor`.
+
+## Styling
+
+The label is unstyled. Give it a style like any `Text`. A disabled control's label isn't dimmed for you: read the control's state where you keep it.
+
+## API Reference
+
+Props are the same as below, as React Native props, along with `htmlFor`, the `id` of the control.
+
+### Label
+
+<TypeTable
+  path="../../packages/core/src/components/label/label.ts"
+  name="LabelOptions"
+/>
+
+## Accessibility
+
+The control takes the label's text as its name, `accessibilityLabel`, unless it has an `aria-label` or an `aria-labelledby` of its own, or a Field's label names it, which win. The name follows the label's text as it changes, and reaches the control a frame after both mount. A press on a disabled control's label does nothing.
+
+On Android, a label is its own stop for TalkBack and for Tab on a hardware keyboard, since a `Text` you can press is focusable there. Enter on it does what a press does.

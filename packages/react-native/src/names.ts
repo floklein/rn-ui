@@ -98,4 +98,52 @@ function useReferences(ids: string[]) {
   React.useSyncExternalStore(subscribe, snapshot, snapshot)
 }
 
-export { idsOf, plainText, resolveIds, textOf, useReferences, useText }
+// The labels for a control through `htmlFor`, by the control's id. As with
+// texts, two screens may hold the same ids: the label mounted last names.
+const labelsFor = new Map<string, { id: string }[]>()
+const labelListeners = new Set<() => void>()
+
+function watchLabels(listener: () => void) {
+  labelListeners.add(listener)
+  return () => {
+    labelListeners.delete(listener)
+  }
+}
+
+function useLabelFor(control: string | undefined, label: string) {
+  React.useLayoutEffect(() => {
+    if (control === undefined) {
+      return
+    }
+    const entry = { id: label }
+    labelsFor.set(control, [...(labelsFor.get(control) ?? []), entry])
+    labelListeners.forEach((listener) => listener())
+    return () => {
+      const rest = labelsFor.get(control)!.filter((item) => item !== entry)
+      if (rest.length) {
+        labelsFor.set(control, rest)
+      } else {
+        labelsFor.delete(control)
+      }
+      labelListeners.forEach((listener) => listener())
+    }
+  }, [control, label])
+}
+
+/** The id of the label that names a control, or `undefined`. */
+function useLabel(control: string | undefined) {
+  const snapshot = () =>
+    control === undefined ? undefined : labelsFor.get(control)?.at(-1)?.id
+  return React.useSyncExternalStore(watchLabels, snapshot, snapshot)
+}
+
+export {
+  idsOf,
+  plainText,
+  resolveIds,
+  textOf,
+  useLabel,
+  useLabelFor,
+  useReferences,
+  useText,
+}

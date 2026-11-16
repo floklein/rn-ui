@@ -23,6 +23,7 @@
     "./collapsible": "./src/collapsible.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
+    "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
     "./pagination": "./src/pagination.tsx",
     "./password-input": "./src/password-input.tsx",
@@ -70,6 +71,10 @@
       "./input": {
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
+      },
+      "./label": {
+        "types": "./dist/label.d.ts",
+        "default": "./dist/label.js"
       },
       "./meter": {
         "types": "./dist/meter.d.ts",

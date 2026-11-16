@@ -754,6 +754,15 @@
           "reason": "Its bind records the element, which is always a button on native. Its mousedown keeps focus in the field, which a Pressable never takes on native, and its keydown and keyup activate a non-button element, where the OS activates the Pressable."
         }
       }
+    },
+    "label": {
+      "entry": "packages/react-native/src/label.tsx",
+      "slots": {
+        "label.root": {
+          "covered": "packages/react-native/src/label.tsx",
+          "reason": "Its bind finds the control by htmlFor or inside the label and writes the label's id into the control's aria-labelledby. Label registers its id for its htmlFor (names.ts), and the control that joins through useFieldControl in field-context.ts takes it as its aria-labelledby and registers what a press activates by its id. Its press looks the control up in the document, so Label presses the control registered for its htmlFor; a disabled one ignores it. Its mousedown keeps a double click from selecting the label's text, which a Text never does."
+        }
+      }
     }
   },
   "pending": [
@@ -772,7 +781,6 @@
     "file-input",
     "hover-card",
     "image-cropper",
-    "label",
     "listbox",
     "menu",
     "menubar",
@@ -993,6 +1001,18 @@
       "example": "field-set-rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "label",
+      "example": "wrap",
+      "feature": "A label wrapping its control",
+      "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
+    },
+    {
+      "component": "label",
+      "example": "slider",
+      "feature": "A label for a Slider",
+      "reason": "Slider isn't on native yet; the example comes with it (#71)."
     }
   ]
 }

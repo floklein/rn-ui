@@ -10,6 +10,7 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Label } from "../src/label"
 import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
 import {
   Progress,
@@ -66,6 +67,25 @@ describe("checkDirection on the native host", () => {
             <Switch aria-label="Wi-Fi">
               <SwitchThumb />
             </Switch>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a switch a label names", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <Label htmlFor="wifi">Wi-Fi</Label>
+              <Switch id="wifi">
+                <SwitchThumb />
+              </Switch>
+            </View>
           )
           return screen.container
         },

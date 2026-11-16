@@ -429,6 +429,7 @@
   "@ui-sdk/react-native/field": 12451,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 12227,
+  "@ui-sdk/react-native/label": 9235,
   "@ui-sdk/react-native/meter": 9826,
   "@ui-sdk/react-native/pagination": 11893,
   "@ui-sdk/react-native/password-input": 13060,
