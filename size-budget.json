@@ -428,6 +428,6 @@
   "@ui-sdk/react-native/primitive": 5010,
   "@ui-sdk/react-native/switch": 11263,
   "@ui-sdk/react-native/tabs": 17870,
-  "@ui-sdk/react-native/testing": 3351,
+  "@ui-sdk/react-native/testing": 3684,
   "@ui-sdk/react-native/toggle": 14456
 }
