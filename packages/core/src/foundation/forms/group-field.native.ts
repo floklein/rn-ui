@@ -9,7 +9,8 @@ import type * as Native from "./group-field.native"
 function groupField(
   _element: () => HTMLElement | undefined,
   parts: () => Iterable<Part>,
-  slot: string
+  slot: string,
+  _field?: () => unknown
 ) {
   const field = () => {
     for (const part of parts()) {

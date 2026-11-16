@@ -294,7 +294,7 @@ const passwordInputPrimitive = /* @__PURE__ */ definePrimitive({
     const change = createChange(context)
     const text = textFieldApi(context, change, "control")
     const control = () => element("control") as HTMLInputElement | undefined
-    const field = groupField(() => element("root"), parts, "root")
+    const field = groupField(() => element("root"), parts, "root", control)
     // Where the caret was when the field last lost focus, for a toggle press that brings focus back.
     let selection: [number, number, "forward" | "backward" | "none"] | undefined
 
