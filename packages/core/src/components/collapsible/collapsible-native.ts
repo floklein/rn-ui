@@ -10,7 +10,20 @@ import type { CollapsibleApi } from "./collapsible"
  * @experimental
  */
 const collapsibleNative: NativeBehavior<CollapsibleApi> = {
-  panel: (part) => onSettled(part, (open) => part.api.internal.settled(open)),
+  panel(part) {
+    const { api } = part
+    // A panel rendered only once open mounts shown, so no enter follows.
+    let entered = api.isOpen() && api.internal.opening() !== "mount"
+    if (entered) {
+      api.internal.settled(true)
+    }
+    onSettled(part, (open) => {
+      if (!(open && entered)) {
+        api.internal.settled(open)
+      }
+      entered = false
+    })
+  },
 }
 
 export { collapsibleNative }

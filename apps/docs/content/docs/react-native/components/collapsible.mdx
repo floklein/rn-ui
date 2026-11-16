@@ -95,7 +95,7 @@ The callback receives the new state and `details`, whose `reason` is `"trigger-p
 
 ## Animation
 
-The panel's state holds its size, `panelHeight` and `panelWidth`, in place of the web's `--collapsible-panel-*` variables. The panel lays its children out in a view of its own and measures that view, so the size is the content's whatever height the panel's style gives it. Animate the panel's height to `panelHeight` with `overflow: "hidden"`, and keep padding inside the content rather than on the panel.
+The panel's state holds its size, `panelHeight` and `panelWidth`, in place of the web's `--collapsible-panel-*` variables. The panel lays its children out in a view of its own and measures that view, so the size is the content's whatever height the panel's style gives it. Animate the panel's height to `panelHeight` with `overflow: "hidden"`. The panel's `flexDirection`, `gap` and alignment lay out its children as usual, but its padding sits outside the measured view, so put padding on the content rather than the panel.
 
 The panel leaves through `onExit`. When it closes, it calls `onExit` with a `done` function and stays on screen until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once, or hides with `keepMounted`.
 
@@ -174,7 +174,7 @@ With `startingStyle` and `endingStyle`, and its size in pixels, described under 
 | Field         | Type     | Description                                                                                                     |
 | ------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
 | `panelHeight` | `number` | The content's height while open, the panel's height when it began closing while it leaves, and `0` once closed. |
-| `panelWidth`  | `number` | The same for the width.                                                                                         |
+| `panelWidth`  | `number` | The same for the width, which follows the panel's own.                                                          |
 
 Both are unset until the content has been laid out.
 

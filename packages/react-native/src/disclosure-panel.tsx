@@ -1,6 +1,6 @@
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { type LayoutChangeEvent, View } from "react-native"
+import { type LayoutChangeEvent, StyleSheet, View } from "react-native"
 import { type Interaction, withState } from "./render-element"
 
 /**
@@ -23,6 +23,27 @@ type Size = { width: number; height: number }
 const closed: Size = { width: 0, height: 0 }
 
 const sizeOf = ({ width, height }: Size) => ({ width, height })
+
+const layoutKeys = [
+  "flexDirection",
+  "flexWrap",
+  "gap",
+  "rowGap",
+  "columnGap",
+  "alignItems",
+  "alignContent",
+  "justifyContent",
+] as const
+
+// The panel's style lays out its children, which sit in the measured view.
+function childLayout(style: unknown) {
+  const flat: Record<string, unknown> = StyleSheet.flatten(style as never) ?? {}
+  return Object.fromEntries(
+    layoutKeys
+      .filter((key) => flat[key] !== undefined)
+      .map((key) => [key, flat[key]])
+  )
+}
 
 function createPanelSize() {
   const listeners = new Set<() => void>()
@@ -72,7 +93,7 @@ function usePanelSize<State extends { open: boolean } & PresenceState>(
 ) {
   const [size] = React.useState(createPanelSize)
   React.useSyncExternalStore(size.subscribe, size.version)
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     let open = isOpen()
     return subscribe(() => {
       if (open && !isOpen()) {
@@ -83,6 +104,11 @@ function usePanelSize<State extends { open: boolean } & PresenceState>(
   }, [size, isOpen, subscribe])
   const content = (state: State, interaction: Interaction) => (
     <View
+      style={childLayout(
+        typeof props.style === "function"
+          ? props.style(state, interaction)
+          : props.style
+      )}
       onLayout={(event: LayoutChangeEvent) =>
         size.content(sizeOf(event.nativeEvent.layout))
       }

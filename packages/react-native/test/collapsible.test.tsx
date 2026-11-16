@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { createRef } from "react"
+import { createRef, useState } from "react"
 import {
   AccessibilityInfo,
   StyleSheet,
@@ -192,6 +192,56 @@ describe("Collapsible", () => {
     expect(
       screen.getByTestId("panel", { includeHiddenElements: true })
     ).toHaveStyle({ display: "none" })
+  })
+
+  test("a panel rendered only once open settles open as it mounts", async () => {
+    const onOpenChangeComplete = jest.fn()
+    function Conditional() {
+      const [open, setOpen] = useState(false)
+      return (
+        <Collapsible
+          onOpenChange={setOpen}
+          onOpenChangeComplete={onOpenChangeComplete}
+        >
+          <CollapsibleTrigger>
+            <Text>Order #4189</Text>
+          </CollapsibleTrigger>
+          {open && (
+            <CollapsiblePanel>
+              <Text>Linen shirt</Text>
+            </CollapsiblePanel>
+          )}
+        </Collapsible>
+      )
+    }
+    await render(<Conditional />)
+    await fireEvent.press(trigger())
+    expect(onOpenChangeComplete.mock.calls).toEqual([[true]])
+  })
+
+  test("the panel's flex layout reaches its children", async () => {
+    await render(
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger>
+          <Text>Order #4189</Text>
+        </CollapsibleTrigger>
+        <CollapsiblePanel
+          style={(state) => ({
+            flexDirection: "row",
+            gap: 8,
+            height: state.panelHeight,
+          })}
+        >
+          <Text>Linen shirt</Text>
+          <Text>Canvas tote</Text>
+        </CollapsiblePanel>
+      </Collapsible>
+    )
+    const content = screen.getByText("Linen shirt").parent
+    expect(StyleSheet.flatten(content?.props.style)).toEqual({
+      flexDirection: "row",
+      gap: 8,
+    })
   })
 
   describe("the panel's size", () => {

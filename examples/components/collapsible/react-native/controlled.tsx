@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
   trigger: { gap: 2, padding: 16 },
   title: { fontSize: 15, fontWeight: "500" },
   hint: { fontSize: 13, color: "#71717a" },
-  panel: { paddingHorizontal: 16, paddingBottom: 16 },
-  code: { fontFamily: "Menlo", marginBottom: 8 },
+  panel: { gap: 8, paddingHorizontal: 16, paddingBottom: 16 },
+  code: { fontFamily: "Menlo" },
 })
 
 export { Example }

@@ -292,35 +292,35 @@
       "file": ".agents/experts/react/decisions.md",
       "mirrors": [".agents/experts/react/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/solid/decisions.md",
       "mirrors": [".agents/experts/solid/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/svelte/decisions.md",
       "mirrors": [".agents/experts/svelte/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/vue/decisions.md",
       "mirrors": [".agents/experts/vue/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/web/decisions.md",
       "mirrors": [".agents/experts/web/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",

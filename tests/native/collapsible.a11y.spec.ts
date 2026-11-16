@@ -26,6 +26,7 @@ test("the platform tree open", async () => {
     role: "button",
     label: "Order #4189",
     enabled: true,
+    ...(device.platform === "ios" && { expanded: true }),
   })
   assert.equal(tree.get("panel-text")?.text, "Linen shirt")
 })

@@ -51,6 +51,13 @@ test("the controller opens and closes it", async () => {
   await device.press("toggle")
   await expectText("collapsible-changes", "true:imperative:programmatic")
   await expectText("panel-text", "Linen shirt")
+  await device.press("toggle")
+  await expectText(
+    "collapsible-changes",
+    "true:imperative:programmatic false:imperative:programmatic"
+  )
+  await device.press("finish-exit")
+  await device.expectTree((tree) => assert.equal(tree.has("panel-text"), false))
 })
 
 test("each example opens", async () => {
