@@ -156,8 +156,7 @@ function OTPInput({
     otp,
     "root",
     {},
-    {
-      ...props,
+    mergeProps(props as Record<string, unknown>, {
       children: (state: OTPInputState, interaction: Interaction) => (
         <>
           {control}
@@ -166,7 +165,7 @@ function OTPInput({
             : children}
         </>
       ),
-    },
+    }),
     View
   )
 }
