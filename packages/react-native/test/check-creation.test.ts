@@ -1,4 +1,5 @@
 import { definePrimitive } from "@ui-sdk/core"
+import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { nativeHost } from "@ui-sdk/core/native"
 import { switchPrimitive } from "@ui-sdk/core/switch"
@@ -14,6 +15,10 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(button, { disabled: true, focusableWhenDisabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on an avatar", () => {
+    expect(() => checkCreation(avatar, {})).not.toThrow()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {
