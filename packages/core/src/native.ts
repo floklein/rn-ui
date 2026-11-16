@@ -5,6 +5,7 @@
  *
  * @module
  */
+export { checkboxNative } from "./components/checkbox/checkbox-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export {
   type NativeBehavior,
@@ -12,4 +13,3 @@ export {
   nativeHost,
   setNativeHost,
 } from "./foundation/kernel/native-host"
-export { joinCheckboxGroup } from "./components/checkbox/checkbox-native"

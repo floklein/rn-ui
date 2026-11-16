@@ -5,7 +5,7 @@ import {
   type CheckboxOptions,
   type CheckboxState,
 } from "@ui-sdk/react-native/checkbox"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 
 type Change = NonNullable<CheckboxOptions["onCheckedChange"]>
@@ -47,11 +47,33 @@ function Mark() {
   )
 }
 
+function Snack({ value, label }: { value: string; label: string }) {
+  return (
+    <Checkbox
+      aria-label={label}
+      testID={`checkbox-${value}`}
+      value={value}
+      style={box}
+    >
+      <Mark />
+    </Checkbox>
+  )
+}
+
 function Fixture() {
   const [lastChange, setLastChange] = useState("none")
   const [phase, setPhase] = useState("shown")
   const [groupValue, setGroupValue] = useState<string[]>(["tea"])
+  const [snacks, setSnacks] = useState<string[]>([])
+  const [crisps, setCrisps] = useState(false)
   const finish = useRef<() => void>(undefined)
+  const memoized = useMemo(
+    () => ({
+      chips: <Snack value="chips" label="Chips" />,
+      nuts: <Snack value="nuts" label="Nuts" />,
+    }),
+    []
+  )
   const record =
     (name: string): Change =>
     (checked, details) =>
@@ -158,6 +180,24 @@ function Fixture() {
         </Checkbox>
       </CheckboxGroup>
       <Text testID="group-value">{groupValue.join(",") || "none"}</Text>
+      <View style={styles.row}>
+        <CheckboxGroup
+          aria-label="Snacks"
+          value={snacks}
+          onValueChange={setSnacks}
+          style={styles.row}
+        >
+          {memoized.chips}
+          {crisps && <Snack value="crisps" label="Crisps" />}
+          {memoized.nuts}
+        </CheckboxGroup>
+        <Action
+          label="Add crisps"
+          testID="add-crisps"
+          onPress={() => setCrisps(true)}
+        />
+      </View>
+      <Text testID="snacks-value">{snacks.join(",") || "none"}</Text>
       <Text testID="last-change">{lastChange}</Text>
     </View>
   )
