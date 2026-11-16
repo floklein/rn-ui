@@ -84,7 +84,11 @@ function useTextField(
     "root",
     { disabled: off, readOnly, required },
     mergeProps(
-      useFieldControl(props, () => field.api.focus()),
+      useFieldControl(props, () => {
+        if (!off) {
+          field.api.focus()
+        }
+      }),
       {
         ...typing(field),
         editable,
