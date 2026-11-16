@@ -296,19 +296,24 @@ function viewRef(part: Part, behavior: NativeBehavior | undefined) {
   return ref
 }
 
-// Core's attributes with the user's `role` and `aria-*`, which win.
+// As on the web, core's attribute wins over the user's only where it has a
+// value, so `<Button role="link">` stays a link.
 function ariaOf(
   part: Part,
   slotProps: object,
   aria: Record<string, string | undefined>,
   exiting: boolean
 ) {
+  const own = yieldToAuthor(
+    { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
+    (name) => aria[name] !== undefined
+  )
+  const merged = { ...aria, ...own }
+  for (const name in aria) {
+    merged[name] = own[name] ?? aria[name]
+  }
   return {
-    ...aria,
-    ...yieldToAuthor(
-      { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
-      (name) => aria[name] !== undefined
-    ),
+    ...merged,
     // A part that animates out stays on screen, where its slot already hides it.
     ...(exiting && { inert: "", hidden: undefined }),
   }

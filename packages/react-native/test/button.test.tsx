@@ -202,4 +202,14 @@ describe("Button", () => {
     await fireEvent.press(link)
     expect(onPress).toHaveBeenCalledTimes(1)
   })
+
+  test("a role it's given wins over the button role, as on a web button", async () => {
+    await render(
+      <Button role="link">
+        <Text>Get Started</Text>
+      </Button>
+    )
+    expect(screen.getByRole("link", { name: "Get Started" })).toBeOnTheScreen()
+    expect(screen.queryByRole("button")).toBeNull()
+  })
 })
