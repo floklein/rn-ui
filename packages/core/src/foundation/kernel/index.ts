@@ -56,6 +56,7 @@ export {
   type NativeDrag,
   nativeHost,
   type NativeHost,
+  type NativeInput,
   type NativeTouch,
 } from "./native-host"
 export { createOrder, documentOrder, inDocumentOrder, isAfter } from "./order"

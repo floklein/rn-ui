@@ -277,14 +277,14 @@
       "file": "packages/core/src/foundation/motion/index.ts",
       "mirrors": ["packages/core/src/foundation/motion/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports onSettled, which native behavior files import."
+      "why": "Exports onSettled, holdExit and endExit, which native behavior files import, and exit.ts's afterExit and holdsMount, which popup.ts imports."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports nativeHost, NativeHost, NativeBehavior, NativeDrag, NativeTouch, nativeElement and Twin."
+      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement and Twin."
     },
     {
       "kind": "edit",
@@ -515,7 +515,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input, textarea, password-input, otp-input and slider."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input, textarea, password-input, otp-input, slider, dialog and alert-dialog."
     },
     {
       "kind": "twin",
@@ -548,6 +548,75 @@
       "mirrors": ["packages/core/src/components/slider/slider-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of the thumb input's focus(). Additive: internal.cancel(), which puts the value back and commits nothing, and adjust()'s event is optional."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/platform/layers.native.ts",
+      "mirrors": ["packages/core/src/foundation/platform/layers.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The layer stack with no document: the same stack, order, nesting and persistent layers, with back, the escape gesture and a backdrop press coming from the native host's listen and going to the topmost layer (a backdrop press down to the first shielding one), where the DOM module listens to the document. Its Layer widens the DOM's with onBack, onEscapeGesture and onBackdropPress, which take no event."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/motion/exit.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/popups/popup.ts",
+        "packages/core/src/foundation/motion/presence.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A closing popup with no element stays mounted while its content's view holds it, and unmounts once the adapter's presence ends the content's exit, where popup.ts waits for the element's animations through animateOut."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/popups/popup-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/popups/popup.ts",
+        "packages/core/src/foundation/popups/popup-slots.ts",
+        "packages/core/src/foundation/popups/create-popup.ts",
+        "packages/core/src/foundation/popups/popup-features.ts",
+        "packages/core/src/foundation/popups/popup-behavior.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/dialog/dialog-native.ts",
+      "mirrors": [
+        "packages/core/src/components/dialog/dialog-api.ts",
+        "packages/core/src/components/dialog/dialog-parts.ts",
+        "packages/core/src/components/dialog/alert-dialog.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Dialog's focus on open (the title, or an alert dialog's first Close part when preferredFocus's auto applies), restated since preferredFocus reads elements, and its Escape rule: a non-modal dialog closes on the escape gesture only when it reached its content, where onEscape asks whether focus is inside the element."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup-features.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/popups/create-popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/index.ts",
+      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
     }
   ],
   "components": {
@@ -833,11 +902,92 @@
           "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
+    },
+    "dialog": {
+      "entry": "packages/react-native/src/dialog.tsx",
+      "slots": {
+        "dialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "dialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "dialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "dialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "dialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "dialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        },
+        "alertDialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "alertDialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "alertDialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "alertDialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        }
+      }
+    },
+    "alert-dialog": {
+      "entry": "packages/react-native/src/alert-dialog.tsx",
+      "slots": {
+        "alertDialog.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "alertDialog.backdrop": {
+          "covered": "packages/react-native/src/dialog-parts.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content, which the adapter does by rendering it first in the dialog's Modal, where a press on it is the host input's outside press."
+        },
+        "alertDialog.content": {
+          "covered": "packages/core/src/components/dialog/dialog-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back, the inert page, the scroll lock, the close watcher and the exit animation, which popup-native.ts and dialog-native.ts restate (the Modal isolates the rest of the screen, back comes through the Modal's onRequestClose, and the exit through the adapter's presence). Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form and writes --dialog-stack and the keyboard's inset, which native has no forms or CSS variables for: stack is in the content's state."
+        },
+        "alertDialog.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "alertDialog.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        }
+      }
     }
   },
   "pending": [
     "accordion",
-    "alert-dialog",
     "autocomplete",
     "calendar",
     "carousel",
@@ -846,7 +996,6 @@
     "command",
     "date-input",
     "date-picker",
-    "dialog",
     "drawer",
     "file-input",
     "hover-card",
@@ -1094,6 +1243,66 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "dialog",
+      "example": "form",
+      "feature": "A form with method=\"dialog\" that closes it",
+      "reason": "Native has no forms: a Close part's value or the controller's close({ returnValue }) reports what closed it."
+    },
+    {
+      "component": "dialog",
+      "example": "from-menu",
+      "feature": "Opening a dialog from a menu item",
+      "reason": "Menu has no native entry yet (ticket 57); the example comes with it."
+    },
+    {
+      "component": "dialog",
+      "example": "nested",
+      "feature": "A modal dialog opened from another",
+      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
+    },
+    {
+      "component": "dialog",
+      "example": "presentation",
+      "feature": "Presenting as a sheet",
+      "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a dialog presents as a dialog."
+    },
+    {
+      "component": "dialog",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "dialog",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "confirm-anywhere",
+      "feature": "confirm() with no alert dialog of your own",
+      "reason": "The overlay host that renders confirm()'s own alert dialog comes with overlays opened from code (ticket 62); with your own AlertDialog and confirm.controller it works, as the confirm example shows."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "nested",
+      "feature": "A modal alert dialog opened from another",
+      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     }
   ]
 }

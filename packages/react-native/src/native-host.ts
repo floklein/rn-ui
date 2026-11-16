@@ -1,12 +1,14 @@
 import type { Part } from "@ui-sdk/core"
 import {
   type NativeDrag,
+  type NativeInput,
   type NativeTextField,
   setNativeHost,
 } from "@ui-sdk/core/native"
 import { withSource } from "@ui-sdk/core/renderer"
 import {
   AccessibilityInfo,
+  BackHandler,
   type GestureResponderEvent,
   type HostInstance,
   I18nManager,
@@ -76,6 +78,9 @@ function register<Value>(map: WeakMap<Part, Value>, part: Part, value: Value) {
   }
 }
 
+let input: NativeInput | undefined
+const layerInput = () => input
+
 setNativeHost({
   focus(part) {
     const view = views.get(part)
@@ -108,6 +113,17 @@ setNativeHost({
   box: (part) => views.get(part)?.getBoundingClientRect(),
   follow: (part, drag) => register(drags, part, drag),
   adjustable: (part, step) => register(steps, part, step),
+  // A Modal hears Android's back itself, through `onRequestClose`.
+  listen(next) {
+    input = next
+    const back = BackHandler.addEventListener("hardwareBackPress", next.back)
+    return () => {
+      back.remove()
+      if (input === next) {
+        input = undefined
+      }
+    }
+  },
 })
 
 // Refusing termination and blocking native responders are meant to keep a
@@ -140,6 +156,7 @@ function responder(part: Part) {
 export {
   controls,
   fields,
+  layerInput,
   parts,
   pressSource,
   renders,

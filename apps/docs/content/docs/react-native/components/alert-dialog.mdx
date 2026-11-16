@@ -1,0 +1,195 @@
+---
+title: Alert Dialog
+description: A modal dialog that interrupts with something important and waits for an answer.
+---
+
+Use an alert dialog to ask before something that can't be undone, like deleting a project.
+
+<ComponentExample
+  name="alert-dialog/basic"
+  caption="Tap Delete Project. Pressing the backdrop doesn't close it: answer with Cancel or Delete."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Alert Dialog has [Dialog](./dialog)'s parts, named `AlertDialog`, `AlertDialogTrigger`, `AlertDialogBackdrop`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription` and `AlertDialogClose`, rendered the same way, in one `Modal`. It is always modal, and a press on its backdrop never closes it: `onDismissAttempt` hears it instead. Android's back and VoiceOver's escape gesture close it, unless `dismissible` is `false`.
+
+## Usage
+
+```tsx
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@ui-sdk/react-native/alert-dialog"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <AlertDialog onOpenChange={(open, { returnValue }) => {}}>
+      <AlertDialogTrigger>
+        <Text>Delete Project</Text>
+      </AlertDialogTrigger>
+      <AlertDialogBackdrop />
+      <AlertDialogContent>
+        <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+        <AlertDialogClose>
+          <Text>Cancel</Text>
+        </AlertDialogClose>
+        <AlertDialogClose value="confirm">
+          <Text>Delete</Text>
+        </AlertDialogClose>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+export { Example }
+```
+
+## Focus
+
+Opened with a touch, the alert dialog asks the screen reader to move to its title. Opened another way, like from a controller or by a screen reader, it moves to its first Close part, the least destructive answer, so put Cancel first.
+
+## Async Actions
+
+A Close part's `action` runs before the alert dialog closes. A Promise it returns keeps the dialog open while it runs: the part's state has `pending`, screen readers hear `pendingAnnouncement` after a second, and only the controller closes the dialog. A rejection keeps it open and puts the reason in the part's `error`.
+
+<ComponentExample
+  name="alert-dialog/async-action"
+  caption="Tap Delete Project, then Delete. The first try fails after a moment and says so; the second deletes."
+/>
+
+## Confirm
+
+`createConfirm()` asks a question from code and resolves with the answer: `if (await confirm({ name })) remove(name)`. Pass `confirm.controller` to your own `AlertDialog`, and give the agreeing Close part `value="confirm"`. Questions asked while one is open wait their turn.
+
+<ComponentExample
+  name="alert-dialog/confirm"
+  caption="Tap Delete on a project and confirm. The project leaves the list."
+/>
+
+<ComponentExample
+  name="alert-dialog/queue"
+  caption="Tap Review Two Projects. Answer Acme's question, then Globex's, and the log shows both answers."
+/>
+
+## Controlled
+
+<ComponentExample
+  name="alert-dialog/controlled"
+  caption="Tap Review Changes, then answer. The dialog follows its open state."
+/>
+
+## Animation
+
+Animate it as [Dialog](./dialog#animation) does, with `onExit` on the content.
+
+<ComponentExample
+  name="alert-dialog/animation"
+  caption="Tap Leave Workspace, then answer. The dialog fades and slides in and out."
+/>
+
+## Part State
+
+### AlertDialogTrigger [#part-state-alertdialogtrigger]
+
+<PartStateTable
+  component="alert-dialog"
+  part="trigger"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogTriggerState"
+/>
+
+### AlertDialogBackdrop [#part-state-alertdialogbackdrop]
+
+<PartStateTable
+  component="alert-dialog"
+  part="backdrop"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogBackdropState"
+/>
+
+### AlertDialogContent [#part-state-alertdialogcontent]
+
+<PartStateTable
+  component="alert-dialog"
+  part="content"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogContentState"
+/>
+
+With `startingStyle` and `endingStyle`, as [Dialog](./dialog#animation) describes.
+
+### AlertDialogClose [#part-state-alertdialogclose]
+
+<PartStateTable
+  component="alert-dialog"
+  part="close"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogCloseState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### AlertDialog
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogOptions"
+  omit={["container", "persistentElements"]}
+/>
+
+### AlertDialogTrigger
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogTriggerProps"
+  omit={["shortcut"]}
+/>
+
+### AlertDialogContent
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogContentProps"
+  omit={["container"]}
+/>
+
+### AlertDialogClose
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogCloseProps"
+/>
+
+### Reasons
+
+<ReasonTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createAlertDialogController()`, or use `createConfirm()`'s `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="AlertDialogController"
+/>
+
+## Accessibility
+
+The alert dialog follows the [WAI-ARIA alert dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/) as [Dialog](./dialog#accessibility) does: in a `Modal` that hides the rest of the screen, named by its title, which has the header role.

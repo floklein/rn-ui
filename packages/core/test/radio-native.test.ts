@@ -24,6 +24,7 @@ function host() {
     field: vi.fn(),
     announce: vi.fn(),
     activate: vi.fn(),
+    listen: vi.fn(),
     compare: (a, b) => rendered.indexOf(a) - rendered.indexOf(b),
     isRTL: () => false,
     box: vi.fn(),

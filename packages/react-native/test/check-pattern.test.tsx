@@ -3,8 +3,15 @@ import { createSwitchController } from "@ui-sdk/core/switch"
 import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
-import { Platform, Pressable, Text, TextInput, View } from "react-native"
+import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../src/alert-dialog"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import {
@@ -13,6 +20,14 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Field, FieldLabel } from "../src/field"
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Meter, MeterLabel, MeterValue } from "../src/meter"
 import {
@@ -1206,6 +1221,91 @@ describe("checkPattern's slider pattern on the native host", () => {
     )
     await expect(checkSlider()).rejects.toThrow(
       /stays at 5 after the increment action[^]*doesn't declare the increment action/
+    )
+  })
+})
+
+describe("checkPattern's dialog patterns on the native host", () => {
+  const checkDialog = () =>
+    checkPattern(screen.container, "dialog", { os, act })
+
+  test("passes on a dialog, opening it and closing it each way", async () => {
+    await render(
+      <Dialog>
+        <DialogTrigger>
+          <Text>Edit profile</Text>
+        </DialogTrigger>
+        <DialogBackdrop />
+        <DialogContent>
+          <DialogTitle>Profile</DialogTitle>
+          <DialogClose>
+            <Text>Done</Text>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
+    )
+    await expect(checkDialog()).resolves.toBeUndefined()
+  })
+
+  test("passes on an alert dialog", async () => {
+    await render(
+      <AlertDialog>
+        <AlertDialogTrigger>
+          <Text>Discard draft</Text>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogTitle>Discard the draft?</AlertDialogTitle>
+          <AlertDialogClose>
+            <Text>Cancel</Text>
+          </AlertDialogClose>
+        </AlertDialogContent>
+      </AlertDialog>
+    )
+    await expect(
+      checkPattern(screen.container, "alertdialog", { os, act })
+    ).resolves.toBeUndefined()
+  })
+
+  test("fails on a dialog with no title", async () => {
+    await render(
+      <Dialog>
+        <DialogTrigger>
+          <Text>Edit profile</Text>
+        </DialogTrigger>
+        <DialogContent>
+          <Text>Profile</Text>
+        </DialogContent>
+      </Dialog>
+    )
+    await expect(checkDialog()).rejects.toThrow(
+      "has no button that opens a dialog in a Modal, named by its title with the header role."
+    )
+  })
+
+  test("fails on a Modal that moves no focus and doesn't close", async () => {
+    function Sheet() {
+      const [open, setOpen] = useState(false)
+      return (
+        <View>
+          <Pressable accessibilityRole="button" onPress={() => setOpen(true)}>
+            <Text>Edit profile</Text>
+          </Pressable>
+          <Modal visible={open} onRequestClose={() => {}}>
+            <View onAccessibilityEscape={() => {}}>
+              <Text accessibilityRole="header">Profile</Text>
+            </View>
+          </Modal>
+        </View>
+      )
+    }
+    await render(<Sheet />)
+    await expect(checkDialog()).rejects.toThrow(
+      "requests no accessibility focus when it opens the dialog"
+    )
+    await expect(checkDialog()).rejects.toThrow(
+      os === "ios"
+        ? "stays open after the escape action."
+        : "stays open after Android's back."
     )
   })
 })

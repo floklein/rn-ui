@@ -37,6 +37,7 @@ native.setNativeHost({
   box() {},
   follow: () => () => {},
   adjustable: () => () => {},
+  listen: () => () => {},
 })
 
 const describe = (error) =>

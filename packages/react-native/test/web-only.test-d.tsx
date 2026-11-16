@@ -7,7 +7,10 @@ import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
+import { AlertDialog } from "../src/alert-dialog"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { Dialog, DialogContent, DialogTrigger } from "../src/dialog"
+import type * as DialogEntry from "../src/dialog"
 import { Field, FieldError, FieldLabel } from "../src/field"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
@@ -170,6 +173,25 @@ const fields = [
   <FieldError>{(state) => state.message}</FieldError>,
 ]
 
+const dialogEntries = [
+  <Dialog modal={false} />,
+  // @ts-expect-error `modal="trap-focus"` keeps Tab inside, which the Modal's isolation replaces.
+  <Dialog modal="trap-focus" />,
+  // @ts-expect-error `container` is a DOM element.
+  <Dialog container={null} />,
+  // @ts-expect-error `container` is a DOM element.
+  <DialogContent container={null} />,
+  // @ts-expect-error Keyboard shortcuts are web-only.
+  <DialogTrigger shortcut="mod+k" />,
+  // @ts-expect-error `container` is a DOM element.
+  <AlertDialog container={null} />,
+  // @ts-expect-error An alert dialog is always modal.
+  <AlertDialog modal={false} />,
+]
+
+// @ts-expect-error The shortcut part is web-only.
+type DialogShortcut = typeof DialogEntry.DialogShortcut
+
 const paginations = [
   <Pagination pageCount={10} onPageChange={() => {}} />,
   // @ts-expect-error Pages are buttons on native, with no URL to link to.
@@ -179,6 +201,8 @@ const paginations = [
 export {
   codes,
   ComboboxInput,
+  dialogEntries,
+  type DialogShortcut,
   dialogs,
   exits,
   fields,

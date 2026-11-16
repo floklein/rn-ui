@@ -41,8 +41,15 @@ type CheckOptions = {
   act?: Act
 }
 
+// `back` is Android's, which a `Modal` hears through `onRequestClose`.
 type Action =
-  "activate" | "escape" | "expand" | "collapse" | "increment" | "decrement"
+  | "activate"
+  | "escape"
+  | "back"
+  | "expand"
+  | "collapse"
+  | "increment"
+  | "decrement"
 
 const settle: Act = async (run) => {
   run()
@@ -180,6 +187,8 @@ function describe(node: HostNode) {
 function perform(node: HostNode, action: Action) {
   if (action === "escape") {
     node.props.onAccessibilityEscape?.()
+  } else if (action === "back") {
+    node.props.onRequestClose?.()
   } else if (actionsOf(node).includes(action)) {
     node.props.onAccessibilityAction?.({ nativeEvent: { actionName: action } })
   } else {
@@ -216,6 +225,7 @@ async function performWatched(
     box: (part) => host?.box(part),
     follow: (part, drag) => host?.follow(part, drag) ?? (() => {}),
     adjustable: (part, step) => host?.adjustable(part, step) ?? (() => {}),
+    listen: (input) => host?.listen(input) ?? (() => {}),
   })
   try {
     await act(() => perform(node, action))

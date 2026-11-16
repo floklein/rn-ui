@@ -39,6 +39,10 @@ setNativeHost({
   box: (part) => viewOf(part)?.getBoundingClientRect(),
   follow: (part, drag) => followTouches(part, drag),
   adjustable: (part, step) => routeAdjustments(part, step),
+  listen(next) {
+    input = next
+    return () => (input = undefined)
+  },
 })
 ```
 
@@ -51,6 +55,7 @@ setNativeHost({
 - `box(part)` measures the part's mounted view on screen, in the coordinates touches report, or returns `undefined`. A slider reads its track's box when a drag starts, as the web reads the track's `getBoundingClientRect()` once per press.
 - `follow(part, drag)` follows the touches that start on the part's view with a `NativeDrag`, until the cleanup it returns runs. `@ui-sdk/react-native` makes the view a responder: `accepts` decides whether a touch takes it, and `start`, `move` and `end` get each `NativeTouch`, its position and the innermost part under it. A responder cancelled, or taken by another view such as a scroll view, calls `cancel`. The view refuses to hand the responder to a scroll view around it, as `touch-action: none` does on the web; on iOS a scroll view along the same axis still scrolls during the drag unless the app turns its `scrollEnabled` off, as [Slider](/docs/react-native/components/slider#inside-a-scroll-view) shows.
 - `adjustable(part, step)` routes a screen reader's increment and decrement on the part's view to `step`, with `1` or `-1`, until the cleanup it returns runs, where the web hears a range input's `input` event.
+- `listen(input)` hears what dismisses a popup while one is open, and returns what stops it. The host calls `input.back()` for Android's back, from a `Modal`'s `onRequestClose`, `input.escape(api)` for VoiceOver's escape gesture on a popup's content, and `input.outsidePress()` for a press on a modal popup's backdrop. Each goes to the topmost open popup, and returns whether one took it: a popup that refuses the dismissal still takes it, so back never falls through to navigation.
 
 Core's locale on native comes from `Intl`: the page's and the user's language are the device's, and a component's `locale` option still wins.
 
@@ -67,7 +72,9 @@ import { Pressable, View } from "react-native"
 const parts = createParts(toggle, { root: Pressable, icon: View }, toggleNative)
 ```
 
-`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group, and `radioNative` and `ratingNative` for each radio in a radio group or a rating, so the group focuses its checked radio. `tabsNative` is Tabs': while a tab is mounted it joins the tabs' roving group, so the tabs know their tabs in render order, select the first enabled one when nothing is selected and can focus the selected one. `collapsibleNative` is Collapsible's: while its panel is mounted it reports when the panel settles, so `onOpenChangeComplete` runs once an opening appears and once a closing's `onExit` calls `done`. `fieldNative` registers a Field's label, description and error parts while they're mounted, so the control's label and hint come from the parts that render. `gaugeNative` is Progress's and Meter's: while the root is mounted it reads the locale the value is formatted in, and while a label is mounted it names the root. `sliderNative` is Slider's: its root reads the locale, its control follows touch drags along the track with the calls the web's pointer handlers make, and each thumb takes a screen reader's increment and decrement. A drag that is cancelled, taken by a scroll view or unmounted puts the value back and commits nothing.
+`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group, and `radioNative` and `ratingNative` for each radio in a radio group or a rating, so the group focuses its checked radio. `tabsNative` is Tabs': while a tab is mounted it joins the tabs' roving group, so the tabs know their tabs in render order, select the first enabled one when nothing is selected and can focus the selected one. `collapsibleNative` is Collapsible's: while its panel is mounted it reports when the panel settles, so `onOpenChangeComplete` runs once an opening appears and once a closing's `onExit` calls `done`. `fieldNative` registers a Field's label, description and error parts while they're mounted, so the control's label and hint come from the parts that render. `gaugeNative` is Progress's and Meter's: while the root is mounted it reads the locale the value is formatted in, and while a label is mounted it names the root. `dialogNative` is Dialog's and Alert Dialog's: while the content is mounted and the dialog open, it is a layer that back, the escape gesture and a backdrop press close, it asks the host to focus the title on open, or an alert dialog's first Close part, and the trigger on close, and it keeps the dialog mounted until the content's `onExit` calls `done`. `sliderNative` is Slider's: its root reads the locale, its control follows touch drags along the track with the calls the web's pointer handlers make, and each thumb takes a screen reader's increment and decrement. A drag that is cancelled, taken by a scroll view or unmounted puts the value back and commits nothing.
+
+A popup's trigger is pressed with `pressTrigger(part, source)`, where the web reads how it opened from the event: `"touch"` for a finger, `"virtual"` for a screen reader. Where focus goes on open follows from it, as on the web.
 
 ## Focus From a Controller
 
