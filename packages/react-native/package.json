@@ -25,6 +25,7 @@
     "./input": "./src/input.tsx",
     "./meter": "./src/meter.tsx",
     "./otp-input": "./src/otp-input.tsx",
+    "./pagination": "./src/pagination.tsx",
     "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
     "./progress": "./src/progress.tsx",
@@ -78,6 +79,10 @@
       "./otp-input": {
         "types": "./dist/otp-input.d.ts",
         "default": "./dist/otp-input.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
       },
       "./password-input": {
         "types": "./dist/password-input.d.ts",

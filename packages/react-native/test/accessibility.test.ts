@@ -160,6 +160,17 @@ const rows: [Record<string, string | undefined>, object, object][] = [
     { accessibilityState: { selected: true } },
   ],
   [
+    { "aria-current": "page" },
+    { accessibilityState: { selected: true } },
+    { accessibilityState: { selected: true } },
+  ],
+  [{ "aria-current": "date" }, {}, {}],
+  [
+    { "aria-current": "page", "aria-selected": "false" },
+    { accessibilityState: { selected: false } },
+    { accessibilityState: { selected: false } },
+  ],
+  [
     { "aria-expanded": "false" },
     { accessibilityState: { expanded: false } },
     {
@@ -297,7 +308,6 @@ const dropped = [
   "aria-colindex",
   "aria-colspan",
   "aria-controls",
-  "aria-current",
   "aria-describedby",
   "aria-details",
   "aria-errormessage",

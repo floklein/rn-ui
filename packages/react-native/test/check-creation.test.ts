@@ -7,6 +7,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
 import { otpInput } from "@ui-sdk/core/otp-input"
+import { pagination } from "@ui-sdk/core/pagination"
 import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
@@ -45,6 +46,15 @@ describe("checkCreation", () => {
     expect(() => checkCreation(separator, {})).not.toThrow()
     expect(() =>
       checkCreation(separator, { orientation: "vertical", decorative: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a pagination, by page count or by total", () => {
+    expect(() =>
+      checkCreation(pagination, { pageCount: 10, defaultPage: 4 })
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(pagination, { total: 95, pageSize: 20, siblings: 2 })
     ).not.toThrow()
   })
 

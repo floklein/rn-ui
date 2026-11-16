@@ -20,6 +20,12 @@ import {
 } from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import {
+  Pagination,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../src/pagination"
+import {
   PasswordInput,
   PasswordInputControl,
   PasswordInputToggle,
@@ -83,6 +89,25 @@ describe("checkDirection on the native host", () => {
                 <Text>AL</Text>
               </AvatarFallback>
             </Avatar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a pagination", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Pagination aria-label="Pagination" pageCount={3}>
+              <PaginationPrevious aria-label="Previous" />
+              <PaginationLink page={1} />
+              <PaginationLink page={2} />
+              <PaginationNext aria-label="Next" />
+            </Pagination>
           )
           return screen.container
         },
