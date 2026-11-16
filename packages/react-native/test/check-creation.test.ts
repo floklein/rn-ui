@@ -1,4 +1,5 @@
 import { definePrimitive } from "@ui-sdk/core"
+import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { nativeHost } from "@ui-sdk/core/native"
@@ -16,6 +17,10 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(button, { disabled: true, focusableWhenDisabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on an avatar", () => {
+    expect(() => checkCreation(avatar, {})).not.toThrow()
   })
 
   test("passes on a checkbox and a checkbox group", () => {

@@ -139,6 +139,21 @@ const avatarPrimitive = /* @__PURE__ */ definePrimitive({
 
     return {
       internal: {
+        // The status a native image reports, with no event.
+        reportImageStatus(status: AvatarLoadingStatus) {
+          if (status === "loading") {
+            startLoading()
+          } else {
+            report(
+              status,
+              status === "loaded"
+                ? "image-load"
+                : status === "error"
+                  ? "image-error"
+                  : "src-change"
+            )
+          }
+        },
         // Follows an <img>: its status now, then its load and error events,
         // and a new source starting over.
         watchImage(img: HTMLImageElement) {

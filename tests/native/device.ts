@@ -50,16 +50,21 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        ...(process.env.ANDROID_ADB_SERVER_PORT && {
+          "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
+        }),
       }
 
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
   "android.widget.Button": "button",
+  "android.widget.ImageView": "image",
   "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
   "android.view.ViewGroup": "group",

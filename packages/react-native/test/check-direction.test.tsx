@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
+import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
 import { Switch, SwitchThumb } from "../src/switch"
@@ -36,6 +37,28 @@ describe("checkDirection on the native host", () => {
             <Switch aria-label="Wi-Fi">
               <SwitchThumb />
             </Switch>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an avatar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Avatar>
+              <AvatarImage
+                source={{ uri: "https://example.com/ada.png" }}
+                alt="Ada Lovelace"
+              />
+              <AvatarFallback>
+                <Text>AL</Text>
+              </AvatarFallback>
+            </Avatar>
           )
           return screen.container
         },

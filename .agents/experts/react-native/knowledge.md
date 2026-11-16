@@ -29,6 +29,7 @@ Last checked: 2026-11-16, against `packages/react-native` and `node_modules/reac
 
 ### Direction
 
+- `Image` makes itself `accessible` for any `alt` (`Image.ios.js`, `Image.android.js`), and on iOS `aria-hidden` on an `Image` needs `accessible={false}`, since `accessibilityElementsHidden` isn't enough. On Android `Image`'s `accessible` is the view's `isFocusable`, a Tab stop. Jest's `Image` mock skips all of it: unmock `react-native/Libraries/Image/Image` to test it.
 - `I18nManager.isRTL` is app wide and fixed at startup; changing it needs a reload. Flexbox `start`/`end` and `row` follow it.
 
 ### React on native
