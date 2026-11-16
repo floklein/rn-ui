@@ -4,6 +4,7 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
+import { passwordInput } from "@ui-sdk/core/password-input"
 import { rating } from "@ui-sdk/core/rating"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
@@ -30,6 +31,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a password input, hidden or shown", () => {
+    expect(() => checkCreation(passwordInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(passwordInput, { defaultVisible: true, disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a checkbox and a checkbox group", () => {

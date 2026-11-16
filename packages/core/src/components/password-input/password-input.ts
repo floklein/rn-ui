@@ -7,6 +7,7 @@ import {
   type ButtonElement,
 } from "../../foundation/platform/button"
 import { watchFieldsets } from "../../foundation/forms/form"
+import { groupField } from "../../foundation/forms/group-field"
 import { afterReset } from "../../foundation/forms/value"
 import { createController } from "../../foundation/kernel/controller"
 import type {
@@ -20,7 +21,6 @@ import type {
   PrimitiveOptions,
 } from "../../foundation/kernel/primitive-types"
 import {
-  focusFromSurroundings,
   initialText,
   syncText,
   textFieldApi,
@@ -290,10 +290,11 @@ const passwordInputPrimitive = /* @__PURE__ */ definePrimitive({
     ...settings(options),
   }),
   api: (context) => {
-    const { store, element } = context
+    const { store, element, parts } = context
     const change = createChange(context)
     const text = textFieldApi(context, change, "control")
     const control = () => element("control") as HTMLInputElement | undefined
+    const field = groupField(() => element("root"), parts, "root")
     // Where the caret was when the field last lost focus, for a toggle press that brings focus back.
     let selection: [number, number, "forward" | "backward" | "none"] | undefined
 
@@ -339,6 +340,7 @@ const passwordInputPrimitive = /* @__PURE__ */ definePrimitive({
       internal: {
         ...text.internal,
         control,
+        pressAround: field.pressAround,
         // A press from a pointer brings focus back to the field, with its caret,
         // so typing goes on. Keys and screen readers keep focus on the toggle,
         // which says whether it's pressed.
@@ -433,8 +435,7 @@ const passwordInputPrimitive = /* @__PURE__ */ definePrimitive({
       state: publicState,
       attrs: dataAttrs,
       // Presses on the root's own text and icons focus the field, like a label would.
-      press: ({ api, el }, event) =>
-        focusFromSurroundings(event, el, api.internal.control()),
+      press: ({ api }, event) => api.internal.pressAround(event),
     }),
     control: slot<{}, PasswordInputState>({
       props: { id: "string" },

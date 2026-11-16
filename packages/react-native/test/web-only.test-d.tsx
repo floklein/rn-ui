@@ -8,6 +8,7 @@ import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
@@ -122,12 +123,25 @@ const exits = [
   <CheckboxGroup name="toppings" />,
 ]
 
+const passwords = [
+  <PasswordInput autoComplete="new-password" defaultVisible required>
+    <PasswordInputControl placeholder="Password" />
+  </PasswordInput>,
+  // @ts-expect-error `name` has no native meaning.
+  <PasswordInput name="password" />,
+  // @ts-expect-error `form` has no native meaning.
+  <PasswordInput form="sign-in" />,
+  // @ts-expect-error The control's secure entry follows the root's `visible`.
+  <PasswordInputControl secureTextEntry={false} />,
+]
+
 export {
   ComboboxInput,
   dialogs,
   exits,
   NativeDialog,
   NativeSwitch,
+  passwords,
   switches,
   type SwitchInput,
   values,

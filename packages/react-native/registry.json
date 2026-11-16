@@ -20,7 +20,8 @@
       "file": "packages/core/src/foundation/forms/group-field.native.ts",
       "mirrors": [
         "packages/core/src/components/input/input.ts",
-        "packages/core/src/foundation/forms/text-field.ts"
+        "packages/core/src/foundation/forms/text-field.ts",
+        "packages/core/src/components/password-input/password-input.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Reaches the text field inside a group through the native host where the DOM module finds it in the group's element."
@@ -31,6 +32,15 @@
       "mirrors": ["packages/core/src/components/input/input.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "InputGroup's control lookup, clear and press around the field move to foundation/forms/group-field.ts, which has a native twin."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/password-input/password-input.ts",
+      "mirrors": [
+        "packages/core/src/components/password-input/password-input.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The root's press around the field goes through foundation/forms/group-field.ts (api.internal.pressAround), which has a native twin, instead of focusFromSurroundings."
     },
     {
       "kind": "reroute",
@@ -549,6 +559,19 @@
           "reason": "Its bind animates the panel in and out, which the adapter's presence does through onExit. It also points tabs' aria-controls at it, keeps it findable and makes it a tab stop, none of which exists on native."
         }
       }
+    },
+    "password-input": {
+      "entry": "packages/react-native/src/password-input.tsx",
+      "slots": {
+        "passwordInput.control": {
+          "covered": "packages/react-native/src/password-input.tsx",
+          "reason": "Its bind is the text field's, whose onChangeText goes through the api's change and whose value prop follows the state, and switches the field between text and password, which the translation does with secureTextEntry from the type attribute. It also hides the password before a form submits or resets and when the page is hidden, and follows a disabled fieldset, none of which exists on native. Its keydown, keyup and mousedown read Caps Lock, which TextInput doesn't report, so capsLock stays false; its focusout keeps the selection for a mouse press on the toggle, and on native a press on the toggle leaves the field focused."
+        },
+        "passwordInput.toggle": {
+          "needs": "nothing",
+          "reason": "Its bind records the element, which is always a button on native. Its mousedown keeps focus in the field, which a Pressable never takes on native, and its keydown and keyup activate a non-button element, where the OS activates the Pressable."
+        }
+      }
     }
   },
   "pending": [
@@ -578,7 +601,6 @@
     "number-input",
     "otp-input",
     "pagination",
-    "password-input",
     "popover",
     "progress",
     "radio",
@@ -709,6 +731,24 @@
     },
     {
       "component": "tabs",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "password-input",
+      "example": "caps-lock",
+      "feature": "A warning while Caps Lock is on",
+      "reason": "TextInput reports no modifier keys, so capsLock stays false."
+    },
+    {
+      "component": "password-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the value from change callbacks."
+    },
+    {
+      "component": "password-input",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

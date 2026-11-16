@@ -21,6 +21,7 @@
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./input": "./src/input.tsx",
+    "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
     "./rating": "./src/rating.tsx",
     "./switch": "./src/switch.tsx",
@@ -54,6 +55,10 @@
       "./input": {
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
+      },
+      "./password-input": {
+        "types": "./dist/password-input.d.ts",
+        "default": "./dist/password-input.js"
       },
       "./primitive": {
         "types": "./dist/primitive.d.ts",

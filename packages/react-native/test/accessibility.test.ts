@@ -221,6 +221,23 @@ const rows: [Record<string, string | undefined>, object, object][] = [
   [{ tabindex: "-1" }, {}, {}],
   [{ tabindex: "0" }, {}, {}],
   [{ "data-slot": "switch", "data-checked": "" }, {}, {}],
+  [{ type: "password" }, { secureTextEntry: true }, { secureTextEntry: true }],
+  [{ type: "text" }, { secureTextEntry: false }, { secureTextEntry: false }],
+  [
+    { autocomplete: "new-password" },
+    { autoComplete: "new-password" },
+    { autoComplete: "new-password" },
+  ],
+  [
+    { autocapitalize: "off", autocorrect: "off", spellcheck: "false" },
+    { autoCapitalize: "none", autoCorrect: false, spellCheck: false },
+    { autoCapitalize: "none", autoCorrect: false, spellCheck: false },
+  ],
+  [
+    { autocapitalize: "words", autocorrect: "on", spellcheck: "true" },
+    { autoCapitalize: "words", autoCorrect: true, spellCheck: true },
+    { autoCapitalize: "words", autoCorrect: true, spellCheck: true },
+  ],
 ]
 
 // What has no React Native counterpart. `aria-labelledby` and
@@ -259,7 +276,18 @@ const dropped = [
   "aria-sort",
   ...emitted.html.filter(
     (name) =>
-      !["id", "disabled", "type", "hidden", "inert", "tabindex"].includes(name)
+      ![
+        "id",
+        "disabled",
+        "type",
+        "hidden",
+        "inert",
+        "tabindex",
+        "autocomplete",
+        "autocapitalize",
+        "autocorrect",
+        "spellcheck",
+      ].includes(name)
   ),
 ]
 
