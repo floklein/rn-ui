@@ -429,7 +429,7 @@
   "@ui-sdk/react-native/field": 12409,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 12185,
-  "@ui-sdk/react-native/otp-input": 14242,
+  "@ui-sdk/react-native/otp-input": 15040,
   "@ui-sdk/react-native/password-input": 13018,
   "@ui-sdk/react-native/primitive": 6313,
   "@ui-sdk/react-native/radio": 15586,
