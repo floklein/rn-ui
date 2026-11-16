@@ -21,6 +21,7 @@ function host() {
   const focus = vi.fn()
   setNativeHost({
     focus,
+    field: vi.fn(),
     announce: vi.fn(),
     compare: (a, b) => rendered.indexOf(a) - rendered.indexOf(b),
   })

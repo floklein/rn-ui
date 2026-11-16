@@ -382,6 +382,7 @@ Every difference the resolutions record, by subject.
 
 **Input and text entry**
 
+- A read-only text field reads as disabled and leaves keyboard Tab order on Android and on single-line iOS fields, since React Native has no `TextInput` that is read-only yet enabled; multiline iOS fields stay enabled ([council batch 1][council-1]).
 - An edit the web would refuse shows for a moment before it is corrected ([How text entry components work on TextInput][text-entry]).
 - Token Input's tokens sit in a row beside a plain field, and text between tokens isn't possible ([How text entry components work on TextInput][text-entry]).
 - Trigger Menu anchors to the field's box, not the caret ([How text entry components work on TextInput][text-entry]).
@@ -505,3 +506,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [build-rules]: https://github.com/floklein/rn-ui/issues/37
 [gate]: https://github.com/floklein/rn-ui/issues/119
 [aria-disabled]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6904500686
+[council-1]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6909822604

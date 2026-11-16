@@ -1,0 +1,128 @@
+---
+title: Textarea
+description: Enter several lines of text, read the value with its change reasons, and grow with the text.
+---
+
+A textarea is a multiline `TextInput` for longer text like a message or notes. Enter adds a line. It shares Input's change reasons and controller.
+
+<ComponentExample
+  name="textarea/basic"
+  caption="Type a message over several lines. Enter adds a line."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Usage
+
+```tsx
+import { Textarea } from "@ui-sdk/react-native/textarea"
+
+function Example() {
+  return <Textarea aria-label="Message" placeholder="Type your message here…" />
+}
+
+export { Example }
+```
+
+## Growing With the Text
+
+A multiline `TextInput` grows with its text unless its style fixes a height, so Textarea has no `autoResize`. Bound it with `minHeight` and `maxHeight`; past the maximum, it scrolls.
+
+<ComponentExample
+  name="textarea/auto-resize"
+  caption="Type several lines. The textarea grows, then scrolls past its maximum height."
+/>
+
+## Controlled
+
+Pass `value` and `onValueChange` to control the textarea.
+
+<ComponentExample
+  name="textarea/controlled"
+  caption="Type in the bio. The count below follows the value."
+/>
+
+## Sending a Message
+
+A native view takes part in no form. Read the value where you'd submit it, with the controller, and clear it after.
+
+<ComponentExample
+  name="textarea/button"
+  caption="Write a reply and tap Send Message. The console logs it and the textarea clears."
+/>
+
+## Disabled
+
+Set `disabled` to prevent editing. Screen readers announce it as dimmed or disabled. A `readOnly` textarea can't be edited either. On iOS it stays enabled; on Android it's announced as disabled and leaves the keyboard order, like `disabled`, since React Native has no read-only field that stays enabled there.
+
+<ComponentExample
+  name="textarea/disabled"
+  caption="Try editing the reply. It can't be changed."
+/>
+
+## Enter
+
+Enter always adds a line, and there's no submit shortcut: `TextInput` reports no modifier keys, so `submitShortcut` and `onSubmit` are left out. Send from a button instead, as in [Sending a Message](#sending-a-message).
+
+## Styling
+
+Style the textarea with a function of its state, like `(state) => [styles.textarea, state.filled && styles.filled]`. It receives the fields listed under [Part State](#part-state). On Android, set `textAlignVertical: "top"` to start the text at the top.
+
+## Part State
+
+### Textarea [#part-state-textarea]
+
+<PartStateTable
+  component="textarea"
+  part="root"
+  path="../../packages/core/src/components/input/input.ts"
+  name="TextareaState"
+/>
+
+## API Reference
+
+Textarea takes `TextInput`'s props and the options below, as React Native props, except `value`, `defaultValue`, `editable` and `multiline`.
+
+### Textarea
+
+<TypeTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="TextareaOptions"
+  omit={["autoResize", "onSubmit", "submitShortcut"]}
+/>
+
+<TypeTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="TextareaProps"
+/>
+
+### State
+
+<StateTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="TextareaState"
+/>
+
+### Reasons
+
+<ReasonTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputController"
+/>
+
+## Accessibility
+
+There's no WAI-ARIA pattern for a multiline text field. The `TextInput` keeps the platform's text editing, selection and spell checking. Give it an `aria-label`. A controller's `focus()` starts editing and asks the screen reader to move to it.

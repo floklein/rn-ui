@@ -135,9 +135,12 @@ async function typeRows({
   type,
   types,
   descriptions,
+  omit = [],
 }: {
   path: string
   name: string
+  /** Fields the table leaves out, like options a framework's types drop. */
+  omit?: string[]
   /** A type to document in place of the export `name`, like `Parameters<typeof definePrimitive>[0]`, which `name` then labels. */
   type?: string
   /** Each field's type as the table shows it, where the declared one reads worse, like a generic's. */
@@ -156,7 +159,10 @@ async function typeRows({
   return docs.map((doc) => ({
     id: doc.id,
     label: doc.name,
-    rows: nativeEntries(doc.entries, framework).map((entry) => {
+    rows: nativeEntries(
+      doc.entries.filter((entry) => !omit.includes(entry.name)),
+      framework
+    ).map((entry) => {
       const fallback = entry.tags.find((tag) => tag.name === "default")?.text
       const isEvent = events && isCallback(entry.name)
       return {

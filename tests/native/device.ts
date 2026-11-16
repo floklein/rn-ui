@@ -11,6 +11,7 @@ type Node = {
   checked?: boolean | "mixed"
   enabled: boolean
   text?: string
+  value?: string
 }
 
 const platform: Platform =
@@ -43,6 +44,10 @@ const capabilities =
           "appium:prebuiltWDAPath": process.env.WDA_PATH,
         }),
         ...(process.env.CI && { "appium:isHeadless": true }),
+        // Parallel iOS sessions on one machine each need their own port.
+        ...(process.env.WDA_LOCAL_PORT && {
+          "appium:wdaLocalPort": Number(process.env.WDA_LOCAL_PORT),
+        }),
       }
     : {
         platformName: "Android",
@@ -50,8 +55,12 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        // An emulator from simlock sits behind its own adb server.
         ...(process.env.ANDROID_ADB_SERVER_PORT && {
           "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
+        }),
+        ...(process.env.UIAUTOMATOR2_PORT && {
+          "appium:systemPort": Number(process.env.UIAUTOMATOR2_PORT),
         }),
       }
 
@@ -60,6 +69,8 @@ const roles: Record<string, string> = {
   XCUIElementTypeButton: "button",
   XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
+  XCUIElementTypeTextField: "textbox",
+  XCUIElementTypeTextView: "textbox",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
@@ -68,6 +79,7 @@ const roles: Record<string, string> = {
   "android.widget.ImageView": "image",
   "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
+  "android.widget.EditText": "textbox",
   "android.view.ViewGroup": "group",
 }
 
@@ -93,6 +105,7 @@ function attributes(tag: string) {
         .replaceAll("&apos;", "'")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
+        .replaceAll("&#10;", "\n")
         .replaceAll("&amp;", "&"),
     ])
   )
@@ -143,11 +156,7 @@ function parseTree(source: string) {
       platform === "ios" && radioValue.test(attrs.value ?? "")
         ? attrs.value.replace(radioValue, "")
         : undefined
-    const role = checkbox
-      ? "checkbox"
-      : radio
-        ? "radio"
-        : (roles[type] ?? type)
+    const role = checkbox ? "checkbox" : radio ? "radio" : (roles[type] ?? type)
     const node: Node = {
       role,
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
@@ -175,6 +184,9 @@ function parseTree(source: string) {
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
+    }
+    if (role === "textbox") {
+      node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
     }
     nodes.set(id && !nodes.has(id) ? id : `#${nodes.size}`, node)
   }
@@ -229,6 +241,22 @@ function useDevice(name: string) {
             : `android=new UiSelector().description("${label}")`
         )
         .click()
+    },
+    /** The test ID of the element the OS's input focus is on, as a text field being edited. */
+    async focused() {
+      const active = await driver.getActiveElement()
+      // XCUITest answers with an error object while nothing has focus.
+      if ("error" in active) {
+        return undefined
+      }
+      const element = await driver.$(active)
+      return platform === "ios"
+        ? element.getAttribute("name")
+        : (await element.getAttribute("resource-id"))?.replace(/^.*:id\//, "")
+    },
+    /** Types into the element the OS's input focus is on. */
+    async type(text: string) {
+      await driver.keys(text.split(""))
     },
     async open(screen: string) {
       if (await driver.$(byId("back")).isExisting()) {

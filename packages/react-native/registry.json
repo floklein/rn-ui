@@ -16,6 +16,30 @@
       "why": "Focuses a part through the native host where the toggle control focused its root element."
     },
     {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/forms/group-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/input/input.ts",
+        "packages/core/src/foundation/forms/text-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reaches the text field inside a group through the native host where the DOM module finds it in the group's element."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/input/input.ts",
+      "mirrors": ["packages/core/src/components/input/input.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "InputGroup's control lookup, clear and press around the field move to foundation/forms/group-field.ts, which has a native twin."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/forms/text-field.ts",
+      "mirrors": ["packages/core/src/foundation/forms/text-field.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The text field's focus() calls focusPart instead of control()?.focus(), and its context type picks parts."
+    },
+    {
       "kind": "behavior",
       "file": "packages/core/src/foundation/motion/presence-native.ts",
       "mirrors": ["packages/core/src/foundation/motion/presence.ts"],
@@ -135,6 +159,13 @@
       "mirrors": ["packages/core/src/foundation/focus/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports focusPart."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/forms/index.ts",
+      "mirrors": ["packages/core/src/foundation/forms/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports groupField, which input.ts imports."
     },
     {
       "kind": "edit",
@@ -281,14 +312,14 @@
       "file": "apps/docs/components/type-tables.tsx",
       "mirrors": ["apps/docs/components/type-tables.tsx"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "PartStateTable, the state fields a part's style functions receive on React Native."
+      "why": "PartStateTable, the state fields a part's style functions receive on React Native. TypeTable passes omit to its rows."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/reference-rows.ts",
       "mirrors": ["apps/docs/lib/reference-rows.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Native TypeTables leave out the web-only names and modal's \"trap-focus\" value, which @ui-sdk/react-native's types don't take."
+      "why": "Native TypeTables leave out the web-only names and modal's \"trap-focus\" value, which @ui-sdk/react-native's types don't take. TypeTable takes omit, the fields a table leaves out, like Textarea's submit options on native."
     },
     {
       "kind": "edit",
@@ -330,7 +361,7 @@
       "file": "apps/docs/lib/page-markdown.ts",
       "mirrors": ["apps/docs/lib/page-markdown.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Renders PartStateTable in agent Markdown. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
+      "why": "Renders PartStateTable in agent Markdown. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24). TypeTable's omit in agent Markdown."
     },
     {
       "kind": "edit",
@@ -372,7 +403,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, rating and testing."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, rating, testing, input and textarea."
     }
   ],
   "components": {
@@ -423,6 +454,23 @@
         "switchPrimitive.input": {
           "needs": "nothing",
           "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
+    "input": {
+      "entry": "packages/react-native/src/input.tsx",
+      "slots": {
+        "input.root": {
+          "covered": "packages/react-native/src/text-field.ts",
+          "reason": "Its bind follows typing and writes; the TextInput's onChangeText goes through the api's change, and its value prop follows the state, which puts a canceled edit back."
+        },
+        "textarea.root": {
+          "covered": "packages/react-native/src/text-field.ts",
+          "reason": "Its bind is the text field's, as for input.root. Its keydown runs the submit shortcut, which is absent: Enter adds a line and TextInput reports no modifiers. A multiline TextInput grows with its text unless its style fixes a height."
+        },
+        "inputGroup.group": {
+          "covered": "packages/react-native/src/text-field.ts",
+          "reason": "Its bind reads the field's state from the DOM; the field inside the group reports it with api.internal.update and registers itself as the field the native host's field(part) returns."
         }
       }
     },
@@ -485,7 +533,6 @@
     "file-input",
     "hover-card",
     "image-cropper",
-    "input",
     "label",
     "listbox",
     "menu",
@@ -549,6 +596,12 @@
     },
     {
       "component": "avatar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "input",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

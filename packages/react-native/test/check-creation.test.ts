@@ -2,6 +2,7 @@ import { definePrimitive } from "@ui-sdk/core"
 import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
+import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
 import { rating } from "@ui-sdk/core/rating"
 import { switchPrimitive } from "@ui-sdk/core/switch"
@@ -22,6 +23,12 @@ describe("checkCreation", () => {
 
   test("passes on an avatar", () => {
     expect(() => checkCreation(avatar, {})).not.toThrow()
+  })
+
+  test("passes on an input, a textarea and an input group", () => {
+    expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
+    expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
+    expect(() => checkCreation(inputGroup, {})).not.toThrow()
   })
 
   test("passes on a checkbox and a checkbox group", () => {

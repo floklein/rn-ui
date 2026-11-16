@@ -12,5 +12,6 @@ export {
   type NativeBehavior,
   type NativeHost,
   nativeHost,
+  type NativeTextField,
   setNativeHost,
 } from "./foundation/kernel/native-host"

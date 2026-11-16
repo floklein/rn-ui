@@ -27,7 +27,12 @@ if (typeof document !== "undefined") {
 
 const { components, renderer, native } = await loadCore()
 const { attrs, keep, partState, present, press, unwatched } = renderer
-native.setNativeHost({ focus() {} })
+native.setNativeHost({
+  focus() {},
+  field() {},
+  announce() {},
+  compare: () => 0,
+})
 
 const describe = (error) =>
   `${error?.name ?? "Error"}: ${String(error?.message ?? error).split("\n")[0]}`
