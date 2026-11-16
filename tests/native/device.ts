@@ -70,6 +70,7 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeLink: "link",
   XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeTextField: "textbox",
