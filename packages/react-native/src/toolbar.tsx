@@ -82,6 +82,7 @@ function ToolbarLink(props: React.ComponentProps<ToolbarParts["Link"]>) {
  */
 function ToolbarInput({
   render,
+  readOnly,
   ...props
 }: React.ComponentProps<ToolbarParts["Input"]>) {
   return (
@@ -92,15 +93,18 @@ function ToolbarInput({
         state: ToolbarInputState,
         interaction: Interaction
       ) => {
-        const editable = !state.disabled && host.editable !== false
+        const editable = !state.disabled && !readOnly && host.editable !== false
         return renderElement(
           TextInput,
           {
             ...host,
             editable,
+            // Android enables a read-only field, which then takes typing, when
+            // its disabled state is false.
             accessibilityState: {
               ...host.accessibilityState,
               disabled: !editable,
+              ...props.accessibilityState,
             },
           },
           render,

@@ -181,6 +181,26 @@ describe("Toolbar", () => {
     expect(field().props.accessibilityState).toMatchObject({ disabled: true })
   })
 
+  test("a read-only text field can't be edited, and a disabled one stays so whatever readOnly says", async () => {
+    await render(
+      <Toolbar aria-label="Text">
+        <ToolbarInput aria-label="Find" testID="find" readOnly />
+        <ToolbarInput
+          aria-label="Replace"
+          testID="replace"
+          disabled
+          readOnly={false}
+        />
+      </Toolbar>
+    )
+    for (const id of ["find", "replace"]) {
+      const field = screen.getByTestId(id)
+      expect(field.props.editable).toBe(false)
+      expect(field.props.readOnly).toBeUndefined()
+      expect(field.props.accessibilityState).toMatchObject({ disabled: true })
+    }
+  })
+
   test("style functions get the state: a separator runs across the toolbar", async () => {
     await render(
       <Toolbar aria-label="Canvas" orientation="vertical">
