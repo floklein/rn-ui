@@ -87,7 +87,10 @@ function useTextField(
         editable,
         // Android keeps a TextInput disabled when its disabled state is left
         // out, and enables a read-only one, which then takes typing, when it's false.
-        accessibilityState: { disabled: !editable, ...props.accessibilityState },
+        accessibilityState: {
+          disabled: !editable,
+          ...props.accessibilityState,
+        },
       }
     ),
     TextInput
