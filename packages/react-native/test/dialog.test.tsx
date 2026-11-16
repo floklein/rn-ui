@@ -1,6 +1,12 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import { AccessibilityInfo, Text, type HostInstance } from "react-native"
+import {
+  AccessibilityInfo,
+  DeviceEventEmitter,
+  Platform,
+  Text,
+  type HostInstance,
+} from "react-native"
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -227,6 +233,46 @@ describe("Dialog", () => {
     await act(() => done())
     expect(content()).toBeNull()
     expect(onOpenChangeComplete.mock.calls).toEqual([[true], [false]])
+  })
+
+  test("focus returns to the trigger once the content has left, not while its exit holds the Modal", async () => {
+    let done = () => {}
+    await render(
+      <Dialog>
+        <DialogTrigger ref={triggerRef}>
+          <Text>Edit profile</Text>
+        </DialogTrigger>
+        <DialogContent testID="content" onExit={(end) => (done = end)}>
+          <DialogTitle>Profile</DialogTitle>
+          <DialogClose>
+            <Text>Done</Text>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
+    )
+    await fireEvent.press(trigger())
+    sendAccessibilityEvent.mockClear()
+    await fireEvent.press(screen.getByRole("button", { name: "Done" }))
+    expect(sendAccessibilityEvent).not.toHaveBeenCalled()
+    await act(() => done())
+    expect(content()).toBeNull()
+    expect(focusedViews().at(-1) === triggerRef.current).toBe(true)
+  })
+
+  test("Android's back closes a non-modal dialog through BackHandler", async () => {
+    if (Platform.OS !== "android") {
+      return
+    }
+    const onOpenChange = jest.fn()
+    await render(<Profile modal={false} onOpenChange={onOpenChange} />)
+    await fireEvent.press(trigger())
+    await act(() => {
+      DeviceEventEmitter.emit("hardwareBackPress")
+    })
+    expect(onOpenChange.mock.lastCall).toMatchObject([
+      false,
+      { reason: "back", source: "touch" },
+    ])
   })
 
   test("a controlled open closes through the same exit", async () => {

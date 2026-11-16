@@ -167,18 +167,30 @@ function popupNative<Api extends PopupApi>({
         focusIn()
       }
 
+      // Focus goes back once the content has left, never to the screen
+      // behind a Modal its exit still holds up.
+      let returning: number | undefined
+      const returnFocus = () => {
+        if (returning !== undefined) {
+          focusBack(returning)
+          returning = undefined
+        }
+      }
       let open = false
       const sync = () => {
+        if (returning !== undefined && !store.get().mounted) {
+          queueMicrotask(returnFocus)
+        }
         if (store.get().open === open) {
           return
         }
         open = store.get().open
         if (open) {
+          returning = undefined
           return show()
         }
-        const order = layerCount()
+        returning = layerCount()
         hide?.()
-        focusBack(order)
       }
       sync()
       const unsubscribe = store.subscribe(sync)
@@ -186,6 +198,7 @@ function popupNative<Api extends PopupApi>({
         unsubscribe()
         hide?.()
         release()
+        returnFocus()
       }
     },
   }

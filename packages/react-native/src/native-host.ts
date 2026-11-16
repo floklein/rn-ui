@@ -4,7 +4,7 @@ import {
   type NativeTextField,
   setNativeHost,
 } from "@ui-sdk/core/native"
-import { AccessibilityInfo, type HostInstance } from "react-native"
+import { AccessibilityInfo, BackHandler, type HostInstance } from "react-native"
 
 const views: WeakMap<Part, HostInstance> = new WeakMap()
 const textInputs: WeakSet<HostInstance> = new WeakSet()
@@ -56,9 +56,12 @@ setNativeHost({
     }
     return (renders.get(a) ?? 0) - (renders.get(b) ?? 0)
   },
+  // A Modal hears Android's back itself, through `onRequestClose`.
   listen(next) {
     input = next
+    const back = BackHandler.addEventListener("hardwareBackPress", next.back)
     return () => {
+      back.remove()
       if (input === next) {
         input = undefined
       }

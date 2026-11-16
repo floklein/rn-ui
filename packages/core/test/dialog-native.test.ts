@@ -49,7 +49,7 @@ function host() {
 function mount(options: DialogOptions = {}) {
   const instance = dialog({ id: "d", ...options })
   keep(instance)
-  const trigger = instance.part("trigger", {}, true)
+  const trigger = instance.part("trigger", {})
   dialogNative.trigger!(trigger)
   let content: Part | undefined
   let unmount: (() => void) | void
@@ -59,8 +59,8 @@ function mount(options: DialogOptions = {}) {
   )
   const render = () => {
     if (instance.get().mounted && !content) {
-      content = instance.part("content", {}, true)
-      const title = instance.part("title", {}, true)
+      content = instance.part("content", {})
+      const title = instance.part("title", {})
       dialogNative.title!(title)
       unmount = dialogNative.content!(content)
     }
@@ -104,13 +104,15 @@ test("reopening before the exit ends keeps it mounted", () => {
   expect(instance.get().mounted).toBe(true)
 })
 
-test("opening pushes a layer the host's input reaches, and focuses the title", () => {
+test("opening pushes a layer the host's input reaches and focuses the title, and focus returns once the exit ends", async () => {
   const { focused, input } = host()
-  const { instance } = mount()
+  const { instance, exit } = mount()
   instance.api.open()
   expect(focused.map((part) => part.slot)).toEqual(["title"])
   expect(input()?.back()).toBe(true)
   expect(instance.get().open).toBe(false)
+  exit()
+  await new Promise((done) => setTimeout(done))
   expect(focused.map((part) => part.slot)).toEqual(["title", "trigger"])
 })
 
