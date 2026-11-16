@@ -436,7 +436,7 @@
   "@ui-sdk/react-native/label": 9444,
   "@ui-sdk/react-native/meter": 10052,
   "@ui-sdk/react-native/otp-input": 15923,
-  "@ui-sdk/react-native/overlays": 1147,
+  "@ui-sdk/react-native/overlays": 1253,
   "@ui-sdk/react-native/pagination": 12156,
   "@ui-sdk/react-native/password-input": 13297,
   "@ui-sdk/react-native/primitive": 6587,
