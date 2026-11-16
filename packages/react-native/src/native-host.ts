@@ -1,10 +1,18 @@
 import type { Part } from "@ui-sdk/core"
 import {
+  type NativeDrag,
   type NativeInput,
   type NativeTextField,
   setNativeHost,
 } from "@ui-sdk/core/native"
-import { AccessibilityInfo, BackHandler, type HostInstance } from "react-native"
+import { withSource } from "@ui-sdk/core/renderer"
+import {
+  AccessibilityInfo,
+  BackHandler,
+  type GestureResponderEvent,
+  type HostInstance,
+  I18nManager,
+} from "react-native"
 
 const views: WeakMap<Part, HostInstance> = new WeakMap()
 const textInputs: WeakSet<HostInstance> = new WeakSet()
@@ -12,6 +20,9 @@ const fields: WeakMap<object, NativeTextField> = new WeakMap()
 const renders: WeakMap<Part, number> = new WeakMap()
 const controls: WeakMap<object, () => void> = new WeakMap()
 const controlsById: Map<string, (() => void)[]> = new Map()
+const parts: WeakMap<HostInstance, Part> = new WeakMap()
+const drags: WeakMap<Part, NativeDrag> = new WeakMap()
+const steps: WeakMap<Part, (direction: 1 | -1) => void> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -25,6 +36,48 @@ AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
 const pressSource = () => (screenReader ? "virtual" : "touch")
 
 const following = 4
+
+function partUnder(target: unknown) {
+  for (
+    let node = target as HostInstance | null;
+    node;
+    node = node.parentNode as HostInstance | null
+  ) {
+    const part = parts.get(node)
+    if (part) {
+      return part
+    }
+  }
+}
+
+const fingers = new WeakMap<Part, string>()
+
+// Fabric reports the first changed touch, so a second finger's moves would
+// reach the responder as its own.
+function touchOf(event: GestureResponderEvent, part: Part) {
+  const { nativeEvent } = event
+  const finger = nativeEvent.touches?.length
+    ? nativeEvent.touches.find(
+        (touch) => String(touch.identifier) === fingers.get(part)
+      )
+    : nativeEvent
+  return (
+    finger && {
+      x: finger.pageX,
+      y: finger.pageY,
+      target: partUnder(event.target),
+    }
+  )
+}
+
+function register<Value>(map: WeakMap<Part, Value>, part: Part, value: Value) {
+  map.set(part, value)
+  return () => {
+    if (map.get(part) === value) {
+      map.delete(part)
+    }
+  }
+}
 
 let input: NativeInput | undefined
 const layerInput = () => input
@@ -57,6 +110,10 @@ setNativeHost({
     }
     return (renders.get(a) ?? 0) - (renders.get(b) ?? 0)
   },
+  isRTL: () => I18nManager.isRTL,
+  box: (part) => views.get(part)?.getBoundingClientRect(),
+  follow: (part, drag) => register(drags, part, drag),
+  adjustable: (part, step) => register(steps, part, step),
   // A Modal hears Android's back itself, through `onRequestClose`.
   listen(next) {
     input = next
@@ -70,13 +127,43 @@ setNativeHost({
   },
 })
 
+// Refusing termination and blocking native responders are meant to keep a
+// scroll view from taking the touch; iOS pans a same-axis one anyway, so
+// the app turns its scrollEnabled off (#71).
+function responder(part: Part) {
+  return {
+    onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
+    onResponderTerminationRequest: () => false,
+    onResponderGrant(event: GestureResponderEvent) {
+      fingers.set(part, String(event.nativeEvent.identifier))
+      const touch = touchOf(event, part)
+      if (touch) {
+        withSource("touch", () => drags.get(part)?.start(touch))
+      }
+      return true
+    },
+    onResponderMove(event: GestureResponderEvent) {
+      const touch = touchOf(event, part)
+      if (touch) {
+        withSource("touch", () => drags.get(part)?.move(touch))
+      }
+    },
+    onResponderRelease: () => withSource("touch", () => drags.get(part)?.end()),
+    onResponderTerminate: () =>
+      withSource("touch", () => drags.get(part)?.cancel()),
+  }
+}
+
 export {
   controls,
   controlsById,
   fields,
   layerInput,
+  parts,
   pressSource,
   renders,
+  responder,
+  steps,
   textInputs,
   views,
 }

@@ -16,6 +16,7 @@ import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
+import { slider } from "@ui-sdk/core/slider"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
@@ -55,6 +56,13 @@ describe("checkCreation", () => {
 
   test("passes on a label", () => {
     expect(() => checkCreation(label, {})).not.toThrow()
+  })
+
+  test("passes on a slider, single or a range", () => {
+    expect(() => checkCreation(slider, { defaultValue: 40 })).not.toThrow()
+    expect(() =>
+      checkCreation(slider, { defaultValue: [20, 80], locale: "de-DE" })
+    ).not.toThrow()
   })
 
   test("passes on a separator, decorative or vertical", () => {

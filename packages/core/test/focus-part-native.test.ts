@@ -20,6 +20,10 @@ describe("focusing a part on the native host", () => {
       activate: vi.fn(),
       listen: vi.fn(),
       compare: vi.fn(),
+      isRTL: () => false,
+      box: vi.fn(),
+      follow: vi.fn(),
+      adjustable: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
     const root = instance.part("root", {}, true)

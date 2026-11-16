@@ -220,6 +220,12 @@ function toNativeProps(
   if (os === "android" && role === "progressbar" && "aria-valuetext" in attrs) {
     value.text ??= ""
   }
+  // A range input's bounds and value are its own attributes.
+  if (attrs.type === "range") {
+    value.min = Number(attrs.min)
+    value.max = Number(attrs.max)
+    value.now = Number(attrs.value)
+  }
   const label = names?.(idsOf(attrs["aria-labelledby"]))
   if (label !== undefined) {
     props.accessibilityLabel = label
@@ -234,6 +240,10 @@ function toNativeProps(
     props.accessibilityActions = [
       { name: state.expanded ? "collapse" : "expand" },
     ]
+  }
+  // VoiceOver's swipes and TalkBack's adjustments reach only declared actions.
+  if (role === "adjustable") {
+    props.accessibilityActions = [{ name: "increment" }, { name: "decrement" }]
   }
   if (Object.keys(state).length) {
     props.accessibilityState = state

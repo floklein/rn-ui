@@ -19,6 +19,7 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "../src/collapsible"
+import { Field, FieldLabel } from "../src/field"
 import {
   Dialog,
   DialogBackdrop,
@@ -60,6 +61,13 @@ import {
   SegmentedControlItem,
 } from "../src/segmented-control"
 import { Separator } from "../src/separator"
+import {
+  Slider,
+  SliderControl,
+  SliderIndicator,
+  SliderThumb,
+  SliderTrack,
+} from "../src/slider"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -1212,6 +1220,82 @@ describe("checkPattern's progressbar and meter patterns on the native host", () 
     )
     await expect(checkProgress()).rejects.toThrow(
       "isn't an accessible element; a screen reader reads a progressbar as one element with its value."
+    )
+  })
+})
+
+const checkSlider = () => checkPattern(screen.container, "slider", { os, act })
+
+describe("checkPattern's slider pattern on the native host", () => {
+  test("passes on a slider, a range named by its field's label, and a disabled one", async () => {
+    await render(
+      <View>
+        <Slider defaultValue={30}>
+          <SliderControl>
+            <SliderTrack>
+              <SliderIndicator />
+              <SliderThumb aria-label="Volume" />
+            </SliderTrack>
+          </SliderControl>
+        </Slider>
+        <Field>
+          <FieldLabel>Price</FieldLabel>
+          <Slider defaultValue={[0, 100]} step={10}>
+            <SliderControl>
+              <SliderThumb />
+              <SliderThumb index={1} />
+            </SliderControl>
+          </Slider>
+        </Field>
+        <Slider defaultValue={30} disabled>
+          <SliderControl>
+            <SliderThumb aria-label="Brightness" />
+          </SliderControl>
+        </Slider>
+      </View>
+    )
+    await expect(checkSlider()).resolves.toBeUndefined()
+  })
+
+  test("fails with no slider", async () => {
+    await render(<Text>30</Text>)
+    await expect(checkSlider()).rejects.toThrow(
+      "The tree has no accessible element with the adjustable role, so it isn't a slider."
+    )
+  })
+
+  test("fails on a thumb with no name", async () => {
+    await render(
+      <Slider defaultValue={30}>
+        <SliderControl>
+          <SliderThumb />
+        </SliderControl>
+      </Slider>
+    )
+    await expect(checkSlider()).rejects.toThrow(/has no name; a slider needs/)
+  })
+
+  test("fails on a slider whose increment does nothing, or that declares no actions", async () => {
+    await render(
+      <View>
+        <View
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel="Stuck"
+          accessibilityValue={{ min: 0, max: 10, now: 5, text: "5" }}
+          accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+          onAccessibilityAction={() => {}}
+        />
+        <View
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel="Silent"
+          accessibilityValue={{ min: 0, max: 10, now: 5, text: "5" }}
+        />
+      </View>
+    )
+    await expect(checkSlider()).rejects.toThrow(
+      /stays at 5 after the increment action[^]*doesn't declare the increment action/
     )
   })
 })
