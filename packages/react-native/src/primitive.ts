@@ -6,6 +6,7 @@ export {
 } from "./render-element"
 export {
   createParts,
+  type ExitProps,
   type GenericPartComponent,
   type PartComponent,
   usePart,
