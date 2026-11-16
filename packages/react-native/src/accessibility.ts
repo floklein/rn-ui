@@ -12,6 +12,9 @@ import { idsOf } from "./names"
 type OS = "ios" | "android"
 
 type NativeProps = {
+  accessible?: boolean
+  collapsable?: boolean
+  focusable?: boolean
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
   accessibilityValue?: AccessibilityValue
@@ -112,6 +115,15 @@ function toNativeProps(
         ? "togglebutton"
         : role
   }
+  // VoiceOver reads an image as one element. On Android `accessible` would
+  // make it a Tab stop, and Fabric would flatten it away with its label.
+  if (role === "image") {
+    if (os === "ios") {
+      props.accessible = true
+    } else {
+      props.collapsable = false
+    }
+  }
   for (const [name, given] of Object.entries(attrs)) {
     if (given === undefined) {
       continue
@@ -135,6 +147,11 @@ function toNativeProps(
       state.disabled = true
     } else if (name === "aria-hidden" && given === "true") {
       hide(props, os)
+      // Out of Tab's order too: a Pressable stays focusable without `accessible`.
+      if (attrs.tabindex === "-1") {
+        props.accessible = false
+        props.focusable = false
+      }
     } else if (name === "hidden") {
       hide(props, os)
       props.style = { ...props.style, display: "none" }

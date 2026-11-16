@@ -308,7 +308,8 @@ function ariaOf(
       { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
       (name) => aria[name] !== undefined
     ),
-    ...(exiting && { inert: "" }),
+    // A part that animates out stays on screen, where its slot already hides it.
+    ...(exiting && { inert: "", hidden: undefined }),
   }
 }
 

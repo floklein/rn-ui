@@ -72,10 +72,31 @@
     },
     {
       "kind": "behavior",
+      "file": "packages/core/src/components/rating/rating-native.ts",
+      "mirrors": [
+        "packages/core/src/components/rating/rating.ts",
+        "packages/core/src/components/radio/radio-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the radio slot's bind orchestrates: each radio joins the rating's roving group (api.internal.roving.bind) while it's mounted, with a native element the order twin sorts in render order and the host focuses."
+    },
+    {
+      "kind": "behavior",
       "file": "packages/core/src/components/toggle/toggle-native.ts",
       "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the root slot's bind orchestrates: the toggle joins its group (api.internal.join) while its root is mounted, so the group lists its toggles in render order, refuses a disabled one and focuses one."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/tabs/tabs-native.ts",
+      "mirrors": [
+        "packages/core/src/components/tabs/tabs.ts",
+        "packages/core/src/foundation/disclosure/disclosure.ts",
+        "packages/core/src/foundation/motion/panel.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the tab slot's bind orchestrates: a tab joins the roving group (api.internal.roving.bind) while it's mounted, so the tabs know their tabs in render order, select the first enabled one and focus the selected one. The disclosure trigger and panel it shares with Collapsible need nothing more on native: a Pressable is always a button and the OS activates it, find in page and the panel's tab stop don't exist, and the panel's exit is the adapter's presence."
     },
     {
       "kind": "behavior",
@@ -421,7 +442,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, testing, input and textarea."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, rating, tabs, testing, input and textarea."
     }
   ],
   "components": {
@@ -442,6 +463,23 @@
         "button.root": {
           "needs": "nothing",
           "reason": "Its bind reads what element it rendered as and a disabled fieldset, neither of which exists on native: the part stays unknown, whose type=\"button\" the translation makes the button role. Its keydown and keyup activate a non-button element, where the OS activates the Pressable with Space or Enter."
+        }
+      }
+    },
+    "rating": {
+      "entry": "packages/react-native/src/rating.tsx",
+      "slots": {
+        "rating.root": {
+          "needs": "nothing",
+          "reason": "Its bind makes the rating take part in a form and focuses it from a label, which native doesn't have. Its pointermove previews a score under a mouse and ignores touch, like upstream's touch behavior, and native's presses come from touch."
+        },
+        "rating.radio": {
+          "covered": "packages/core/src/components/rating/rating-native.ts",
+          "reason": "Its bind joins the rating's roving group, which rating-native.ts does while the radio is mounted, and names it from a label, which native names with aria-label. Its keydown and keyup move between stars with arrow keys and check one with Space, which native doesn't build, and the OS activates the Pressable."
+        },
+        "rating.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
     },
@@ -551,6 +589,31 @@
           "reason": "Its bind registers its id for the set's aria-describedby, which describes a container, and native never describes a container."
         }
       }
+    },
+    "tabs": {
+      "entry": "packages/react-native/src/tabs.tsx",
+      "slots": {
+        "tabs.list": {
+          "needs": "nothing",
+          "reason": "Its keydown moves between tabs with arrow keys, Home and End, which native doesn't build, and activates a non-button tab, where the OS activates the Pressable."
+        },
+        "tabs.tab": {
+          "covered": "packages/core/src/components/tabs/tabs-native.ts",
+          "reason": "Its bind joins the roving group, which tabs-native.ts does while the tab is mounted; the element it records is always a button on native."
+        },
+        "tabs.tab-icon": {
+          "covered": "packages/react-native/src/accessibility.ts",
+          "reason": "Its bind flips a mirrored icon right to left, which the translation does when the app runs right to left. The data-has-icon marks it writes on the tab and the list have no state field, and its missing-name warning comes with the names work."
+        },
+        "tabs.indicator": {
+          "covered": "packages/react-native/src/tabs.tsx",
+          "reason": "Its bind measures the selected tab against the list and writes the --active-tab-* variables; TabsIndicator measures them from the layouts of the list and its tabs and hands them to its state."
+        },
+        "tabs.panel": {
+          "covered": "packages/core/src/foundation/motion/presence-native.ts",
+          "reason": "Its bind animates the panel in and out, which the adapter's presence does through onExit. It also points tabs' aria-controls at it, keeps it findable and makes it a tab stop, none of which exists on native."
+        }
+      }
     }
   },
   "pending": [
@@ -583,14 +646,12 @@
     "popover",
     "progress",
     "radio",
-    "rating",
     "resizable",
     "scroll-area",
     "segmented-control",
     "select",
     "separator",
     "slider",
-    "tabs",
     "time-input",
     "timeline",
     "toast",
@@ -669,6 +730,12 @@
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
+      "component": "rating",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
       "component": "toggle",
       "example": "rtl",
       "feature": "A direction for part of the screen",
@@ -689,6 +756,36 @@
     {
       "component": "field",
       "example": "field-set-rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tabs",
+      "example": "find-in-page",
+      "feature": "Find in page revealing a hidden panel",
+      "reason": "Native has no find in page, so a hidden panel has no text to match."
+    },
+    {
+      "component": "tabs",
+      "example": "links",
+      "feature": "Tabs rendered as links",
+      "reason": "Native has no links or URL navigation: a tab's onValueChange navigates."
+    },
+    {
+      "component": "tabs",
+      "example": "loop",
+      "feature": "Arrow keys wrapping from the last tab to the first",
+      "reason": "Native builds no arrow keys inside a composite: each tab is reached by swiping."
+    },
+    {
+      "component": "tabs",
+      "example": "manual",
+      "feature": "Arrow keys moving focus without selecting",
+      "reason": "Native builds no arrow keys inside a composite: a tab selects when it's activated."
+    },
+    {
+      "component": "tabs",
+      "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
     }
