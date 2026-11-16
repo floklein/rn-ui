@@ -270,12 +270,14 @@ type Animates<
   S extends SlotName<P>,
 > = "keepMounted" extends keyof PropsOf<P, S> ? true : false
 
+type PresenceOf<P extends Primitive, S extends SlotName<P>> =
+  Animates<P, S> extends true ? PresenceState : {}
+
 // A slot's state, or none for a slot that hands render functions nothing.
 type PartState<
   P extends Primitive,
   S extends SlotName<P>,
-> = (unknown extends StateOf<P, S> ? {} : StateOf<P, S>) &
-  (Animates<P, S> extends true ? PresenceState : {})
+> = (unknown extends StateOf<P, S> ? {} : StateOf<P, S>) & PresenceOf<P, S>
 
 /**
  * The native-only prop of a part that animates out: `onExit`, called with
@@ -391,14 +393,17 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   let element: React.ReactElement | null = null
   if (present(part, slotProps) || presence.exiting) {
     const { render, ref, ...user } = hostProps
-    const activate = !presence.exiting && press(part, slotProps)
+    const activate = press(part, slotProps)
     const host = Host ?? (activate ? Pressable : View)
     const set = (change: Partial<Interaction>) => () =>
       setInteraction((current) => ({ ...current, ...change }))
     const handlers =
       activate || host === Pressable
         ? {
-            onPress: activate && (() => withSource(pressSource(), activate)),
+            onPress:
+              activate &&
+              !presence.exiting &&
+              (() => withSource(pressSource(), activate)),
             onPressIn: set({ pressed: true }),
             onPressOut: set({ pressed: false }),
             onHoverIn: set({ hovered: true }),
@@ -547,7 +552,7 @@ interface PartComponent<
       ([GenericOf<P>] extends [never]
         ? StateOf<P, S>
         : StateIn<P, S, GenericOf<P>>) &
-        (Animates<P, S> extends true ? PresenceState : {}),
+        PresenceOf<P, S>,
       H
     >
   ): React.ReactElement | null
@@ -569,8 +574,7 @@ interface GenericPartComponent<
         (Applied<GenericOf<P>, A, unknown>["props"] & Record<S, unknown>)[S]
       > &
         ExitPropsOf<P, S>,
-      StateIn<P, S, Applied<GenericOf<P>, A, unknown>> &
-        (Animates<P, S> extends true ? PresenceState : {}),
+      StateIn<P, S, Applied<GenericOf<P>, A, unknown>> & PresenceOf<P, S>,
       H
     >
   ): React.ReactElement | null

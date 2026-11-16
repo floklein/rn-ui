@@ -8,7 +8,6 @@ const exitTimeout = 2000
  * The first-frame and closing flags a part that animates in and out adds to
  * its state on the native host, where the DOM host writes
  * `data-starting-style` and `data-ending-style`.
- * @experimental
  */
 type PresenceState = {
   /** The part's first frame after it entered, so a style can start from it. */
