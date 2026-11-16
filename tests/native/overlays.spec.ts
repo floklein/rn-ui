@@ -19,7 +19,14 @@ beforeEach(() => device.open("fixture-overlays"))
 
 // A Modal left open would cover the screen list the next test opens from.
 afterEach(async () => {
-  for (const name of ["confirm", "sibling", "nested", "profile", "notes", "tips"]) {
+  for (const name of [
+    "confirm",
+    "sibling",
+    "nested",
+    "profile",
+    "notes",
+    "tips",
+  ]) {
     if ((await device.tree()).has(`${name}-content`)) {
       await device.press(`${name}-close`)
       await expectShown(`${name}-content`, false)
@@ -43,7 +50,10 @@ test("a press outside a non-modal dialog reaches what is under it, and closes it
   await device.press("under")
   await expectText("presses", "1")
   await expectShown("notes-content", false)
-  await expectText("changes", "notes:true:trigger-press notes:false:outside-press")
+  await expectText(
+    "changes",
+    "notes:true:trigger-press notes:false:outside-press"
+  )
 })
 
 test("a non-modal dialog opened from a modal dialog shows inside its Modal", async () => {

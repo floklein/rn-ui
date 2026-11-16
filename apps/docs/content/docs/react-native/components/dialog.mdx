@@ -135,11 +135,20 @@ Opening settles at once, so `onOpenChangeComplete(true)` runs as the dialog open
 
 ## Modal
 
-`modal={false}` makes a dialog that sits beside the screen: it renders where you put its parts, not in a `Modal`, the screen stays usable, and the escape gesture closes it only from inside it. `modal="trap-focus"` doesn't exist on native: a `Modal` isolates the dialog for screen readers, and a keyboard trap would need native code.
+`modal={false}` makes a dialog that sits beside the screen: it renders above your screens in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app, not in a `Modal`, the screen stays usable, and the escape gesture closes it only from inside it. A press on the screen goes through to what you pressed; pass `closeOnOutsidePress` to have it close the dialog too. `modal="trap-focus"` doesn't exist on native: a `Modal` isolates the dialog for screen readers, and a keyboard trap would need native code.
 
 <ComponentExample
   name="dialog/modal"
-  caption="Open Notes as it is, then check Modal and open it again. Without Modal the notes open in place and the screen stays usable."
+  caption="Open Notes as it is, then check Modal and open it again. Without Modal the notes open over the screen, which stays usable."
+/>
+
+## Nested Dialogs
+
+A dialog opened inside another renders inside its `Modal`, so it shows above it: iOS never shows a second `Modal` beside one that's open. The same holds for a dialog opened from code while another is open. Android's back button closes the topmost dialog and returns focus to its trigger.
+
+<ComponentExample
+  name="dialog/nested"
+  caption="Open Account, then Change Password. Cancel returns to Account, and Done closes it."
 />
 
 ## Opening from Anywhere

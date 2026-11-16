@@ -21,14 +21,14 @@ type OverlayHostProps = {
 }
 
 type Host = {
-  insets: Insets
+  insets: () => Insets
   entries: () => ReadonlyMap<string, React.ReactNode>
   set: (key: string, element: React.ReactNode) => void
   remove: (key: string) => void
   subscribe: (listener: () => void) => () => void
 }
 
-function createHost(insets: Insets) {
+function createHost(insets: () => Insets) {
   let entries: ReadonlyMap<string, React.ReactNode> = new Map()
   const listeners = new Set<() => void>()
   const update = (next: Map<string, React.ReactNode>) => {
@@ -89,8 +89,7 @@ function openHost(host: Host) {
 const slop = 10
 const landed = new Set<object>()
 let started:
-  | { event: object; within: object[]; x: number; y: number }
-  | undefined
+  { event: object; within: object[]; x: number; y: number } | undefined
 
 const landIn = (api: object) => () => {
   landed.add(api)
@@ -133,11 +132,7 @@ function HostView({
   React.useLayoutEffect(() => openHost(host), [host])
   return (
     <HostContext.Provider value={host}>
-      <View
-        style={styles.host}
-        onTouchStart={touchStart}
-        onTouchEnd={touchEnd}
-      >
+      <View style={styles.host} onTouchStart={touchStart} onTouchEnd={touchEnd}>
         {children}
         <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
           {[...entries].map(([key, element]) => (
@@ -157,24 +152,26 @@ const zero: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
  * @experimental
  */
 function OverlayHost({ children, insets }: OverlayHostProps) {
-  const { top = 0, right = 0, bottom = 0, left = 0 } = insets ?? zero
-  const host = React.useMemo(
-    () => createHost({ top, right, bottom, left }),
-    [top, right, bottom, left]
-  )
+  const current = React.useRef(zero)
+  React.useLayoutEffect(() => {
+    current.current = { ...zero, ...insets }
+  })
+  const [host] = React.useState(() => createHost(() => current.current))
   return <HostView host={host}>{children}</HostView>
 }
 
 // The host a Modal carries, with the insets of the host around it.
 function ModalHost({ children }: { children?: React.ReactNode }) {
-  const insets = React.useContext(HostContext)?.insets ?? zero
-  const [host] = React.useState(() => createHost(insets))
+  const around = React.useContext(HostContext)
+  const [host] = React.useState(() =>
+    createHost(() => around?.insets() ?? zero)
+  )
   return <HostView host={host}>{children}</HostView>
 }
 
 /**
  * Renders a popup's layer in the topmost open host from the moment it shows
- * until it unmounts, or in place when there is none. `needsHost` warns then.
+ * until it hides, or in place when there is none. `needsHost` warns then.
  */
 function useHosted(
   element: React.ReactNode,

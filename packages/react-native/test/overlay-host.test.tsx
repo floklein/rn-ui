@@ -1,5 +1,11 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { DeviceEventEmitter, Platform, Pressable, Text, View } from "react-native"
+import {
+  DeviceEventEmitter,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native"
 import {
   createDialogController,
   Dialog,
@@ -94,6 +100,18 @@ describe("OverlayHost", () => {
     expect(isInside("notes-content", "screen")).toBe(false)
     expect(modals("notes-content")).toBe(0)
     expect(warn).not.toHaveBeenCalled()
+  })
+
+  test("new insets, like after a rotation, keep an open popup where it is", async () => {
+    const app = (top: number) => (
+      <OverlayHost insets={{ top }}>
+        <Profile name="notes" modal={false} />
+      </OverlayHost>
+    )
+    const { rerender } = await render(app(0))
+    await open("notes")
+    await rerender(app(44))
+    expect(node("notes-content")).not.toBeNull()
   })
 
   test("with no host, a non-modal dialog warns in development and renders in place", async () => {

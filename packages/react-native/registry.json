@@ -1202,12 +1202,6 @@
     },
     {
       "component": "dialog",
-      "example": "nested",
-      "feature": "A modal dialog opened from another",
-      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
-    },
-    {
-      "component": "dialog",
       "example": "presentation",
       "feature": "Presenting as a sheet",
       "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a dialog presents as a dialog."
@@ -1229,12 +1223,6 @@
       "example": "confirm-anywhere",
       "feature": "confirm() with no alert dialog of your own",
       "reason": "The overlay host that renders confirm()'s own alert dialog comes with overlays opened from code (ticket 62); with your own AlertDialog and confirm.controller it works, as the confirm example shows."
-    },
-    {
-      "component": "alert-dialog",
-      "example": "nested",
-      "feature": "A modal alert dialog opened from another",
-      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
     },
     {
       "component": "alert-dialog",
