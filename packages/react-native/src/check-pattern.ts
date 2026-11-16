@@ -69,9 +69,12 @@ async function checkActivationToggles(
   await performWatched(control(), "activate", context.act)
 }
 
+// A toggle button is a button with a pressed state, which React Native
+// exposes as the togglebutton role with a checked state.
 async function buttonPattern(context: Context) {
   const buttons = context.withRole("button")
-  if (!buttons.length) {
+  const toggles = context.withRole("togglebutton")
+  if (!buttons.length && !toggles.length) {
     context.problem(
       context.root,
       "has no element with the button role, so it isn't a button (APG button)."
@@ -85,6 +88,22 @@ async function buttonPattern(context: Context) {
     const button = context.withRole("button")[index]
     if (!isDisabled(button)) {
       await performWatched(button, "activate", context.act)
+    }
+  }
+  for (const [index, toggle] of toggles.entries()) {
+    requireName(context, toggle, "togglebutton")
+    if (typeof stateOf(toggle).checked !== "boolean") {
+      context.problem(
+        toggle,
+        "has no pressed state; a toggle button's checked state is true or false (APG button)."
+      )
+    } else if (!isDisabled(toggle)) {
+      await checkActivationToggles(
+        context,
+        "togglebutton",
+        index,
+        (node) => stateOf(node).checked
+      )
     }
   }
 }

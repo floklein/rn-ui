@@ -168,6 +168,7 @@ async function performWatched(
     },
     field: (part) => host?.field(part),
     announce: (text, priority) => host?.announce(text, priority),
+    compare: (a, b) => host?.compare(a, b) ?? 0,
   })
   try {
     await act(() => perform(node, action))

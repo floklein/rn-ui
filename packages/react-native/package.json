@@ -23,7 +23,8 @@
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
     "./testing": "./src/testing.ts",
-    "./textarea": "./src/textarea.tsx"
+    "./textarea": "./src/textarea.tsx",
+    "./toggle": "./src/toggle.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -62,6 +63,10 @@
       "./textarea": {
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
+      },
+      "./toggle": {
+        "types": "./dist/toggle.d.ts",
+        "default": "./dist/toggle.js"
       },
       "./package.json": "./package.json"
     }

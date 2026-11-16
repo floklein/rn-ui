@@ -31,6 +31,9 @@ setNativeHost({
       queue: priority === "polite",
     })
   },
+  compare(a, b) {
+    return viewOf(a).compareDocumentPosition(viewOf(b)) & 4 ? -1 : 1
+  },
 })
 ```
 
@@ -38,9 +41,26 @@ setNativeHost({
 - `field(part)` returns the text field rendered inside the part's view, a `NativeTextField`, or `undefined`. An InputGroup's presses reach its field through it, where the web finds the field in the group's element: a press on the group's text starts editing the field, and its Clear part empties the field and starts editing it.
 - `announce(text, priority)` has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it; Android has no such option. Core's `announce`, and a Button's `pendingAnnouncement`, go through it, where the web writes into a live region.
 
+- `compare(a, b)` says where two mounted parts render: negative when `a` comes first. A group orders its members with it, like a toggle group's value, which lists the pressed toggles in the order they render. `@ui-sdk/react-native` compares the parts' views in React Native's view tree.
+
+## Native Behavior
+
+On the web, a slot's `bind` runs while its element is in the page, and does what needs the element: a toggle joins its group there. The native host never runs `bind`. A `NativeBehavior` from `@ui-sdk/core/native` restates it: one function per slot, which runs while a part of that slot is mounted and returns its cleanup.
+
+```ts
+import { toggleNative } from "@ui-sdk/core/native"
+import { toggle } from "@ui-sdk/core/toggle"
+import { createParts } from "@ui-sdk/react-native/primitive"
+import { Pressable, View } from "react-native"
+
+const parts = createParts(toggle, { root: Pressable, icon: View }, toggleNative)
+```
+
+`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one.
+
 ## Focus From a Controller
 
-A controller's `focus()`, like Switch's or Input's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view, which starts editing a text field.
+A controller's `focus()`, like Switch's or Input's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view, which starts editing a text field. A toggle group's `focus(value)` does the same for one of its toggles.
 
 ## Presence
 
@@ -67,6 +87,6 @@ await render(
 await checkPattern(screen.container, "switch", { os: Platform.OS, act })
 ```
 
-- `checkPattern` takes the `"button"` and `"switch"` patterns; `"button"` is native only, since the web check has no button pattern. It checks roles, required states, names, one accessible element per item and hidden content, then performs the accessibility actions a screen reader user has and reads the state after each: activate everywhere, escape on iOS, expand and collapse on Android. Opening and closing must request accessibility focus.
+- `checkPattern` takes the `"button"` and `"switch"` patterns; `"button"` is native only, since the web check has no button pattern, and covers toggle buttons too: each needs a pressed state that activation flips. It checks roles, required states, names, one accessible element per item and hidden content, then performs the accessibility actions a screen reader user has and reads the state after each: activate everywhere, escape on iOS, expand and collapse on Android. Opening and closing must request accessibility focus.
 - `checkDirection` renders the component left to right and right to left, performs each action, and checks both directions end the same.
 - `checkCreation` checks that creating a primitive and rendering its parts reads no web global and asks the native host nothing.

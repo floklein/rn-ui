@@ -13,7 +13,12 @@ afterEach(() => setNativeHost(undefined))
 describe("focusing a part on the native host", () => {
   test("a switch's controller focus asks the host to focus its root part", () => {
     const focus = vi.fn()
-    setNativeHost({ focus, field: vi.fn(), announce: vi.fn() })
+    setNativeHost({
+      focus,
+      field: vi.fn(),
+      announce: vi.fn(),
+      compare: vi.fn(),
+    })
     const instance = switchPrimitive({ id: "s" })
     const root = instance.part("root", {}, true)
     instance.api.focus()
