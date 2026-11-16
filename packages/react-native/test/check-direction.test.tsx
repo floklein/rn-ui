@@ -19,6 +19,7 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import {
   Pagination,
   PaginationLink,
@@ -325,6 +326,27 @@ describe("checkDirection on the native host", () => {
               <Input aria-label="Search" defaultValue="Lisbon" />
               <InputClear aria-label="Clear search" />
             </InputGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an otp input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <OTPInput aria-label="Code" maxLength={4} defaultValue="12">
+              <OTPInputGroup>
+                <OTPInputSlot index={0} />
+                <OTPInputSlot index={1} />
+                <OTPInputSlot index={2} />
+                <OTPInputSlot index={3} />
+              </OTPInputGroup>
+            </OTPInput>
           )
           return screen.container
         },

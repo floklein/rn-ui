@@ -291,6 +291,11 @@ const rows: [Record<string, string | undefined>, object, object][] = [
     { autoCapitalize: "words", autoCorrect: true, spellCheck: true },
     { autoCapitalize: "words", autoCorrect: true, spellCheck: true },
   ],
+  [
+    { inputmode: "numeric" },
+    { inputMode: "numeric" },
+    { inputMode: "numeric" },
+  ],
 ]
 
 // What has no React Native counterpart. `aria-labelledby` and
@@ -339,6 +344,7 @@ const dropped = [
         "autocapitalize",
         "autocorrect",
         "spellcheck",
+        "inputmode",
       ].includes(name)
   ),
 ]

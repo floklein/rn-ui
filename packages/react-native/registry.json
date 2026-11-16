@@ -173,6 +173,23 @@
     },
     {
       "kind": "twin",
+      "file": "packages/core/src/components/otp-input/otp-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/otp-input/otp-input-api.ts",
+        "packages/core/src/components/otp-input/otp-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, selectText, focusText and pressSlot: the control's input, selection, focus and blur handlers and pressSlot restated for a native TextInput's events and a slot's press, where bind reads an <input>. The web module returns none, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/otp-input/otp-input-api.ts",
+      "mirrors": ["packages/core/src/components/otp-input/otp-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeField(...) from otp-input-field.ts, which has a native twin, into internal, and the controller's focus() calls focusPart instead of input()?.focus()."
+    },
+    {
+      "kind": "twin",
       "file": "packages/core/src/foundation/forms/form.native.ts",
       "mirrors": ["packages/core/src/foundation/forms/form.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -498,7 +515,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input and textarea."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input, textarea, password-input and otp-input."
     }
   ],
   "components": {
@@ -763,6 +780,15 @@
           "reason": "Its bind finds the control by htmlFor or inside the label and writes the label's id into the control's aria-labelledby. Label registers its id for its htmlFor (names.ts), and the control that joins through useFieldControl in field-context.ts takes it as its aria-labelledby and registers what a press activates by its id. Its press looks the control up in the document, so Label presses the control registered for its htmlFor; a disabled one ignores it. Its mousedown keeps a double click from selecting the label's text, which a Text never does."
         }
       }
+    },
+    "otp-input": {
+      "entry": "packages/react-native/src/otp-input.tsx",
+      "slots": {
+        "otpInput.control": {
+          "covered": "packages/core/src/components/otp-input/otp-input-field.native.ts",
+          "reason": "Its bind follows the <input>'s typing, paste, selection, focus and blur, which the TextInput's onChangeText, onSelectionChange, onFocus and onBlur hand to internal.typeText, selectText and focusText, and its value and selection props follow the state. A press on a slot calls internal.pressSlot. Arrow keys, Home and End, which TextInput doesn't report, the browser's undo history, a restored page, form reset, a disabled fieldset, password managers' badges and the selection stylesheet have no native counterpart."
+        }
+      }
     }
   },
   "pending": [
@@ -786,7 +812,6 @@
     "menubar",
     "navigation-menu",
     "number-input",
-    "otp-input",
     "popover",
     "resizable",
     "scroll-area",
@@ -986,6 +1011,18 @@
     },
     {
       "component": "password-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "otp-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the code from change callbacks."
+    },
+    {
+      "component": "otp-input",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

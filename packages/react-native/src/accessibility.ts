@@ -36,6 +36,7 @@ type NativeProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"]
   autoCorrect?: boolean
   spellCheck?: boolean
+  inputMode?: TextInputProps["inputMode"]
 }
 
 const roles: Record<string, AccessibilityRole> = {
@@ -112,11 +113,8 @@ function toNativeProps(
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
   const role =
-    attrs.role === undefined
-      ? attrs.type === "button"
-        ? "button"
-        : undefined
-      : roles[attrs.role]
+    (attrs.role === undefined ? undefined : roles[attrs.role]) ??
+    (attrs.type === "button" ? "button" : undefined)
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined
@@ -186,6 +184,8 @@ function toNativeProps(
       ) as TextInputProps["autoCapitalize"]
     } else if (name === "autocorrect") {
       props.autoCorrect = given !== "off"
+    } else if (name === "inputmode") {
+      props.inputMode = given as TextInputProps["inputMode"]
     } else if (name === "spellcheck") {
       props.spellCheck = given === "true"
     } else if (name === "aria-live" && os === "android") {
