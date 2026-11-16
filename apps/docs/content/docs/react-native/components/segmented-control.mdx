@@ -1,0 +1,248 @@
+---
+title: Segmented Control
+description: Pick one of a few options from a row of buttons, with an indicator that slides to the choice.
+---
+
+Use a segmented control to switch between a few views or settings, like List and Grid. It works like a radio group with one value, each item is its own accessible element, and its indicator follows the checked item.
+
+<ComponentExample
+  name="segmented-control/basic"
+  caption="Tap Grid, or double-tap it with VoiceOver or TalkBack. The indicator moves behind it."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `SegmentedControl`:
+
+```text
+SegmentedControl
+├── SegmentedControlIndicator
+├── SegmentedControlItem
+└── SegmentedControlItem
+```
+
+`SegmentedControlItem` renders a `Pressable` with the radio role and its checked state. `SegmentedControl` and `SegmentedControlIndicator` render a `View`. Give each item a `value`. The control's value is the checked item's value, and the indicator sits behind that item.
+
+## Usage
+
+Import the parts and put them together. Put each item's text inside it: the text names the item.
+
+```tsx
+import {
+  SegmentedControl,
+  SegmentedControlIndicator,
+  SegmentedControlItem,
+} from "@ui-sdk/react-native/segmented-control"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <SegmentedControl aria-label="View" defaultValue="list">
+      <SegmentedControlIndicator />
+      <SegmentedControlItem value="list">
+        <Text>List</Text>
+      </SegmentedControlItem>
+      <SegmentedControlItem value="grid">
+        <Text>Grid</Text>
+      </SegmentedControlItem>
+    </SegmentedControl>
+  )
+}
+
+export { Example }
+```
+
+Name the control with `aria-label`, and show the same words as a heading above it. A container's name may reach no screen reader yet, since React Native has no way to give one a name, so make each item's own name clear without it. Without `defaultValue`, nothing starts checked.
+
+## Indicator
+
+`SegmentedControlIndicator` marks the checked item. Render it inside the control: its state holds the checked item's box in the control, measured from the layouts of the control and the items placed straight in it. Position the indicator absolutely with those fields to draw the background that follows the choice. It measures again when an item or the control is laid out again.
+
+```tsx
+<SegmentedControlIndicator
+  style={(state) => ({
+    position: "absolute",
+    left: state.indicatorLeft,
+    top: state.indicatorTop,
+    width: state.indicatorWidth,
+    height: state.indicatorHeight,
+  })}
+/>
+```
+
+The fields are unset until the control and the checked item have been laid out, and while nothing is checked. `indicatorLeft` and `indicatorRight` are what the `left` and `right` styles take: when the app runs right to left, React Native reads those styles from the other side, and the fields swap with them. Render the indicator before the items to draw it behind them.
+
+## Vertical
+
+Set `orientation="vertical"` and lay the items out in a column. The indicator follows the checked item down the column.
+
+<ComponentExample
+  name="segmented-control/vertical"
+  caption="Tap Bottom. The indicator moves down the column."
+/>
+
+## Disabled
+
+Set `disabled` on the control or on one item. A disabled item ignores presses, leaves Tab's order on Android, and screen readers announce it as dimmed or disabled.
+
+<ComponentExample
+  name="segmented-control/disabled"
+  caption="The Theme control is disabled. In Billing period, Lifetime is disabled, so a tap leaves Monthly checked."
+/>
+
+## Read-Only
+
+Set `readOnly` to keep the value while people still reach and read the items. It isn't announced, so say why in the labels or nearby text.
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. Call `details.cancel()` in the callback to keep the current value. A [controller](#controller) from `createSegmentedControlController()` checks an item from anywhere, like the Show Month button below. Create one controller per mounted control.
+
+<ComponentExample
+  name="segmented-control/controlled"
+  caption="Tap Day, then press Show Month. The console logs each change and its reason."
+/>
+
+## Forms
+
+A native view takes part in no form, so the control has no `name` or `form` prop and renders no hidden input. Read the value from `onValueChange` or a controller, and reset it by setting it. `required` stays in the state for your styles and labels.
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.item, state.checked && styles.checked]`. Each part receives the fields listed under [Part State](#part-state). An item gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### SegmentedControl [#part-state-segmentedcontrol]
+
+<PartStateTable
+  component="segmented-control"
+  part="root"
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlState"
+/>
+
+### SegmentedControlItem [#part-state-segmentedcontrolitem]
+
+<PartStateTable
+  component="segmented-control"
+  part="item"
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlItemState"
+/>
+
+### SegmentedControlIndicator [#part-state-segmentedcontrolindicator]
+
+<PartStateTable
+  component="segmented-control"
+  part="indicator"
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlIndicatorState"
+/>
+
+With the checked item's box, in pixels, described under [Indicator](#indicator):
+
+| Field             | Type     | Description                                      |
+| ----------------- | -------- | ------------------------------------------------ |
+| `indicatorLeft`   | `number` | The checked item's `left` in the control.        |
+| `indicatorRight`  | `number` | Its `right` in the control.                      |
+| `indicatorTop`    | `number` | Its top edge, from the control's top edge.       |
+| `indicatorBottom` | `number` | Its bottom edge, from the control's bottom edge. |
+| `indicatorWidth`  | `number` | Its width.                                       |
+| `indicatorHeight` | `number` | Its height.                                      |
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `SegmentedControlItem` also takes `Pressable`'s props, and the other parts take `View`'s.
+
+### SegmentedControl
+
+<TypeTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlOptions"
+/>
+
+`loop` changes nothing on native, which builds no arrow keys between items.
+
+### SegmentedControlItem
+
+<TypeTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlItemProps"
+/>
+
+### SegmentedControlIndicator
+
+The indicator takes no props of its own. Its [state](#part-state-segmentedcontrolindicator) holds the checked item's box.
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlItemState"
+/>
+
+<StateTable
+  path="../../packages/react-native/src/segmented-control.tsx"
+  name="SegmentedControlIndicatorState"
+/>
+
+### Reasons
+
+`details.reason` says why the checked value changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlValueChangeReason"
+/>
+
+`list-navigation` doesn't happen on native, which builds no arrow keys, and neither do `reset` and `restore`, which come from a form.
+
+### Controller
+
+Create one with `createSegmentedControlController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, runs the change callback like a press, and returns `false` when the change is canceled. `focus()` asks VoiceOver or TalkBack to move to the checked item, or the first enabled one.
+
+<ControllerTable
+  path="../../packages/core/src/components/segmented-control/segmented-control.ts"
+  name="SegmentedControlController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details.
+
+| Prop            | On                 | Receives                                                          |
+| --------------- | ------------------ | ----------------------------------------------------------------- |
+| `onValueChange` | `SegmentedControl` | `(value, details)`: the checked value, and the [reason](#reasons) |
+
+## Accessibility
+
+A segmented control is a radio group, so it follows the [WAI-ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/), translated to React Native's accessibility props. Each item has the `radio` role with its checked and disabled state, so VoiceOver and TalkBack announce it as a radio button, checked or unchecked, and a double-tap checks it. Each item is its own accessible element, reached by swiping. The indicator has no role, and screen readers pass over it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                       |
+| ---------- | ---------------------------------------------------------- |
+| Tab        | Moves to the next item, and Shift-Tab to the previous one  |
+| Arrow keys | Move between items, on Android only, without checking them |
+| Space      | Checks the focused item                                    |
+| Enter      | Checks the focused item, on Android only                   |
+
+Every item is its own stop: React Native delivers no arrow keys to views, so the control's single tab stop and its arrow keys, which check an item as they move, aren't built.

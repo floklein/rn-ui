@@ -17,6 +17,10 @@ import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "../src/segmented-control"
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Toggle } from "../src/toggle"
@@ -135,6 +139,13 @@ const exits = [
   <RadioGroup name="size" />,
   // @ts-expect-error A radio group takes part in no form on native.
   <RadioGroup form="order" />,
+  <SegmentedControl defaultValue="list">
+    <SegmentedControlItem value="list" />
+  </SegmentedControl>,
+  // @ts-expect-error A segmented control takes part in no form on native.
+  <SegmentedControl name="view" />,
+  // @ts-expect-error A segmented control takes part in no form on native.
+  <SegmentedControl form="settings" />,
 ]
 
 const passwords = [

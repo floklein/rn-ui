@@ -34,6 +34,7 @@
     "./progress": "./src/progress.tsx",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
+    "./segmented-control": "./src/segmented-control.tsx",
     "./separator": "./src/separator.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
@@ -118,6 +119,10 @@
       "./rating": {
         "types": "./dist/rating.d.ts",
         "default": "./dist/rating.js"
+      },
+      "./segmented-control": {
+        "types": "./dist/segmented-control.d.ts",
+        "default": "./dist/segmented-control.js"
       },
       "./separator": {
         "types": "./dist/separator.d.ts",
