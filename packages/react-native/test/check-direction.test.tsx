@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
@@ -78,6 +79,27 @@ describe("checkDirection on the native host", () => {
             <Checkbox aria-label="Accept">
               <CheckboxIndicator />
             </Checkbox>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a radio group", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <RadioGroup aria-label="Size" defaultValue="small">
+              <Radio value="small" aria-label="Small">
+                <RadioIndicator />
+              </Radio>
+              <Radio value="large" aria-label="Large">
+                <RadioIndicator />
+              </Radio>
+            </RadioGroup>
           )
           return screen.container
         },
