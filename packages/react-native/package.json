@@ -21,6 +21,7 @@
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
     "./otp-input": "./src/otp-input.tsx",
     "./password-input": "./src/password-input.tsx",
@@ -59,6 +60,10 @@
       "./collapsible": {
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
+      },
+      "./field": {
+        "types": "./dist/field.d.ts",
+        "default": "./dist/field.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",

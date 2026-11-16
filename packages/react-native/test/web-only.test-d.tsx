@@ -8,6 +8,7 @@ import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { Field, FieldError, FieldLabel } from "../src/field"
 import { OTPInput } from "../src/otp-input"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
@@ -152,11 +153,28 @@ const codes = [
   <OTPInput form="verify" />,
 ]
 
+const fields = [
+  <Field disabled invalid>
+    <FieldLabel>Email</FieldLabel>
+    <FieldError match>Required</FieldError>
+    <FieldError match={false}>Never</FieldError>
+  </Field>,
+  // @ts-expect-error `name` has no native meaning.
+  <Field name="email" />,
+  // @ts-expect-error Native computes no validity, so no flag shows an error.
+  <FieldError match="valueMissing" />,
+  // @ts-expect-error Native computes no validity, so nothing is valid.
+  <FieldLabel style={(state) => state.valid && {}} />,
+  // @ts-expect-error Native has no browser message.
+  <FieldError>{(state) => state.message}</FieldError>,
+]
+
 export {
   codes,
   ComboboxInput,
   dialogs,
   exits,
+  fields,
   NativeDialog,
   NativeSwitch,
   passwords,

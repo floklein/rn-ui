@@ -14,14 +14,13 @@ const probe = (args: string[] = []) =>
   )
 
 describe("the no-document probe", () => {
-  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input or otp input", () => {
+  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input, field or otp input", () => {
     const { status, stdout } = probe()
     const throws = stdout
       .split("\n")
       .filter((line) => line.includes(" throws "))
       .map((line) => line.replace(/ throws .*/, ""))
     expect(throws).toEqual([
-      "field (pending): field label press",
       "combobox (pending): combobox label press",
       "autocomplete (pending): autocomplete label press",
       "tree (pending): tree item press",
@@ -30,6 +29,7 @@ describe("the no-document probe", () => {
     expect(stdout).not.toMatch(/^input/m)
     expect(stdout).not.toMatch(/^password-input/m)
     expect(stdout).not.toMatch(/^otp-input/m)
+    expect(stdout).not.toMatch(/^field/m)
     expect(status).toBe(0)
   })
 

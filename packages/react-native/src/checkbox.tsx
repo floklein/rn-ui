@@ -9,9 +9,11 @@ import {
   type CheckboxState,
 } from "@ui-sdk/core/checkbox"
 import { checkboxNative } from "@ui-sdk/core/native"
-import type { PresenceState } from "@ui-sdk/core/renderer"
+import { type PresenceState, withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { FieldContext, useFieldControl } from "./field-context"
+import { pressSource } from "./native-host"
 import {
   createParts,
   type PartProps,
@@ -71,13 +73,10 @@ function Checkbox({
     } as CheckboxOptions,
     checkboxNative
   )
-  return usePart(
-    handle,
-    "root",
-    {},
-    props as Record<string, unknown>,
-    Pressable
+  const user = useFieldControl(props as Record<string, unknown>, () =>
+    withSource(pressSource(), () => handle.api.toggle({ reason: "press" }))
   )
+  return usePart(handle, "root", {}, user, Pressable)
 }
 
 /**
@@ -120,7 +119,10 @@ function CheckboxGroup<T extends string = string>({
   })
   return (
     <CheckboxGroupContext value={group}>
-      {usePart(group, "group", {}, props as Record<string, unknown>, View)}
+      {/* A checkbox in a group joins only a Field inside the group. */}
+      <FieldContext value={null}>
+        {usePart(group, "group", {}, props as Record<string, unknown>, View)}
+      </FieldContext>
     </CheckboxGroupContext>
   )
 }
