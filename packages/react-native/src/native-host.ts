@@ -34,7 +34,6 @@ const pressSource = () => (screenReader ? "virtual" : "touch")
 
 const following = 4
 
-// The innermost part under a touch, from the view it landed on.
 function partUnder(target: unknown) {
   for (
     let node = target as HostInstance | null;
@@ -97,8 +96,8 @@ setNativeHost({
   adjustable: (part, step) => register(steps, part, step),
 })
 
-// A drag keeps its touch from a scroll view around it, as `touch-action:
-// none` does on the web, and blocks Android's native responders.
+// Refusing termination and blocking native responders are meant to keep a
+// scroll view from taking the touch; iOS's scroll view pans anyway (#71).
 function responder(part: Part) {
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,

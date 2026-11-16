@@ -82,7 +82,7 @@ function Slider<Value extends number | number[] = number | number[]>({
 
 /**
  * Where touches land: a touch moves the nearest thumb there, and a drag
- * moves it along. A scroll view around it doesn't take the touch away.
+ * moves it along.
  * @experimental
  */
 const SliderControl: SliderParts["Control"] = parts.Control
