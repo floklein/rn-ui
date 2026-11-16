@@ -52,7 +52,7 @@ function mount(
     value,
     group: () => owner.api,
     ...options,
-  } as CheckboxOptions)
+  } as CheckboxOptions & { id: string })
   const root = instance.part("root", {}, true)
   rendered.splice(at, 0, root)
   checkboxNative.root!(root)
