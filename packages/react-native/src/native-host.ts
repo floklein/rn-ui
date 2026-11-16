@@ -47,11 +47,25 @@ function partUnder(target: unknown) {
   }
 }
 
-const touchOf = (event: GestureResponderEvent) => ({
-  x: event.nativeEvent.pageX,
-  y: event.nativeEvent.pageY,
-  target: partUnder(event.target),
-})
+const fingers = new WeakMap<Part, string>()
+
+// Fabric reports the first changed touch, so a second finger's moves would
+// reach the responder as its own.
+function touchOf(event: GestureResponderEvent, part: Part) {
+  const { nativeEvent } = event
+  const finger = nativeEvent.touches?.length
+    ? nativeEvent.touches.find(
+        (touch) => String(touch.identifier) === fingers.get(part)
+      )
+    : nativeEvent
+  return (
+    finger && {
+      x: finger.pageX,
+      y: finger.pageY,
+      target: partUnder(event.target),
+    }
+  )
+}
 
 function register<Value>(map: WeakMap<Part, Value>, part: Part, value: Value) {
   map.set(part, value)
@@ -104,13 +118,18 @@ function responder(part: Part) {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
     onResponderTerminationRequest: () => false,
     onResponderGrant(event: GestureResponderEvent) {
-      const touch = touchOf(event)
-      withSource("touch", () => drags.get(part)?.start(touch))
+      fingers.set(part, String(event.nativeEvent.identifier))
+      const touch = touchOf(event, part)
+      if (touch) {
+        withSource("touch", () => drags.get(part)?.start(touch))
+      }
       return true
     },
     onResponderMove(event: GestureResponderEvent) {
-      const touch = touchOf(event)
-      withSource("touch", () => drags.get(part)?.move(touch))
+      const touch = touchOf(event, part)
+      if (touch) {
+        withSource("touch", () => drags.get(part)?.move(touch))
+      }
     },
     onResponderRelease: () => withSource("touch", () => drags.get(part)?.end()),
     onResponderTerminate: () =>

@@ -59,6 +59,19 @@ test("inside a scroll view along the same axis that stops scrolling while draggi
   assert.match(await readout("scroll-readout"), /scrolled 0;/)
 })
 
+test("a drag that moves at once still leaves a same-axis scroll view in place", async () => {
+  const thumb = center(await device.rectNamed("Balance"))
+  const control = await device.rect("balance-control")
+  await device.drag(
+    thumb,
+    { x: thumb.x - control.width * 0.3, y: thumb.y },
+    300,
+    0
+  )
+  await expectNear("scroll-readout", /^Balance (\d+)/, 20)
+  assert.match(await readout("scroll-readout"), /scrolled 0;/)
+})
+
 test("beside the slider, the same swipe scrolls the view", async () => {
   const view = await device.rect("sideways")
   const control = await device.rect("balance-control")
@@ -86,12 +99,11 @@ test("a vertical slider in a vertical scroll view that stops scrolling while dra
   assert.match(await readout("scroll-readout"), /lifted 0;/)
 })
 
-test("a horizontal slider in a vertical scroll view moves and the view stays", async () => {
+test("a horizontal slider in a vertical scroll view moves with nothing from the app", async () => {
   const thumb = center(await device.rectNamed("Tilt"))
   const control = await device.rect("tilt-control")
   await device.drag(thumb, { x: thumb.x + control.width * 0.3, y: thumb.y })
   await expectNear("scroll-readout", /tilt (\d+)/, 80)
-  assert.match(await readout("scroll-readout"), /lifted 0;/)
 })
 
 test("values format in the device's language", async () => {

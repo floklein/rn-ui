@@ -15,7 +15,7 @@ const slider = (label: string, value: string): Node => ({
   role: "slider",
   label,
   enabled: true,
-  ...(device.platform === "ios" ? { value } : {}),
+  value,
 })
 
 beforeEach(() => device.open("fixture-slider"))
@@ -44,9 +44,7 @@ test("the platform tree after a drag", async () => {
   await device.saveTree("dragged")
   const volume = (await sliders()).Volume
   assert.equal(volume?.role, "slider")
-  if (device.platform === "ios") {
-    assert.notEqual(volume?.value, "20")
-  }
+  assert.notEqual(volume?.value, "20")
 })
 
 test("no audit issues at first", async () => {

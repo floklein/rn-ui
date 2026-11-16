@@ -98,10 +98,12 @@ const pressedValues: Record<string, boolean> = {
 const byId = (id: string) =>
   platform === "ios" ? `~${id}` : `android=new UiSelector().resourceId("${id}")`
 
+// Android writes an accessibility value's text into the description after
+// the name, like "Volume, 20".
 const named = (label: string) =>
   platform === "ios"
     ? `~${label}`
-    : `android=new UiSelector().description("${label}")`
+    : `android=new UiSelector().descriptionMatches("\\\\Q${label}\\\\E(, .*)?")`
 
 // UiAutomator only finds what's on screen, so a screen low in the list is
 // scrolled to first.
@@ -199,8 +201,14 @@ function parseTree(source: string) {
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
     }
-    if (role === "slider" && platform === "ios") {
-      node.value = attrs.value ?? ""
+    if (role === "slider") {
+      if (platform === "ios") {
+        node.value = attrs.value ?? ""
+      } else {
+        const [label, ...value] = node.label.split(", ")
+        node.label = label
+        node.value = value.join(", ")
+      }
     }
     if (role === "textbox") {
       node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
@@ -278,18 +286,19 @@ function useDevice(name: string) {
       const element = driver.$(named(label))
       return { ...(await element.getLocation()), ...(await element.getSize()) }
     },
-    /** A finger pressed at `from`, moved to `to` in steps, then lifted. */
+    /** A finger pressed at `from`, held `hold` ms, moved to `to` in steps, then lifted. */
     async drag(
       from: { x: number; y: number },
       to: { x: number; y: number },
-      duration = 600
+      duration = 600,
+      hold = 100
     ) {
       const steps = 6
       const finger = driver
         .action("pointer", { parameters: { pointerType: "touch" } })
         .move({ x: Math.round(from.x), y: Math.round(from.y) })
         .down()
-        .pause(100)
+        .pause(hold)
       for (let step = 1; step <= steps; step++) {
         finger.move({
           duration: Math.round(duration / steps),

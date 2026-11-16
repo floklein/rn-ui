@@ -143,6 +143,63 @@ describe("Slider", () => {
     expect(control.props.onResponderTerminationRequest()).toBe(false)
   })
 
+  test("an app's own responder handlers keep native responders blocked", async () => {
+    const onResponderGrant = jest.fn()
+    await render(
+      <Slider defaultValue={10}>
+        <SliderControl testID="control" onResponderGrant={onResponderGrant}>
+          <SliderTrack>
+            <SliderThumb aria-label="Volume" />
+          </SliderTrack>
+        </SliderControl>
+      </Slider>
+    )
+    const control = screen.getByTestId("control")
+    expect(control.props.onResponderGrant(at(30))).toBe(true)
+    expect(onResponderGrant).toHaveBeenCalledTimes(1)
+  })
+
+  test("a handler of the app's that returns a value still runs the drag's", async () => {
+    await render(
+      <Slider defaultValue={10}>
+        <SliderControl testID="control" onResponderGrant={() => true}>
+          <SliderTrack>
+            <SliderThumb aria-label="Volume" />
+          </SliderTrack>
+        </SliderControl>
+      </Slider>
+    )
+    await fireEvent(screen.getByTestId("control"), "responderGrant", at(30))
+    expect(thumb().props.accessibilityValue.now).toBe(30)
+  })
+
+  test("a second finger doesn't take the thumb", async () => {
+    await render(<Volume defaultValue={10} />)
+    const control = screen.getByTestId("control")
+    const finger = (identifier: number, pageX: number) => ({
+      identifier,
+      pageX,
+      pageY: 10,
+    })
+    await fireEvent(control, "responderGrant", {
+      nativeEvent: { ...finger(1, 30), touches: [finger(1, 30)] },
+    })
+    await fireEvent(control, "responderMove", {
+      nativeEvent: {
+        ...finger(2, 90),
+        touches: [finger(1, 30), finger(2, 90)],
+      },
+    })
+    expect(thumb().props.accessibilityValue.now).toBe(30)
+    await fireEvent(control, "responderMove", {
+      nativeEvent: {
+        ...finger(1, 50),
+        touches: [finger(1, 50), finger(2, 90)],
+      },
+    })
+    expect(thumb().props.accessibilityValue.now).toBe(50)
+  })
+
   test("unmounting mid-drag commits nothing", async () => {
     const onValueCommit = jest.fn()
     const { unmount } = await render(
