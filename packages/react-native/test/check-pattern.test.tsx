@@ -7,6 +7,7 @@ import { Platform, Pressable, Text, View } from "react-native"
 import { Button } from "../src/button"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkPattern } from "../src/testing"
+import { Toggle, ToggleGroup } from "../src/toggle"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
@@ -217,6 +218,55 @@ describe("checkPattern's button pattern on the native host", () => {
     )
     await expect(checkButton()).rejects.toThrow(
       "has no element with the button role"
+    )
+  })
+})
+
+describe("checkPattern's button pattern on toggle buttons", () => {
+  test("passes on a toggle, whose activation presses and unpresses it", async () => {
+    const onPressedChange = jest.fn()
+    await render(
+      <Toggle onPressedChange={onPressedChange}>
+        <Text>Bookmark</Text>
+      </Toggle>
+    )
+    await expect(checkButton()).resolves.toBeUndefined()
+    expect(onPressedChange.mock.calls.map(([pressed]) => pressed)).toEqual([
+      true,
+      false,
+    ])
+  })
+
+  test("passes on a toggle group, each toggle its own accessible element", async () => {
+    await render(
+      <ToggleGroup multiple aria-label="Text formatting">
+        <Toggle value="bold" aria-label="Bold" />
+        <Toggle value="italic" aria-label="Italic" disabled />
+      </ToggleGroup>
+    )
+    await expect(checkButton()).resolves.toBeUndefined()
+  })
+
+  test("fails on a toggle with no name", async () => {
+    await render(<Toggle />)
+    await expect(checkButton()).rejects.toThrow(
+      "the togglebutton has no name"
+    )
+  })
+
+  test("fails on a toggle whose pressed state doesn't change after the activate action", async () => {
+    await render(<Toggle pressed={false} aria-label="Bookmark" />)
+    await expect(checkButton()).rejects.toThrow(
+      'the togglebutton "Bookmark" stays false after the activate action'
+    )
+  })
+
+  test("fails on a toggle button with no pressed state", async () => {
+    await render(
+      <Pressable accessibilityRole="togglebutton" accessibilityLabel="Bold" />
+    )
+    await expect(checkButton()).rejects.toThrow(
+      "has no pressed state; a toggle button's checked state is true or false"
     )
   })
 })

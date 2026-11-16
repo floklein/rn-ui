@@ -42,6 +42,10 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
   setNativeHost({
     focus: () => report("asks the native host to focus a part"),
     announce: () => report("asks the native host to announce"),
+    compare: () => {
+      report("asks the native host where parts render")
+      return 0
+    },
   })
   try {
     return read()

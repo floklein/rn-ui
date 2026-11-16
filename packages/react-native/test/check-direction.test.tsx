@@ -4,6 +4,7 @@ import { Platform, Text, View } from "react-native"
 import { Button } from "../src/button"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkDirection } from "../src/testing"
+import { Toggle, ToggleGroup } from "../src/toggle"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 
@@ -34,6 +35,23 @@ describe("checkDirection on the native host", () => {
             <Switch aria-label="Wi-Fi">
               <SwitchThumb />
             </Switch>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a toggle group", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ToggleGroup multiple aria-label="Text formatting">
+              <Toggle value="bold" aria-label="Bold" />
+              <Toggle value="italic" aria-label="Italic" />
+            </ToggleGroup>
           )
           return screen.container
         },

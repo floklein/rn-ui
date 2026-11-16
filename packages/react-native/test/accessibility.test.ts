@@ -148,6 +148,17 @@ const rows: [Record<string, string | undefined>, object, object][] = [
     },
   ],
   [
+    { type: "button", "aria-pressed": "false" },
+    {
+      accessibilityRole: "togglebutton",
+      accessibilityState: { checked: false },
+    },
+    {
+      accessibilityRole: "togglebutton",
+      accessibilityState: { checked: false },
+    },
+  ],
+  [
     { "aria-pressed": "mixed" },
     { accessibilityState: { checked: "mixed" } },
     { accessibilityState: { checked: "mixed" } },
@@ -283,6 +294,15 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
     expect(
       toNativeProps({ "aria-label": undefined, id: undefined }, os)
     ).toEqual({})
+  })
+
+  test("a mirrored icon flips right to left, and stays as it is left to right", () => {
+    const icon = { "aria-hidden": "true", "data-mirror": "" }
+    expect(toNativeProps(icon, os, true)).toEqual({
+      ...hiddenProps[os],
+      style: { transform: [{ scaleX: -1 }] },
+    })
+    expect(toNativeProps(icon, os)).toEqual(hiddenProps[os])
   })
 })
 

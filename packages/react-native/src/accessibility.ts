@@ -23,7 +23,7 @@ type NativeProps = {
   nativeID?: string
   disabled?: boolean
   pointerEvents?: "none"
-  style?: { display: "none" }
+  style?: { display?: "none"; transform?: [{ scaleX: -1 }] }
 }
 
 const roles: Record<string, AccessibilityRole> = {
@@ -85,19 +85,23 @@ function hide(props: NativeProps, os: OS) {
  * The props a `react-native` host takes for a part's attributes on `os`.
  * What has no native counterpart is left out, like `aria-controls`, and so
  * is `tabindex`, which would take a roving item out of Android's traversal.
+ * An icon marked to mirror flips when the app runs right to left, `rtl`.
  */
-function toNativeProps(attrs: Attrs, os: OS) {
+function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
   const props: NativeProps = {}
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
-  const role = attrs.role === undefined ? undefined : roles[attrs.role]
+  const role =
+    attrs.role === undefined
+      ? attrs.type === "button"
+        ? "button"
+        : undefined
+      : roles[attrs.role]
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined
         ? "togglebutton"
         : role
-  } else if (attrs.role === undefined && attrs.type === "button") {
-    props.accessibilityRole = "button"
   }
   for (const [name, given] of Object.entries(attrs)) {
     if (given === undefined) {
@@ -124,7 +128,9 @@ function toNativeProps(attrs: Attrs, os: OS) {
       hide(props, os)
     } else if (name === "hidden") {
       hide(props, os)
-      props.style = { display: "none" }
+      props.style = { ...props.style, display: "none" }
+    } else if (name === "data-mirror" && rtl) {
+      props.style = { ...props.style, transform: [{ scaleX: -1 }] }
     } else if (name === "inert") {
       hide(props, os)
       props.pointerEvents = "none"

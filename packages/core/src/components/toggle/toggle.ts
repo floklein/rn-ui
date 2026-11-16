@@ -7,6 +7,7 @@ import {
   type ButtonElement,
 } from "../../foundation/platform/button"
 import { watchFormDisabled } from "../../foundation/forms/form"
+import { focusPart } from "../../foundation/focus/focus-part"
 import type { RovingScope } from "../../foundation/focus/roving-scope"
 import {
   itemIconPart,
@@ -227,7 +228,7 @@ function toggleState(options: ToggleInternalOptions & { id: string }): State {
 function toggleApiBody(
   context: PrimitiveContext<ToggleInternalOptions, State, string>
 ) {
-  const { id, store, options, element } = context
+  const { id, store, options, element, parts } = context
   const change = createChange(context)
   const group = () => options().group?.()
   const scope = () => scopeOf(options())
@@ -266,7 +267,7 @@ function toggleApiBody(
     },
     toggle: (details?: ToggleChangeOptions) =>
       api.setPressed(!store.get().pressed, details),
-    focus: () => element("root")?.focus(),
+    focus: () => focusPart(() => element("root"), parts, "root"),
     internal: {
       // Joins the group or the toolbar, and follows its value, tab stop and
       // settings from then on.

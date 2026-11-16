@@ -10,6 +10,18 @@ type NativeHost = {
   focus: (part: Part) => void
   /** Has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it. */
   announce: (text: string, priority: "polite" | "assertive") => void
+  /** Where two mounted parts render: negative when `a` comes first, positive when `b` does. */
+  compare: (a: Part, b: Part) => number
+}
+
+/**
+ * A component's behavior on the native host, which the native adapter runs:
+ * each slot's function while a part of that slot is mounted, as `bind` runs
+ * on the DOM host. A function returns its cleanup.
+ * @experimental
+ */
+type NativeBehavior<Api = any> = {
+  [slot: string]: ((part: Part<any, Api>) => (() => void) | void) | undefined
 }
 
 let host: NativeHost | undefined
@@ -30,4 +42,4 @@ function setNativeHost(next: NativeHost | undefined) {
  */
 const nativeHost = () => host
 
-export { type NativeHost, nativeHost, setNativeHost }
+export { type NativeBehavior, type NativeHost, nativeHost, setNativeHost }

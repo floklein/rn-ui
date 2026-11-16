@@ -2,6 +2,7 @@ import { definePrimitive } from "@ui-sdk/core"
 import { button } from "@ui-sdk/core/button"
 import { nativeHost } from "@ui-sdk/core/native"
 import { switchPrimitive } from "@ui-sdk/core/switch"
+import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
 import { checkCreation } from "../src/testing"
 
 describe("checkCreation", () => {
@@ -14,6 +15,13 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(button, { disabled: true, focusableWhenDisabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on a toggle and a toggle group, enabled or disabled", () => {
+    expect(() => checkCreation(toggle, {})).not.toThrow()
+    expect(() => checkCreation(toggle, { disabled: true })).not.toThrow()
+    expect(() => checkCreation(toggleGroup, { multiple: true })).not.toThrow()
+    expect(() => checkCreation(toggleGroup, { disabled: true })).not.toThrow()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {
