@@ -51,6 +51,22 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
       report("asks the native host where parts render")
       return 0
     },
+    isRTL: () => {
+      report("asks the native host for the direction")
+      return false
+    },
+    box: () => {
+      report("asks the native host to measure a part")
+      return undefined
+    },
+    follow: () => {
+      report("asks the native host to follow touches")
+      return () => {}
+    },
+    adjustable: () => {
+      report("asks the native host for a screen reader's adjustments")
+      return () => {}
+    },
   })
   try {
     return read()

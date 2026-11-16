@@ -212,6 +212,10 @@ async function performWatched(
     announce: (text, priority) => host?.announce(text, priority),
     activate: (part) => host?.activate(part),
     compare: (a, b) => host?.compare(a, b) ?? 0,
+    isRTL: () => host?.isRTL() ?? false,
+    box: (part) => host?.box(part),
+    follow: (part, drag) => host?.follow(part, drag) ?? (() => {}),
+    adjustable: (part, step) => host?.adjustable(part, step) ?? (() => {}),
   })
   try {
     await act(() => perform(node, action))

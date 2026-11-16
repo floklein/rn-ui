@@ -51,7 +51,13 @@ export {
   trackModality,
 } from "./modality"
 export { nativeElement } from "./native-element"
-export { type NativeBehavior, nativeHost, type NativeHost } from "./native-host"
+export {
+  type NativeBehavior,
+  type NativeDrag,
+  nativeHost,
+  type NativeHost,
+  type NativeTouch,
+} from "./native-host"
 export { createOrder, documentOrder, inDocumentOrder, isAfter } from "./order"
 export {
   aliasReferences,

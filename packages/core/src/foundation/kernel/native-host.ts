@@ -15,6 +15,28 @@ type NativeTextField = {
 }
 
 /**
+ * Where a touch is, in the coordinates `box` measures in, and the innermost
+ * mounted part under it.
+ * @experimental
+ */
+type NativeTouch = { x: number; y: number; target: Part | undefined }
+
+/**
+ * What a touch drag on a part's view does, as the web's pointer handlers do.
+ * @experimental
+ */
+type NativeDrag = {
+  /** Whether a touch starting now takes the responder. */
+  accepts: () => boolean
+  start: (touch: NativeTouch) => void
+  move: (touch: NativeTouch) => void
+  /** The touch lifted. */
+  end: () => void
+  /** The touch was cancelled or taken by another view, like a scroll view. */
+  cancel: () => void
+}
+
+/**
  * What core asks of the native host, which `@ui-sdk/react-native`
  * implements with `react-native` views and registers as it loads.
  * @experimental
@@ -30,6 +52,16 @@ type NativeHost = {
   activate: (part: { api: object }) => void
   /** Where two mounted parts render: negative when `a` comes first, positive when `b` does. */
   compare: (a: Part, b: Part) => number
+  /** Whether the app lays out right to left. */
+  isRTL: () => boolean
+  /** The box of the part's mounted view on screen, or `undefined`. */
+  box: (
+    part: Part
+  ) => { left: number; top: number; width: number; height: number } | undefined
+  /** Follows the touches that start on the part's view with `drag`, until the cleanup it returns runs. */
+  follow: (part: Part, drag: NativeDrag) => () => void
+  /** Routes a screen reader's increment and decrement on the part's view to `step`, until the cleanup it returns runs. */
+  adjustable: (part: Part, step: (direction: 1 | -1) => void) => () => void
 }
 
 /**
@@ -62,8 +94,10 @@ const nativeHost = () => host
 
 export {
   type NativeBehavior,
+  type NativeDrag,
   type NativeHost,
   nativeHost,
   type NativeTextField,
+  type NativeTouch,
   setNativeHost,
 }

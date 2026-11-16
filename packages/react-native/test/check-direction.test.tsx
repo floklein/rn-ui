@@ -26,6 +26,7 @@ import {
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Separator } from "../src/separator"
+import { Slider, SliderControl, SliderThumb } from "../src/slider"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -82,6 +83,25 @@ describe("checkDirection on the native host", () => {
                 <Text>AL</Text>
               </AvatarFallback>
             </Avatar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a slider, whose increment means the same either way", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Slider defaultValue={[20, 80]}>
+              <SliderControl>
+                <SliderThumb aria-label="Minimum" />
+                <SliderThumb index={1} aria-label="Maximum" />
+              </SliderControl>
+            </Slider>
           )
           return screen.container
         },

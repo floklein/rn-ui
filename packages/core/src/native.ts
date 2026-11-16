@@ -11,12 +11,15 @@ export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { radioNative } from "./components/radio/radio-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
+export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export {
   type NativeBehavior,
+  type NativeDrag,
   type NativeHost,
   nativeHost,
   type NativeTextField,
+  type NativeTouch,
   setNativeHost,
 } from "./foundation/kernel/native-host"

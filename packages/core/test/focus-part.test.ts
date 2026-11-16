@@ -29,6 +29,10 @@ describe("focusing a part", () => {
       announce: vi.fn(),
       activate: vi.fn(),
       compare: vi.fn(),
+      isRTL: () => false,
+      box: vi.fn(),
+      follow: vi.fn(),
+      adjustable: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
     const root = instance.part("root")
@@ -49,6 +53,10 @@ describe("focusing a part", () => {
       announce: vi.fn(),
       activate: vi.fn(),
       compare: vi.fn(),
+      isRTL: () => false,
+      box: vi.fn(),
+      follow: vi.fn(),
+      adjustable: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
     const first = instance.part("root", { id: "first" })
@@ -70,6 +78,10 @@ describe("focusing a part", () => {
       announce: vi.fn(),
       activate: vi.fn(),
       compare: vi.fn(),
+      isRTL: () => false,
+      box: vi.fn(),
+      follow: vi.fn(),
+      adjustable: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
     focusPartNative(

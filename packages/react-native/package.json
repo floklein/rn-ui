@@ -30,6 +30,7 @@
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
     "./separator": "./src/separator.tsx",
+    "./slider": "./src/slider.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
@@ -97,6 +98,10 @@
       "./separator": {
         "types": "./dist/separator.d.ts",
         "default": "./dist/separator.js"
+      },
+      "./slider": {
+        "types": "./dist/slider.d.ts",
+        "default": "./dist/slider.js"
       },
       "./switch": {
         "types": "./dist/switch.d.ts",

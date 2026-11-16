@@ -401,9 +401,31 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
             accessibilityRole: native,
             ...((native === "image" || native === "progressbar") &&
               (os === "ios" ? { accessible: true } : { collapsable: false })),
+            ...(native === "adjustable" && {
+              accessibilityActions: [
+                { name: "increment" },
+                { name: "decrement" },
+              ],
+            }),
           }
         : {}
     )
+  })
+
+  test("a range input's bounds and value become its accessibility value", () => {
+    expect(
+      toNativeProps(
+        {
+          role: "slider",
+          type: "range",
+          min: "0",
+          max: "80",
+          value: "20",
+          "aria-valuetext": "20%",
+        },
+        os
+      ).accessibilityValue
+    ).toEqual({ min: 0, max: 80, now: 20, text: "20%" })
   })
 
   test("an undefined attribute is ignored", () => {

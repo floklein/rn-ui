@@ -1,12 +1,25 @@
 import type { Part } from "@ui-sdk/core"
-import { type NativeTextField, setNativeHost } from "@ui-sdk/core/native"
-import { AccessibilityInfo, type HostInstance } from "react-native"
+import {
+  type NativeDrag,
+  type NativeTextField,
+  setNativeHost,
+} from "@ui-sdk/core/native"
+import { withSource } from "@ui-sdk/core/renderer"
+import {
+  AccessibilityInfo,
+  type GestureResponderEvent,
+  type HostInstance,
+  I18nManager,
+} from "react-native"
 
 const views: WeakMap<Part, HostInstance> = new WeakMap()
 const textInputs: WeakSet<HostInstance> = new WeakSet()
 const fields: WeakMap<object, NativeTextField> = new WeakMap()
 const renders: WeakMap<Part, number> = new WeakMap()
 const controls: WeakMap<object, () => void> = new WeakMap()
+const parts: WeakMap<HostInstance, Part> = new WeakMap()
+const drags: WeakMap<Part, NativeDrag> = new WeakMap()
+const steps: WeakMap<Part, (direction: 1 | -1) => void> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -20,6 +33,35 @@ AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
 const pressSource = () => (screenReader ? "virtual" : "touch")
 
 const following = 4
+
+// The innermost part under a touch, from the view it landed on.
+function partUnder(target: unknown) {
+  for (
+    let node = target as HostInstance | null;
+    node;
+    node = node.parentNode as HostInstance | null
+  ) {
+    const part = parts.get(node)
+    if (part) {
+      return part
+    }
+  }
+}
+
+const touchOf = (event: GestureResponderEvent) => ({
+  x: event.nativeEvent.pageX,
+  y: event.nativeEvent.pageY,
+  target: partUnder(event.target),
+})
+
+function register<Value>(map: WeakMap<Part, Value>, part: Part, value: Value) {
+  map.set(part, value)
+  return () => {
+    if (map.get(part) === value) {
+      map.delete(part)
+    }
+  }
+}
 
 setNativeHost({
   focus(part) {
@@ -49,6 +91,41 @@ setNativeHost({
     }
     return (renders.get(a) ?? 0) - (renders.get(b) ?? 0)
   },
+  isRTL: () => I18nManager.isRTL,
+  box: (part) => views.get(part)?.getBoundingClientRect(),
+  follow: (part, drag) => register(drags, part, drag),
+  adjustable: (part, step) => register(steps, part, step),
 })
 
-export { controls, fields, pressSource, renders, textInputs, views }
+// A drag keeps its touch from a scroll view around it, as `touch-action:
+// none` does on the web, and blocks Android's native responders.
+function responder(part: Part) {
+  return {
+    onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
+    onResponderTerminationRequest: () => false,
+    onResponderGrant(event: GestureResponderEvent) {
+      const touch = touchOf(event)
+      withSource("touch", () => drags.get(part)?.start(touch))
+      return true
+    },
+    onResponderMove(event: GestureResponderEvent) {
+      const touch = touchOf(event)
+      withSource("touch", () => drags.get(part)?.move(touch))
+    },
+    onResponderRelease: () => withSource("touch", () => drags.get(part)?.end()),
+    onResponderTerminate: () =>
+      withSource("touch", () => drags.get(part)?.cancel()),
+  }
+}
+
+export {
+  controls,
+  fields,
+  parts,
+  pressSource,
+  renders,
+  responder,
+  steps,
+  textInputs,
+  views,
+}
