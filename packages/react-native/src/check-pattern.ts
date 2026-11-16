@@ -149,14 +149,21 @@ async function checkboxPattern(context: Context) {
   }
 }
 
+// Content inside the button is part of its name, not what it discloses.
+function contentCount(context: Context, button: HostNode) {
+  const own = new Set(shownNodes(button))
+  return readTree(context.root, context.os).shown.filter(
+    (node) => !own.has(node)
+  ).length
+}
+
 async function checkContentFollows(
   context: Context,
   button: () => HostNode,
   action: Action
 ) {
   const expanded = stateOf(button()).expanded
-  const shown = () => readTree(context.root, context.os).shown.length
-  const before = shown()
+  const before = contentCount(context, button())
   await performWatched(button(), action, context.act)
   if (stateOf(button()).expanded === expanded) {
     context.problem(
@@ -165,7 +172,8 @@ async function checkContentFollows(
     )
     return false
   }
-  if (shown() > before === expanded) {
+  const after = contentCount(context, button())
+  if (expanded ? after >= before : after <= before) {
     context.problem(
       button(),
       `${expanded ? "hides" : "shows"} no content after the ${action} action; its content follows its expanded state (APG disclosure).`
@@ -198,11 +206,11 @@ async function disclosurePattern(context: Context) {
     if (isDisabled(button())) {
       continue
     }
-    if (!(await checkContentFollows(context, button, "activate"))) {
-      continue
-    }
-    await performWatched(button(), "activate", context.act)
-    if (context.os !== "android") {
+    if (
+      !(await checkContentFollows(context, button, "activate")) ||
+      !(await checkContentFollows(context, button, "activate")) ||
+      context.os !== "android"
+    ) {
       continue
     }
     const actions: Action[] = stateOf(button()).expanded

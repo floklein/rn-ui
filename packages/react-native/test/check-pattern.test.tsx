@@ -660,16 +660,20 @@ function HandDisclosure({
   pressShows = true,
   actionShows = true,
   declares = true,
+  hides = true,
+  inButton = false,
 }: {
   pressShows?: boolean
   actionShows?: boolean
   declares?: boolean
+  hides?: boolean
+  inButton?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const [shown, setShown] = useState(false)
   const change = (next: boolean, shows: boolean) => {
     setExpanded(next)
-    if (shows) {
+    if (shows && (next || hides)) {
       setShown(next)
     }
   }
@@ -687,8 +691,9 @@ function HandDisclosure({
         onPress={() => change(!expanded, pressShows)}
       >
         <Text>Order #4189</Text>
+        {inButton && expanded ? <View /> : null}
       </Pressable>
-      {shown ? <Text>Linen shirt</Text> : null}
+      {shown && !inButton ? <Text>Linen shirt</Text> : null}
     </View>
   )
 }
@@ -718,6 +723,20 @@ describe("checkPattern's disclosure pattern on the native host", () => {
 
   test("fails on a button whose content doesn't follow its expanded state after the activate action", async () => {
     await render(<HandDisclosure pressShows={false} />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+
+  test("fails on a button whose content stays after the activate action collapses it", async () => {
+    await render(<HandDisclosure hides={false} />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" hides no content after the activate action'
+    )
+  })
+
+  test("fails on a button that shows nothing outside itself", async () => {
+    await render(<HandDisclosure inButton />)
     await expect(checkDisclosure()).rejects.toThrow(
       'the button "Order #4189" shows no content after the activate action'
     )
