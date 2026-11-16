@@ -860,6 +860,16 @@ describe("checkPattern's pagination pattern on the native host", () => {
     )
   })
 
+  test("passes on pages that share a name, telling the current one by its view", async () => {
+    await render(
+      <Pagination pageCount={2}>
+        <PaginationLink page={1} aria-label="Same" />
+        <PaginationLink page={2} aria-label="Same" />
+      </Pagination>
+    )
+    await expect(checkPagination()).resolves.toBeUndefined()
+  })
+
   test("fails on an unnamed step", async () => {
     await render(
       <Pagination pageCount={3}>

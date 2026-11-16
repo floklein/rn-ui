@@ -15,7 +15,8 @@ import {
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
  * or by its role where the Practices have none, like `"img"`. Pass a
- * separator's own view as the root of `"separator"`, since nothing marks one.
+ * separator's own view as the root of `"separator"`, since nothing marks one,
+ * and a pagination's for `"pagination"`, whose current page is any selected button.
  * @experimental
  */
 type NativePattern =
@@ -231,13 +232,13 @@ async function paginationPattern(context: Context) {
     if (!button || isDisabled(button) || stateOf(button).selected === true) {
       continue
     }
-    const before = nameOf(current()[0])
+    const [before] = current()
     await performWatched(button, "activate", context.act)
     const after = current()
-    if (after.length !== 1 || nameOf(after[0]) === before) {
+    if (after.length !== 1 || after[0] === before) {
       context.problem(
         button,
-        `leaves the current page "${before}" after the activate action; a page or a step that isn't disabled goes to another page.`
+        `leaves the current page "${nameOf(before)}" after the activate action; a page or a step that isn't disabled goes to another page.`
       )
     }
   }

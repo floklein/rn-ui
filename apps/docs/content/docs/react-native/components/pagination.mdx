@@ -269,4 +269,4 @@ Every write method takes an optional `{ reason }`, runs `onPageChange` like a pr
 
 On the web, Pagination is a `navigation` landmark around a list, with `aria-current="page"` on the current page. React Native has no landmark or current state, so each page and step is its own button, reached by swiping, and the current page is announced as selected. Name each step and give each page a number or a label, since the buttons are all a screen reader hears.
 
-A step at its end is announced as dimmed on iOS and disabled on Android, where it also leaves Tab's order on a hardware keyboard. The ellipsis is skipped.
+A step at its end is announced as dimmed on iOS and disabled on Android, where it also leaves Tab's order on a hardware keyboard. So on Android, pressing Next onto the last page with a keyboard, or First or Last, moves keyboard focus off the step to the first focusable view on the screen. The ellipsis is skipped.
