@@ -13,8 +13,14 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import {
+  PasswordInput,
+  PasswordInputControl,
+  PasswordInputToggle,
+} from "../src/password-input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
+import { Separator } from "../src/separator"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -32,6 +38,8 @@ const checkRadioGroup = () =>
   checkPattern(screen.container, "radio-group", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
+const checkSeparator = () =>
+  checkPattern(screen.container, "separator", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -262,6 +270,27 @@ describe("checkPattern's textbox pattern on the native host", () => {
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
+  })
+
+  test("passes on a password input, enabled, read-only or disabled, as a textbox and its toggle as a button", async () => {
+    await render(
+      <View>
+        <PasswordInput defaultValue="hunter2">
+          <PasswordInputControl aria-label="Password" />
+          <PasswordInputToggle aria-label="Show password" />
+        </PasswordInput>
+        <PasswordInput readOnly>
+          <PasswordInputControl aria-label="Read-only" />
+          <PasswordInputToggle aria-label="Show read-only" />
+        </PasswordInput>
+        <PasswordInput disabled>
+          <PasswordInputControl aria-label="Disabled" />
+          <PasswordInputToggle aria-label="Show disabled" />
+        </PasswordInput>
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+    await expect(checkButton()).resolves.toBeUndefined()
   })
 
   test("fails with no text field", async () => {
@@ -798,6 +827,51 @@ describe("checkPattern's disclosure pattern on the native host", () => {
     )
     await expect(checkDisclosure()).rejects.toThrow(
       "stays collapsed after the activate action"
+    )
+  })
+})
+
+describe("checkPattern's separator pattern on the native host", () => {
+  test("passes on separators, decorative or not, in either orientation", async () => {
+    await render(
+      <View>
+        <Separator />
+        <Separator orientation="vertical" />
+        <Separator decorative />
+      </View>
+    )
+    await expect(checkSeparator()).resolves.toBeUndefined()
+  })
+
+  test("fails on a separator a screen reader stops on", async () => {
+    await render(<Separator accessible aria-label="Section break" />)
+    await expect(checkSeparator()).rejects.toThrow(
+      'the View "Section break" is an element a screen reader stops on; a separator is structure, never read on its own.'
+    )
+  })
+
+  test("fails on a separator the keyboard stops on", async () => {
+    await render(<Separator focusable />)
+    await expect(checkSeparator()).rejects.toThrow(
+      "the View is a keyboard stop; a separator is never focusable."
+    )
+  })
+
+  test("fails on a separator with a role", async () => {
+    await render(<Separator accessibilityRole="button" />)
+    await expect(checkSeparator()).rejects.toThrow(
+      'the button has the button role; a separator has no role on native, or "none".'
+    )
+  })
+
+  test("fails on text inside a separator, which a screen reader reads", async () => {
+    await render(
+      <Separator>
+        <Text>or</Text>
+      </Separator>
+    )
+    await expect(checkSeparator()).rejects.toThrow(
+      'the Text "or" is an element a screen reader stops on'
     )
   })
 })

@@ -5,8 +5,10 @@ import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
+import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
+import { separator } from "@ui-sdk/core/separator"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
@@ -28,10 +30,24 @@ describe("checkCreation", () => {
     expect(() => checkCreation(avatar, {})).not.toThrow()
   })
 
+  test("passes on a separator, decorative or vertical", () => {
+    expect(() => checkCreation(separator, {})).not.toThrow()
+    expect(() =>
+      checkCreation(separator, { orientation: "vertical", decorative: true })
+    ).not.toThrow()
+  })
+
   test("passes on an input, a textarea and an input group", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a password input, hidden or shown", () => {
+    expect(() => checkCreation(passwordInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(passwordInput, { defaultVisible: true, disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a checkbox and a checkbox group", () => {

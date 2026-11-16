@@ -14,7 +14,8 @@ import {
 
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
- * or by its role where the Practices have none, like `"img"`.
+ * or by its role where the Practices have none, like `"img"`. Pass a
+ * separator's own view as the root of `"separator"`, since nothing marks one.
  * @experimental
  */
 type NativePattern =
@@ -23,6 +24,7 @@ type NativePattern =
   | "disclosure"
   | "img"
   | "radio-group"
+  | "separator"
   | "switch"
   | "tabs"
   | "textbox"
@@ -420,12 +422,39 @@ async function textboxPattern(context: Context) {
   }
 }
 
+// Neither platform has a separator role, so a separator is checked for what
+// it must not be: an element read on its own, or a keyboard stop.
+async function separatorPattern(context: Context) {
+  for (const node of context.elements()) {
+    context.problem(
+      node,
+      "is an element a screen reader stops on; a separator is structure, never read on its own."
+    )
+  }
+  for (const node of shownNodes(context.root)) {
+    const role = roleOf(node)
+    if (role !== undefined && role !== "none") {
+      context.problem(
+        node,
+        `has the ${role} role; a separator has no role on native, or "none".`
+      )
+    }
+    if (node.props.focusable === true) {
+      context.problem(
+        node,
+        "is a keyboard stop; a separator is never focusable."
+      )
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
   disclosure: disclosurePattern,
   img: imgPattern,
   "radio-group": radioGroupPattern,
+  separator: separatorPattern,
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,

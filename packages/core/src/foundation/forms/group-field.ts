@@ -6,16 +6,19 @@ const fieldSelector = 'input:not([type="hidden"]), textarea'
 
 /**
  * The text field inside the element of a group's `slot`, which the group's
- * presses reach. Its native twin asks the native host for the field inside
+ * presses reach: `field` when the group knows its own, or the first one in
+ * the element. Its native twin asks the native host for the field inside
  * that part.
  */
 function groupField(
   element: () => HTMLElement | undefined,
   _parts: () => Iterable<Part>,
-  _slot: string
+  _slot: string,
+  field?: () => TextControl | undefined
 ) {
-  const control = () =>
-    element()?.querySelector<TextControl>(fieldSelector) ?? undefined
+  const control =
+    field ??
+    (() => element()?.querySelector<TextControl>(fieldSelector) ?? undefined)
   return {
     control,
     clear(event?: Event) {

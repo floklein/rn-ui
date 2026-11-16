@@ -22,9 +22,11 @@
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./input": "./src/input.tsx",
+    "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
+    "./separator": "./src/separator.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
@@ -61,6 +63,10 @@
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
       },
+      "./password-input": {
+        "types": "./dist/password-input.d.ts",
+        "default": "./dist/password-input.js"
+      },
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
@@ -72,6 +78,10 @@
       "./rating": {
         "types": "./dist/rating.d.ts",
         "default": "./dist/rating.js"
+      },
+      "./separator": {
+        "types": "./dist/separator.d.ts",
+        "default": "./dist/separator.js"
       },
       "./switch": {
         "types": "./dist/switch.d.ts",
