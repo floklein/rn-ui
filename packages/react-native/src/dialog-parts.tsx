@@ -13,6 +13,7 @@ import { dialogNative, pressTrigger } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Modal, Pressable, Text, View } from "react-native"
+import { Carried, carry, useCarried } from "./carried-context"
 import { useControllerEntry, useControllerTarget } from "./controller-target"
 import { layerInput, pressSource } from "./native-host"
 import { mergeProps, renderElement } from "./render-element"
@@ -82,7 +83,7 @@ function createOutlet() {
   return outlet
 }
 
-const OutletContext = React.createContext<Outlet | null>(null)
+const OutletContext = carry("Outlet", React.createContext<Outlet | null>(null))
 
 // A modal dialog's part goes to the `Modal`, and a non-modal one renders in place.
 function useOutlet(
@@ -91,8 +92,12 @@ function useOutlet(
   modal: boolean
 ) {
   const outlet = React.useContext(OutletContext)!
+  const values = useCarried()
   React.useLayoutEffect(() => {
-    outlet.set(slot, modal ? element : null)
+    outlet.set(
+      slot,
+      modal && element ? <Carried values={values}>{element}</Carried> : null
+    )
   })
   React.useLayoutEffect(() => () => outlet.set(slot, null), [outlet, slot])
   return modal ? null : element

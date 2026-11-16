@@ -13,6 +13,7 @@ import {
   useActiveBox,
   useItemLayout,
 } from "./indicator-layouts"
+import { carry } from "./carried-context"
 import { withState } from "./render-element"
 import {
   createParts,
@@ -68,7 +69,10 @@ type TabsIndicatorState = TabsIndicatorCoreState & {
   activeTabHeight?: number
 }
 
-const LayoutsContext = React.createContext<Layouts | null>(null)
+const LayoutsContext = carry(
+  "TabsLayouts",
+  React.createContext<Layouts | null>(null)
+)
 
 /**
  * Layered sections of content, one shown at a time, in a `View`.

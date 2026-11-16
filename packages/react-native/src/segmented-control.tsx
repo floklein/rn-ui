@@ -18,6 +18,7 @@ import {
   useActiveBox,
   useItemLayout,
 } from "./indicator-layouts"
+import { carry } from "./carried-context"
 import { withState } from "./render-element"
 import {
   createParts,
@@ -60,7 +61,10 @@ type SegmentedControlIndicatorState = SegmentedControlIndicatorCoreState & {
   indicatorHeight?: number
 }
 
-const LayoutsContext = React.createContext<Layouts | null>(null)
+const LayoutsContext = carry(
+  "SegmentedControlLayouts",
+  React.createContext<Layouts | null>(null)
+)
 
 /**
  * A row of options where exactly one is on, like a radio group drawn as
