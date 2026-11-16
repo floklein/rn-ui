@@ -9,6 +9,7 @@ import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Field, FieldError, FieldLabel } from "../src/field"
+import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
@@ -156,6 +157,14 @@ const passwords = [
   <PasswordInputControl secureTextEntry={false} />,
 ]
 
+const codes = [
+  <OTPInput aria-label="Code" maxLength={4} pattern="alphanumeric" required />,
+  // @ts-expect-error `name` has no native meaning.
+  <OTPInput name="code" />,
+  // @ts-expect-error `form` has no native meaning.
+  <OTPInput form="verify" />,
+]
+
 const fields = [
   <Field disabled invalid>
     <FieldLabel>Email</FieldLabel>
@@ -179,6 +188,7 @@ const paginations = [
 ]
 
 export {
+  codes,
   ComboboxInput,
   dialogs,
   exits,

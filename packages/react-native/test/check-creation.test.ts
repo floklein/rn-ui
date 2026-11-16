@@ -6,6 +6,7 @@ import { collapsible } from "@ui-sdk/core/collapsible"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
 import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
@@ -62,6 +63,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on an otp input, empty, full or disabled", () => {
+    expect(() => checkCreation(otpInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(otpInput, { defaultValue: "123456", disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a password input, hidden or shown", () => {

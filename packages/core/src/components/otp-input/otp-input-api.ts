@@ -32,7 +32,9 @@ import {
   createCommit,
 } from "../../foundation/kernel/input-source"
 import { elements } from "../../foundation/kernel/elements"
+import { focusPart } from "../../foundation/focus/focus-part"
 import type { OTPInputSlotProps } from "./otp-input"
+import { nativeField } from "./otp-input-field"
 
 /**
  * Why the code changed.
@@ -223,7 +225,7 @@ function otpInputApiBody(
     "root" | "control" | "slot" | "group" | "separator"
   >
 ) {
-  const { store, options, element } = context
+  const { store, options, element, parts } = context
   const change = createChange(context)
   const commit = createCommit(context)
   const input = () => element("control") as HTMLInputElement | undefined
@@ -617,9 +619,16 @@ function otpInputApiBody(
     clear: ({ reason = "imperative", event }: OTPInputChangeOptions = {}) =>
       write("", reason, event),
     /** Moves focus to the input. */
-    focus: () => input()?.focus(),
+    focus: () => focusPart(input, parts, "control"),
     internal: {
       bind,
+      ...nativeField({
+        store,
+        change,
+        complete,
+        isControlled,
+        focus: () => focusPart(input, parts, "control"),
+      }),
     },
   }
 }
