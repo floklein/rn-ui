@@ -2,6 +2,7 @@ import { act, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
 import { Button } from "../src/button"
+import { Input, InputClear, InputGroup } from "../src/input"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkDirection } from "../src/testing"
 
@@ -50,6 +51,23 @@ describe("checkDirection on the native host", () => {
             <Button>
               <Text>Save</Text>
             </Button>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an input in a group with a clear button", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <InputGroup>
+              <Input aria-label="Search" defaultValue="Lisbon" />
+              <InputClear aria-label="Clear search" />
+            </InputGroup>
           )
           return screen.container
         },

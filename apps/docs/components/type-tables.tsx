@@ -112,6 +112,7 @@ async function TypeTable(props: {
   type?: string
   types?: Record<string, string>
   descriptions?: Record<string, string>
+  omit?: string[]
 }) {
   const tables = await typeRows(props)
   return tables.map((table) => (

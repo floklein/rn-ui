@@ -19,9 +19,13 @@ setNativeHost({
   focus(part) {
     const view = viewOf(part)
     if (view) {
+      if (isTextInput(view)) {
+        view.focus()
+      }
       AccessibilityInfo.sendAccessibilityEvent(view, "focus")
     }
   },
+  field: (part) => fieldInside(part),
   announce(text, priority) {
     AccessibilityInfo.announceForAccessibilityWithOptions(text, {
       queue: priority === "polite",
@@ -30,12 +34,13 @@ setNativeHost({
 })
 ```
 
-- `focus(part)` requests accessibility focus on the part's mounted view. A request is never treated as done: with no screen reader running, nothing moves. A part with no view asks nothing, so a controller's `focus()` after its component unmounts does nothing.
+- `focus(part)` requests accessibility focus on the part's mounted view, and starts editing when the view is a `TextInput`. The accessibility focus request is never treated as done: with no screen reader running, it moves nothing. A part with no view asks nothing, so a controller's `focus()` after its component unmounts does nothing.
+- `field(part)` returns the text field rendered inside the part's view, a `NativeTextField`, or `undefined`. An InputGroup's presses reach its field through it, where the web finds the field in the group's element: a press on the group's text starts editing the field, and its Clear part empties the field and starts editing it.
 - `announce(text, priority)` has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it; Android has no such option. Core's `announce`, and a Button's `pendingAnnouncement`, go through it, where the web writes into a live region.
 
 ## Focus From a Controller
 
-A controller's `focus()`, like Switch's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view.
+A controller's `focus()`, like Switch's or Input's, goes through the host. On the web it focuses the part's element. On React Native it asks the host to focus the part's view, which starts editing a text field.
 
 ## Checking a Native Component
 

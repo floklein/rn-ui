@@ -34,9 +34,15 @@ import {
   yieldToAuthor,
 } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { Platform, Pressable, View, type HostInstance } from "react-native"
+import {
+  Platform,
+  Pressable,
+  TextInput,
+  View,
+  type HostInstance,
+} from "react-native"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
-import { pressSource, views } from "./native-host"
+import { pressSource, textInputs, views } from "./native-host"
 import {
   idle,
   mergeProps,
@@ -218,6 +224,12 @@ type PartProps<Host extends React.ElementType, State = {}> = Omit<
 }
 
 type ViewRef = (view: HostInstance | null) => () => void
+
+const textInputRef = (view: HostInstance | null) => {
+  if (view) {
+    textInputs.add(view)
+  }
+}
 const viewRefs = new WeakMap<Part, ViewRef>()
 
 // Forgetting the view as it unmounts keeps a later focus request from asking.
@@ -314,7 +326,15 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   React.useLayoutEffect(() => {
     commit(part, slotProps)
   })
-  React.useLayoutEffect(() => subscribe(part, rerender), [part])
+  // A sibling's layout effect may change the state before this one subscribes.
+  const rendered = part.store.get()
+  React.useLayoutEffect(() => {
+    const unsubscribe = subscribe(part, rerender)
+    if (part.store.get() !== rendered) {
+      rerender()
+    }
+    return unsubscribe
+  }, [part])
 
   let element: React.ReactElement | null = null
   if (present(part, slotProps)) {
@@ -341,6 +361,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
         handlers,
         nativeProps(part, slotProps, user),
         { ref: viewRef(part) },
+        host === TextInput ? { ref: textInputRef } : {},
         { ref }
       ),
       render,

@@ -38,6 +38,7 @@ export {
   watchFieldsets,
   watchFormDisabled,
 } from "./form"
+export { groupField } from "./group-field"
 export {
   focusFromSurroundings,
   initialText,

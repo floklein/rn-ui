@@ -350,6 +350,7 @@ async function pageMarkdown(
           type,
           types,
           descriptions,
+          omit,
         } = attributes(attrs)
         const tables = await typeRows({
           path: file,
@@ -360,6 +361,8 @@ async function pageMarkdown(
           examples: objectOf(examples),
           types: objectOf(types),
           descriptions: objectOf(descriptions),
+          omit:
+            omit && [...omit.matchAll(/"([^"]*)"/g)].map(([, name]) => name),
         })
         return tables.map((table) => rows(table.rows)).join("\n\n")
       }

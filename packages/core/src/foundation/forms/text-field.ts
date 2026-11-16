@@ -1,6 +1,7 @@
 import { type TextControl, afterReset, watchValue, writeValue } from "./value"
 import type { ChangeDetails, ChangeOptions } from "../kernel/details"
 import { on } from "../kernel/events"
+import { focusPart } from "../focus/focus-part"
 import type { PrimitiveContext } from "../kernel/primitive-types"
 
 // What every native text field shares: Input, Textarea and the control of a
@@ -60,9 +61,10 @@ function textFieldApi<Slot extends string>(
     store,
     options,
     element,
+    parts,
   }: Pick<
     PrimitiveContext<TextFieldOptions, TextState, Slot>,
-    "store" | "options" | "element"
+    "store" | "options" | "element" | "parts"
   >,
   change: (
     key: "value",
@@ -138,7 +140,7 @@ function textFieldApi<Slot extends string>(
       reason = "imperative",
       event,
     }: ChangeOptions<InputValueChangeReason> = {}) => write("", reason, event),
-    focus: () => control()?.focus(),
+    focus: () => focusPart(control, parts, slot),
     internal: {
       clearPress: (event?: Event) => write("", "clear-press", event),
       bind(el: TextControl) {

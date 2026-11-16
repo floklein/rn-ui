@@ -1,8 +1,5 @@
-import {
-  watchValue,
-  writeValue,
-  type TextControl,
-} from "../../foundation/forms/value"
+import { watchValue, type TextControl } from "../../foundation/forms/value"
+import { groupField } from "../../foundation/forms/group-field"
 import { watchFieldsets } from "../../foundation/forms/form"
 import { createController } from "../../foundation/kernel/controller"
 import type { ChangeOptions } from "../../foundation/kernel/details"
@@ -12,10 +9,8 @@ import type {
   PrimitiveOptions,
 } from "../../foundation/kernel/primitive-types"
 import {
-  focusFromSurroundings,
   initialText,
   syncText,
-  textFields,
   textFieldApi,
   type InputValueChangeReason,
   type TextFieldOptions,
@@ -347,8 +342,6 @@ type InputGroupState = {
  */
 type InputGroupOptions = PrimitiveOptions
 
-const fieldSelector = 'input:not([type="hidden"]), textarea'
-
 function groupAttrs(state: InputGroupState) {
   return {
     "data-filled": state.filled ? "" : undefined,
@@ -365,30 +358,23 @@ const inputGroupPrimitive = /* @__PURE__ */ definePrimitive({
     disabled: false,
     readOnly: false,
   }),
-  api: ({ store, element }) => {
+  api: ({ store, element, parts }) => {
     // A clear press is input the field's change reports.
     inputSource()
-    const control = () =>
-      element("group")?.querySelector<TextControl>(fieldSelector) ?? undefined
+    const field = groupField(() => element("group"), parts, "group")
     return {
-      control,
+      control: field.control,
       // Empties the field the way typing would, then returns focus to it.
       clear(event?: Event) {
-        const el = control()
-        if (!el || store.get().disabled || store.get().readOnly) {
+        if (store.get().disabled || store.get().readOnly) {
           return
         }
-        const field = textFields.get(el)
-        if (field) {
-          field.internal.clearPress(event)
-        } else {
-          writeValue(el, "", { asUser: true })
-        }
-        el.focus()
+        field.clear(event)
       },
       internal: {
         // Sets the state the group shows, like the docs' attribute tables do without a field.
         update: (state: InputGroupState) => store.set(state),
+        pressAround: field.pressAround,
       },
     }
   },
@@ -397,8 +383,7 @@ const inputGroupPrimitive = /* @__PURE__ */ definePrimitive({
       state: (state) => state,
       attrs: (state) => groupAttrs(state),
       // Presses on the group's own text and icons focus the field, like a label would.
-      press: ({ api, el }, event) =>
-        focusFromSurroundings(event, el, api.control()),
+      press: ({ api }, event) => api.internal.pressAround(event),
       bind: (el, { store, api }) => {
         let field: TextControl | undefined
         let fieldsetDisabled = false

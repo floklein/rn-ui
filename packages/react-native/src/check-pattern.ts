@@ -15,7 +15,7 @@ import {
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name.
  * @experimental
  */
-type NativePattern = "button" | "switch"
+type NativePattern = "button" | "switch" | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -119,9 +119,43 @@ async function switchPattern(context: Context) {
   }
 }
 
+// check-code: allow return-type recursive, so TypeScript cannot infer it.
+function textFieldsIn(node: HostNode): HostNode[] {
+  const inside = (node.children ?? []).flatMap((child) =>
+    typeof child === "string" ? [] : textFieldsIn(child)
+  )
+  return node.type === "TextInput" ? [node, ...inside] : inside
+}
+
+async function textboxPattern(context: Context) {
+  const fields = textFieldsIn(context.root)
+  if (!fields.length) {
+    context.problem(context.root, "has no text field, so it isn't a textbox.")
+    return
+  }
+  const elements = context.elements()
+  for (const field of fields) {
+    if (!elements.includes(field)) {
+      context.problem(
+        field,
+        "isn't an accessible element of its own, so a screen reader can't reach it to edit it."
+      )
+      continue
+    }
+    requireName(context, field, "text field")
+    if (stateOf(field).disabled === true && field.props.editable !== false) {
+      context.problem(
+        field,
+        "is disabled for the screen reader but can still be edited."
+      )
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   switch: switchPattern,
+  textbox: textboxPattern,
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's

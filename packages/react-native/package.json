@@ -18,9 +18,11 @@
   "license": "Apache-2.0",
   "exports": {
     "./button": "./src/button.tsx",
+    "./input": "./src/input.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./textarea": "./src/textarea.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -36,6 +38,10 @@
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"
       },
+      "./input": {
+        "types": "./dist/input.d.ts",
+        "default": "./dist/input.js"
+      },
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
@@ -47,6 +53,10 @@
       "./testing": {
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
+      },
+      "./textarea": {
+        "types": "./dist/textarea.d.ts",
+        "default": "./dist/textarea.js"
       },
       "./package.json": "./package.json"
     }

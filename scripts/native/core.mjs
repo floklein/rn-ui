@@ -1,5 +1,5 @@
 // Loads core's component entries from source in Node, bundled once, with
-// what renders a part beside them.
+// what renders a part beside them, and each native twin in its module's place.
 import { build } from "esbuild"
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -50,6 +50,7 @@ async function loadCore() {
       target: "es2022",
       logLevel: "silent",
       conditions: ["development"],
+      resolveExtensions: [".native.ts", ".ts", ".js"],
     })
     const loaded = await import(pathToFileURL(outfile).href)
     return {

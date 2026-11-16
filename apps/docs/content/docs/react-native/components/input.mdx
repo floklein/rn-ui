@@ -1,0 +1,239 @@
+---
+title: Input
+description: Enter text, add a clear button, and read the value with its change reasons.
+---
+
+An input is a `TextInput` for short values like a name, an email address or a search. It adds a clear button, text around the input, change reasons, and a controller that can set, clear and focus it.
+
+<ComponentExample
+  name="input/basic"
+  caption="Edit the website, then tap Clear website. The text clears, editing starts again and the console logs the reason. Tapping https:// starts editing too."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build an `Input` or an `InputGroup`:
+
+```text
+Input
+
+InputGroup
+├── Input
+└── InputClear
+```
+
+`Input` renders a `TextInput`. Pass its placeholder, keyboard type, autocapitalization and other `TextInput` props directly. `InputGroup` holds text or buttons around it, and `InputClear` empties it.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import { Input, InputClear, InputGroup } from "@ui-sdk/react-native/input"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <InputGroup>
+      <Input aria-label="Search" />
+      <InputClear aria-label="Clear search">
+        <Text>×</Text>
+      </InputClear>
+    </InputGroup>
+  )
+}
+
+export { Example }
+```
+
+## Disabled and Read Only
+
+Set `disabled` to prevent editing. The `TextInput` can't be edited, and screen readers announce it as dimmed or disabled. A `readOnly` input can't be edited either, but stays enabled, so screen readers read its value as usual.
+
+```tsx
+<Input aria-label="Email" defaultValue="hollis@example.com" disabled />
+<Input aria-label="Profile URL" value="example.com/hollis" readOnly />
+```
+
+`required` stays in the state, for your styles and labels. It isn't announced.
+
+## Input Group
+
+Place text or buttons around an input with `InputGroup`. Tapping the group's text starts editing the input. The group isn't an accessible element itself, so screen readers reach the input and each button in it on their own.
+
+```tsx
+<InputGroup>
+  <Text>https://</Text>
+  <Input aria-label="Website" placeholder="example" />
+  <Text>.com</Text>
+</InputGroup>
+```
+
+## Clear Button
+
+`InputClear` shows while the input has text it can clear. Tapping it empties the value, reports `clear-press` and starts editing the input again. Controlled state receives the change too.
+
+```tsx
+<InputGroup>
+  <Input aria-label="Search people" />
+  <InputClear aria-label="Clear search">
+    <Text>×</Text>
+  </InputClear>
+</InputGroup>
+```
+
+## Controlled
+
+Pass `value` and `onValueChange` to control the input. `onChangeText` still works.
+
+```tsx
+const [name, setName] = useState("Hollis Grant")
+
+<Input aria-label="Name" value={name} onValueChange={(value) => setName(value)} />
+```
+
+Input's [reasons](#reasons) tell typing, clearing and controller changes apart.
+
+## Filtering What's Typed
+
+Call `details.cancel()` in the value-change callback to reject a change. The `TextInput` shows the rejected text for a moment, then the previous text comes back.
+
+```tsx
+<Input
+  aria-label="Code"
+  keyboardType="number-pad"
+  maxLength={6}
+  onValueChange={(value, details) => {
+    if (!/^\d*$/.test(value)) details.cancel()
+  }}
+/>
+```
+
+## Controller
+
+Use `createInputController()` for actions outside the input. Its methods update the input through the same change callbacks as typing, and `focus()` starts editing it.
+
+```tsx
+const [message] = useState(createInputController)
+
+<Input controller={message} aria-label="Message" />
+<Button onPress={() => message.setValue("On my way!")}>
+  <Text>Quick Reply</Text>
+</Button>
+<Button onPress={() => message.focus()}>
+  <Text>Reply</Text>
+</Button>
+```
+
+## Enter and Forms
+
+Enter submits nothing: a native view takes part in no form. `onSubmitEditing` tells you the user pressed it, and you decide what it means. There's no `name` or form reset; read the value from `onValueChange` or the controller, and reset the input by setting its value.
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.input, state.disabled && styles.disabled]`. It receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, says whether the input is being edited, in `focused`.
+
+## Part State
+
+### Input [#part-state-input]
+
+<PartStateTable
+  component="input"
+  part="root"
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputState"
+/>
+
+### InputGroup [#part-state-inputgroup]
+
+<PartStateTable
+  component="input-group"
+  part="group"
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputGroupState"
+/>
+
+### InputClear [#part-state-inputclear]
+
+<PartStateTable
+  component="input-group"
+  part="clear"
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputGroupState"
+/>
+
+## API Reference
+
+Input takes `TextInput`'s props and the options below, as React Native props, except `value`, `defaultValue` and `editable`, which come from the options.
+
+### Input
+
+<TypeTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputOptions"
+/>
+
+<TypeTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputProps"
+/>
+
+### InputGroup
+
+<TypeTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputGroupOptions"
+/>
+
+### InputClear
+
+A `Pressable` with the button role that empties the input in its group and starts editing it. It renders only while there's text to clear.
+
+### State
+
+<StateTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputState"
+/>
+
+`InputGroup` and `InputClear` receive the state of the input inside the group.
+
+<StateTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputGroupState"
+/>
+
+### Reasons
+
+<ReasonTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/input/input.ts"
+  name="InputController"
+/>
+
+## Accessibility
+
+Give the input an `aria-label`, and the clear button too. The `TextInput` keeps the platform's text editing, selection and autofill. A controller's `focus()` starts editing and asks the screen reader to move to the input.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                         |
+| ----- | ------------------------------------------------------------ |
+| Tab   | Moves to the next control, and Shift-Tab to the previous one |
+| Enter | Calls `onSubmitEditing`                                      |
