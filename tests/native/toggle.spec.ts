@@ -55,7 +55,7 @@ test("each example opens", async () => {
   for (const file of readdirSync(folder)) {
     await device.open(`screen-toggle-${path.basename(file, ".tsx")}`)
     await device.expectTree((tree) =>
-      assert.ok([...tree.values()].some((node) => node.role === "togglebutton"))
+      assert.ok([...tree.values()].some((node) => node.checked !== undefined))
     )
   }
 })

@@ -21,7 +21,7 @@ async function snapshot() {
 }
 
 const toggle = (label: string, checked = false, enabled = true): Node => ({
-  role: "togglebutton",
+  role: device.platform === "ios" ? "button" : "togglebutton",
   label,
   enabled,
   checked,

@@ -55,7 +55,6 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
-  XCUIElementTypeToggle: "togglebutton",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
@@ -63,6 +62,11 @@ const roles: Record<string, string> = {
   "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
   "android.view.ViewGroup": "group",
+}
+
+const pressedValues: Record<string, boolean> = {
+  checked: true,
+  unchecked: false,
 }
 
 const byId = (id: string) =>
@@ -105,6 +109,15 @@ function parseTree(source: string) {
     if (role === "switch" || role === "togglebutton") {
       node.checked =
         platform === "ios" ? attrs.value === "1" : attrs.checked === "true"
+    }
+    // React Native gives iOS no toggle trait: a toggle button is a button
+    // whose value says "checked" or "unchecked".
+    if (
+      platform === "ios" &&
+      role === "button" &&
+      attrs.value in pressedValues
+    ) {
+      node.checked = pressedValues[attrs.value]
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
