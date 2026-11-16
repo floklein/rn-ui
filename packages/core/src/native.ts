@@ -13,14 +13,17 @@ export { dialogNative } from "./components/dialog/dialog-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
 export { segmentedControlNative } from "./components/segmented-control/segmented-control-native"
+export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export {
   type NativeBehavior,
+  type NativeDrag,
   type NativeHost,
   nativeHost,
   type NativeInput,
   type NativeTextField,
+  type NativeTouch,
   setNativeHost,
 } from "./foundation/kernel/native-host"
 export { pressTrigger } from "./foundation/popups/popup-native"

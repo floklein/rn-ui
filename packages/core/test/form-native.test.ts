@@ -67,6 +67,10 @@ describe("the form twin", () => {
       activate: vi.fn(),
       listen: vi.fn(),
       compare: vi.fn(),
+      isRTL: () => false,
+      box: vi.fn(),
+      follow: vi.fn(),
+      adjustable: vi.fn(),
     })
     const el = nativeElement(part)
     form.claimInvalidFocus(el, null)
