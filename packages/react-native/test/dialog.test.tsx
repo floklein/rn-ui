@@ -1,10 +1,13 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { createRef, use } from "react"
+import { readdirSync, readFileSync } from "node:fs"
+import { join } from "node:path"
+import { createContext, createRef, use } from "react"
 import {
   AccessibilityInfo,
   DeviceEventEmitter,
   Platform,
   Text,
+  TextInput,
   type HostInstance,
 } from "react-native"
 import {
@@ -27,7 +30,7 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { dialog } from "@ui-sdk/core/dialog"
-import { carried } from "../src/carried-context"
+import { carried, carry } from "../src/carried-context"
 import "../src/checkbox"
 import { FieldSet } from "../src/field"
 import "../src/input"
@@ -390,7 +393,7 @@ describe("the adapter's contexts inside the Modal", () => {
     await render(
       <Dialog defaultOpen>
         <FieldSet disabled>
-          <DialogContent testID="content">
+          <DialogContent>
             <DialogTitle>Alerts</DialogTitle>
             <Switch testID="switch" onCheckedChange={onCheckedChange} />
           </DialogContent>
@@ -466,5 +469,35 @@ describe("the adapter's contexts inside the Modal", () => {
     for (const context of replaced) {
       expect(inside.get(context)).toEqual({ from: context.displayName })
     }
+  })
+
+  test("a context first made while the dialog is open keeps the content mounted", async () => {
+    function Name({ title }: { title: string }) {
+      return (
+        <Dialog defaultOpen>
+          <DialogContent>
+            <DialogTitle>{title}</DialogTitle>
+            <TextInput testID="name" />
+          </DialogContent>
+        </Dialog>
+      )
+    }
+    await render(<Name title="Name" />)
+    const before = screen.getByTestId("name")
+    carry("LateScope", createContext(null))
+    await screen.rerender(<Name title="Your name" />)
+    expect(screen.getByTestId("name") === before).toBe(true)
+  })
+
+  test("every context the adapter makes is carried", () => {
+    const sources = readdirSync(join(__dirname, "../src"))
+      .filter((file) => file !== "check-pattern.ts")
+      .map((file) => readFileSync(join(__dirname, "../src", file), "utf8"))
+      .join("\n")
+    const made = sources.match(/createContext[<(]/g)!.length
+    const carriedMade = sources.match(
+      /carry\([^,]+,\s*React\.createContext[<(]/g
+    )!
+    expect(carriedMade.length).toBe(made)
   })
 })

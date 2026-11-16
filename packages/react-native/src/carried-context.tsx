@@ -10,12 +10,11 @@ function carry<T>(name: string, context: React.Context<T>) {
   return context
 }
 
+// Taken once, so a context made later never changes the providers' nesting
+// and remounts the content. A provider added above it remounts it anyway.
 function useCarried() {
-  const values = new Map<React.Context<any>, unknown>()
-  for (const context of carried) {
-    values.set(context, React.use(context))
-  }
-  return values
+  const [contexts] = React.useState(() => [...carried])
+  return new Map(contexts.map((context) => [context, React.use(context)]))
 }
 
 function Carried({
