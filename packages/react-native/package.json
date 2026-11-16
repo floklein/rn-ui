@@ -41,7 +41,8 @@
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
     "./textarea": "./src/textarea.tsx",
-    "./toggle": "./src/toggle.tsx"
+    "./toggle": "./src/toggle.tsx",
+    "./toolbar": "./src/toolbar.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -152,6 +153,10 @@
       "./toggle": {
         "types": "./dist/toggle.d.ts",
         "default": "./dist/toggle.js"
+      },
+      "./toolbar": {
+        "types": "./dist/toolbar.d.ts",
+        "default": "./dist/toolbar.js"
       },
       "./package.json": "./package.json"
     }

@@ -20,6 +20,7 @@ import { slider } from "@ui-sdk/core/slider"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
+import { toolbar } from "@ui-sdk/core/toolbar"
 import { checkCreation } from "../src/testing"
 
 describe("checkCreation", () => {
@@ -31,6 +32,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(button, {})).not.toThrow()
     expect(() =>
       checkCreation(button, { disabled: true, focusableWhenDisabled: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a toolbar, horizontal or vertical and disabled", () => {
+    expect(() => checkCreation(toolbar, {})).not.toThrow()
+    expect(() =>
+      checkCreation(toolbar, { orientation: "vertical", disabled: true })
     ).not.toThrow()
   })
 

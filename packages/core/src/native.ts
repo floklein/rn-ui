@@ -16,6 +16,7 @@ export { segmentedControlNative } from "./components/segmented-control/segmented
 export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"
+export { toolbarNative } from "./components/toolbar/toolbar-native"
 export {
   type NativeBehavior,
   type NativeDrag,

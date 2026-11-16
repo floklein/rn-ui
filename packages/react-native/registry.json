@@ -112,6 +112,13 @@
     },
     {
       "kind": "behavior",
+      "file": "packages/core/src/components/toolbar/toolbar-native.ts",
+      "mirrors": ["packages/core/src/components/toolbar/toolbar.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the button, link and input slots' bind orchestrates: each item joins the toolbar (api.internal.join) while it's mounted, so the toolbar lists its items in render order, keeps its stop on an enabled one and its controller focuses it."
+    },
+    {
+      "kind": "behavior",
       "file": "packages/core/src/components/toggle/toggle-native.ts",
       "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -812,6 +819,27 @@
         }
       }
     },
+    "toolbar": {
+      "entry": "packages/react-native/src/toolbar.tsx",
+      "slots": {
+        "toolbar.root": {
+          "needs": "nothing",
+          "reason": "Its bind marks the toolbar bound, which only tells a server render a button from other elements, and watches a disabled fieldset, which the adapter hands down through DisabledContext. Its keydown moves between items with arrow keys, Home and End, which native doesn't build."
+        },
+        "toolbar.button": {
+          "covered": "packages/core/src/components/toolbar/toolbar-native.ts",
+          "reason": "Its bind joins the toolbar, which toolbar-native.ts does while the button is mounted; the element it records is always a Pressable on native, and the presses and keys it refuses on a disabled item are refused by the Pressable's disabled. Its keydown and keyup activate a non-button element, where the OS activates the Pressable."
+        },
+        "toolbar.link": {
+          "covered": "packages/core/src/components/toolbar/toolbar-native.ts",
+          "reason": "Its bind joins the toolbar, which toolbar-native.ts does while the link is mounted; the presses it refuses on a disabled link are refused by the Pressable's disabled."
+        },
+        "toolbar.input": {
+          "covered": "packages/core/src/components/toolbar/toolbar-native.ts",
+          "reason": "Its bind joins the toolbar, which toolbar-native.ts does while the field is mounted. The arrow keys it leaves to the caret aren't built on native, and ToolbarInput in packages/react-native/src/toolbar.tsx stops a disabled field from being edited."
+        }
+      }
+    },
     "toggle": {
       "entry": "packages/react-native/src/toggle.tsx",
       "slots": {
@@ -1053,7 +1081,6 @@
     "timeline",
     "toast",
     "token-input",
-    "toolbar",
     "tooltip",
     "tree",
     "trigger-menu",
@@ -1191,6 +1218,30 @@
       "example": "group-rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toolbar",
+      "example": "loop",
+      "feature": "Arrow keys wrapping from the last item to the first",
+      "reason": "Native builds no arrow keys inside a composite: each item is reached by swiping."
+    },
+    {
+      "component": "toolbar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toolbar",
+      "example": "menu",
+      "feature": "A menu opened from a toolbar button",
+      "reason": "Menu has no native entry yet (ticket 57); the example comes with it."
+    },
+    {
+      "component": "toolbar",
+      "example": "select",
+      "feature": "A select opened from a toolbar button",
+      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
     },
     {
       "component": "collapsible",
