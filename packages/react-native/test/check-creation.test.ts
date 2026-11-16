@@ -14,6 +14,7 @@ import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
+import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
@@ -105,6 +106,19 @@ describe("checkCreation", () => {
       checkCreation(radioGroup, { defaultValue: "small", readOnly: true })
     ).not.toThrow()
     expect(() => checkCreation(radioGroup, { disabled: true })).not.toThrow()
+  })
+
+  test("passes on a segmented control, checked, read-only, vertical or disabled", () => {
+    expect(() => checkCreation(segmentedControl, {})).not.toThrow()
+    expect(() =>
+      checkCreation(segmentedControl, { defaultValue: "list", readOnly: true })
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(segmentedControl, { orientation: "vertical" })
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(segmentedControl, { disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a rating, read-only or with half stars", () => {
