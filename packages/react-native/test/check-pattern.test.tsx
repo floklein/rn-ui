@@ -8,7 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
+import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
 import { checkPattern } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
@@ -20,7 +22,10 @@ const checkTextbox = () =>
   checkPattern(screen.container, "textbox", { os, act })
 const checkCheckbox = () =>
   checkPattern(screen.container, "checkbox", { os, act })
+const checkRadioGroup = () =>
+  checkPattern(screen.container, "radio-group", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
+const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -418,6 +423,202 @@ describe("checkPattern's button pattern on toggle buttons", () => {
     )
     await expect(checkButton()).rejects.toThrow(
       "has no pressed state; a toggle button's checked state is true or false"
+    )
+  })
+})
+
+describe("checkPattern's radio group pattern on the native host", () => {
+  test("passes on a rating, and on one with half stars", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <Rating
+        aria-label="Rating"
+        defaultValue={2}
+        onValueChange={onValueChange}
+      />
+    )
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+    expect(onValueChange).toHaveBeenCalled()
+    await render(<Rating aria-label="Rating" step={0.5} max={3} />)
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+  })
+
+  test("passes on a disabled rating, which ignores the activation", async () => {
+    await render(<Rating aria-label="Rating" disabled defaultValue={3} />)
+    await expect(checkRadioGroup()).resolves.toBeUndefined()
+  })
+
+  test("fails with no radio", async () => {
+    await render(<Rating readOnly defaultValue={3} />)
+    await expect(checkRadioGroup()).rejects.toThrow(
+      "has no element with the radio role, so it isn't a radio group"
+    )
+  })
+
+  test("fails on a radio with no name or no checked state", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityState={{ checked: false }}
+        />
+        <Pressable accessibilityRole="radio" accessibilityLabel="Small" />
+      </View>
+    )
+    await expect(checkRadioGroup()).rejects.toThrow("the radio has no name")
+    await expect(checkRadioGroup()).rejects.toThrow(
+      'the radio "Small" has no checked state'
+    )
+  })
+
+  test("fails on two checked radios", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityLabel="Small"
+          accessibilityState={{ checked: true }}
+        />
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityLabel="Large"
+          accessibilityState={{ checked: true }}
+        />
+      </View>
+    )
+    await expect(checkRadioGroup()).rejects.toThrow(
+      "has 2 checked radios; one is checked at most"
+    )
+  })
+
+  test("fails on a radio that isn't the only one checked after the activate action", async () => {
+    await render(<Rating aria-label="Rating" value={1} />)
+    await expect(checkRadioGroup()).rejects.toThrow(
+      'the radio "2 stars" isn\'t the only checked radio after the activate action'
+    )
+  })
+})
+
+describe("checkPattern's img pattern on a read-only rating", () => {
+  test("passes on a read-only rating, one image named by its score", async () => {
+    await render(<Rating readOnly defaultValue={4.2} />)
+    await expect(checkImage()).resolves.toBeUndefined()
+  })
+})
+
+// Tabs written by hand, whose selection follows `selected` and ignores presses when `stuck`.
+function HandTabs({
+  selected,
+  stuck,
+}: {
+  selected: string[]
+  stuck?: boolean
+}) {
+  const [value, setValue] = useState(selected)
+  return (
+    <View accessibilityRole="tablist">
+      {["Profile", "Billing"].map((name) => (
+        <Pressable
+          key={name}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: value.includes(name) }}
+          onPress={() => (stuck ? undefined : setValue([name]))}
+        >
+          <Text>{name}</Text>
+        </Pressable>
+      ))}
+    </View>
+  )
+}
+
+describe("checkPattern's tabs pattern on the native host", () => {
+  test("passes on tabs, selecting each enabled tab that isn't selected", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <Tabs defaultValue="profile" onValueChange={onValueChange}>
+        <TabsList aria-label="Account">
+          <TabsTab value="profile">
+            <Text>Profile</Text>
+          </TabsTab>
+          <TabsTab value="billing">
+            <Text>Billing</Text>
+          </TabsTab>
+          <TabsTab value="team" disabled>
+            <Text>Team</Text>
+          </TabsTab>
+        </TabsList>
+        <TabsPanel value="profile">
+          <Text>Profile panel</Text>
+        </TabsPanel>
+        <TabsPanel value="billing">
+          <Text>Billing panel</Text>
+        </TabsPanel>
+      </Tabs>
+    )
+    await expect(checkTabs()).resolves.toBeUndefined()
+    expect(onValueChange.mock.calls.map(([value]) => value)).toEqual([
+      "billing",
+    ])
+  })
+
+  test("fails on tabs with no tab list", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="tab"
+        accessibilityState={{ selected: true }}
+      >
+        <Text>Profile</Text>
+      </Pressable>
+    )
+    await expect(checkTabs()).rejects.toThrow(
+      "has no element with the tablist role"
+    )
+  })
+
+  test("fails on a tab with no name", async () => {
+    await render(
+      <Tabs defaultValue="profile">
+        <TabsList>
+          <TabsTab value="profile" />
+        </TabsList>
+      </Tabs>
+    )
+    await expect(checkTabs()).rejects.toThrow("the tab has no name")
+  })
+
+  test("fails on a tab a screen reader can't reach", async () => {
+    await render(
+      <View accessible accessibilityLabel="Account">
+        <HandTabs selected={["Profile"]} />
+      </View>
+    )
+    await expect(checkTabs()).rejects.toThrow(
+      'the tab "Profile" can\'t be reached'
+    )
+  })
+
+  test("fails on a tab with no selected state, and on two selected tabs", async () => {
+    await render(
+      <View accessibilityRole="tablist">
+        <Pressable accessibilityRole="tab">
+          <Text>Profile</Text>
+        </Pressable>
+      </View>
+    )
+    await expect(checkTabs()).rejects.toThrow("has no selected state")
+    await render(<HandTabs selected={["Profile", "Billing"]} />)
+    await expect(checkTabs()).rejects.toThrow("has 2 selected tabs")
+  })
+
+  test("fails on tabs with no tab selected", async () => {
+    await render(<HandTabs selected={[]} stuck />)
+    await expect(checkTabs()).rejects.toThrow("has no selected tab")
+  })
+
+  test("fails on a tab that isn't selected after the activate action", async () => {
+    await render(<HandTabs selected={["Profile"]} stuck />)
+    await expect(checkTabs()).rejects.toThrow(
+      'the tab "Billing" isn\'t selected after the activate action'
     )
   })
 })

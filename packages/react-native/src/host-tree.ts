@@ -110,6 +110,24 @@ function readTree(root: HostNode, os: OS) {
   return { elements, problems }
 }
 
+/** Every node on screen, in tree order, whether a screen reader reaches it or not. */
+function shownNodes(root: HostNode) {
+  const nodes: HostNode[] = []
+  const visit = (node: HostNode) => {
+    if (isDisplayNone(node.props.style)) {
+      return
+    }
+    nodes.push(node)
+    for (const child of node.children ?? []) {
+      if (typeof child !== "string") {
+        visit(child)
+      }
+    }
+  }
+  visit(root)
+  return nodes
+}
+
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textOf(node: HostNode): string {
   return (node.children ?? [])
@@ -194,5 +212,6 @@ export {
   performWatched,
   readTree,
   roleOf,
+  shownNodes,
   stateOf,
 }
