@@ -63,6 +63,7 @@ const roles: Record<string, string> = {
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
+  "android.widget.RadioButton": "radio",
   "android.widget.Button": "button",
   "android.widget.ImageView": "image",
   "android.widget.ToggleButton": "togglebutton",
@@ -103,6 +104,8 @@ const checkedOf = (value: string) =>
 // Android has no mixed state: React Native appends it to the description.
 const androidMixed = ", mixed"
 
+const radioValue = /^radio button, /
+
 const androidChecked = (attrs: Record<string, string>) =>
   attrs["content-desc"]?.endsWith(androidMixed)
     ? "mixed"
@@ -115,6 +118,17 @@ function parseTree(source: string) {
   const nodes = new Map<string, Node>()
   for (const [, type, tag] of source.matchAll(/<([\w.]+)\s([^>]*?)\/?>/g)) {
     const attrs = attributes(tag)
+    // Both list controls no screen reader or key reaches, like a read-only
+    // rating's radios: UiAutomator by importance, XCUITest by `accessible`.
+    const unreached =
+      platform === "android"
+        ? type === "android.widget.RadioButton" &&
+          attrs["a11y-important"] === "false" &&
+          attrs.focusable === "false"
+        : attrs.accessible === "false" && radioValue.test(attrs.value ?? "")
+    if (unreached) {
+      continue
+    }
     const id =
       platform === "ios"
         ? attrs.name
@@ -124,11 +138,24 @@ function parseTree(source: string) {
       platform === "ios" && /^checkbox, /.test(attrs.value ?? "")
         ? attrs.value.slice("checkbox, ".length)
         : undefined
-    const role = checkbox ? "checkbox" : (roles[type] ?? type)
+    // Nor a radio: the value starts "radio button".
+    const radio =
+      platform === "ios" && radioValue.test(attrs.value ?? "")
+        ? attrs.value.replace(radioValue, "")
+        : undefined
+    const role = checkbox
+      ? "checkbox"
+      : radio
+        ? "radio"
+        : (roles[type] ?? type)
     const node: Node = {
       role,
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
       enabled: attrs.enabled === "true",
+    }
+    if (role === "radio") {
+      node.checked =
+        platform === "ios" ? radio === "checked" : attrs.checked === "true"
     }
     if (role === "switch" || role === "togglebutton") {
       node.checked =
@@ -192,6 +219,16 @@ function useDevice(name: string) {
     },
     async press(id: string) {
       await driver.$(byId(id)).click()
+    },
+    /** Presses the element named `label`, for a part that takes no test ID. */
+    async pressNamed(label: string) {
+      await driver
+        .$(
+          platform === "ios"
+            ? `~${label}`
+            : `android=new UiSelector().description("${label}")`
+        )
+        .click()
     },
     async open(screen: string) {
       if (await driver.$(byId("back")).isExisting()) {

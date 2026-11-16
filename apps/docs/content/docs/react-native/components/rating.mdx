@@ -1,0 +1,225 @@
+---
+title: Rating
+description: Pick a score from a row of stars, whole or half, or show one as an image.
+---
+
+Use a rating to collect a score, like how a stay went, or to show one, like an average. Each star is a radio, so it works like a radio group with one value.
+
+<ComponentExample
+  name="rating/basic"
+  caption="Tap a star, or double-tap it with VoiceOver or TalkBack, to pick a score."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Rating`:
+
+```text
+Rating
+└── RatingItem
+```
+
+`Rating` renders a `View` and its children once per star, so put one `RatingItem` inside it. Without children, it renders a `RatingItem` with no icon. `RatingItem` renders a `View`, and puts a `Pressable` with the `radio` role over it for each score it can pick.
+
+## Usage
+
+Import the parts and put them together. Draw the star from the item's state:
+
+```tsx
+import { Rating, RatingItem } from "@ui-sdk/react-native/rating"
+import { Text, View } from "react-native"
+
+function Example() {
+  return (
+    <Rating aria-label="Rating" defaultValue={3} style={styles.rating}>
+      <RatingItem>
+        {(state) => (
+          <View aria-hidden style={styles.star}>
+            <Text style={styles.empty}>★</Text>
+            <View style={[styles.fill, { width: `${state.fill * 100}%` }]}>
+              <Text style={styles.full}>★</Text>
+            </View>
+          </View>
+        )}
+      </RatingItem>
+    </Rating>
+  )
+}
+
+export { Example }
+```
+
+Each radio is named by its score, like "3 stars", so hide the icon from screen readers with `aria-hidden`. Name the rating with `aria-label`.
+
+## Stars
+
+Each item's state says how much of its star the shown score covers: `fill` goes from 0 to 1, and `checked` marks the star the score ends in. The radios that pick the score sit over the icon, so it needs no presses of its own. For half stars and averages, clip a filled icon to `fill` of its width, as above; its `start` edge follows the app's direction.
+
+## Half Stars
+
+Set `step={0.5}` to split each star in two. Each half is its own radio, named like "2.5 stars", and a tap on the first half of a star picks the half score.
+
+<ComponentExample
+  name="rating/half-stars"
+  caption="Tap the first half of a star. Its star fills halfway."
+/>
+
+## Preview
+
+A rating on the web previews the score under a mouse pointer. Native has no preview: a tap picks the score at once, so `highlighted` stays `null`.
+
+## Deselectable
+
+Set `deselectable` to let people clear their score: a tap on the checked star sets the score back to `null`.
+
+<ComponentExample
+  name="rating/deselectable"
+  caption="Tap the fourth star. The score clears."
+/>
+
+## Read-Only
+
+Set `readOnly` to show a score that can't change, like an average. Any score shows, like 4.2, which fills a fifth of the last star. The rating becomes one image for screen readers, and its radios are hidden from them and from the keyboard.
+
+Name a read-only rating with `getValueLabel`, so its name includes the score. An `aria-label` would replace it.
+
+<ComponentExample
+  name="rating/read-only"
+  caption="An average of 4.2, named Rated 4.2 out of 5."
+/>
+
+## Disabled
+
+Set `disabled` to stop every star from being changed. Screen readers announce its radios as dimmed or disabled, and on Android they leave Tab's order.
+
+<ComponentExample
+  name="rating/disabled"
+  caption="The rating is disabled, so a tap changes nothing."
+/>
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. Call `details.cancel()` in the callback to keep the current score. A [controller](#controller) from `createRatingController()` sets the score from anywhere, like the Clear Rating button below.
+
+<ComponentExample
+  name="rating/controlled"
+  caption="Tap a star, then press Clear Rating. The console logs each change and its reason."
+/>
+
+## Forms
+
+A native view takes part in no form, so the rating has no `name` or `form` prop and renders no hidden radios. Read the score from `onValueChange` or a controller. `required` stays in the state for your styles and labels.
+
+## Stars and Labels
+
+Set `max` for the number of stars. Each radio is named by `getValueLabel`, which gets the score and `max` and says "1 star" or "3 stars" by default.
+
+```tsx
+<Rating
+  aria-label="Difficulty"
+  max={10}
+  getValueLabel={(value, max) => `${value} of ${max}`}
+>
+  <RatingItem />
+</Rating>
+```
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.rating, state.disabled && styles.disabled]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### Rating [#part-state-rating]
+
+<PartStateTable
+  component="rating"
+  part="root"
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingState"
+/>
+
+### RatingItem [#part-state-ratingitem]
+
+<PartStateTable
+  component="rating"
+  part="item"
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingItemState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Rating
+
+<TypeTable
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingOptions"
+/>
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingItemState"
+/>
+
+### Reasons
+
+`details.reason` says why the score changed. On native it's `"item-press"` or `"imperative"`: no arrow keys reach the stars, and there's no form to reset or restore.
+
+<ReasonTable
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createRatingController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, runs the change callback like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/rating/rating.ts"
+  name="RatingController"
+/>
+
+### Events
+
+Callbacks get the new score first, then the details.
+
+| Prop            | On       | Receives                                                            |
+| --------------- | -------- | ------------------------------------------------------------------- |
+| `onValueChange` | `Rating` | `(value, details)`: the score or `null`, and the [reason](#reasons) |
+
+## Accessibility
+
+A rating follows the [WAI-ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/), translated to React Native's accessibility props. Each radio has the `radio` role with its checked and disabled state, so VoiceOver and TalkBack announce it as a radio button that's selected or not, and a double-tap checks it. Each radio is its own accessible element, reached by swiping. A read-only rating is one element with the `image` role, named by `getValueLabel`.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                                      |
+| ---------- | ------------------------------------------------------------------------- |
+| Tab        | Moves to the next radio, and Shift-Tab to the previous one                |
+| Arrow keys | Move between radios, on Android only, without checking them               |
+| Space      | Checks the focused radio, or clears it when it's checked and deselectable |
+| Enter      | Checks the focused radio, on Android only                                 |
+
+Every radio is its own stop: React Native delivers no arrow keys to views, so the rating's single tab stop and its arrow keys, which check the score as they move, aren't built.

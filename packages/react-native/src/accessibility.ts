@@ -11,6 +11,8 @@ import type {
 type OS = "ios" | "android"
 
 type NativeProps = {
+  accessible?: boolean
+  focusable?: boolean
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
   accessibilityValue?: AccessibilityValue
@@ -103,6 +105,11 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
         ? "togglebutton"
         : role
   }
+  // VoiceOver reads an image as one element. TalkBack reads a named one
+  // anyway, and `accessible` would make it a Tab stop on Android.
+  if (role === "image" && os === "ios") {
+    props.accessible = true
+  }
   for (const [name, given] of Object.entries(attrs)) {
     if (given === undefined) {
       continue
@@ -126,6 +133,11 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
       state.disabled = true
     } else if (name === "aria-hidden" && given === "true") {
       hide(props, os)
+      // Out of Tab's order too: a Pressable stays focusable without `accessible`.
+      if (attrs.tabindex === "-1") {
+        props.accessible = false
+        props.focusable = false
+      }
     } else if (name === "hidden") {
       hide(props, os)
       props.style = { ...props.style, display: "none" }

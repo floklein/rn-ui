@@ -426,7 +426,8 @@
   "@ui-sdk/react-native/button (lazy)": 182,
   "@ui-sdk/react-native/checkbox": 14959,
   "@ui-sdk/react-native/primitive": 5010,
+  "@ui-sdk/react-native/rating": 15300,
   "@ui-sdk/react-native/switch": 11263,
-  "@ui-sdk/react-native/testing": 3351,
+  "@ui-sdk/react-native/testing": 3560,
   "@ui-sdk/react-native/toggle": 14456
 }

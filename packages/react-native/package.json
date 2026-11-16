@@ -21,6 +21,7 @@
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./primitive": "./src/primitive.ts",
+    "./rating": "./src/rating.tsx",
     "./switch": "./src/switch.tsx",
     "./testing": "./src/testing.ts",
     "./toggle": "./src/toggle.tsx"
@@ -50,6 +51,10 @@
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
+      },
+      "./rating": {
+        "types": "./dist/rating.d.ts",
+        "default": "./dist/rating.js"
       },
       "./switch": {
         "types": "./dist/switch.d.ts",

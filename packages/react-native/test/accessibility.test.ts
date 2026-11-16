@@ -80,6 +80,20 @@ const rows: [Record<string, string | undefined>, object, object][] = [
   [{ "aria-hidden": "true" }, hiddenProps.ios, hiddenProps.android],
   [{ "aria-hidden": "false" }, {}, {}],
   [
+    { "aria-hidden": "true", tabindex: "-1" },
+    { ...hiddenProps.ios, accessible: false, focusable: false },
+    { ...hiddenProps.android, accessible: false, focusable: false },
+  ],
+  [
+    { role: "img", "aria-label": "4 stars" },
+    {
+      accessibilityRole: "image",
+      accessible: true,
+      accessibilityLabel: "4 stars",
+    },
+    { accessibilityRole: "image", accessibilityLabel: "4 stars" },
+  ],
+  [
     { "aria-label": "Wi-Fi" },
     { accessibilityLabel: "Wi-Fi" },
     { accessibilityLabel: "Wi-Fi" },
@@ -308,7 +322,12 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
 
   test.each(Object.entries(roles))("role %s becomes %s", (role, native) => {
     expect(toNativeProps({ role }, os)).toEqual(
-      native ? { accessibilityRole: native } : {}
+      native
+        ? {
+            accessibilityRole: native,
+            ...(role === "img" && os === "ios" && { accessible: true }),
+          }
+        : {}
     )
   })
 

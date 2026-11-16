@@ -48,6 +48,16 @@
     },
     {
       "kind": "behavior",
+      "file": "packages/core/src/components/rating/rating-native.ts",
+      "mirrors": [
+        "packages/core/src/components/rating/rating.ts",
+        "packages/core/src/components/radio/radio-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the radio slot's bind orchestrates: each radio joins the rating's roving group (api.internal.roving.bind) while it's mounted, with a native element the order twin sorts in render order and the host focuses."
+    },
+    {
+      "kind": "behavior",
       "file": "packages/core/src/components/toggle/toggle-native.ts",
       "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -362,7 +372,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar and testing."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, rating and testing."
     }
   ],
   "components": {
@@ -383,6 +393,23 @@
         "button.root": {
           "needs": "nothing",
           "reason": "Its bind reads what element it rendered as and a disabled fieldset, neither of which exists on native: the part stays unknown, whose type=\"button\" the translation makes the button role. Its keydown and keyup activate a non-button element, where the OS activates the Pressable with Space or Enter."
+        }
+      }
+    },
+    "rating": {
+      "entry": "packages/react-native/src/rating.tsx",
+      "slots": {
+        "rating.root": {
+          "needs": "nothing",
+          "reason": "Its bind makes the rating take part in a form and focuses it from a label, which native doesn't have. Its pointermove previews a score under a mouse and ignores touch, like upstream's touch behavior, and native's presses come from touch."
+        },
+        "rating.radio": {
+          "covered": "packages/core/src/components/rating/rating-native.ts",
+          "reason": "Its bind joins the rating's roving group, which rating-native.ts does while the radio is mounted, and names it from a label, which native names with aria-label. Its keydown and keyup move between stars with arrow keys and check one with Space, which native doesn't build, and the OS activates the Pressable."
+        },
+        "rating.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
     },
@@ -472,7 +499,6 @@
     "popover",
     "progress",
     "radio",
-    "rating",
     "resizable",
     "scroll-area",
     "segmented-control",
@@ -550,6 +576,12 @@
       "example": "group-rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "rating",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
     },
     {
       "component": "toggle",
