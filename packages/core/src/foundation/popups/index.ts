@@ -25,6 +25,7 @@ export {
   prepareReset,
   resetPopoverStyles,
 } from "./popup"
+export { partIn, popupNative } from "./popup-native"
 export { createOpenSteps, createSteppedPopup, unopened } from "./popup-steps"
 export {
   inPopupElement,

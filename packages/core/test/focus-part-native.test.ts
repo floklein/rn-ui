@@ -18,6 +18,7 @@ describe("focusing a part on the native host", () => {
       field: vi.fn(),
       announce: vi.fn(),
       activate: vi.fn(),
+      listen: vi.fn(),
       compare: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })

@@ -3,6 +3,7 @@ import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
+import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
@@ -120,6 +121,14 @@ describe("checkCreation", () => {
     expect(() => checkCreation(collapsible, {})).not.toThrow()
     expect(() =>
       checkCreation(collapsible, { open: true, disabled: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a dialog and an alert dialog, open or closed", () => {
+    expect(() => checkCreation(dialog, {})).not.toThrow()
+    expect(() => checkCreation(dialog, { open: true })).not.toThrow()
+    expect(() =>
+      checkCreation(alertDialog, { defaultOpen: true })
     ).not.toThrow()
   })
 

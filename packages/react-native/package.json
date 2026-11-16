@@ -17,10 +17,12 @@
   "type": "module",
   "license": "Apache-2.0",
   "exports": {
+    "./alert-dialog": "./src/alert-dialog.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./dialog": "./src/dialog.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
     "./meter": "./src/meter.tsx",
@@ -48,6 +50,10 @@
   ],
   "publishConfig": {
     "exports": {
+      "./alert-dialog": {
+        "types": "./dist/alert-dialog.d.ts",
+        "default": "./dist/alert-dialog.js"
+      },
       "./avatar": {
         "types": "./dist/avatar.d.ts",
         "default": "./dist/avatar.js"
@@ -63,6 +69,10 @@
       "./collapsible": {
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
+      },
+      "./dialog": {
+        "types": "./dist/dialog.d.ts",
+        "default": "./dist/dialog.js"
       },
       "./field": {
         "types": "./dist/field.d.ts",

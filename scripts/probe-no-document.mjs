@@ -33,6 +33,7 @@ native.setNativeHost({
   announce() {},
   activate() {},
   compare: () => 0,
+  listen: () => () => {},
 })
 
 const describe = (error) =>

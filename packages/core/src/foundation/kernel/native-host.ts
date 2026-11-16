@@ -15,6 +15,20 @@ type NativeTextField = {
 }
 
 /**
+ * What dismisses the topmost open layer on the native host. Each says
+ * whether a layer took it, so the host can leave it to the OS otherwise.
+ * @experimental
+ */
+type NativeInput = {
+  /** Android's back button or gesture. */
+  back: () => boolean
+  /** The screen reader's escape gesture on iOS, with the api of the popup whose content it reached, when it reached one. */
+  escape: (within?: object) => boolean
+  /** A press on a modal popup's backdrop. */
+  outsidePress: () => boolean
+}
+
+/**
  * What core asks of the native host, which `@ui-sdk/react-native`
  * implements with `react-native` views and registers as it loads.
  * @experimental
@@ -30,6 +44,8 @@ type NativeHost = {
   activate: (part: { api: object }) => void
   /** Where two mounted parts render: negative when `a` comes first, positive when `b` does. */
   compare: (a: Part, b: Part) => number
+  /** Hears what dismisses a layer while one is open. Returns what stops it. */
+  listen: (input: NativeInput) => () => void
 }
 
 /**
@@ -64,6 +80,7 @@ export {
   type NativeBehavior,
   type NativeHost,
   nativeHost,
+  type NativeInput,
   type NativeTextField,
   setNativeHost,
 }
