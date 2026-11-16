@@ -1,0 +1,340 @@
+---
+title: Tabs
+description: Switch between related panels with one tab selected at a time.
+---
+
+Use Tabs when several views share the same space, such as settings sections or a preview and its source. Each tab opens the panel with the same value.
+
+<ComponentExample
+  name="tabs/basic"
+  caption="Tap Password to show its panel, or swipe to it with VoiceOver or TalkBack and double-tap."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Tabs`:
+
+```text
+Tabs
+├── TabsList
+│   ├── TabsTab
+│   ├── TabsTab
+│   └── TabsIndicator
+├── TabsPanel
+└── TabsPanel
+```
+
+`TabsTab` renders a `Pressable` with the tab role and its selected state. `Tabs`, `TabsList`, `TabsIndicator` and `TabsPanel` render a `View`. Give each tab and its panel the same unique `value`, and the list an `aria-label`. Set `defaultValue` to choose the initial tab; otherwise, the first enabled tab is selected once the tabs mount.
+
+## Usage
+
+Import the parts and put them together. Text inside a tab goes in a `Text`, and names the tab:
+
+```tsx
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@ui-sdk/react-native/tabs"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Tabs defaultValue="account">
+      <TabsList aria-label="Settings">
+        <TabsTab value="account">
+          <Text>Account</Text>
+        </TabsTab>
+        <TabsTab value="password">
+          <Text>Password</Text>
+        </TabsTab>
+      </TabsList>
+      <TabsPanel value="account">
+        <Text>Manage your profile.</Text>
+      </TabsPanel>
+      <TabsPanel value="password">
+        <Text>Choose a new password.</Text>
+      </TabsPanel>
+    </Tabs>
+  )
+}
+
+export { Example }
+```
+
+## Vertical
+
+Set `orientation="vertical"` and lay the list out as a column beside the panels. The orientation is in every part's state, so one style function can lay out both.
+
+<ComponentExample
+  name="tabs/vertical"
+  caption="Tap Security. The tabs run down the side of the panel."
+/>
+
+## Disabled
+
+Add `disabled` to a tab to prevent selection. Screen readers still reach it and announce it as dimmed or disabled.
+
+<ComponentExample
+  name="tabs/disabled"
+  caption="Tap Reports. It stays unselected, and the current panel stays."
+/>
+
+On Android the disabled state disables the view, so Tab skips a disabled tab.
+
+## Icons
+
+Put decorative icons in `TabsTabIcon` so screen readers skip them and the tab keeps its text as its name. Add `mirror` to directional icons, such as Reply, to flip them when the app runs right to left. An icon-only tab needs an `aria-label`.
+
+<ComponentExample
+  name="tabs/icons"
+  caption="Tap Replies. Its arrow points the other way when the app runs right to left."
+/>
+
+## Indicator
+
+`TabsIndicator` marks the selected tab. Render it inside `TabsList`: its state holds the selected tab's box in the list, measured from the layouts of the list and the tabs placed in it. Position it absolutely with those fields to draw a marker that follows the selection. It measures again when a tab or the list is laid out again.
+
+```tsx
+<TabsIndicator
+  style={(state) => ({
+    position: "absolute",
+    left: state.activeTabLeft,
+    top: state.activeTabTop,
+    width: state.activeTabWidth,
+    height: state.activeTabHeight,
+  })}
+/>
+```
+
+The fields are unset until the list and the selected tab have been laid out. Render the indicator before the tabs to draw it behind them.
+
+<ComponentExample
+  name="tabs/indicator"
+  caption="Tap Podcasts, then Vertical. The same indicator follows the selected tab in either layout."
+/>
+
+<ComponentExample
+  name="tabs/line"
+  caption="Tap Analytics. The underline moves under it."
+/>
+
+## Keep Mounted
+
+Panels normally unmount when another tab is selected. Add `keepMounted` to a panel to keep it mounted and hidden, preserving local state such as a draft.
+
+<ComponentExample
+  name="tabs/keep-mounted"
+  caption="Type a message, tap Formatting, then Reply. Your draft is still there."
+/>
+
+## Animation
+
+A panel leaves through `onExit`. When another tab is selected, the panel calls `onExit` with a `done` function and stays on screen until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once, or hides with `keepMounted`. A panel's state also has `startingStyle`, true for its first frame after it appears, and `endingStyle`, true while it leaves.
+
+```tsx
+const opacity = useRef(new Animated.Value(1)).current
+
+<TabsPanel
+  value="activity"
+  onExit={(done) =>
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(done)
+  }
+  render={<Animated.View style={{ opacity }} />}
+/>
+```
+
+`LayoutAnimation` animates the indicator and the panels together without either: configure it in `onValueChange`, as this example does.
+
+<ComponentExample
+  name="tabs/animation"
+  caption="Tap Activity, then Settings. The indicator slides, and the panels fade."
+/>
+
+## Controlled
+
+Use `value` and `onValueChange` to own the selected tab. Call `details.cancel()` in the callback to keep the current tab. `onValueChange` doesn't run for the initial selection. A [controller](#controller) from `createTabsController()` selects a tab from anywhere, and its `focus()` moves VoiceOver's or TalkBack's focus to the selected tab.
+
+<ComponentExample
+  name="tabs/controlled"
+  caption="Tap Drafts, then Show Sent Mail. The log shows each new value with its reason."
+/>
+
+The callback receives the new value and `details`, whose `reason` is `"item-press"`, `"item-removed"` or `"imperative"`, and whose `source` is `"touch"`, or `"virtual"` while a screen reader runs.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the tab keeps its role, selected state, press and layout.
+
+<ComponentExample
+  name="tabs/render"
+  caption="Each tab renders its own Pressable with an unread count after the label. Tap Unread to see who wrote to you."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.tab, state.selected && styles.selected]`. Each part receives the fields listed under [Part State](#part-state). A tab gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### Tabs [#part-state-tabs]
+
+<PartStateTable
+  component="tabs"
+  part="root"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsState"
+/>
+
+### TabsList [#part-state-tabslist]
+
+<PartStateTable
+  component="tabs"
+  part="list"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsListState"
+/>
+
+### TabsTab [#part-state-tabstab]
+
+<PartStateTable
+  component="tabs"
+  part="tab"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsTabState"
+/>
+
+### TabsTabIcon [#part-state-tabstabicon]
+
+<PartStateTable
+  component="tabs"
+  part="tab-icon"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsTabIconState"
+/>
+
+### TabsIndicator [#part-state-tabsindicator]
+
+<PartStateTable
+  component="tabs"
+  part="indicator"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsIndicatorState"
+/>
+
+With the selected tab's box, in pixels, described under [Indicator](#indicator):
+
+| Field             | Type     | Description                                         |
+| ----------------- | -------- | --------------------------------------------------- |
+| `activeTabLeft`   | `number` | The selected tab's left edge, from the list's left. |
+| `activeTabRight`  | `number` | Its right edge, from the list's right edge.         |
+| `activeTabTop`    | `number` | Its top edge, from the list's top edge.             |
+| `activeTabBottom` | `number` | Its bottom edge, from the list's bottom edge.       |
+| `activeTabWidth`  | `number` | Its width.                                          |
+| `activeTabHeight` | `number` | Its height.                                         |
+
+### TabsPanel [#part-state-tabspanel]
+
+<PartStateTable
+  component="tabs"
+  part="panel"
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsPanelState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation).
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `TabsTab` also takes `Pressable`'s props, and the other parts take `View`'s.
+
+### Tabs
+
+<TypeTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsOptions"
+/>
+
+`activation` and `loop` change nothing on native, which builds no arrow keys between tabs. Native has no find in page, so `hiddenUntilFound` only keeps panels mounted, like `keepMounted`.
+
+### TabsList
+
+The list takes no options of its own, only `View`'s props.
+
+### TabsTab
+
+<TypeTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsTabProps"
+/>
+
+### TabsTabIcon
+
+<TypeTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsTabIconProps"
+/>
+
+### TabsIndicator
+
+The indicator takes no props of its own. Its [state](#part-state-tabsindicator) holds the selected tab's box.
+
+### TabsPanel
+
+<TypeTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsPanelProps"
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why the selection changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createTabsController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, runs `onValueChange` like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/tabs/tabs.ts"
+  name="TabsController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details. `onValueChange` never runs on mount.
+
+| Prop            | On     | Receives                                                      |
+| --------------- | ------ | ------------------------------------------------------------- |
+| `onValueChange` | `Tabs` | `(value, details)`: the new value, and the [reason](#reasons) |
+
+## Accessibility
+
+Tabs follow the [WAI-ARIA tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), translated to React Native's accessibility props: the list has the tab list role, and each tab the tab role with its selected and disabled state, so VoiceOver and TalkBack announce which tab is selected, and a double-tap selects one. Each tab is its own accessible element, reached by swiping. A panel is a `View` with no role, since React Native has no tab panel role.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Selects the focused tab                                      |
+| Enter      | Selects the focused tab, on Android only                     |
+
+Every tab is its own stop: React Native delivers no arrow keys to views, so the list's single tab stop, arrow keys, Home and End aren't built.
