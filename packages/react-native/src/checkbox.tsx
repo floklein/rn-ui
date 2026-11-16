@@ -74,7 +74,13 @@ function Checkbox({
         : undefined,
     [group, handle]
   )
-  return usePart(handle, "root", {}, props, Pressable)
+  return usePart(
+    handle,
+    "root",
+    {},
+    props as Record<string, unknown>,
+    Pressable
+  )
 }
 
 /**
@@ -117,7 +123,7 @@ function CheckboxGroup<T extends string = string>({
   })
   return (
     <CheckboxGroupContext value={group}>
-      {usePart(group, "group", {}, props, View)}
+      {usePart(group, "group", {}, props as Record<string, unknown>, View)}
     </CheckboxGroupContext>
   )
 }
