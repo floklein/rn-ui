@@ -447,6 +447,6 @@
   "@ui-sdk/react-native/tabs": 19387,
   "@ui-sdk/react-native/testing": 5641,
   "@ui-sdk/react-native/textarea": 12205,
-  "@ui-sdk/react-native/toggle": 15669,
-  "@ui-sdk/react-native/toolbar": 13854
+  "@ui-sdk/react-native/toggle": 15782,
+  "@ui-sdk/react-native/toolbar": 13901
 }
