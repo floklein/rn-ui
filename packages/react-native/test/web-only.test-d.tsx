@@ -8,6 +8,8 @@ import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { Field, FieldError, FieldLabel } from "../src/field"
+import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import type * as SwitchEntry from "../src/switch"
@@ -130,12 +132,42 @@ const exits = [
   <RadioGroup form="order" />,
 ]
 
+const passwords = [
+  <PasswordInput autoComplete="new-password" defaultVisible required>
+    <PasswordInputControl placeholder="Password" />
+  </PasswordInput>,
+  // @ts-expect-error `name` has no native meaning.
+  <PasswordInput name="password" />,
+  // @ts-expect-error `form` has no native meaning.
+  <PasswordInput form="sign-in" />,
+  // @ts-expect-error The control's secure entry follows the root's `visible`.
+  <PasswordInputControl secureTextEntry={false} />,
+]
+
+const fields = [
+  <Field disabled invalid>
+    <FieldLabel>Email</FieldLabel>
+    <FieldError match>Required</FieldError>
+    <FieldError match={false}>Never</FieldError>
+  </Field>,
+  // @ts-expect-error `name` has no native meaning.
+  <Field name="email" />,
+  // @ts-expect-error Native computes no validity, so no flag shows an error.
+  <FieldError match="valueMissing" />,
+  // @ts-expect-error Native computes no validity, so nothing is valid.
+  <FieldLabel style={(state) => state.valid && {}} />,
+  // @ts-expect-error Native has no browser message.
+  <FieldError>{(state) => state.message}</FieldError>,
+]
+
 export {
   ComboboxInput,
   dialogs,
   exits,
+  fields,
   NativeDialog,
   NativeSwitch,
+  passwords,
   switches,
   type SwitchInput,
   values,

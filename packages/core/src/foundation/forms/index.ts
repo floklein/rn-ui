@@ -39,6 +39,7 @@ export {
   watchFormDisabled,
 } from "./form"
 export { groupField } from "./group-field"
+export { pressLabel } from "./label-press"
 export {
   focusFromSurroundings,
   initialText,

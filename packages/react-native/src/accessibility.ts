@@ -1,12 +1,15 @@
-// The one place core's attribute map becomes React Native props, in
-// `accessibility*` names only: React Native lets `role` override
-// `accessibilityRole`, and reads only some `aria-*` props.
+// The one place core's attribute map becomes React Native props, with
+// accessibility in `accessibility*` names only: React Native lets `role`
+// override `accessibilityRole`, and reads only some `aria-*` props.
 import type { Attrs } from "@ui-sdk/core"
 import type {
+  AccessibilityActionInfo,
   AccessibilityRole,
   AccessibilityState,
   AccessibilityValue,
+  TextInputProps,
 } from "react-native"
+import { idsOf } from "./names"
 
 type OS = "ios" | "android"
 
@@ -17,6 +20,7 @@ type NativeProps = {
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
   accessibilityValue?: AccessibilityValue
+  accessibilityActions?: AccessibilityActionInfo[]
   accessibilityLabel?: string
   accessibilityHint?: string
   accessibilityElementsHidden?: boolean
@@ -27,6 +31,11 @@ type NativeProps = {
   disabled?: boolean
   pointerEvents?: "none"
   style?: { display?: "none"; transform?: [{ scaleX: -1 }] }
+  secureTextEntry?: boolean
+  autoComplete?: TextInputProps["autoComplete"]
+  autoCapitalize?: TextInputProps["autoCapitalize"]
+  autoCorrect?: boolean
+  spellCheck?: boolean
 }
 
 const roles: Record<string, AccessibilityRole> = {
@@ -89,8 +98,16 @@ function hide(props: NativeProps, os: OS) {
  * What has no native counterpart is left out, like `aria-controls`, and so
  * is `tabindex`, which would take a roving item out of Android's traversal.
  * An icon marked to mirror flips when the app runs right to left, `rtl`.
+ * `aria-labelledby` and `aria-describedby` become the label and hint
+ * through `names`, the texts their ids name, given only for a single
+ * accessible element: a container's label would hide what's inside it.
  */
-function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
+function toNativeProps(
+  attrs: Attrs,
+  os: OS,
+  rtl = false,
+  names?: (ids: string[]) => string | undefined
+) {
   const props: NativeProps = {}
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
@@ -153,6 +170,18 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
       props.pointerEvents = "none"
     } else if (name === "aria-modal" && given === "true" && os === "ios") {
       props.accessibilityViewIsModal = true
+    } else if (name === "type" && (given === "password" || given === "text")) {
+      props.secureTextEntry = given === "password"
+    } else if (name === "autocomplete") {
+      props.autoComplete = given as TextInputProps["autoComplete"]
+    } else if (name === "autocapitalize") {
+      props.autoCapitalize = (
+        given === "off" ? "none" : given
+      ) as TextInputProps["autoCapitalize"]
+    } else if (name === "autocorrect") {
+      props.autoCorrect = given !== "off"
+    } else if (name === "spellcheck") {
+      props.spellCheck = given === "true"
     } else if (name === "aria-live" && os === "android") {
       props.accessibilityLiveRegion =
         given === "off" ? "none" : (given as "polite")
@@ -175,6 +204,21 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
   // from a value that has one, so a bar turning indeterminate sends it empty.
   if (os === "android" && role === "progressbar" && "aria-valuetext" in attrs) {
     value.text ??= ""
+  }
+  const label = names?.(idsOf(attrs["aria-labelledby"]))
+  if (label !== undefined) {
+    props.accessibilityLabel = label
+  }
+  const hint = names?.(idsOf(attrs["aria-describedby"]))
+  if (hint !== undefined) {
+    props.accessibilityHint = hint
+  }
+  // TalkBack offers expand or collapse from the expanded state and flips it
+  // natively, but reports only a declared action, which the part then presses.
+  if (os === "android" && state.expanded !== undefined) {
+    props.accessibilityActions = [
+      { name: state.expanded ? "collapse" : "expand" },
+    ]
   }
   if (Object.keys(state).length) {
     props.accessibilityState = state
@@ -200,7 +244,10 @@ function splitAria(props: Record<string, unknown>) {
   return { aria, rest }
 }
 
-/** A user's `accessibilityState` and `accessibilityValue` win over the translation field by field. */
+/**
+ * A user's `accessibilityState` and `accessibilityValue` win over the
+ * translation field by field, and their `accessibilityActions` join its own.
+ */
 function mergeAccessibility(
   translated: NativeProps,
   user: Record<string, any>
@@ -210,6 +257,17 @@ function mergeAccessibility(
     if (translated[name] && user[name]) {
       merged[name] = { ...translated[name], ...user[name] }
     }
+  }
+  if (translated.accessibilityActions && user.accessibilityActions) {
+    const own = (user.accessibilityActions as AccessibilityActionInfo[]).map(
+      (action) => action.name
+    )
+    merged.accessibilityActions = [
+      ...translated.accessibilityActions.filter(
+        (action) => !own.includes(action.name)
+      ),
+      ...user.accessibilityActions,
+    ]
   }
   return merged
 }

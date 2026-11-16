@@ -7,6 +7,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
 import { progress } from "@ui-sdk/core/progress"
+import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
 import { separator } from "@ui-sdk/core/separator"
@@ -50,6 +51,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a password input, hidden or shown", () => {
+    expect(() => checkCreation(passwordInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(passwordInput, { defaultVisible: true, disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a checkbox and a checkbox group", () => {

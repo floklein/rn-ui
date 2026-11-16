@@ -33,6 +33,7 @@ import {
   schemaOf,
   subscribe,
   unwatched,
+  warn,
   withSource,
   yieldToAuthor,
 } from "@ui-sdk/core/renderer"
@@ -41,11 +42,21 @@ import {
   I18nManager,
   Platform,
   Pressable,
+  Text,
   TextInput,
   View,
+  type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
+import {
+  idsOf,
+  plainText,
+  resolveIds,
+  textOf,
+  useReferences,
+  useText,
+} from "./names"
 import { pressSource, renders, textInputs, views } from "./native-host"
 import {
   idle,
@@ -86,6 +97,13 @@ type NativeSlot<P extends Primitive> = Exclude<
 >
 
 const behaviors = new WeakMap<object, NativeBehavior>()
+
+// A disabled FieldSet or Field around a component disables its controls, as
+// a disabled <fieldset> does on the web. `owner` is the instance that provides it.
+const DisabledContext = React.createContext<{
+  disabled: boolean
+  owner: object
+} | null>(null)
 
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
@@ -278,27 +296,55 @@ function viewRef(part: Part, behavior: NativeBehavior | undefined) {
   return ref
 }
 
-function nativeProps(
+// Core's attributes with the user's `role` and `aria-*`, which win.
+function ariaOf(
   part: Part,
   slotProps: object,
-  user: Record<string, unknown>,
+  aria: Record<string, string | undefined>,
   exiting: boolean
 ) {
-  const { aria, rest } = splitAria(user)
-  const translated = toNativeProps(
-    {
-      ...aria,
-      ...yieldToAuthor(
-        { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
-        (name) => aria[name] !== undefined
-      ),
-      // A part that animates out stays on screen, where its slot already hides it.
-      ...(exiting && { inert: "", hidden: undefined }),
-    },
-    Platform.OS === "android" ? "android" : "ios",
-    I18nManager.isRTL
-  )
-  return mergeProps(translated, rest, mergeAccessibility(translated, rest))
+  return {
+    ...aria,
+    ...yieldToAuthor(
+      { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
+      (name) => aria[name] !== undefined
+    ),
+    // A part that animates out stays on screen, where its slot already hides it.
+    ...(exiting && { inert: "", hidden: undefined }),
+  }
+}
+
+// A label on a container would hide what's inside it from screen readers.
+const isSingleElement = (
+  host: React.ElementType,
+  user: { accessible?: unknown }
+) =>
+  user.accessible === undefined
+    ? host === Pressable || host === TextInput || host === Text
+    : user.accessible === true
+
+function useMissingNames(
+  ids: string[],
+  from: { component: string; id: string }
+) {
+  const key = ids.join(" ")
+  React.useEffect(() => {
+    if (!key) {
+      return
+    }
+    // Referenced parts mounted in the same commit register first.
+    const timer = setTimeout(() => {
+      for (const id of idsOf(key)) {
+        if (textOf(id) === undefined) {
+          warn(
+            `\`aria-labelledby\` points at "${id}", which names nothing. Give the part with that id plain text children, or pass \`aria-label\`.`,
+            from
+          )
+        }
+      }
+    })
+    return () => clearTimeout(timer)
+  }, [key, from.component, from.id])
 }
 
 let rendered = 0
@@ -446,6 +492,19 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     }
     return unsubscribe
   }, [part])
+  // What a fieldset watcher in `bind` writes on the web.
+  const disabling = React.useContext(DisabledContext)
+  React.useLayoutEffect(() => {
+    const state = part.store.get() as { formDisabled?: boolean }
+    if (
+      disabling &&
+      disabling.owner !== owner.instance &&
+      state.formDisabled !== undefined &&
+      state.formDisabled !== disabling.disabled
+    ) {
+      part.store.set({ formDisabled: disabling.disabled })
+    }
+  }, [disabling, part, owner])
   const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
   const { onExit, ...hostProps } = props as typeof props & ExitProps
   // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted.
@@ -461,11 +520,52 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     rerender
   )
 
+  const shown = present(part, slotProps) || presence.exiting
+  const { render, ref, ...user } = hostProps
+  const { aria, rest } = splitAria(user)
+  const merged: Record<string, string | undefined> = shown
+    ? ariaOf(part, slotProps, aria, presence.exiting)
+    : {}
+  const activate = shown ? press(part, slotProps) : undefined
+  const host = Host ?? (activate ? Pressable : View)
+  const single = shown && isSingleElement(host, rest)
+  const labelledBy = single ? idsOf(merged["aria-labelledby"]) : []
+  useReferences([
+    ...labelledBy,
+    ...(single ? idsOf(merged["aria-describedby"]) : []),
+  ])
+  useMissingNames(labelledBy, {
+    component: primitive.name,
+    id: owner.instance.id,
+  })
+  const state = (
+    animates
+      ? { ...partState(part, slotProps), ...presence.state }
+      : partState(part, slotProps)
+  ) as PartState<P, S>
+  const translated = shown
+    ? toNativeProps(
+        merged,
+        Platform.OS === "android" ? "android" : "ios",
+        I18nManager.isRTL,
+        single ? resolveIds : undefined
+      )
+    : {}
+  const content =
+    typeof rest.children === "function"
+      ? rest.children(state, interaction)
+      : rest.children
+  useText(
+    shown
+      ? (translated.nativeID ??
+          (rest.nativeID as string | undefined) ??
+          (rest.id as string | undefined))
+      : undefined,
+    shown && !render ? plainText(content) : undefined
+  )
+
   let element: React.ReactElement | null = null
-  if (present(part, slotProps) || presence.exiting) {
-    const { render, ref, ...user } = hostProps
-    const activate = press(part, slotProps)
-    const host = Host ?? (activate ? Pressable : View)
+  if (shown) {
     const set = (change: Partial<Interaction>) => () =>
       setInteraction((current) => ({ ...current, ...change }))
     const pressable = activate || host === Pressable
@@ -483,36 +583,54 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
           onBlur: set({ focused: false }),
         }
       : {}
-    const translated = nativeProps(part, slotProps, user, presence.exiting)
+    const own = mergeProps(
+      translated,
+      { ...rest, children: content },
+      mergeAccessibility(translated, rest)
+    )
+    const actions =
+      activate && !presence.exiting && own.accessibilityActions
+        ? {
+            onAccessibilityAction: (event: AccessibilityActionEvent) => {
+              const { actionName } = event.nativeEvent
+              const expanded =
+                attrs(part, slotProps)["aria-expanded"] === "true"
+              if (
+                (actionName === "expand" && !expanded) ||
+                (actionName === "collapse" && expanded)
+              ) {
+                withSource("virtual", activate)
+              }
+            },
+          }
+        : {}
     // Core keeps an aria-disabled part focusable and refuses its press, but
     // Pressability reads only `disabled`: without it the part shows feedback.
-    const disabled =
-      pressable && translated.accessibilityState?.disabled === true
-    const { role } = { ...attrs(part, slotProps), ...user } as { role?: string }
+    const disabled = pressable && own.accessibilityState?.disabled === true
+    const { role } = merged
     // Fabric flattens a view with only a role or a label, and Android then
     // orders keyboard Tab by its children's edges across the whole screen.
     const container =
       !pressable &&
       ((role && role !== "none" && role !== "presentation") ||
-        translated.accessibilityRole ||
-        translated.accessibilityLabel)
+        own.accessibilityRole ||
+        own.accessibilityLabel)
         ? { collapsable: false }
         : {}
     element = renderElement(
       host,
       mergeProps(
         handlers,
+        actions,
         disabled ? { disabled } : {},
         container,
-        translated,
+        own,
         { ref: viewRef(part, behaviors.get(owner.instance)) },
         host === TextInput ? { ref: textInputRef } : {},
         { ref }
       ),
       render,
-      (animates
-        ? { ...partState(part, slotProps), ...presence.state }
-        : partState(part, slotProps)) as PartState<P, S>,
+      state,
       disabled
         ? { ...interaction, pressed: false, hovered: false }
         : interaction
@@ -799,6 +917,7 @@ function createParts<
 
 export {
   createParts,
+  DisabledContext,
   type ExitProps,
   type GenericPartComponent,
   type PartComponent,

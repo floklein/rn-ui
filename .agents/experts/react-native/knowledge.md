@@ -26,7 +26,12 @@ Last checked: 2026-11-16, against `packages/react-native` and `node_modules/reac
 - A `View` receives no key events in a stable build on either platform; `onKeyDown`, `onKeyUp` and `ref.focus()` on a `View` sit behind native feature flags that are off.
 - Android: hardware-keyboard focus traversal (Tab, arrows) over focusable views, `onFocus`/`onBlur` on `Pressable`, Enter or Space clicks the focused view. `tabIndex={-1}` sets `focusable={false}`, which takes a view out of traversal only when it isn't `accessible`: `accessible` sets `isFocusable` (`ReactViewManager.setAccessible`). A disabled `accessibilityState` calls `setEnabled(false)`, and Android's focus search skips a disabled view.
 - iOS: Full Keyboard Access traverses accessible elements with Tab and activates with Space; `Pressable` gets no focus events from it. `tab` is one of the roles `RCTViewComponentView` counts as interactive, so a tab is a stop although it gets no trait.
+- Android: `secureTextEntry={false}` gives a plain text field; `keyboardType="visible-password"` is the visible-password input type. An explicit `accessibilityState.disabled: false` calls `setEnabled(true)`, which undoes `editable={false}` on a `TextInput`.
 - `Pressable` reports `pressed` to a style function, and hover through `onHoverIn`/`onHoverOut` where a pointer exists. Pressability reads only `Pressable`'s own `disabled` prop: `accessibilityState.disabled` or `aria-disabled` dims it for screen readers (and disables the view on Android) but it still takes touches and reports `pressed`. `usePart` passes `disabled` to a pressed part whose translated state is disabled (#126). A part that turns disabled while held still runs `onPress` on release, and plays Android's click sound; `onPressOut` still resets the press.
+
+### Accessibility actions on Android
+
+- `ReactAccessibilityDelegate.kt` (0.88): a view with `accessibilityState.expanded` is offered `ACTION_EXPAND` or `ACTION_COLLAPSE` from its native tag, and performing either flips that tag first. Only declared `accessibilityActions` reach JS, and `accessibilityActionsMap` only grows, so once a view has declared both, a stale node can send `expand` to an expanded part: read the state when the action arrives. Declaring `activate` replaces the click with an event, so `onPress` no longer fires.
 
 ### Direction
 

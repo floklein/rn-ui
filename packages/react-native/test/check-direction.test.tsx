@@ -18,6 +18,11 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import {
+  PasswordInput,
+  PasswordInputControl,
+  PasswordInputToggle,
+} from "../src/password-input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
 import { Separator } from "../src/separator"
@@ -275,6 +280,23 @@ describe("checkDirection on the native host", () => {
               <Input aria-label="Search" defaultValue="Lisbon" />
               <InputClear aria-label="Clear search" />
             </InputGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a password input with its toggle", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <PasswordInput defaultValue="hunter2">
+              <PasswordInputControl aria-label="Password" />
+              <PasswordInputToggle aria-label="Show password" />
+            </PasswordInput>
           )
           return screen.container
         },

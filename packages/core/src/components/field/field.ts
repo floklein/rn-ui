@@ -9,6 +9,7 @@ import {
 } from "../../foundation/forms/form"
 import { afterReset } from "../../foundation/forms/value"
 import { activateControl, findControl } from "../../foundation/forms/control"
+import { pressLabel } from "../../foundation/forms/label-press"
 import {
   controlsIn,
   isRequired,
@@ -516,12 +517,7 @@ const fieldPrimitive = /* @__PURE__ */ definePrimitive({
         ...dataAttrs(state, api),
       }),
       // A label that isn't a native one for the control activates it all the same.
-      press({ api, el }, event) {
-        if (el instanceof HTMLLabelElement && el.control) {
-          return
-        }
-        api.activate(event)
-      },
+      press: pressLabel,
       bind: (el, { api }) =>
         registerById(el, (id) => api.internal.register("labels", id)),
     }),
