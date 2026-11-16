@@ -70,6 +70,21 @@ test("a button focusable when disabled ignores a press", async () => {
   )
 })
 
+test("a button given the link role is a link", async (t) => {
+  if (device.platform !== "ios") {
+    t.skip("React Native gives a link no Android class of its own")
+    return
+  }
+  await device.open("screen-button-link")
+  await device.expectTree((tree) => {
+    const links = [...tree.values()].filter((node) => node.role === "link")
+    assert.deepEqual(
+      links.map((node) => node.label),
+      ["Get Started", "Changelog"]
+    )
+  })
+})
+
 test("each example opens", async () => {
   const folder = path.join(
     import.meta.dirname,

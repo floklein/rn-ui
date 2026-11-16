@@ -70,6 +70,7 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeLink: "link",
   XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeTextField: "textbox",
@@ -313,6 +314,16 @@ function useDevice(name: string) {
     /** Presses the element named `label`, for a part that takes no test ID. */
     async pressNamed(label: string) {
       await driver.$(named(label)).click()
+    },
+    /** Taps the screen at a point, in the driver's units, for a part out of the accessibility tree. */
+    async tapAt(x: number, y: number) {
+      await driver
+        .action("pointer", { parameters: { pointerType: "touch" } })
+        .move({ x: Math.round(x), y: Math.round(y) })
+        .down()
+        .pause(50)
+        .up()
+        .perform()
     },
     /** The test ID of the element the OS's input focus is on, as a text field being edited. */
     async focused() {
