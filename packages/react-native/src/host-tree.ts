@@ -192,6 +192,7 @@ async function performWatched(
     announce: (text, priority) => host?.announce(text, priority),
     activate: (part) => host?.activate(part),
     compare: (a, b) => host?.compare(a, b) ?? 0,
+    listen: (input) => host?.listen(input) ?? (() => {}),
   })
   try {
     await act(() => perform(node, action))

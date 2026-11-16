@@ -1,5 +1,9 @@
 import type { Part } from "@ui-sdk/core"
-import { type NativeTextField, setNativeHost } from "@ui-sdk/core/native"
+import {
+  type NativeInput,
+  type NativeTextField,
+  setNativeHost,
+} from "@ui-sdk/core/native"
 import { AccessibilityInfo, type HostInstance } from "react-native"
 
 const views: WeakMap<Part, HostInstance> = new WeakMap()
@@ -20,6 +24,9 @@ AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
 const pressSource = () => (screenReader ? "virtual" : "touch")
 
 const following = 4
+
+let input: NativeInput | undefined
+const layerInput = () => input
 
 setNativeHost({
   focus(part) {
@@ -49,6 +56,14 @@ setNativeHost({
     }
     return (renders.get(a) ?? 0) - (renders.get(b) ?? 0)
   },
+  listen(next) {
+    input = next
+    return () => {
+      if (input === next) {
+        input = undefined
+      }
+    }
+  },
 })
 
-export { controls, fields, pressSource, renders, textInputs, views }
+export { controls, fields, layerInput, pressSource, renders, textInputs, views }
