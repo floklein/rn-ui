@@ -6,9 +6,10 @@ import {
   Text,
   type TextInputInstance,
 } from "react-native"
-import { Checkbox } from "../src/checkbox"
+import { Checkbox, CheckboxGroup } from "../src/checkbox"
 import {
   Field,
+  FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
@@ -141,6 +142,53 @@ describe("Field", () => {
     expect(screen.getByText("Alone")).toBeTruthy()
     expect(screen.getByText("Shown")).toBeTruthy()
     expect(screen.queryByText("Hidden")).toBeNull()
+  })
+  test("a checkbox takes the field nearest to it, and a field around its group names none of the group's checkboxes", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <Field>
+        <FieldLabel>Notifications</FieldLabel>
+        <CheckboxGroup onValueChange={onValueChange}>
+          <Field>
+            <Checkbox testID="email" value="email" />
+            <FieldLabel>Email</FieldLabel>
+          </Field>
+          <Checkbox testID="sms" value="sms" aria-label="Text message" />
+        </CheckboxGroup>
+      </Field>
+    )
+    await tick()
+    expect(props("email").accessibilityLabel).toBe("Email")
+    expect(props("sms").accessibilityLabel).toBe("Text message")
+    await fireEvent.press(screen.getByText("Email"))
+    expect(onValueChange.mock.lastCall?.[0]).toEqual(["email"])
+    await fireEvent.press(screen.getByText("Notifications"))
+    expect(onValueChange).toHaveBeenCalledTimes(1)
+  })
+
+  test("changing disabled keeps an input's hooks in order", async () => {
+    const error = jest.spyOn(console, "error").mockImplementation(() => {})
+    const { rerender } = await render(<Input aria-label="Name" />)
+    await rerender(<Input aria-label="Name" disabled />)
+    expect(error).not.toHaveBeenCalled()
+    error.mockRestore()
+  })
+
+  test("a FieldControl sends its disabled state explicitly, so Android enables it again", async () => {
+    const view = (disabled: boolean) => (
+      <Field disabled={disabled}>
+        <FieldLabel>Code</FieldLabel>
+        <FieldControl testID="code" />
+      </Field>
+    )
+    const { rerender } = await render(view(true))
+    await tick()
+    expect(props("code").editable).toBe(false)
+    expect(props("code").accessibilityState.disabled).toBe(true)
+    await rerender(view(false))
+    expect(props("code").editable).toBe(true)
+    expect(props("code").accessibilityState.disabled).toBe(false)
+    expect(props("code").accessibilityLabel).toBe("Code")
   })
 })
 

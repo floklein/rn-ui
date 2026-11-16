@@ -264,7 +264,11 @@ function FieldControl({
       field={field}
       slot="control"
       part={{ id: props.id, describedBy }}
-      props={mergeProps(rest, { editable: !disabled, render })}
+      props={mergeProps(rest, {
+        editable: !disabled,
+        accessibilityState: { disabled, ...rest.accessibilityState },
+        render,
+      })}
       host={TextInput}
     />
   )

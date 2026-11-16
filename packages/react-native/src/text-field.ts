@@ -57,7 +57,8 @@ function useTextField(
   { disabled, readOnly, required, ...props }: TextFieldProps
 ) {
   const field = handle as PrimitiveHandle<InputPrimitive>
-  const off = disabled || useInheritedDisabled()
+  const inherited = useInheritedDisabled()
+  const off = disabled || inherited
   useGroup(field, { disabled: off, readOnly })
   const type = (text: string) =>
     withSource("keyboard", () =>
