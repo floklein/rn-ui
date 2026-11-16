@@ -613,6 +613,8 @@ describe("checkPattern's img pattern on a read-only rating", () => {
   })
 })
 
+const listRole = os === "ios" ? "tabbar" : "tablist"
+
 // Tabs written by hand, whose selection follows `selected` and ignores presses when `stuck`.
 function HandTabs({
   selected,
@@ -623,7 +625,7 @@ function HandTabs({
 }) {
   const [value, setValue] = useState(selected)
   return (
-    <View accessibilityRole="tablist">
+    <View accessibilityRole={listRole}>
       {["Profile", "Billing"].map((name) => (
         <Pressable
           key={name}
@@ -678,7 +680,23 @@ describe("checkPattern's tabs pattern on the native host", () => {
       </Pressable>
     )
     await expect(checkTabs()).rejects.toThrow(
-      "has no element with the tablist role"
+      `has no element with the ${listRole} role`
+    )
+  })
+
+  test("fails on a tab list with the other OS's role, which its screen reader doesn't hear", async () => {
+    await render(
+      <View accessibilityRole={os === "ios" ? "tablist" : "tabbar"}>
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: true }}
+        >
+          <Text>Profile</Text>
+        </Pressable>
+      </View>
+    )
+    await expect(checkTabs()).rejects.toThrow(
+      `has no element with the ${listRole} role`
     )
   })
 
@@ -706,7 +724,7 @@ describe("checkPattern's tabs pattern on the native host", () => {
 
   test("fails on a tab with no selected state, and on two selected tabs", async () => {
     await render(
-      <View accessibilityRole="tablist">
+      <View accessibilityRole={listRole}>
         <Pressable accessibilityRole="tab">
           <Text>Profile</Text>
         </Pressable>

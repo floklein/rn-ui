@@ -102,7 +102,8 @@ function hide(props: NativeProps, os: OS) {
  * `aria-labelledby` and `aria-describedby` become the label and hint
  * through `names`, the texts their ids name, given only for a single
  * accessible element: a container's label would hide what's inside it.
- * A `pressable` part, one whose default host is `Pressable`, stays a button.
+ * A `pressable` part, one whose default host is `Pressable`, ignores
+ * `presentation` and `none`.
  */
 function toNativeProps(
   attrs: Attrs,
@@ -114,13 +115,13 @@ function toNativeProps(
   const props: NativeProps = {}
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
-  // As a browser keeps a focusable element's role, a pressable part ignores
-  // `presentation`. Only `tabbar` gives iOS's tab bar trait.
+  // A browser keeps a focusable element's role over `presentation`.
   const given =
     attrs.role === undefined || (pressable && roles[attrs.role] === "none")
       ? undefined
       : roles[attrs.role]
   const role = given ?? (attrs.type === "button" ? "button" : undefined)
+  // Only `tabbar` gives iOS's tab bar trait.
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined
