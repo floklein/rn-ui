@@ -410,17 +410,38 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
     expect(toNativeProps({ [name]: "x" }, os)).toEqual({})
   })
 
-  test.each(Object.entries(roles))("role %s becomes %s", (role, native) => {
-    expect(toNativeProps({ role }, os)).toEqual(
-      native
-        ? {
-            accessibilityRole: native,
-            ...((native === "image" || native === "progressbar") &&
-              (os === "ios" ? { accessible: true } : { collapsable: false })),
-          }
-        : {}
-    )
+  test.each(Object.entries(roles).filter(([role]) => role !== "tablist"))(
+    "role %s becomes %s",
+    (role, native) => {
+      expect(toNativeProps({ role }, os)).toEqual(
+        native
+          ? {
+              accessibilityRole: native,
+              ...((native === "image" || native === "progressbar") &&
+                (os === "ios" ? { accessible: true } : { collapsable: false })),
+            }
+          : {}
+      )
+    }
+  )
+
+  test("a tab list is a tab bar on iOS and stays a tab list on Android", () => {
+    expect(toNativeProps({ role: "tablist" }, os)).toEqual({
+      accessibilityRole: os === "ios" ? "tabbar" : "tablist",
+    })
   })
+
+  test.each(["presentation", "none"])(
+    "a pressable part ignores %s and keeps its button role",
+    (role) => {
+      const button = { role, type: "button" }
+      expect(toNativeProps(button, os, false, undefined, true)).toEqual({
+        accessibilityRole: "button",
+      })
+      expect(toNativeProps({ role }, os, false, undefined, true)).toEqual({})
+      expect(toNativeProps(button, os)).toEqual({ accessibilityRole: "none" })
+    }
+  )
 
   test("an undefined attribute is ignored", () => {
     expect(

@@ -30,7 +30,22 @@ const outline = definePrimitive({
 
 const parts = createParts(outline, { root: View, item: Pressable })
 
+const plain = createParts(
+  definePrimitive({
+    name: "plain",
+    state: () => ({}),
+    api: () => ({}),
+    slots: (slot) => ({ root: slot({}) }),
+  }),
+  { root: View }
+)
+
 describe("a part's accessibility props", () => {
+  test("presentation on a part that isn't pressable makes it none", async () => {
+    await render(<plain.Root testID="root" role="presentation" />)
+    expect(screen.getByTestId("root").props.accessibilityRole).toBe("none")
+  })
+
   test("a user's accessibilityState merges over the translated one, field by field", async () => {
     await render(
       <parts.Root>
