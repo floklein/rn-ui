@@ -100,8 +100,13 @@ function AvatarImage({ render, ref, alt, ...props }: AvatarImageProps) {
             { ref },
             {
               style: loaded ? undefined : hiddenStyle,
-              onLoad: () => handle.api.internal.reportImageStatus("loaded"),
-              onError: () => handle.api.internal.reportImageStatus("error"),
+              // Android loads a blank placeholder for an image with no source.
+              onLoad: key
+                ? () => handle.api.internal.reportImageStatus("loaded")
+                : undefined,
+              onError: key
+                ? () => handle.api.internal.reportImageStatus("error")
+                : undefined,
             }
           ),
           render,

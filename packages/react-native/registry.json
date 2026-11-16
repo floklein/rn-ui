@@ -54,7 +54,7 @@
         "packages/core/src/components/checkbox/checkbox-group.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Joins a checkbox to its group, as the root's bind does, with a stand-in for the element the group keeps for ids, order and focus. The order is the order the checkboxes joined."
+      "why": "What the root slot's bind orchestrates: the checkbox joins its group (api.internal.joinGroup) while its root is mounted, with a native element the order twin sorts in render order and the host focuses."
     },
     {
       "kind": "reroute",

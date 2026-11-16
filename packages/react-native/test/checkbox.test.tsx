@@ -222,6 +222,28 @@ describe("CheckboxGroup", () => {
     expect(checkbox("Coffee")).toBeChecked()
   })
 
+  test("a checkbox that renders later between two others takes its place in the value", async () => {
+    const onValueChange = jest.fn()
+    function Drinks({ coffee = true }) {
+      return (
+        <CheckboxGroup onValueChange={onValueChange}>
+          <Checkbox aria-label="Tea" value="tea" />
+          {coffee && <Checkbox aria-label="Coffee" value="coffee" />}
+          <Checkbox aria-label="Milk" value="milk" />
+        </CheckboxGroup>
+      )
+    }
+    const { rerender } = await render(<Drinks coffee={false} />)
+    await fireEvent.press(checkbox("Milk"))
+    await rerender(<Drinks />)
+    await fireEvent.press(checkbox("Coffee"))
+    await fireEvent.press(checkbox("Tea"))
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      ["tea", "coffee", "milk"],
+      expect.anything()
+    )
+  })
+
   test("a parent checks every enabled checkbox and shows mixed from them", async () => {
     await render(
       <CheckboxGroup

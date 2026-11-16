@@ -8,7 +8,7 @@ import {
   type CheckboxPrimitive,
   type CheckboxState,
 } from "@ui-sdk/core/checkbox"
-import { joinCheckboxGroup } from "@ui-sdk/core/native"
+import { checkboxNative } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Pressable, View } from "react-native"
@@ -54,25 +54,22 @@ function Checkbox({
     () => (group ? () => group.api : undefined),
     [group]
   )
-  const handle = usePrimitive(checkbox, {
-    checked,
-    defaultChecked,
-    onCheckedChange,
-    disabled,
-    readOnly,
-    required,
-    value,
-    controller,
-    parent,
-    debug,
-    group: fromGroup,
-  } as CheckboxOptions)
-  React.useLayoutEffect(
-    () =>
-      group
-        ? joinCheckboxGroup(handle.api, () => handle.api.focus())
-        : undefined,
-    [group, handle]
+  const handle = usePrimitive(
+    checkbox,
+    {
+      checked,
+      defaultChecked,
+      onCheckedChange,
+      disabled,
+      readOnly,
+      required,
+      value,
+      controller,
+      parent,
+      debug,
+      group: fromGroup,
+    } as CheckboxOptions,
+    checkboxNative
   )
   return usePart(
     handle,

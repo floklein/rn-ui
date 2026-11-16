@@ -56,7 +56,7 @@ import { Pressable, View } from "react-native"
 const parts = createParts(toggle, { root: Pressable, icon: View }, toggleNative)
 ```
 
-`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one.
+`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group.
 
 ## Focus From a Controller
 
@@ -65,10 +65,6 @@ A controller's `focus()`, like Switch's or Input's, goes through the host. On th
 ## Presence
 
 On the web, a part that animates out, like a checkbox's indicator, stays in the page until its CSS animations finish. React Native has no animation core can read, so the app says when an exit ends. A part whose slot takes `keepMounted` takes `onExit` on native, typed by `ExitProps` from `@ui-sdk/react-native/primitive`. When the part starts leaving, it calls `onExit` with `done`, and stays mounted until `done` runs or two seconds pass. Meanwhile it takes no touches and is hidden from screen readers. Its state gains `startingStyle` and `endingStyle`, the web's `data-starting-style` and `data-ending-style`. A part you build with `createParts` or `usePart` gets all of this from its slot.
-
-## Groups Without Elements
-
-On the web, a checkbox joins its group as it binds, with its element, which the group uses for ids, order and focus. On native, `joinCheckboxGroup(api, focus)` from `@ui-sdk/core/native` joins it instead: `focus` moves focus to the checkbox, and the group orders its checkboxes by when they joined. It returns a cleanup that leaves the group. `@ui-sdk/react-native`'s `Checkbox` calls it as it mounts inside a `CheckboxGroup`.
 
 ## Checking a Native Component
 
