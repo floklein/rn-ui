@@ -14,8 +14,6 @@ import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Toggle } from "../src/toggle"
 
-const { Root: Radio } = createParts(radioGroup, { root: Pressable })
-
 const values = [
   <Checkbox value="terms" />,
   <Radio value="small" />,
