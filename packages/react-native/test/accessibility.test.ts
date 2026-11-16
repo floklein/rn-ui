@@ -91,7 +91,11 @@ const rows: [Record<string, string | undefined>, object, object][] = [
       accessible: true,
       accessibilityLabel: "4 stars",
     },
-    { accessibilityRole: "image", accessibilityLabel: "4 stars" },
+    {
+      accessibilityRole: "image",
+      collapsable: false,
+      accessibilityLabel: "4 stars",
+    },
   ],
   [
     { "aria-label": "Wi-Fi" },
@@ -325,7 +329,8 @@ describe.each<OS>(["ios", "android"])("the translation on %s", (os) => {
       native
         ? {
             accessibilityRole: native,
-            ...(role === "img" && os === "ios" && { accessible: true }),
+            ...(role === "img" &&
+              (os === "ios" ? { accessible: true } : { collapsable: false })),
           }
         : {}
     )

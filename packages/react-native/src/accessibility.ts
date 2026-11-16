@@ -12,6 +12,7 @@ type OS = "ios" | "android"
 
 type NativeProps = {
   accessible?: boolean
+  collapsable?: boolean
   focusable?: boolean
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
@@ -105,10 +106,14 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
         ? "togglebutton"
         : role
   }
-  // VoiceOver reads an image as one element. TalkBack reads a named one
-  // anyway, and `accessible` would make it a Tab stop on Android.
-  if (role === "image" && os === "ios") {
-    props.accessible = true
+  // VoiceOver reads an image as one element. On Android `accessible` would
+  // make it a Tab stop, and Fabric would flatten it away with its label.
+  if (role === "image") {
+    if (os === "ios") {
+      props.accessible = true
+    } else {
+      props.collapsable = false
+    }
   }
   for (const [name, given] of Object.entries(attrs)) {
     if (given === undefined) {

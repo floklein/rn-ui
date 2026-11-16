@@ -66,7 +66,6 @@ function Fixture() {
         {stars}
       </Rating>
       <Rating
-        testID="rating-average"
         readOnly
         value={4.2}
         getValueLabel={(value, max) => `Rated ${value} out of ${max}`}

@@ -55,7 +55,7 @@ function Example() {
 export { Example }
 ```
 
-Each radio is named by its score, like "3 stars", so hide the icon from screen readers with `aria-hidden`. Name the rating with `aria-label`.
+Each radio is named by its score, like "3 stars", so hide the icon from screen readers with `aria-hidden`. A screen reader reaches each radio on its own, and React Native passes a group's `aria-label` to none of them, so say what is rated in [`getValueLabel`](#stars-and-labels), like "Food: 3 stars", when the screen has more than one rating.
 
 ## Stars
 

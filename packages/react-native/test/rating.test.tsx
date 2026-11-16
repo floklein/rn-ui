@@ -123,7 +123,9 @@ describe("Rating", () => {
       />
     )
     const root = screen.getByTestId("rating")
-    expect(root.props.accessible).toBe(Platform.OS === "ios" || undefined)
+    expect(root.props).toMatchObject(
+      Platform.OS === "ios" ? { accessible: true } : { collapsable: false }
+    )
     expect(root.props).toMatchObject({
       accessibilityRole: "image",
       accessibilityLabel: "4.2 stars",
