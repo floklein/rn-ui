@@ -74,14 +74,19 @@ const isAccessible = (node: HostNode, os: OS) =>
     roleOf(node) === "image" &&
     !!node.props.accessibilityLabel)
 
-/** Every accessible element outside hidden content, in tree order, and the problems met finding them. */
+/**
+ * Every accessible element outside hidden content, in tree order, every node
+ * a screen reader could read, `shown`, and the problems met finding them.
+ */
 function readTree(root: HostNode, os: OS) {
   const elements: HostNode[] = []
+  const shown: HostNode[] = []
   const problems: { node: HostNode; problem: string }[] = []
   const visit = (node: HostNode, inside: HostNode | undefined) => {
     if (isDisplayNone(node.props.style) || hiddenOn(node, os)) {
       return
     }
+    shown.push(node)
     if (hiddenOn(node, otherOS(os))) {
       problems.push({
         node,
@@ -107,7 +112,7 @@ function readTree(root: HostNode, os: OS) {
     }
   }
   visit(root, undefined)
-  return { elements, problems }
+  return { elements, shown, problems }
 }
 
 /** Every node on screen, in tree order, whether a screen reader reaches it or not. */

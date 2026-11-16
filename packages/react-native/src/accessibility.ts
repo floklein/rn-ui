@@ -3,6 +3,7 @@
 // override `accessibilityRole`, and reads only some `aria-*` props.
 import type { Attrs } from "@ui-sdk/core"
 import type {
+  AccessibilityActionInfo,
   AccessibilityRole,
   AccessibilityState,
   AccessibilityValue,
@@ -19,6 +20,7 @@ type NativeProps = {
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
   accessibilityValue?: AccessibilityValue
+  accessibilityActions?: AccessibilityActionInfo[]
   accessibilityLabel?: string
   accessibilityHint?: string
   accessibilityElementsHidden?: boolean
@@ -206,6 +208,13 @@ function toNativeProps(
   if (hint !== undefined) {
     props.accessibilityHint = hint
   }
+  // TalkBack offers expand or collapse from the expanded state and flips it
+  // natively, but reports only a declared action, which the part then presses.
+  if (os === "android" && state.expanded !== undefined) {
+    props.accessibilityActions = [
+      { name: state.expanded ? "collapse" : "expand" },
+    ]
+  }
   if (Object.keys(state).length) {
     props.accessibilityState = state
   }
@@ -230,7 +239,10 @@ function splitAria(props: Record<string, unknown>) {
   return { aria, rest }
 }
 
-/** A user's `accessibilityState` and `accessibilityValue` win over the translation field by field. */
+/**
+ * A user's `accessibilityState` and `accessibilityValue` win over the
+ * translation field by field, and their `accessibilityActions` join its own.
+ */
 function mergeAccessibility(
   translated: NativeProps,
   user: Record<string, any>
@@ -240,6 +252,17 @@ function mergeAccessibility(
     if (translated[name] && user[name]) {
       merged[name] = { ...translated[name], ...user[name] }
     }
+  }
+  if (translated.accessibilityActions && user.accessibilityActions) {
+    const own = (user.accessibilityActions as AccessibilityActionInfo[]).map(
+      (action) => action.name
+    )
+    merged.accessibilityActions = [
+      ...translated.accessibilityActions.filter(
+        (action) => !own.includes(action.name)
+      ),
+      ...user.accessibilityActions,
+    ]
   }
   return merged
 }
