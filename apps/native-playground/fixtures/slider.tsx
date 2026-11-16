@@ -14,8 +14,10 @@ function Fixture() {
   const [volume, setVolume] = useState(20)
   const [saved, setSaved] = useState("nothing saved")
   const [balance, setBalance] = useState(50)
+  const [balanceKept, setBalanceKept] = useState(50)
   const [scrolled, setScrolled] = useState(0)
   const [level, setLevel] = useState(50)
+  const [levelKept, setLevelKept] = useState(50)
   const [lifted, setLifted] = useState(0)
   const [tilt, setTilt] = useState(50)
   const [sliding, setSliding] = useState(false)
@@ -24,7 +26,7 @@ function Fixture() {
     <View style={styles.fixture}>
       <Text testID="readout">{`Volume ${volume}, ${saved}`}</Text>
       <Text testID="scroll-readout">
-        {`Balance ${balance}, scrolled ${scrolled}; level ${level}, lifted ${lifted}; tilt ${tilt}`}
+        {`Balance ${balance} kept ${balanceKept}, scrolled ${scrolled}; level ${level} kept ${levelKept}, lifted ${lifted}; tilt ${tilt}`}
       </Text>
       <Text testID="locale">{`Locale ${pageLocale()}`}</Text>
       <Slider
@@ -56,6 +58,7 @@ function Fixture() {
           <Slider
             defaultValue={50}
             onValueChange={setBalance}
+            onValueCommit={setBalanceKept}
             style={styles.slider}
           >
             <SliderControl
@@ -85,6 +88,7 @@ function Fixture() {
             orientation="vertical"
             defaultValue={50}
             onValueChange={setLevel}
+            onValueCommit={setLevelKept}
             style={styles.vertical}
           >
             <SliderControl

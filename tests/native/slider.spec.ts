@@ -55,7 +55,7 @@ test("inside a scroll view along the same axis that stops scrolling while draggi
   const thumb = center(await device.rectNamed("Balance"))
   const control = await device.rect("balance-control")
   await device.drag(thumb, { x: thumb.x - control.width * 0.3, y: thumb.y })
-  await expectNear("scroll-readout", /^Balance (\d+)/, 20)
+  await expectNear("scroll-readout", /^Balance \d+ kept (\d+)/, 20)
   assert.match(await readout("scroll-readout"), /scrolled 0;/)
 })
 
@@ -68,7 +68,7 @@ test("a drag that moves at once still leaves a same-axis scroll view in place", 
     300,
     0
   )
-  await expectNear("scroll-readout", /^Balance (\d+)/, 20)
+  await expectNear("scroll-readout", /^Balance \d+ kept (\d+)/, 20)
   assert.match(await readout("scroll-readout"), /scrolled 0;/)
 })
 
@@ -87,7 +87,7 @@ test("beside the slider, the same swipe scrolls the view", async () => {
   await device.expectTree((tree) => {
     const text = tree.get("scroll-readout")?.text ?? ""
     assert.doesNotMatch(text, /scrolled 0;/)
-    assert.match(text, /^Balance 50,/)
+    assert.match(text, /^Balance 50 kept 50,/)
   })
 })
 
@@ -95,7 +95,7 @@ test("a vertical slider in a vertical scroll view that stops scrolling while dra
   const thumb = center(await device.rectNamed("Level"))
   const control = await device.rect("level-control")
   await device.drag(thumb, { x: thumb.x, y: thumb.y - control.height * 0.3 })
-  await expectNear("scroll-readout", /level (\d+)/, 80)
+  await expectNear("scroll-readout", /level \d+ kept (\d+)/, 80)
   assert.match(await readout("scroll-readout"), /lifted 0;/)
 })
 

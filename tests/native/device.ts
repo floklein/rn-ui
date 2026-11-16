@@ -172,7 +172,17 @@ function parseTree(source: string) {
       platform === "ios" && radioValue.test(attrs.value ?? "")
         ? attrs.value.replace(radioValue, "")
         : undefined
-    const role = checkbox ? "checkbox" : radio ? "radio" : (roles[type] ?? type)
+    // Nor a slider: an adjustable view has the Adjustable trait.
+    const adjustable =
+      platform === "ios" &&
+      (attrs.traits ?? "").split(", ").includes("Adjustable")
+    const role = checkbox
+      ? "checkbox"
+      : radio
+        ? "radio"
+        : adjustable
+          ? "slider"
+          : (roles[type] ?? type)
     const node: Node = {
       role,
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",

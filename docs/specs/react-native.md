@@ -449,7 +449,7 @@ Nothing in the resolutions was run on a device, apart from the playground and th
 
 **Locale** ([How direction and locale are read on native][direction])
 
-- Whether `Intl` reports the device's locale on iOS and Android. If it doesn't on one, the locale comes through the host interface.
+- Whether `Intl` reports the device's locale on iOS and Android. If it doesn't on one, the locale comes through the host interface. Resolved on iOS (#71): after the simulator's language and region changed from French to German, the relaunched app read `en-DE` instead of `en-FR` and formatted 1234.5 as `1.234,5` instead of `1 234,5`; the language stays English because the app has only an English localization. Android is owed.
 
 **The seam** ([What the seam's ADR records][adr-ticket], [Does the host seam hold for Switch and Dialog][prototype])
 
