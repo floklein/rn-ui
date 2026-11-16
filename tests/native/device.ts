@@ -11,6 +11,7 @@ type Node = {
   checked?: boolean | "mixed"
   selected?: true
   expanded?: true
+  heading?: true
   enabled: boolean
   text?: string
   value?: string
@@ -212,6 +213,13 @@ function parseTree(source: string) {
     if (selected) {
       node.selected = true
     }
+    const heading =
+      platform === "ios"
+        ? (attrs.traits ?? "").split(", ").includes("Header")
+        : attrs.heading === "true"
+    if (heading) {
+      node.heading = true
+    }
     nodes.set(id && !nodes.has(id) ? id : `#${nodes.size}`, node)
   }
   return nodes
@@ -271,6 +279,20 @@ function useDevice(name: string) {
     },
     async press(id: string) {
       await driver.$(byId(id)).click()
+    },
+    /** Taps a point, in the driver's units: points on iOS, pixels on Android. */
+    async tapAt(x: number, y: number) {
+      await driver
+        .action("pointer", { parameters: { pointerType: "touch" } })
+        .move({ x: Math.round(x), y: Math.round(y) })
+        .down()
+        .pause(50)
+        .up()
+        .perform()
+    },
+    /** Android's back button. */
+    async back() {
+      await driver.back()
     },
     /** Presses the element named `label`, for a part that takes no test ID. */
     async pressNamed(label: string) {

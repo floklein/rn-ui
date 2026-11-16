@@ -1086,6 +1086,66 @@
       "example": "field-set-rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "dialog",
+      "example": "form",
+      "feature": "A form with method=\"dialog\" that closes it",
+      "reason": "Native has no forms: a Close part's value or the controller's close({ returnValue }) reports what closed it."
+    },
+    {
+      "component": "dialog",
+      "example": "from-menu",
+      "feature": "Opening a dialog from a menu item",
+      "reason": "Menu has no native entry yet (ticket 57); the example comes with it."
+    },
+    {
+      "component": "dialog",
+      "example": "nested",
+      "feature": "A modal dialog opened from another",
+      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
+    },
+    {
+      "component": "dialog",
+      "example": "presentation",
+      "feature": "Presenting as a sheet",
+      "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a dialog presents as a dialog."
+    },
+    {
+      "component": "dialog",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "dialog",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "confirm-anywhere",
+      "feature": "confirm() with no alert dialog of your own",
+      "reason": "The overlay host that renders confirm()'s own alert dialog comes with overlays opened from code (ticket 62); with your own AlertDialog and confirm.controller it works, as the confirm example shows."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "nested",
+      "feature": "A modal alert dialog opened from another",
+      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "alert-dialog",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     }
   ]
 }
