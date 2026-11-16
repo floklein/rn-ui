@@ -20,12 +20,21 @@ async function expectFocused(id: string) {
   assert.equal(await device.focused(), id)
 }
 
+// The Android keyboard pushes the fixture's readouts off the screen, where
+// UiAutomator can't read them.
+async function closeKeyboard() {
+  if (await device.driver.isKeyboardShown()) {
+    await device.driver.hideKeyboard()
+  }
+}
+
 beforeEach(() => device.open("fixture-input"))
 
 test("focus() starts editing the input, and typing reaches it", async () => {
   await device.press("focus-email")
   await expectFocused("input-email")
   await device.type("hi")
+  await closeKeyboard()
   await device.expectTree((tree) => {
     assert.equal(tree.get("input-email")?.value, "hi")
     assert.match(tree.get("changes")?.text ?? "", /email:input-change:keyboard/)
@@ -38,6 +47,7 @@ test("focus() starts editing the textarea, where Enter adds a line", async () =>
   // XCUITest reports no active element for a text view, so typing proves it.
   await device.driver.waitUntil(() => device.driver.isKeyboardShown())
   await device.type("a\nb")
+  await closeKeyboard()
   await device.expectTree((tree) =>
     assert.match(tree.get("changes")?.text ?? "", /notes:input-change/)
   )
@@ -46,14 +56,13 @@ test("focus() starts editing the textarea, where Enter adds a line", async () =>
 
 test("a group's Clear empties its field with clear-press, and editing starts", async () => {
   await device.press("clear-search")
-  await device.expectTree((tree) =>
-    assert.equal(tree.get("changes")?.text, "search:clear-press:touch")
-  )
-  assert.equal((await values()).search, "")
   await expectFocused("input-search")
-  await device.expectTree((tree) =>
+  await closeKeyboard()
+  await device.expectTree((tree) => {
+    assert.equal(tree.get("changes")?.text, "search:clear-press:touch")
     assert.equal(tree.get("clear-search"), undefined)
-  )
+  })
+  assert.equal((await values()).search, "")
 })
 
 test("a press on a group's text starts editing its field", async () => {

@@ -54,7 +54,7 @@ export { Example }
 
 ## Disabled and Read Only
 
-Set `disabled` to prevent editing. The `TextInput` can't be edited, and screen readers announce it as dimmed or disabled. A `readOnly` input can't be edited either, but stays enabled, so screen readers read its value as usual.
+Set `disabled` to prevent editing. The `TextInput` can't be edited, and screen readers announce it as dimmed or disabled. A `readOnly` input can't be edited either. React Native has no read-only field that stays enabled, so screen readers announce it as dimmed or disabled too, and Android's Tab skips it.
 
 ```tsx
 <Input aria-label="Email" defaultValue="hollis@example.com" disabled />
@@ -102,7 +102,7 @@ Input's [reasons](#reasons) tell typing, clearing and controller changes apart.
 
 ## Filtering What's Typed
 
-Call `details.cancel()` in the value-change callback to reject a change. The `TextInput` shows the rejected text for a moment, then the previous text comes back.
+Call `details.cancel()` in the value-change callback to reject a change. The `TextInput` shows the rejected text for a moment, then the previous text comes back. React Native reports no composition events, so a change canceled while an input method composes, as for Chinese or Japanese, ends the composition: filter only what a keyboard types directly, like digits.
 
 ```tsx
 <Input

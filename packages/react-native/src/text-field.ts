@@ -41,6 +41,12 @@ function useGroup(
   }, [group, field])
   React.useLayoutEffect(() => {
     group?.api.internal.update({ filled, disabled, readOnly })
+    return () =>
+      group?.api.internal.update({
+        filled: false,
+        disabled: false,
+        readOnly: false,
+      })
   }, [group, filled, disabled, readOnly])
 }
 

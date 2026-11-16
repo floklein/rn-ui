@@ -6,8 +6,9 @@ import { type TextFieldProps, useTextField } from "./text-field"
 import { usePrimitive } from "./use-primitive"
 
 /**
- * A multiline text field: a `TextInput` where Enter adds a line. It has no
- * submit shortcut, since `TextInput` reports no modifier keys.
+ * A multiline text field: a `TextInput` where Enter adds a line, and that
+ * grows with its text. It has no submit shortcut, since `TextInput` reports
+ * no modifier keys.
  * @experimental
  */
 function Textarea({
@@ -15,16 +16,15 @@ function Textarea({
   defaultValue,
   onValueChange,
   controller,
-  autoResize,
   debug,
   ...props
-}: Omit<TextareaOptions, "onSubmit" | "submitShortcut"> & TextFieldProps) {
+}: Omit<TextareaOptions, "autoResize" | "onSubmit" | "submitShortcut"> &
+  TextFieldProps) {
   const textarea = usePrimitive(textareaPrimitive, {
     value,
     defaultValue,
     onValueChange,
     controller,
-    autoResize,
     debug,
   })
   return useTextField(textarea, { ...props, multiline: true })

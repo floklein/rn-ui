@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `2c7c277a` (2026-11-16, ticket 58: Button and the announcer's twin)
+Last reviewed: `c3c92204` (2026-11-16, ticket 62: Input, Textarea and the group-field twin)
 
 ## Settled
 
@@ -28,6 +28,11 @@ Last reviewed: `2c7c277a` (2026-11-16, ticket 58: Button and the announcer's twi
 - **Publishing** (#11): packed as `@rn-ui-sdk/*` tarballs with the fork's version; core gets a `dist/native` build with each twin in its module's place.
 
 ## Known and open (don't report again, check whether fixed)
+
+- **A read-only text field is disabled for screen readers and the keyboard** (ticket 62): `readOnly` sets `editable={false}`, which React Native turns into `isEnabled = false` on Android and `enabled = NO` on a single-line iOS field, so it's announced as disabled and leaves Tab's order. A multiline iOS field stays enabled. React Native has no read-only field that stays enabled; rejecting every edit instead brings up the keyboard. Documented on the Input and Textarea pages.
+- **A change canceled mid-composition ends the composition** (ticket 62, not checked on a device): React Native reports no composition events, so a canceled `onValueChange` writes the old text back at once and kills an IME's composition. The web waits for it to end. The Input page warns against cancel for anything but directly typed characters.
+- **Two fields in one InputGroup**: native reaches the one mounted last, the web the first in the DOM.
+- **A controller's `focus()` on a disabled text field still moves the screen reader** to it; on the web it does nothing.
 
 - **A pending Button loses Android keyboard focus**: its `aria-disabled` becomes `accessibilityState.disabled`, which disables the view, so Space on a button whose action is pending moves focus to the first focusable view (seen on an emulator, ticket 58). The web keeps focus on it. Same question as the `aria-disabled` item below; `focusableWhenDisabled` does nothing for Android's Tab either.
 - **Busy on Android only with a label**: the translation leaves `busy` out of `accessibilityState` on Android for a part with no `aria-label`, since it would replace the text inside (ticket 58). A labelled part gets `busy: false` once it's over, to clear the description.

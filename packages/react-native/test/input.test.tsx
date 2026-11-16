@@ -75,7 +75,7 @@ describe("Input", () => {
     ).toEqual(["imperative", "imperative"])
   })
 
-  test("a disabled field can't be edited and is disabled for the screen reader; a read-only one only can't be edited", async () => {
+  test("a disabled field can't be edited and is disabled for the screen reader; a read-only one can't be edited and has no disabled state of its own", async () => {
     await render(
       <>
         <Input aria-label="Disabled" disabled />
@@ -184,5 +184,23 @@ describe("InputGroup", () => {
     expect(screen.getByTestId("group")).toHaveStyle({ opacity: 0.5 })
     await fireEvent.changeText(screen.getByLabelText("City"), "Porto")
     expect(screen.getByTestId("group")).toHaveStyle({ opacity: 1 })
+  })
+
+  test("a field that leaves the group leaves it empty, so its Clear goes", async () => {
+    const { rerender } = await render(
+      <InputGroup>
+        <Input aria-label="Search" defaultValue="lisbon" />
+        <InputClear aria-label="Clear search" />
+      </InputGroup>
+    )
+    expect(
+      screen.getByRole("button", { name: "Clear search" })
+    ).toBeOnTheScreen()
+    await rerender(
+      <InputGroup>
+        <InputClear aria-label="Clear search" />
+      </InputGroup>
+    )
+    expect(screen.queryByRole("button", { name: "Clear search" })).toBeNull()
   })
 })

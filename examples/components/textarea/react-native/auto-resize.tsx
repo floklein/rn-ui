@@ -6,7 +6,6 @@ function Example() {
     <View style={styles.field}>
       <Text style={styles.label}>Notes</Text>
       <Textarea
-        autoResize
         aria-label="Notes"
         placeholder="Add notes for the delivery driver…"
         style={styles.textarea}

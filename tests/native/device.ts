@@ -55,6 +55,10 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        // An emulator from simlock sits behind its own adb server.
+        ...(process.env.ANDROID_ADB_SERVER_PORT && {
+          "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
+        }),
         ...(process.env.UIAUTOMATOR2_PORT && {
           "appium:systemPort": Number(process.env.UIAUTOMATOR2_PORT),
         }),

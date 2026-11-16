@@ -30,7 +30,7 @@ export { Example }
 
 ## Growing With the Text
 
-A multiline `TextInput` grows with its text unless its style fixes a height. Bound it with `minHeight` and `maxHeight`; past the maximum, it scrolls. `autoResize` has nothing to add on native, where growing is the `TextInput`'s own behavior.
+A multiline `TextInput` grows with its text unless its style fixes a height, so Textarea has no `autoResize`. Bound it with `minHeight` and `maxHeight`; past the maximum, it scrolls.
 
 <ComponentExample
   name="textarea/auto-resize"
@@ -57,7 +57,7 @@ A native view takes part in no form. Read the value where you'd submit it, with 
 
 ## Disabled
 
-Set `disabled` to prevent editing. Screen readers announce it as dimmed or disabled. A `readOnly` textarea can't be edited either, but stays enabled.
+Set `disabled` to prevent editing. Screen readers announce it as dimmed or disabled. A `readOnly` textarea can't be edited either. On iOS it stays enabled; on Android it's announced as disabled and leaves the keyboard order, like `disabled`, since React Native has no read-only field that stays enabled there.
 
 <ComponentExample
   name="textarea/disabled"
@@ -92,7 +92,7 @@ Textarea takes `TextInput`'s props and the options below, as React Native props,
 <TypeTable
   path="../../packages/core/src/components/input/input.ts"
   name="TextareaOptions"
-  omit={["onSubmit", "submitShortcut"]}
+  omit={["autoResize", "onSubmit", "submitShortcut"]}
 />
 
 <TypeTable
