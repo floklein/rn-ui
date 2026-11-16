@@ -53,14 +53,16 @@ function Fixture() {
         />
       </View>
       <Field invalid={invalid} style={styles.field}>
-        <FieldLabel testID="name-label">Name</FieldLabel>
+        <FieldLabel testID="name-label" style={styles.label}>
+          Name
+        </FieldLabel>
         <Input testID="input-name" autoCorrect={false} style={styles.input} />
         <FieldError testID="name-error">Enter your name.</FieldError>
       </Field>
       <FieldSet disabled={disabled} style={styles.set}>
         <FieldLegend>Account</FieldLegend>
         <Field style={styles.field}>
-          <FieldLabel>Email</FieldLabel>
+          <FieldLabel style={styles.label}>Email</FieldLabel>
           <Input
             testID="input-email"
             autoCapitalize="none"
@@ -78,7 +80,7 @@ function Fixture() {
             >
               <SwitchThumb style={styles.thumb} />
             </Switch>
-            <FieldLabel>Weekly alerts</FieldLabel>
+            <FieldLabel style={styles.label}>Weekly alerts</FieldLabel>
           </Field>
           <Checkbox
             testID="checkbox-digest"
@@ -94,19 +96,20 @@ function Fixture() {
 const styles = StyleSheet.create({
   fixture: { gap: 16, padding: 16 },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
-  action: { padding: 12, borderWidth: 1, borderRadius: 8 },
+  action: { minHeight: 44, padding: 12, borderWidth: 1, borderRadius: 8 },
+  label: { minHeight: 44, lineHeight: 44 },
   set: { gap: 12 },
   field: { gap: 6 },
   input: { padding: 10, borderWidth: 1, borderRadius: 8, fontSize: 16 },
   track: {
-    width: 44,
-    height: 26,
-    borderRadius: 13,
-    padding: 3,
+    width: 64,
+    height: 44,
+    borderRadius: 22,
+    padding: 4,
     backgroundColor: "#d4d4d8",
   },
-  thumb: { width: 20, height: 20, borderRadius: 10, backgroundColor: "#fff" },
-  box: { width: 22, height: 22, borderWidth: 2, borderRadius: 6 },
+  thumb: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#fff" },
+  box: { width: 44, height: 44, borderWidth: 2, borderRadius: 8 },
 })
 
 export { Fixture }
