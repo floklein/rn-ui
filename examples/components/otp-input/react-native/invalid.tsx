@@ -1,3 +1,4 @@
+import { Field, FieldError, FieldLabel } from "@ui-sdk/react-native/field"
 import {
   OTPInput,
   OTPInputGroup,
@@ -10,25 +11,19 @@ function Example() {
   const [invalid, setInvalid] = useState(true)
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>Verification code</Text>
-      <OTPInput
-        aria-label="Verification code"
-        defaultValue="482913"
-        onValueChange={() => setInvalid(false)}
-      >
+    <Field invalid={invalid} style={styles.field}>
+      <FieldLabel style={styles.label}>Verification code</FieldLabel>
+      <OTPInput defaultValue="482913" onValueChange={() => setInvalid(false)}>
         <OTPInputGroup style={styles.group}>
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <Slot key={index} index={index} invalid={invalid} />
           ))}
         </OTPInputGroup>
       </OTPInput>
-      {invalid && (
-        <Text style={styles.error}>
-          That code has expired. Request a new one.
-        </Text>
-      )}
-    </View>
+      <FieldError style={styles.error}>
+        That code has expired. Request a new one.
+      </FieldError>
+    </Field>
   )
 }
 

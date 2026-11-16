@@ -29,7 +29,7 @@ OTPInput
 
 `OTPInput` renders a `View` holding the code, with one `TextInput` under the slots. That field takes focus, holds the whole code and is what screen readers reach. `OTPInputGroup` lays out a run of slots. Each `OTPInputSlot` draws the character at its zero-based `index`, and a tap on it selects that character. Add `OTPInputSeparator` between groups when the code is easier to read in sections.
 
-Groups, slots and separators are only drawn: they're hidden from screen readers and aren't keyboard stops. The field asks for `one-time-code`, so iOS offers a code from Messages or Mail above the keyboard, and Android's autofill service can offer one from an SMS.
+Name the code with a `FieldLabel` inside a [Field](/docs/react-native/components/field), whose label tap starts editing it, or with `aria-label`. Groups, slots and separators are only drawn: they're hidden from screen readers and aren't keyboard stops. The field asks for `one-time-code`, so iOS offers a code from Messages or Mail above the keyboard, and Android's autofill service can offer one from an SMS.
 
 ## Usage
 
@@ -93,7 +93,7 @@ Pass a regular expression that each character must match, like `/[0-9A-F]/i` for
 
 ## Validation
 
-React Native has no invalid state to announce, so draw it from your own state, with a message next to the code.
+Put the code in a [Field](/docs/react-native/components/field) with `invalid` and a `FieldError`. The error describes the field, and your styles draw the slots invalid from your own state.
 
 <ComponentExample
   name="otp-input/invalid"
@@ -157,7 +157,9 @@ Style each part with a function of its state, like `(slot) => [styles.slot, slot
 
 ## Part State
 
-The root, groups and separators get the code's state.
+The root, groups and separators get the code's state; slots get their own.
+
+### OTPInput [#part-state-otpinput]
 
 <PartStateTable
   component="otp-input"
@@ -166,13 +168,31 @@ The root, groups and separators get the code's state.
   name="OTPInputState"
 />
 
-Slots get their own.
+### OTPInputGroup [#part-state-otpinputgroup]
+
+<PartStateTable
+  component="otp-input"
+  part="group"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputState"
+/>
+
+### OTPInputSlot [#part-state-otpinputslot]
 
 <PartStateTable
   component="otp-input"
   part="slot"
   path="../../packages/core/src/components/otp-input/otp-input.ts"
   name="OTPInputSlotState"
+/>
+
+### OTPInputSeparator [#part-state-otpinputseparator]
+
+<PartStateTable
+  component="otp-input"
+  part="separator"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputState"
 />
 
 ## API Reference
@@ -214,7 +234,7 @@ Create one with `createOTPInputController()` and pass it as `controller`.
 
 ## Accessibility
 
-There's no WAI-ARIA pattern for a one-time code. Screen readers reach one text field with the whole code, named by an `aria-label`; the slots, groups and separators are hidden from them. VoiceOver and TalkBack read the code as they read any field, and their own editing gestures move through it.
+There's no WAI-ARIA pattern for a one-time code. Screen readers reach one text field with the whole code, named by a `FieldLabel` or an `aria-label`; the slots, groups and separators are hidden from them. VoiceOver and TalkBack read the code as they read any field, and their own editing gestures move through it.
 
 ### Keyboard
 

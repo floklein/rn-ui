@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
 import {
   OTPInput,
   OTPInputGroup,
@@ -10,10 +11,9 @@ function Example() {
   const log = useLog()
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>Verification code</Text>
+    <Field style={styles.field}>
+      <FieldLabel style={styles.label}>Verification code</FieldLabel>
       <OTPInput
-        aria-label="Verification code"
         onValueCommit={(value, details) =>
           log(`Checking ${value} (${details.reason})`)
         }
@@ -24,7 +24,7 @@ function Example() {
           ))}
         </OTPInputGroup>
       </OTPInput>
-    </View>
+    </Field>
   )
 }
 

@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
 import {
   OTPInput,
   OTPInputGroup,
@@ -8,13 +9,9 @@ import { StyleSheet, Text, View } from "react-native"
 
 function Example() {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>Verification code</Text>
-      <OTPInput
-        aria-label="Verification code"
-        maxLength={6}
-        style={styles.root}
-      >
+    <Field style={styles.field}>
+      <FieldLabel style={styles.label}>Verification code</FieldLabel>
+      <OTPInput maxLength={6} style={styles.root}>
         <OTPInputGroup style={styles.group}>
           <Slot index={0} />
           <Slot index={1} />
@@ -27,7 +24,7 @@ function Example() {
           <Slot index={5} />
         </OTPInputGroup>
       </OTPInput>
-    </View>
+    </Field>
   )
 }
 

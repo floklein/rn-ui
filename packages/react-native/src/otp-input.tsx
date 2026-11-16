@@ -15,6 +15,7 @@ import {
   type TextInputSelectionChangeEvent,
   View,
 } from "react-native"
+import { useFieldControl } from "./field-context"
 import { type Interaction, mergeProps } from "./render-element"
 import {
   createParts,
@@ -72,7 +73,7 @@ function OTPInputControl(props: ControlProps) {
     otp,
     "control",
     {},
-    mergeProps(props, {
+    mergeProps(useFieldControl(props, otp.api.focus), {
       value,
       selection: focused ? selection : undefined,
       editable,

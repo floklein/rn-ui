@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
 import {
   OTPInput,
   OTPInputGroup,
@@ -12,10 +13,9 @@ function Example() {
   const [value, setValue] = useState("")
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>One-time password</Text>
+    <Field style={styles.field}>
+      <FieldLabel style={styles.label}>One-time password</FieldLabel>
       <OTPInput
-        aria-label="One-time password"
         value={value}
         onValueChange={(value, details) => {
           setValue(value)
@@ -28,7 +28,7 @@ function Example() {
           ))}
         </OTPInputGroup>
       </OTPInput>
-    </View>
+    </Field>
   )
 }
 

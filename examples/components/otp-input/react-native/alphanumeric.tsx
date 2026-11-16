@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
 import {
   OTPInput,
   OTPInputGroup,
@@ -8,14 +9,9 @@ import { StyleSheet, Text, View } from "react-native"
 
 function Example() {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>Recovery code</Text>
-      <OTPInput
-        aria-label="Recovery code"
-        maxLength={8}
-        pattern="alphanumeric"
-        style={styles.root}
-      >
+    <Field style={styles.field}>
+      <FieldLabel style={styles.label}>Recovery code</FieldLabel>
+      <OTPInput maxLength={8} pattern="alphanumeric" style={styles.root}>
         <OTPInputGroup style={styles.group}>
           {[0, 1, 2, 3].map((index) => (
             <Slot key={index} index={index} />
@@ -28,7 +24,7 @@ function Example() {
           ))}
         </OTPInputGroup>
       </OTPInput>
-    </View>
+    </Field>
   )
 }
 

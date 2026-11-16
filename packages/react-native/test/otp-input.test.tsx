@@ -2,6 +2,12 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
 import { Text, TextInput, type TextInputInstance } from "react-native"
 import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+  FieldSet,
+} from "../src/field"
+import {
   createOTPInputController,
   OTPInput,
   OTPInputGroup,
@@ -220,5 +226,33 @@ describe("OTPInput", () => {
     expect(field().props.value).toBe("")
     await act(() => controller.focus())
     expect(focus).toHaveBeenCalledTimes(1)
+  })
+
+  test("inside a Field, the label names the field, the description describes it, and a press on the label starts editing", async () => {
+    const focus = await renderWithFocus(
+      <Field>
+        <FieldLabel>Verification code</FieldLabel>
+        <OTPInput maxLength={4}>
+          <OTPInputGroup>
+            <OTPInputSlot index={0} />
+          </OTPInputGroup>
+        </OTPInput>
+        <FieldDescription>Sent to your phone.</FieldDescription>
+      </Field>
+    )
+    await act(() => new Promise((resolve) => setTimeout(resolve)))
+    const code = screen.getByLabelText("Verification code")
+    expect(code.props.accessibilityHint).toBe("Sent to your phone.")
+    await fireEvent.press(screen.getByText("Verification code"))
+    expect(focus).toHaveBeenCalledTimes(1)
+  })
+
+  test("a disabled FieldSet around it disables it", async () => {
+    await render(
+      <FieldSet disabled>
+        <Code />
+      </FieldSet>
+    )
+    expect(field().props.editable).toBe(false)
   })
 })
