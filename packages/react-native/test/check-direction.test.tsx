@@ -10,6 +10,14 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import {
   PasswordInput,
@@ -75,6 +83,34 @@ describe("checkDirection on the native host", () => {
                 <Text>AL</Text>
               </AvatarFallback>
             </Avatar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a progress bar and a meter", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <Progress value={56}>
+                <ProgressLabel>Uploading</ProgressLabel>
+                <ProgressValue />
+                <ProgressTrack>
+                  <ProgressIndicator />
+                </ProgressTrack>
+              </Progress>
+              <Meter value={40}>
+                <MeterLabel>Storage</MeterLabel>
+                <MeterTrack>
+                  <MeterIndicator />
+                </MeterTrack>
+              </Meter>
+            </View>
           )
           return screen.container
         },
