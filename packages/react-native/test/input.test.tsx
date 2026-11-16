@@ -75,7 +75,7 @@ describe("Input", () => {
     ).toEqual(["imperative", "imperative"])
   })
 
-  test("a disabled field can't be edited and is disabled for the screen reader; a read-only one can't be edited and has no disabled state of its own", async () => {
+  test("a disabled field can't be edited and is disabled for the screen reader; a read-only one can't be edited, so it reads as disabled too", async () => {
     await render(
       <>
         <Input aria-label="Disabled" disabled />
@@ -87,7 +87,7 @@ describe("Input", () => {
     expect(screen.getByLabelText("Read-only").props.editable).toBe(false)
     expect(
       screen.getByLabelText("Read-only").props.accessibilityState.disabled
-    ).toBe(false)
+    ).toBe(true)
   })
 
   test("its state says whether it's filled, disabled, read-only and required", async () => {
