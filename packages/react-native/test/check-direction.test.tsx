@@ -17,6 +17,21 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "../src/progress"
+import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import {
+  Pagination,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../src/pagination"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -81,6 +96,53 @@ describe("checkDirection on the native host", () => {
                 <Text>AL</Text>
               </AvatarFallback>
             </Avatar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a pagination", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Pagination aria-label="Pagination" pageCount={3}>
+              <PaginationPrevious aria-label="Previous" />
+              <PaginationLink page={1} />
+              <PaginationLink page={2} />
+              <PaginationNext aria-label="Next" />
+            </Pagination>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a progress bar and a meter", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <Progress value={56}>
+                <ProgressLabel>Uploading</ProgressLabel>
+                <ProgressValue />
+                <ProgressTrack>
+                  <ProgressIndicator />
+                </ProgressTrack>
+              </Progress>
+              <Meter value={40}>
+                <MeterLabel>Storage</MeterLabel>
+                <MeterTrack>
+                  <MeterIndicator />
+                </MeterTrack>
+              </Meter>
+            </View>
           )
           return screen.container
         },
@@ -275,6 +337,27 @@ describe("checkDirection on the native host", () => {
               <Input aria-label="Search" defaultValue="Lisbon" />
               <InputClear aria-label="Clear search" />
             </InputGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an otp input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <OTPInput aria-label="Code" maxLength={4} defaultValue="12">
+              <OTPInputGroup>
+                <OTPInputSlot index={0} />
+                <OTPInputSlot index={1} />
+                <OTPInputSlot index={2} />
+                <OTPInputSlot index={3} />
+              </OTPInputGroup>
+            </OTPInput>
           )
           return screen.container
         },

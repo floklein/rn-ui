@@ -72,23 +72,36 @@ const hiddenOn = (node: HostNode, os: OS) =>
 const otherOS = (os: OS) => (os === "ios" ? "android" : "ios")
 
 // Text and text fields are accessible elements unless they say otherwise.
-// TalkBack reads a named image by its description, though it's no Tab stop.
+// TalkBack reads a named image by its description, and a bar by its value
+// text or, without one, the text inside it, though neither is a Tab stop.
 const isAccessible = (node: HostNode, os: OS) =>
   node.props.accessible === true ||
   ((node.type === "Text" || node.type === "TextInput") &&
     node.props.accessible !== false) ||
   (os === "android" &&
     roleOf(node) === "image" &&
-    !!node.props.accessibilityLabel)
+    !!node.props.accessibilityLabel) ||
+  (os === "android" &&
+    roleOf(node) === "progressbar" &&
+    !!(
+      node.props.accessibilityLabel ||
+      node.props.accessibilityValue?.text ||
+      textOf(node)
+    ))
 
-/** Every accessible element outside hidden content, in tree order, and the problems met finding them. */
+/**
+ * Every accessible element outside hidden content, in tree order, every node
+ * a screen reader could read, `shown`, and the problems met finding them.
+ */
 function readTree(root: HostNode, os: OS) {
   const elements: HostNode[] = []
+  const shown: HostNode[] = []
   const problems: { node: HostNode; problem: string }[] = []
   const visit = (node: HostNode, inside: HostNode | undefined) => {
     if (isDisplayNone(node.props.style) || hiddenOn(node, os)) {
       return
     }
+    shown.push(node)
     if (hiddenOn(node, otherOS(os))) {
       problems.push({
         node,
@@ -114,7 +127,7 @@ function readTree(root: HostNode, os: OS) {
     }
   }
   visit(root, undefined)
-  return { elements, problems }
+  return { elements, shown, problems }
 }
 
 /** Every node on screen, in tree order, whether a screen reader reaches it or not. */
@@ -135,10 +148,17 @@ function shownNodes(root: HostNode) {
   return nodes
 }
 
+// Both screen readers leave hidden views out of the text they gather.
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textOf(node: HostNode): string {
   return (node.children ?? [])
-    .map((child) => (typeof child === "string" ? child : textOf(child)))
+    .map((child) =>
+      typeof child === "string"
+        ? child
+        : hiddenOn(child, "ios") || hiddenOn(child, "android")
+          ? ""
+          : textOf(child)
+    )
     .join("")
 }
 

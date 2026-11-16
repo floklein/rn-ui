@@ -76,6 +76,7 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeLink: "link",
   XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeTextField: "textbox",
@@ -285,16 +286,6 @@ function useDevice(name: string) {
     async press(id: string) {
       await driver.$(byId(id)).click()
     },
-    /** Taps a point, in the driver's units: points on iOS, pixels on Android. */
-    async tapAt(x: number, y: number) {
-      await driver
-        .action("pointer", { parameters: { pointerType: "touch" } })
-        .move({ x: Math.round(x), y: Math.round(y) })
-        .down()
-        .pause(50)
-        .up()
-        .perform()
-    },
     /** Android's back button. */
     async back() {
       await driver.back()
@@ -308,6 +299,16 @@ function useDevice(name: string) {
             : `android=new UiSelector().description("${label}")`
         )
         .click()
+    },
+    /** Taps the screen at a point, in the driver's units, for a part out of the accessibility tree. */
+    async tapAt(x: number, y: number) {
+      await driver
+        .action("pointer", { parameters: { pointerType: "touch" } })
+        .move({ x: Math.round(x), y: Math.round(y) })
+        .down()
+        .pause(50)
+        .up()
+        .perform()
     },
     /** The test ID of the element the OS's input focus is on, as a text field being edited. */
     async focused() {

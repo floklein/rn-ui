@@ -12,6 +12,8 @@ import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Dialog, DialogContent, DialogTrigger } from "../src/dialog"
 import type * as DialogEntry from "../src/dialog"
 import { Field, FieldError, FieldLabel } from "../src/field"
+import { OTPInput } from "../src/otp-input"
+import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
@@ -147,6 +149,14 @@ const passwords = [
   <PasswordInputControl secureTextEntry={false} />,
 ]
 
+const codes = [
+  <OTPInput aria-label="Code" maxLength={4} pattern="alphanumeric" required />,
+  // @ts-expect-error `name` has no native meaning.
+  <OTPInput name="code" />,
+  // @ts-expect-error `form` has no native meaning.
+  <OTPInput form="verify" />,
+]
+
 const fields = [
   <Field disabled invalid>
     <FieldLabel>Email</FieldLabel>
@@ -182,7 +192,14 @@ const dialogEntries = [
 // @ts-expect-error The shortcut part is web-only.
 type DialogShortcut = typeof DialogEntry.DialogShortcut
 
+const paginations = [
+  <Pagination pageCount={10} onPageChange={() => {}} />,
+  // @ts-expect-error Pages are buttons on native, with no URL to link to.
+  <Pagination pageCount={10} getHref={(page) => `/posts/${page}`} />,
+]
+
 export {
+  codes,
   ComboboxInput,
   dialogEntries,
   type DialogShortcut,
@@ -191,6 +208,7 @@ export {
   fields,
   NativeDialog,
   NativeSwitch,
+  paginations,
   passwords,
   switches,
   type SwitchInput,

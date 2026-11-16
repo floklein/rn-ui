@@ -130,6 +130,17 @@
       "why": "What the panel slot's bind orchestrates through bindPanel: the panel settles (api.internal.settled) when the adapter's presence does, at once on opening and once onExit's done ends a close, through presence-native.ts's onSettled. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting flag stays the adapter's presence."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/gauge/gauge-native.ts",
+      "mirrors": [
+        "packages/core/src/components/progress/progress.ts",
+        "packages/core/src/components/meter/meter.ts",
+        "packages/core/src/foundation/gauge/gauge.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root and label slots' bind orchestrates for Progress and Meter: the root reads the page's locale through bindPageLocale while it's mounted, which the locale twin will answer from Intl, and a mounted label counts toward the root's aria-labelledby (api.internal.label)."
+    },
+    {
       "kind": "reroute",
       "file": "packages/core/src/components/collapsible/collapsible.ts",
       "mirrors": ["packages/core/src/components/collapsible/collapsible.ts"],
@@ -162,6 +173,23 @@
     },
     {
       "kind": "twin",
+      "file": "packages/core/src/components/otp-input/otp-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/otp-input/otp-input-api.ts",
+        "packages/core/src/components/otp-input/otp-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, selectText, focusText and pressSlot: the control's input, selection, focus and blur handlers and pressSlot restated for a native TextInput's events and a slot's press, where bind reads an <input>. The web module returns none, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/otp-input/otp-input-api.ts",
+      "mirrors": ["packages/core/src/components/otp-input/otp-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeField(...) from otp-input-field.ts, which has a native twin, into internal, and the controller's focus() calls focusPart instead of input()?.focus()."
+    },
+    {
+      "kind": "twin",
       "file": "packages/core/src/foundation/forms/form.native.ts",
       "mirrors": ["packages/core/src/foundation/forms/form.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -187,68 +215,6 @@
       "mirrors": ["packages/core/src/components/field/field.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the label, description and error slots' bind orchestrates: each registers its id with the field while mounted, so the control points at the parts that render; the root marks the field bound."
-    },
-    {
-      "kind": "twin",
-      "file": "packages/core/src/foundation/platform/layers.native.ts",
-      "mirrors": ["packages/core/src/foundation/platform/layers.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The layer stack with no document: the same stack, order, nesting and persistent layers, with back, the escape gesture and a backdrop press coming from the native host's listen and going to the topmost layer (a backdrop press down to the first shielding one), where the DOM module listens to the document. Its Layer widens the DOM's with onBack, onEscapeGesture and onBackdropPress, which take no event."
-    },
-    {
-      "kind": "twin",
-      "file": "packages/core/src/foundation/motion/exit.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/popup.ts",
-        "packages/core/src/foundation/motion/presence.ts"
-      ],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "A closing popup with no element stays mounted while its content's view holds it, and unmounts once the adapter's presence ends the content's exit, where popup.ts waits for the element's animations through animateOut."
-    },
-    {
-      "kind": "behavior",
-      "file": "packages/core/src/foundation/popups/popup-native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/popup.ts",
-        "packages/core/src/foundation/popups/popup-slots.ts",
-        "packages/core/src/foundation/popups/create-popup.ts",
-        "packages/core/src/foundation/popups/popup-features.ts",
-        "packages/core/src/foundation/popups/popup-behavior.ts"
-      ],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
-    },
-    {
-      "kind": "behavior",
-      "file": "packages/core/src/components/dialog/dialog-native.ts",
-      "mirrors": [
-        "packages/core/src/components/dialog/dialog-api.ts",
-        "packages/core/src/components/dialog/dialog-parts.ts",
-        "packages/core/src/components/dialog/alert-dialog.ts"
-      ],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Dialog's focus on open (the title, or an alert dialog's first Close part when preferredFocus's auto applies), restated since preferredFocus reads elements, and its Escape rule: a non-modal dialog closes on the escape gesture only when it reached its content, where onEscape asks whether focus is inside the element."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/popups/popup.ts",
-      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/popups/popup-features.ts",
-      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
-    },
-    {
-      "kind": "reroute",
-      "file": "packages/core/src/foundation/popups/create-popup.ts",
-      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
     },
     {
       "kind": "edit",
@@ -312,13 +278,6 @@
       "mirrors": ["packages/core/src/foundation/motion/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports onSettled, holdExit and endExit, which native behavior files import, and exit.ts's afterExit and holdsMount, which popup.ts imports."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/popups/index.ts",
-      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
     },
     {
       "kind": "edit",
@@ -556,7 +515,76 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input and textarea."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input, textarea, password-input and otp-input."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/platform/layers.native.ts",
+      "mirrors": ["packages/core/src/foundation/platform/layers.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The layer stack with no document: the same stack, order, nesting and persistent layers, with back, the escape gesture and a backdrop press coming from the native host's listen and going to the topmost layer (a backdrop press down to the first shielding one), where the DOM module listens to the document. Its Layer widens the DOM's with onBack, onEscapeGesture and onBackdropPress, which take no event."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/motion/exit.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/popups/popup.ts",
+        "packages/core/src/foundation/motion/presence.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A closing popup with no element stays mounted while its content's view holds it, and unmounts once the adapter's presence ends the content's exit, where popup.ts waits for the element's animations through animateOut."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/popups/popup-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/popups/popup.ts",
+        "packages/core/src/foundation/popups/popup-slots.ts",
+        "packages/core/src/foundation/popups/create-popup.ts",
+        "packages/core/src/foundation/popups/popup-features.ts",
+        "packages/core/src/foundation/popups/popup-behavior.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/dialog/dialog-native.ts",
+      "mirrors": [
+        "packages/core/src/components/dialog/dialog-api.ts",
+        "packages/core/src/components/dialog/dialog-parts.ts",
+        "packages/core/src/components/dialog/alert-dialog.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Dialog's focus on open (the title, or an alert dialog's first Close part when preferredFocus's auto applies), restated since preferredFocus reads elements, and its Escape rule: a non-modal dialog closes on the escape gesture only when it reached its content, where onEscape asks whether focus is inside the element."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup-features.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/popups/create-popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/index.ts",
+      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
     }
   ],
   "components": {
@@ -617,8 +645,38 @@
         }
       }
     },
+    "meter": {
+      "entry": "packages/react-native/src/meter.tsx",
+      "slots": {
+        "meter.root": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind reads the page's language, which gauge-native.ts asks for as the root mounts; until the locale twin lands it reads none and formats in English unless the locale option is given. Its missing-name warning comes with the names work."
+        },
+        "meter.label": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind counts the label that names the root, which gauge-native.ts does while the label is mounted."
+        }
+      }
+    },
+    "progress": {
+      "entry": "packages/react-native/src/progress.tsx",
+      "slots": {
+        "progress.root": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind reads the page's language, which gauge-native.ts asks for as the root mounts; until the locale twin lands it reads none and formats in English unless the locale option is given. Its missing-name warning comes with the names work."
+        },
+        "progress.label": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind counts the label that names the root, which gauge-native.ts does while the label is mounted."
+        }
+      }
+    },
     "separator": {
       "entry": "packages/react-native/src/separator.tsx",
+      "slots": {}
+    },
+    "pagination": {
+      "entry": "packages/react-native/src/pagination.tsx",
       "slots": {}
     },
     "switch": {
@@ -783,6 +841,15 @@
         }
       }
     },
+    "otp-input": {
+      "entry": "packages/react-native/src/otp-input.tsx",
+      "slots": {
+        "otpInput.control": {
+          "covered": "packages/core/src/components/otp-input/otp-input-field.native.ts",
+          "reason": "Its bind follows the <input>'s typing, paste, selection, focus and blur, which the TextInput's onChangeText, onSelectionChange, onFocus and onBlur hand to internal.typeText, selectText and focusText, and its value and selection props follow the state. A press on a slot calls internal.pressSlot. Arrow keys, Home and End, which TextInput doesn't report, the browser's undo history, a restored page, form reset, a disabled fieldset, password managers' badges and the selection stylesheet have no native counterpart."
+        }
+      }
+    },
     "dialog": {
       "entry": "packages/react-native/src/dialog.tsx",
       "slots": {
@@ -884,13 +951,9 @@
     "listbox",
     "menu",
     "menubar",
-    "meter",
     "navigation-menu",
     "number-input",
-    "otp-input",
-    "pagination",
     "popover",
-    "progress",
     "resizable",
     "scroll-area",
     "segmented-control",
@@ -939,6 +1002,24 @@
     },
     {
       "component": "avatar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "meter",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "pagination",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "progress",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
@@ -1071,6 +1152,18 @@
     },
     {
       "component": "password-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "otp-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the code from change callbacks."
+    },
+    {
+      "component": "otp-input",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

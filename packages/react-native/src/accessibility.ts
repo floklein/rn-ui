@@ -3,6 +3,7 @@
 // override `accessibilityRole`, and reads only some `aria-*` props.
 import type { Attrs } from "@ui-sdk/core"
 import type {
+  AccessibilityActionInfo,
   AccessibilityRole,
   AccessibilityState,
   AccessibilityValue,
@@ -19,6 +20,7 @@ type NativeProps = {
   accessibilityRole?: AccessibilityRole
   accessibilityState?: AccessibilityState
   accessibilityValue?: AccessibilityValue
+  accessibilityActions?: AccessibilityActionInfo[]
   accessibilityLabel?: string
   accessibilityHint?: string
   accessibilityElementsHidden?: boolean
@@ -34,6 +36,7 @@ type NativeProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"]
   autoCorrect?: boolean
   spellCheck?: boolean
+  inputMode?: TextInputProps["inputMode"]
 }
 
 const roles: Record<string, AccessibilityRole> = {
@@ -110,20 +113,17 @@ function toNativeProps(
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
   const role =
-    attrs.role === undefined
-      ? attrs.type === "button"
-        ? "button"
-        : undefined
-      : roles[attrs.role]
+    (attrs.role === undefined ? undefined : roles[attrs.role]) ??
+    (attrs.type === "button" ? "button" : undefined)
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined
         ? "togglebutton"
         : role
   }
-  // VoiceOver reads an image as one element. On Android `accessible` would
-  // make it a Tab stop, and Fabric would flatten it away with its label.
-  if (role === "image") {
+  // VoiceOver reads an image or a bar as one element. On Android `accessible`
+  // would make it a Tab stop, and Fabric would flatten it away with its label.
+  if (role === "image" || role === "progressbar") {
     if (os === "ios") {
       props.accessible = true
     } else {
@@ -138,6 +138,12 @@ function toNativeProps(
       state[states[name as keyof typeof states]] = given === "true"
     } else if (name in values) {
       value[values[name as keyof typeof values]] = Number(given)
+    } else if (
+      name === "aria-current" &&
+      given === "page" &&
+      attrs["aria-selected"] === undefined
+    ) {
+      state.selected = true
     } else if (name === "aria-checked" || name === "aria-pressed") {
       state.checked = checkedOf(given)
     } else if (name === "aria-valuetext") {
@@ -178,6 +184,8 @@ function toNativeProps(
       ) as TextInputProps["autoCapitalize"]
     } else if (name === "autocorrect") {
       props.autoCorrect = given !== "off"
+    } else if (name === "inputmode") {
+      props.inputMode = given as TextInputProps["inputMode"]
     } else if (name === "spellcheck") {
       props.spellCheck = given === "true"
     } else if (name === "aria-live" && os === "android") {
@@ -198,6 +206,11 @@ function toNativeProps(
       state.busy ??= false
     }
   }
+  // Android writes the value's text into the description and rewrites it only
+  // from a value that has one, so a bar turning indeterminate sends it empty.
+  if (os === "android" && role === "progressbar" && "aria-valuetext" in attrs) {
+    value.text ??= ""
+  }
   const label = names?.(idsOf(attrs["aria-labelledby"]))
   if (label !== undefined) {
     props.accessibilityLabel = label
@@ -205,6 +218,13 @@ function toNativeProps(
   const hint = names?.(idsOf(attrs["aria-describedby"]))
   if (hint !== undefined) {
     props.accessibilityHint = hint
+  }
+  // TalkBack offers expand or collapse from the expanded state and flips it
+  // natively, but reports only a declared action, which the part then presses.
+  if (os === "android" && state.expanded !== undefined) {
+    props.accessibilityActions = [
+      { name: state.expanded ? "collapse" : "expand" },
+    ]
   }
   if (Object.keys(state).length) {
     props.accessibilityState = state
@@ -230,7 +250,10 @@ function splitAria(props: Record<string, unknown>) {
   return { aria, rest }
 }
 
-/** A user's `accessibilityState` and `accessibilityValue` win over the translation field by field. */
+/**
+ * A user's `accessibilityState` and `accessibilityValue` win over the
+ * translation field by field, and their `accessibilityActions` join its own.
+ */
 function mergeAccessibility(
   translated: NativeProps,
   user: Record<string, any>
@@ -240,6 +263,17 @@ function mergeAccessibility(
     if (translated[name] && user[name]) {
       merged[name] = { ...translated[name], ...user[name] }
     }
+  }
+  if (translated.accessibilityActions && user.accessibilityActions) {
+    const own = (user.accessibilityActions as AccessibilityActionInfo[]).map(
+      (action) => action.name
+    )
+    merged.accessibilityActions = [
+      ...translated.accessibilityActions.filter(
+        (action) => !own.includes(action.name)
+      ),
+      ...user.accessibilityActions,
+    ]
   }
   return merged
 }

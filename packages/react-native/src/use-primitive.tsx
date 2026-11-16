@@ -45,6 +45,7 @@ import {
   Text,
   TextInput,
   View,
+  type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
@@ -65,7 +66,7 @@ import {
   type RenderProp,
 } from "./render-element"
 
-type WebOnlyName = "container" | "shortcut" | "name" | "form"
+type WebOnlyName = "container" | "shortcut" | "name" | "form" | "getHref"
 
 // Options and slot props as native takes them: without the web-only names,
 // and without `modal="trap-focus"`, which the `Modal`'s isolation replaces.
@@ -299,31 +300,42 @@ function viewRef(part: Part, behavior: NativeBehavior | undefined) {
   return ref
 }
 
-// Core's attributes with the user's `role` and `aria-*`, which win.
+// As on the web, core's attribute wins only where it has a value, so
+// `<Button role="link">` stays a link.
 function ariaOf(
   part: Part,
   slotProps: object,
   aria: Record<string, string | undefined>,
   exiting: boolean
 ) {
+  const own = yieldToAuthor(
+    { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
+    (name) => aria[name] !== undefined
+  )
+  const merged = { ...own }
+  for (const name in aria) {
+    merged[name] ??= aria[name]
+  }
   return {
-    ...aria,
-    ...yieldToAuthor(
-      { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
-      (name) => aria[name] !== undefined
-    ),
+    ...merged,
     // A part that animates out stays on screen, where its slot already hides it.
     ...(exiting && { inert: "", hidden: undefined }),
   }
 }
 
-// A label on a container would hide what's inside it from screen readers.
+// A label on a container would hide what's inside it from screen readers. A
+// bar is read as one element, by VoiceOver and from TalkBack's description.
 const isSingleElement = (
   host: React.ElementType,
-  user: { accessible?: unknown }
+  user: { accessible?: unknown },
+  role: string | undefined
 ) =>
   user.accessible === undefined
-    ? host === Pressable || host === TextInput || host === Text
+    ? host === Pressable ||
+      host === TextInput ||
+      host === Text ||
+      role === "progressbar" ||
+      role === "meter"
     : user.accessible === true
 
 function useMissingNames(
@@ -553,7 +565,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       : press(part, slotProps)
     : undefined
   const host = Host ?? (activate ? Pressable : View)
-  const single = shown && isSingleElement(host, rest)
+  const single = shown && isSingleElement(host, rest, merged.role)
   const labelledBy = single ? idsOf(merged["aria-labelledby"]) : []
   useReferences([
     ...labelledBy,
@@ -611,6 +623,22 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       { ...rest, children: content },
       mergeAccessibility(translated, rest)
     )
+    const actions =
+      activate && !presence.exiting && own.accessibilityActions
+        ? {
+            onAccessibilityAction: (event: AccessibilityActionEvent) => {
+              const { actionName } = event.nativeEvent
+              const expanded =
+                attrs(part, slotProps)["aria-expanded"] === "true"
+              if (
+                (actionName === "expand" && !expanded) ||
+                (actionName === "collapse" && expanded)
+              ) {
+                withSource("virtual", activate)
+              }
+            },
+          }
+        : {}
     // Core keeps an aria-disabled part focusable and refuses its press, but
     // Pressability reads only `disabled`: without it the part shows feedback.
     const disabled = pressable && own.accessibilityState?.disabled === true
@@ -628,6 +656,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       host,
       mergeProps(
         handlers,
+        actions,
         disabled ? { disabled } : {},
         container,
         own,

@@ -44,6 +44,18 @@ describe("Toggle", () => {
     expect(details.event).toBeUndefined()
   })
 
+  test("a role it's given wins over the toggle button role, and keeps its pressed state", async () => {
+    await render(
+      <Toggle role="switch" defaultPressed>
+        <Text>Wi-Fi</Text>
+      </Toggle>
+    )
+    const toggle = screen.getByRole("switch", { name: "Wi-Fi" })
+    expect(toggle.props.accessibilityState.checked).toBe(true)
+    await fireEvent.press(toggle)
+    expect(toggle.props.accessibilityState.checked).toBe(false)
+  })
+
   test("a disabled toggle ignores a press", async () => {
     const onPressedChange = jest.fn()
     await render(

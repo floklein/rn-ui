@@ -5,7 +5,11 @@ import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
+import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { otpInput } from "@ui-sdk/core/otp-input"
+import { pagination } from "@ui-sdk/core/pagination"
+import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
@@ -31,6 +35,14 @@ describe("checkCreation", () => {
     expect(() => checkCreation(avatar, {})).not.toThrow()
   })
 
+  test("passes on a progress bar, determinate or not, and a meter", () => {
+    expect(() => checkCreation(progress, { value: 40 })).not.toThrow()
+    expect(() => checkCreation(progress, { value: null })).not.toThrow()
+    expect(() =>
+      checkCreation(meter, { value: 3, min: -10, max: 10, locale: "de-DE" })
+    ).not.toThrow()
+  })
+
   test("passes on a separator, decorative or vertical", () => {
     expect(() => checkCreation(separator, {})).not.toThrow()
     expect(() =>
@@ -38,10 +50,26 @@ describe("checkCreation", () => {
     ).not.toThrow()
   })
 
+  test("passes on a pagination, by page count or by total", () => {
+    expect(() =>
+      checkCreation(pagination, { pageCount: 10, defaultPage: 4 })
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(pagination, { total: 95, pageSize: 20, siblings: 2 })
+    ).not.toThrow()
+  })
+
   test("passes on an input, a textarea and an input group", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on an otp input, empty, full or disabled", () => {
+    expect(() => checkCreation(otpInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(otpInput, { defaultValue: "123456", disabled: true })
+    ).not.toThrow()
   })
 
   test("passes on a password input, hidden or shown", () => {

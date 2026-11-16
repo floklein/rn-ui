@@ -14,8 +14,10 @@ import {
 
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
- * or by its role where the Practices have none, like `"img"`. Pass a
- * separator's own view as the root of `"separator"`, since nothing marks one.
+ * or by its role where the Practices have none, like `"img"`. A meter has
+ * the progressbar role on native, and must always have a value. Pass a
+ * separator's own view as the root of `"separator"`, since nothing marks one,
+ * and a pagination's for `"pagination"`, whose current page is any selected button.
  * @experimental
  */
 type NativePattern =
@@ -25,6 +27,9 @@ type NativePattern =
   | "dialog"
   | "disclosure"
   | "img"
+  | "meter"
+  | "pagination"
+  | "progressbar"
   | "radio-group"
   | "separator"
   | "switch"
@@ -153,8 +158,43 @@ async function checkboxPattern(context: Context) {
   }
 }
 
-// A disclosure's button says with its expanded state whether its content
-// shows, and activating it shows or hides the content (APG disclosure).
+// Content inside the button is part of its name, not what it discloses.
+function contentCount(context: Context, button: HostNode) {
+  const own = new Set(shownNodes(button))
+  return readTree(context.root, context.os).shown.filter(
+    (node) => !own.has(node)
+  ).length
+}
+
+async function checkContentFollows(
+  context: Context,
+  button: () => HostNode,
+  action: Action
+) {
+  const expanded = stateOf(button()).expanded
+  const before = contentCount(context, button())
+  await performWatched(button(), action, context.act)
+  if (stateOf(button()).expanded === expanded) {
+    context.problem(
+      button(),
+      `stays ${expanded ? "expanded" : "collapsed"} after the ${action} action; it shows or hides its content (APG disclosure).`
+    )
+    return false
+  }
+  const after = contentCount(context, button())
+  if (expanded ? after >= before : after <= before) {
+    context.problem(
+      button(),
+      `${expanded ? "hides" : "shows"} no content after the ${action} action; its content follows its expanded state (APG disclosure).`
+    )
+    return false
+  }
+  return true
+}
+
+// Activating a disclosure's button shows or hides its content (APG
+// disclosure). TalkBack offers expand or collapse from the expanded state
+// alone, so on Android the button handles them too.
 async function disclosurePattern(context: Context) {
   const buttons = () =>
     context
@@ -171,20 +211,32 @@ async function disclosurePattern(context: Context) {
     requireName(context, button, "button")
   }
   for (const index of buttons().keys()) {
-    const button = buttons()[index]
-    if (isDisabled(button)) {
+    const button = () => buttons()[index]
+    if (isDisabled(button())) {
       continue
     }
-    const before = stateOf(button).expanded
-    await performWatched(button, "activate", context.act)
-    if (stateOf(buttons()[index]).expanded === before) {
-      context.problem(
-        buttons()[index],
-        `stays ${before ? "expanded" : "collapsed"} after the activate action; activating a disclosure button shows or hides its content (APG disclosure).`
-      )
+    if (
+      !(await checkContentFollows(context, button, "activate")) ||
+      !(await checkContentFollows(context, button, "activate")) ||
+      context.os !== "android"
+    ) {
       continue
     }
-    await performWatched(buttons()[index], "activate", context.act)
+    const actions: Action[] = stateOf(button()).expanded
+      ? ["collapse", "expand"]
+      : ["expand", "collapse"]
+    for (const action of actions) {
+      if (!actionsOf(button()).includes(action)) {
+        context.problem(
+          button(),
+          `has no ${action} action; TalkBack offers it from the expanded state, and changes that state without the content following.`
+        )
+        break
+      }
+      if (!(await checkContentFollows(context, button, action))) {
+        break
+      }
+    }
   }
 }
 
@@ -297,6 +349,48 @@ async function imgPattern(context: Context) {
       context.root,
       "has no image and no text, so a screen reader reads nothing."
     )
+  }
+}
+
+// Pages and steps are buttons, and the current page is the one selected
+// button, since neither OS has a current state.
+async function paginationPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  const current = () =>
+    buttons().filter((button) => stateOf(button).selected === true)
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no element with the button role, so it has no pages."
+    )
+    return
+  }
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  if (current().length !== 1) {
+    context.problem(
+      context.root,
+      current().length
+        ? `has ${current().length} selected pages; one page is current.`
+        : "has no selected page; the current page is selected."
+    )
+    return
+  }
+  for (const index of buttons().keys()) {
+    const button = buttons()[index]
+    if (!button || isDisabled(button) || stateOf(button).selected === true) {
+      continue
+    }
+    const [before] = current()
+    await performWatched(button, "activate", context.act)
+    const after = current()
+    if (after.length !== 1 || after[0] === before) {
+      context.problem(
+        button,
+        `leaves the current page "${nameOf(before)}" after the activate action; a page or a step that isn't disabled goes to another page.`
+      )
+    }
   }
 }
 
@@ -501,6 +595,73 @@ async function separatorPattern(context: Context) {
   }
 }
 
+// Without value text, VoiceOver reads the value as a share of max minus min.
+async function barPattern(context: Context, pattern: "progressbar" | "meter") {
+  const bars = shownNodes(context.root).filter(
+    (node) => roleOf(node) === "progressbar"
+  )
+  if (!bars.length) {
+    context.problem(
+      context.root,
+      `has no element with the progressbar role, so it isn't a ${pattern}.`
+    )
+    return
+  }
+  const elements = context.elements()
+  for (const bar of bars) {
+    if (!elements.includes(bar)) {
+      context.problem(
+        bar,
+        `isn't an accessible element; a screen reader reads a ${pattern} as one element with its value.`
+      )
+      continue
+    }
+    // Android's description is the value text alone, unless a label leads it.
+    if (
+      context.os === "android" &&
+      bar.props.accessibilityValue?.text &&
+      !bar.props.accessibilityLabel
+    ) {
+      context.problem(
+        bar,
+        `has no name on Android, where its description is its value alone; name a ${pattern} with a label part or aria-label.`
+      )
+    } else {
+      requireName(context, bar, pattern)
+    }
+    if (
+      bar.props.focusable === true ||
+      (context.os === "android" && bar.props.accessible === true)
+    ) {
+      context.problem(
+        bar,
+        `is a keyboard stop; a ${pattern} is read, never focused.`
+      )
+    }
+    const { min, max, now, text } = (bar.props.accessibilityValue ?? {}) as {
+      min?: number
+      max?: number
+      now?: number
+      text?: string
+    }
+    if (now === undefined) {
+      if (pattern === "meter") {
+        context.problem(bar, "has no current value; a meter always has one.")
+      }
+      continue
+    }
+    if (min !== undefined && max !== undefined && (now < min || now > max)) {
+      context.problem(bar, `is ${now}, outside its range of ${min} to ${max}.`)
+    }
+    if (!text) {
+      context.problem(
+        bar,
+        "has no value text, so VoiceOver reads its value as a fraction of its range."
+      )
+    }
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
@@ -508,6 +669,9 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: disclosurePattern,
   img: imgPattern,
+  meter: (context) => barPattern(context, "meter"),
+  pagination: paginationPattern,
+  progressbar: (context) => barPattern(context, "progressbar"),
   "radio-group": radioGroupPattern,
   separator: separatorPattern,
   switch: switchPattern,
@@ -548,10 +712,11 @@ async function checkActions(context: Context) {
             : `isn't ${action}ed after the ${action} action.`
         )
       }
-      if (!requests.length) {
+      // A disclosure keeps focus on its button; a popup moves it in and back.
+      if (action === "escape" && !requests.length) {
         context.problem(
           node,
-          `requests no accessibility focus after the ${action} action; opening and closing move the screen reader's focus.`
+          "requests no accessibility focus after the escape action; closing moves the screen reader's focus back."
         )
       }
     }
@@ -567,7 +732,7 @@ async function checkActions(context: Context) {
  * It checks roles, required states, names, one accessible element per item
  * and hidden content, then performs the pattern's accessibility actions and
  * reads the state after each: activate everywhere, escape on iOS, expand and
- * collapse on Android. Opening and closing must request accessibility focus.
+ * collapse on Android. Escape must request accessibility focus.
  * It imports no renderer: pass your renderer's `act` so each action renders.
  *
  * @example

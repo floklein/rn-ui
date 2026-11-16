@@ -25,8 +25,12 @@
     "./dialog": "./src/dialog.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
+    "./meter": "./src/meter.tsx",
+    "./otp-input": "./src/otp-input.tsx",
+    "./pagination": "./src/pagination.tsx",
     "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
+    "./progress": "./src/progress.tsx",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
     "./separator": "./src/separator.tsx",
@@ -78,6 +82,18 @@
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
       },
+      "./meter": {
+        "types": "./dist/meter.d.ts",
+        "default": "./dist/meter.js"
+      },
+      "./otp-input": {
+        "types": "./dist/otp-input.d.ts",
+        "default": "./dist/otp-input.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
       "./password-input": {
         "types": "./dist/password-input.d.ts",
         "default": "./dist/password-input.js"
@@ -85,6 +101,10 @@
       "./primitive": {
         "types": "./dist/primitive.d.ts",
         "default": "./dist/primitive.js"
+      },
+      "./progress": {
+        "types": "./dist/progress.d.ts",
+        "default": "./dist/progress.js"
       },
       "./radio": {
         "types": "./dist/radio.d.ts",

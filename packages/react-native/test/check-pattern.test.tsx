@@ -28,6 +28,24 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { Meter, MeterLabel, MeterValue } from "../src/meter"
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "../src/progress"
+import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationList,
+  PaginationNext,
+  PaginationPrevious,
+} from "../src/pagination"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -55,6 +73,11 @@ const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
+const checkPagination = () =>
+  checkPattern(screen.container, "pagination", { os, act })
+const checkProgress = () =>
+  checkPattern(screen.container, "progressbar", { os, act })
+const checkMeter = () => checkPattern(screen.container, "meter", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -197,11 +220,15 @@ describe("checkPattern on the native host", () => {
     )
   })
 
-  test("fails when opening or closing requests no accessibility focus", async () => {
+  test("fails when escape requests no accessibility focus, while expand and collapse needn't move it", async () => {
     await render(<Disclosure requests={false} onAction={() => {}} />)
-    await expect(check()).rejects.toThrow(
-      `requests no accessibility focus after the ${os === "ios" ? "escape" : "expand"} action`
-    )
+    if (os === "ios") {
+      await expect(check()).rejects.toThrow(
+        "requests no accessibility focus after the escape action"
+      )
+    } else {
+      await expect(check()).resolves.toBeUndefined()
+    }
   })
 
   test("its module imports no renderer", async () => {
@@ -278,6 +305,30 @@ describe("checkPattern's textbox pattern on the native host", () => {
         </InputGroup>
         <Input aria-label="Account" disabled />
         <Textarea aria-label="Notes" />
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+  })
+
+  test("passes on an otp input, enabled, read-only or disabled, as one textbox with its slots hidden", async () => {
+    const slots = (
+      <OTPInputGroup>
+        <OTPInputSlot index={0} />
+        <OTPInputSlot index={1} />
+        <OTPInputSlot index={2} />
+      </OTPInputGroup>
+    )
+    await render(
+      <View>
+        <OTPInput aria-label="Code" maxLength={3} defaultValue="12">
+          {slots}
+        </OTPInput>
+        <OTPInput aria-label="Read-only" maxLength={3} readOnly>
+          {slots}
+        </OTPInput>
+        <OTPInput aria-label="Disabled" maxLength={3} disabled>
+          {slots}
+        </OTPInput>
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
@@ -694,6 +745,50 @@ describe("checkPattern's tabs pattern on the native host", () => {
   })
 })
 
+// A disclosure written by hand. Its content follows a press when `pressShows`
+// and TalkBack's actions when `actionShows`, which it declares when `declares`.
+function HandDisclosure({
+  pressShows = true,
+  actionShows = true,
+  declares = true,
+  hides = true,
+  inButton = false,
+}: {
+  pressShows?: boolean
+  actionShows?: boolean
+  declares?: boolean
+  hides?: boolean
+  inButton?: boolean
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [shown, setShown] = useState(false)
+  const change = (next: boolean, shows: boolean) => {
+    setExpanded(next)
+    if (shows && (next || hides)) {
+      setShown(next)
+    }
+  }
+  return (
+    <View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        accessibilityActions={
+          declares ? [{ name: expanded ? "collapse" : "expand" }] : undefined
+        }
+        onAccessibilityAction={(event) =>
+          change(event.nativeEvent.actionName === "expand", actionShows)
+        }
+        onPress={() => change(!expanded, pressShows)}
+      >
+        <Text>Order #4189</Text>
+        {inButton && expanded ? <View /> : null}
+      </Pressable>
+      {shown && !inButton ? <Text>Linen shirt</Text> : null}
+    </View>
+  )
+}
+
 describe("checkPattern's disclosure pattern on the native host", () => {
   test("passes on a collapsible, opening and closing it, and on a disabled one", async () => {
     await render(
@@ -715,6 +810,51 @@ describe("checkPattern's disclosure pattern on the native host", () => {
       </Collapsible>
     )
     await expect(checkDisclosure()).resolves.toBeUndefined()
+  })
+
+  test("fails on a button whose content doesn't follow its expanded state after the activate action", async () => {
+    await render(<HandDisclosure pressShows={false} />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+
+  test("fails on a button whose content stays after the activate action collapses it", async () => {
+    await render(<HandDisclosure hides={false} />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" hides no content after the activate action'
+    )
+  })
+
+  test("fails on a button that shows nothing outside itself", async () => {
+    await render(<HandDisclosure inButton />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+
+  test("on Android, fails on a button whose content doesn't follow TalkBack's expand action", async () => {
+    await render(<HandDisclosure actionShows={false} />)
+    const checked = checkDisclosure()
+    if (os === "ios") {
+      await expect(checked).resolves.toBeUndefined()
+    } else {
+      await expect(checked).rejects.toThrow(
+        'the button "Order #4189" shows no content after the expand action'
+      )
+    }
+  })
+
+  test("on Android, fails on a disclosure button with no expand action", async () => {
+    await render(<HandDisclosure declares={false} />)
+    const checked = checkDisclosure()
+    if (os === "ios") {
+      await expect(checked).resolves.toBeUndefined()
+    } else {
+      await expect(checked).rejects.toThrow(
+        'the button "Order #4189" has no expand action'
+      )
+    }
   })
 
   test("fails with no button that has an expanded state", async () => {
@@ -794,6 +934,209 @@ describe("checkPattern's separator pattern on the native host", () => {
     )
     await expect(checkSeparator()).rejects.toThrow(
       'the Text "or" is an element a screen reader stops on'
+    )
+  })
+})
+
+function Pages(props: React.ComponentProps<typeof Pagination>) {
+  return (
+    <Pagination aria-label="Pagination" {...props}>
+      <PaginationList>
+        {({ items }) => (
+          <>
+            <PaginationItem>
+              <PaginationPrevious aria-label="Previous" />
+            </PaginationItem>
+            {items.map((item) => (
+              <PaginationItem key={item}>
+                {typeof item === "number" ? (
+                  <PaginationLink page={item} />
+                ) : (
+                  <PaginationEllipsis />
+                )}
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext aria-label="Next" />
+            </PaginationItem>
+          </>
+        )}
+      </PaginationList>
+    </Pagination>
+  )
+}
+
+describe("checkPattern's pagination pattern on the native host", () => {
+  test("passes on a pagination, going to another page from each enabled button", async () => {
+    const onPageChange = jest.fn()
+    await render(<Pages pageCount={12} onPageChange={onPageChange} />)
+    await expect(checkPagination()).resolves.toBeUndefined()
+    expect(onPageChange).toHaveBeenCalled()
+  })
+
+  test("fails with no current page", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>1</Text>
+      </Pressable>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      "has no selected page; the current page is selected."
+    )
+  })
+
+  test("fails on a page that goes nowhere", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: true }}
+        >
+          <Text>1</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button">
+          <Text>2</Text>
+        </Pressable>
+      </View>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      `the button "2" leaves the current page "1" after the activate action; a page or a step that isn't disabled goes to another page.`
+    )
+  })
+
+  test("passes on pages that share a name, telling the current one by its view", async () => {
+    await render(
+      <Pagination pageCount={2}>
+        <PaginationLink page={1} aria-label="Same" />
+        <PaginationLink page={2} aria-label="Same" />
+      </Pagination>
+    )
+    await expect(checkPagination()).resolves.toBeUndefined()
+  })
+
+  test("fails on an unnamed step", async () => {
+    await render(
+      <Pagination pageCount={3}>
+        <PaginationLink page={1} />
+        <PaginationNext />
+      </Pagination>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      "has no name; a button needs an accessibilityLabel or text inside it."
+    )
+  })
+})
+
+describe("checkPattern's progressbar and meter patterns on the native host", () => {
+  test("passes on progress bars, determinate or not, named by a label or aria-label", async () => {
+    await render(
+      <View>
+        <Progress value={60}>
+          <ProgressLabel>Uploading photos</ProgressLabel>
+          <ProgressValue />
+          <ProgressTrack>
+            <ProgressIndicator />
+          </ProgressTrack>
+        </Progress>
+        <Progress value={null} aria-label="Connecting">
+          <ProgressTrack>
+            <ProgressIndicator />
+          </ProgressTrack>
+        </Progress>
+        <Progress value={null}>
+          <ProgressLabel>Connecting to server</ProgressLabel>
+        </Progress>
+      </View>
+    )
+    await expect(checkProgress()).resolves.toBeUndefined()
+  })
+
+  test("passes on a meter whose range doesn't start at 0", async () => {
+    await render(
+      <Meter value={-5} min={-10} max={10} aria-label="Balance">
+        <MeterValue />
+      </Meter>
+    )
+    await expect(checkMeter()).resolves.toBeUndefined()
+  })
+
+  test("passes on a meter named by its Label part", async () => {
+    await render(
+      <Meter value={68}>
+        <MeterLabel>Storage used</MeterLabel>
+        <MeterValue />
+      </Meter>
+    )
+    await expect(checkMeter()).resolves.toBeUndefined()
+  })
+
+  test("fails with no progress bar", async () => {
+    await render(<Text>60%</Text>)
+    await expect(checkProgress()).rejects.toThrow(
+      "The tree has no element with the progressbar role, so it isn't a progressbar."
+    )
+  })
+
+  test("fails on a bar named only by its value", async () => {
+    await render(
+      <Progress value={60}>
+        <ProgressValue />
+      </Progress>
+    )
+    await expect(checkProgress()).rejects.toThrow(/the progressbar has no name/)
+  })
+
+  test("fails on a value outside its range, or read as a fraction", async () => {
+    await render(
+      <View
+        accessible
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Balance"
+        accessibilityValue={{ min: -10, max: 10, now: 12 }}
+      />
+    )
+    await expect(checkMeter()).rejects.toThrow(
+      /is 12, outside its range of -10 to 10[^]*has no value text/
+    )
+  })
+
+  test("fails on a meter with no value", async () => {
+    await render(
+      <View
+        accessible
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Battery"
+        accessibilityValue={{ min: 0, max: 100, text: "" }}
+      />
+    )
+    await expect(checkMeter()).rejects.toThrow(
+      "has no current value; a meter always has one."
+    )
+  })
+
+  test("fails on a bar the keyboard stops on", async () => {
+    await render(
+      <Progress value={60} aria-label="Upload" focusable>
+        <ProgressValue />
+      </Progress>
+    )
+    await expect(checkProgress()).rejects.toThrow(
+      'the progressbar "Upload" is a keyboard stop; a progressbar is read, never focused.'
+    )
+  })
+
+  test("fails on a bar a screen reader can't reach as one element", async () => {
+    await render(
+      <View
+        collapsable={false}
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: 100 }}
+      />
+    )
+    await expect(checkProgress()).rejects.toThrow(
+      "isn't an accessible element; a screen reader reads a progressbar as one element with its value."
     )
   })
 })

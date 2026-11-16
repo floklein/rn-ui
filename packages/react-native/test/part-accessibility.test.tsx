@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react-native"
 import { definePrimitive } from "@ui-sdk/core"
-import { Pressable, View } from "react-native"
+import { Platform, Pressable, View } from "react-native"
 import { createParts } from "../src/primitive"
 
 const outline = definePrimitive({
@@ -42,6 +42,29 @@ describe("a part's accessibility props", () => {
       expanded: false,
       busy: true,
     })
+  })
+
+  test("a user's accessibilityActions join the translated ones, and both handlers run", async () => {
+    const onAccessibilityAction = jest.fn()
+    await render(
+      <parts.Root>
+        <parts.Item
+          testID="item"
+          accessibilityActions={[{ name: "longpress" }]}
+          onAccessibilityAction={onAccessibilityAction}
+        />
+      </parts.Root>
+    )
+    const item = screen.getByTestId("item")
+    expect(item.props.accessibilityActions).toEqual(
+      Platform.OS === "android"
+        ? [{ name: "expand" }, { name: "longpress" }]
+        : [{ name: "longpress" }]
+    )
+    item.props.onAccessibilityAction({
+      nativeEvent: { actionName: "longpress" },
+    })
+    expect(onAccessibilityAction).toHaveBeenCalledTimes(1)
   })
 
   test("a user's role and aria-* are translated and consumed, reaching neither the host nor render", async () => {
