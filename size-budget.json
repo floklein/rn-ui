@@ -436,6 +436,7 @@
   "@ui-sdk/react-native/progress": 9965,
   "@ui-sdk/react-native/radio": 15648,
   "@ui-sdk/react-native/rating": 15439,
+  "@ui-sdk/react-native/segmented-control": 16449,
   "@ui-sdk/react-native/separator": 8709,
   "@ui-sdk/react-native/switch": 11592,
   "@ui-sdk/react-native/tabs": 19268,
