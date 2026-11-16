@@ -589,6 +589,10 @@
       "entry": "packages/react-native/src/separator.tsx",
       "slots": {}
     },
+    "pagination": {
+      "entry": "packages/react-native/src/pagination.tsx",
+      "slots": {}
+    },
     "switch": {
       "entry": "packages/react-native/src/switch.tsx",
       "slots": {
@@ -775,7 +779,6 @@
     "navigation-menu",
     "number-input",
     "otp-input",
-    "pagination",
     "popover",
     "resizable",
     "scroll-area",
@@ -831,6 +834,12 @@
     },
     {
       "component": "meter",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "pagination",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

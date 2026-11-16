@@ -9,6 +9,7 @@ import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Field, FieldError, FieldLabel } from "../src/field"
+import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
@@ -160,6 +161,12 @@ const fields = [
   <FieldError>{(state) => state.message}</FieldError>,
 ]
 
+const paginations = [
+  <Pagination pageCount={10} onPageChange={() => {}} />,
+  // @ts-expect-error Pages are buttons on native, with no URL to link to.
+  <Pagination pageCount={10} getHref={(page) => `/posts/${page}`} />,
+]
+
 export {
   ComboboxInput,
   dialogs,
@@ -167,6 +174,7 @@ export {
   fields,
   NativeDialog,
   NativeSwitch,
+  paginations,
   passwords,
   switches,
   type SwitchInput,
