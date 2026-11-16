@@ -9,6 +9,7 @@ type Node = {
   role: string
   label: string
   checked?: boolean | "mixed"
+  selected?: true
   enabled: boolean
   text?: string
 }
@@ -43,6 +44,10 @@ const capabilities =
           "appium:prebuiltWDAPath": process.env.WDA_PATH,
         }),
         ...(process.env.CI && { "appium:isHeadless": true }),
+        // Parallel iOS sessions on one machine each need their own port.
+        ...(process.env.WDA_LOCAL_PORT && {
+          "appium:wdaLocalPort": Number(process.env.WDA_LOCAL_PORT),
+        }),
       }
     : {
         platformName: "Android",
@@ -50,6 +55,9 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        ...(process.env.UIAUTOMATOR2_PORT && {
+          "appium:systemPort": Number(process.env.UIAUTOMATOR2_PORT),
+        }),
       }
 
 const roles: Record<string, string> = {
@@ -143,6 +151,13 @@ function parseTree(source: string) {
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text
+    }
+    const selected =
+      platform === "ios"
+        ? (attrs.traits ?? "").split(", ").includes("Selected")
+        : attrs.selected === "true"
+    if (selected) {
+      node.selected = true
     }
     nodes.set(id && !nodes.has(id) ? id : `#${nodes.size}`, node)
   }
