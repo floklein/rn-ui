@@ -67,6 +67,7 @@ const capabilities =
 const roles: Record<string, string> = {
   XCUIElementTypeSwitch: "switch",
   XCUIElementTypeButton: "button",
+  XCUIElementTypeImage: "image",
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeTextField: "textbox",
   XCUIElementTypeTextView: "textbox",
@@ -74,6 +75,7 @@ const roles: Record<string, string> = {
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
   "android.widget.Button": "button",
+  "android.widget.ImageView": "image",
   "android.widget.ToggleButton": "togglebutton",
   "android.widget.TextView": "text",
   "android.widget.EditText": "textbox",

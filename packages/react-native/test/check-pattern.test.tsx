@@ -1,9 +1,10 @@
-import { act, render, screen } from "@testing-library/react-native"
+import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createSwitchController } from "@ui-sdk/core/switch"
 import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
 import { Platform, Pressable, Text, TextInput, View } from "react-native"
+import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
@@ -19,6 +20,7 @@ const checkTextbox = () =>
   checkPattern(screen.container, "textbox", { os, act })
 const checkCheckbox = () =>
   checkPattern(screen.container, "checkbox", { os, act })
+const checkImage = () => checkPattern(screen.container, "img", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -276,6 +278,56 @@ describe("checkPattern's textbox pattern on the native host", () => {
     )
     await expect(checkTextbox()).rejects.toThrow(
       "is disabled for the screen reader but can still be edited"
+    )
+  })
+})
+
+describe("checkPattern's img pattern on the native host", () => {
+  const source = { uri: "https://example.com/ada.png" }
+  const load = () =>
+    fireEvent(
+      screen.getByTestId("image", { includeHiddenElements: true }),
+      "load"
+    )
+
+  test("passes on a loaded avatar, named by its alt", async () => {
+    await render(
+      <Avatar>
+        <AvatarImage source={source} alt="Ada Lovelace" testID="image" />
+        <AvatarFallback>
+          <Text>AL</Text>
+        </AvatarFallback>
+      </Avatar>
+    )
+    await load()
+    await expect(checkImage()).resolves.toBeUndefined()
+  })
+
+  test("passes on a loading avatar, read by its fallback", async () => {
+    await render(
+      <Avatar>
+        <AvatarImage source={source} alt="Ada Lovelace" />
+        <AvatarFallback>
+          <Text>AL</Text>
+        </AvatarFallback>
+      </Avatar>
+    )
+    await expect(checkImage()).resolves.toBeUndefined()
+  })
+
+  test("fails on an image a screen reader reaches with no name", async () => {
+    await render(<View accessible accessibilityRole="image" />)
+    await expect(checkImage()).rejects.toThrow("the image has no name")
+  })
+
+  test("fails when a screen reader finds nothing to read", async () => {
+    await render(
+      <Avatar>
+        <AvatarImage source={source} alt="Ada Lovelace" />
+      </Avatar>
+    )
+    await expect(checkImage()).rejects.toThrow(
+      "has no image and no text, so a screen reader reads nothing"
     )
   })
 })
