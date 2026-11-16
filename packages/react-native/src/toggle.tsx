@@ -91,7 +91,9 @@ function ToggleGroup<T extends string = string>({
         group,
         "group",
         {},
-        props as PartProps<typeof View, ToggleGroupState>,
+        props as Omit<PartProps<typeof View, ToggleGroupState>, "ref"> & {
+          ref?: React.Ref<unknown>
+        },
         View
       )}
     </ToggleGroupContext>
