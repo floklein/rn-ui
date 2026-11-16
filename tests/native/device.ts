@@ -76,6 +76,7 @@ const roles: Record<string, string> = {
   XCUIElementTypeSecureTextField: "textbox",
   XCUIElementTypeTextView: "textbox",
   XCUIElementTypeOther: "group",
+  XCUIElementTypeSlider: "slider",
   "android.widget.Switch": "switch",
   "android.widget.CheckBox": "checkbox",
   "android.widget.RadioButton": "radio",
@@ -85,6 +86,7 @@ const roles: Record<string, string> = {
   "android.widget.TextView": "text",
   "android.widget.EditText": "textbox",
   "android.view.ViewGroup": "group",
+  "android.widget.SeekBar": "slider",
 }
 
 const pressedValues: Record<string, boolean> = {
@@ -94,6 +96,11 @@ const pressedValues: Record<string, boolean> = {
 
 const byId = (id: string) =>
   platform === "ios" ? `~${id}` : `android=new UiSelector().resourceId("${id}")`
+
+const named = (label: string) =>
+  platform === "ios"
+    ? `~${label}`
+    : `android=new UiSelector().description("${label}")`
 
 // UiAutomator only finds what's on screen, so a screen low in the list is
 // scrolled to first.
@@ -257,6 +264,37 @@ function useDevice(name: string) {
     async size(id: string) {
       return driver.$(byId(id)).getSize()
     },
+    /** The element's box on screen, in the driver's units: points on iOS, pixels on Android. */
+    async rect(id: string) {
+      const element = driver.$(byId(id))
+      return { ...(await element.getLocation()), ...(await element.getSize()) }
+    },
+    /** The box of the element named `label`, for a part that takes no test ID. */
+    async rectNamed(label: string) {
+      const element = driver.$(named(label))
+      return { ...(await element.getLocation()), ...(await element.getSize()) }
+    },
+    /** A finger pressed at `from`, moved to `to` in steps, then lifted. */
+    async drag(
+      from: { x: number; y: number },
+      to: { x: number; y: number },
+      duration = 600
+    ) {
+      const steps = 6
+      const finger = driver
+        .action("pointer", { parameters: { pointerType: "touch" } })
+        .move({ x: Math.round(from.x), y: Math.round(from.y) })
+        .down()
+        .pause(100)
+      for (let step = 1; step <= steps; step++) {
+        finger.move({
+          duration: Math.round(duration / steps),
+          x: Math.round(from.x + ((to.x - from.x) * step) / steps),
+          y: Math.round(from.y + ((to.y - from.y) * step) / steps),
+        })
+      }
+      await finger.up().perform()
+    },
     /** The element's attributes as the OS reports them, for what `tree` leaves out. */
     async attributes(id: string) {
       for (const [, , tag] of (await driver.getPageSource()).matchAll(
@@ -274,13 +312,7 @@ function useDevice(name: string) {
     },
     /** Presses the element named `label`, for a part that takes no test ID. */
     async pressNamed(label: string) {
-      await driver
-        .$(
-          platform === "ios"
-            ? `~${label}`
-            : `android=new UiSelector().description("${label}")`
-        )
-        .click()
+      await driver.$(named(label)).click()
     },
     /** The test ID of the element the OS's input focus is on, as a text field being edited. */
     async focused() {

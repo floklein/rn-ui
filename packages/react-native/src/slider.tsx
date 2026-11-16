@@ -236,7 +236,7 @@ function ThumbInput({
 }) {
   const handle = useHandle(slider)
   const user = useFieldControl(
-    { ...named, accessible: true, style: StyleSheet.absoluteFill },
+    { ...named, accessible: true, style: styles.input },
     () => handle.api.focus()
   )
   return usePart(
@@ -269,7 +269,17 @@ function SliderValue({
   )
 }
 
+// Past the thumb on every side, so a 20-point thumb is a 44-point target.
+const reach = -12
+
 const styles = StyleSheet.create({
+  input: {
+    position: "absolute",
+    top: reach,
+    bottom: reach,
+    start: reach,
+    end: reach,
+  },
   place: {
     position: "absolute",
     alignItems: "center",
