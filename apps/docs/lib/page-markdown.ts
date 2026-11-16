@@ -316,9 +316,16 @@ async function pageMarkdown(
         return compact ? nameList(found) : rowList(found)
       })
       .replace(tag("PartStateTable"), (_, attrs: string) => {
-        const found = partStateRows(
-          attributes(attrs) as Parameters<typeof partStateRows>[0]
-        )
+        const { component, part, path: file, name, omit } = attributes(attrs)
+        const found = partStateRows({
+          component,
+          part,
+          path: file,
+          name,
+          omit: [...(omit ?? "").matchAll(/"([^"]*)"/g)].map(
+            ([, field]) => field
+          ),
+        })
         return compact ? nameList(found) : rowList(found)
       })
       .replace(tag("ReasonTable"), (_, attrs: string) => {

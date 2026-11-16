@@ -6,6 +6,7 @@ const views: WeakMap<Part, HostInstance> = new WeakMap()
 const textInputs: WeakSet<HostInstance> = new WeakSet()
 const fields: WeakMap<object, NativeTextField> = new WeakMap()
 const renders: WeakMap<Part, number> = new WeakMap()
+const controls: WeakMap<object, () => void> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -39,6 +40,7 @@ setNativeHost({
   // The view tree keeps render order even for a part that rendered alone,
   // like one inserted between memoized siblings. A test renderer's views
   // can't compare, so there it's the order parts last rendered in.
+  activate: (part) => controls.get(part.api)?.(),
   compare(a, b) {
     const first = views.get(a)
     const second = views.get(b)
@@ -49,4 +51,4 @@ setNativeHost({
   },
 })
 
-export { fields, pressSource, renders, textInputs, views }
+export { controls, fields, pressSource, renders, textInputs, views }

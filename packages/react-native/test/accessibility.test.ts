@@ -173,7 +173,18 @@ const rows: [Record<string, string | undefined>, object, object][] = [
   [
     { "aria-expanded": "false" },
     { accessibilityState: { expanded: false } },
-    { accessibilityState: { expanded: false } },
+    {
+      accessibilityState: { expanded: false },
+      accessibilityActions: [{ name: "expand" }],
+    },
+  ],
+  [
+    { "aria-expanded": "true" },
+    { accessibilityState: { expanded: true } },
+    {
+      accessibilityState: { expanded: true },
+      accessibilityActions: [{ name: "collapse" }],
+    },
   ],
   [{ "aria-busy": "true" }, { accessibilityState: { busy: true } }, {}],
   [

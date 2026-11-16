@@ -153,8 +153,43 @@ async function checkboxPattern(context: Context) {
   }
 }
 
-// A disclosure's button says with its expanded state whether its content
-// shows, and activating it shows or hides the content (APG disclosure).
+// Content inside the button is part of its name, not what it discloses.
+function contentCount(context: Context, button: HostNode) {
+  const own = new Set(shownNodes(button))
+  return readTree(context.root, context.os).shown.filter(
+    (node) => !own.has(node)
+  ).length
+}
+
+async function checkContentFollows(
+  context: Context,
+  button: () => HostNode,
+  action: Action
+) {
+  const expanded = stateOf(button()).expanded
+  const before = contentCount(context, button())
+  await performWatched(button(), action, context.act)
+  if (stateOf(button()).expanded === expanded) {
+    context.problem(
+      button(),
+      `stays ${expanded ? "expanded" : "collapsed"} after the ${action} action; it shows or hides its content (APG disclosure).`
+    )
+    return false
+  }
+  const after = contentCount(context, button())
+  if (expanded ? after >= before : after <= before) {
+    context.problem(
+      button(),
+      `${expanded ? "hides" : "shows"} no content after the ${action} action; its content follows its expanded state (APG disclosure).`
+    )
+    return false
+  }
+  return true
+}
+
+// Activating a disclosure's button shows or hides its content (APG
+// disclosure). TalkBack offers expand or collapse from the expanded state
+// alone, so on Android the button handles them too.
 async function disclosurePattern(context: Context) {
   const buttons = () =>
     context
@@ -171,20 +206,32 @@ async function disclosurePattern(context: Context) {
     requireName(context, button, "button")
   }
   for (const index of buttons().keys()) {
-    const button = buttons()[index]
-    if (isDisabled(button)) {
+    const button = () => buttons()[index]
+    if (isDisabled(button())) {
       continue
     }
-    const before = stateOf(button).expanded
-    await performWatched(button, "activate", context.act)
-    if (stateOf(buttons()[index]).expanded === before) {
-      context.problem(
-        buttons()[index],
-        `stays ${before ? "expanded" : "collapsed"} after the activate action; activating a disclosure button shows or hides its content (APG disclosure).`
-      )
+    if (
+      !(await checkContentFollows(context, button, "activate")) ||
+      !(await checkContentFollows(context, button, "activate")) ||
+      context.os !== "android"
+    ) {
       continue
     }
-    await performWatched(buttons()[index], "activate", context.act)
+    const actions: Action[] = stateOf(button()).expanded
+      ? ["collapse", "expand"]
+      : ["expand", "collapse"]
+    for (const action of actions) {
+      if (!actionsOf(button()).includes(action)) {
+        context.problem(
+          button(),
+          `has no ${action} action; TalkBack offers it from the expanded state, and changes that state without the content following.`
+        )
+        break
+      }
+      if (!(await checkContentFollows(context, button, action))) {
+        break
+      }
+    }
   }
 }
 
@@ -491,10 +538,11 @@ async function checkActions(context: Context) {
             : `isn't ${action}ed after the ${action} action.`
         )
       }
-      if (!requests.length) {
+      // A disclosure keeps focus on its button; a popup moves it in and back.
+      if (action === "escape" && !requests.length) {
         context.problem(
           node,
-          `requests no accessibility focus after the ${action} action; opening and closing move the screen reader's focus.`
+          "requests no accessibility focus after the escape action; closing moves the screen reader's focus back."
         )
       }
     }
@@ -510,7 +558,7 @@ async function checkActions(context: Context) {
  * It checks roles, required states, names, one accessible element per item
  * and hidden content, then performs the pattern's accessibility actions and
  * reads the state after each: activate everywhere, escape on iOS, expand and
- * collapse on Android. Opening and closing must request accessibility focus.
+ * collapse on Android. Escape must request accessibility focus.
  * It imports no renderer: pass your renderer's `act` so each action renders.
  *
  * @example

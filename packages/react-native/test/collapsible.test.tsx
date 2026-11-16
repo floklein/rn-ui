@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef, useState } from "react"
 import {
   AccessibilityInfo,
+  Platform,
   StyleSheet,
   Text,
   type HostInstance,
@@ -50,6 +51,51 @@ describe("Collapsible", () => {
     await fireEvent.press(trigger())
     expect(trigger()).toBeCollapsed()
     expect(screen.queryByText("Linen shirt")).toBeNull()
+  })
+
+  const accessibilityAction = (actionName: string) =>
+    act(() =>
+      trigger().props.onAccessibilityAction({ nativeEvent: { actionName } })
+    )
+
+  test("TalkBack's expand and collapse open and close the panel as a screen reader's press, and only when that changes it", async () => {
+    const onOpenChange = jest.fn()
+    await render(<Order onOpenChange={onOpenChange} />)
+    if (Platform.OS === "ios") {
+      expect(trigger().props.accessibilityActions).toBeUndefined()
+      return
+    }
+    expect(trigger().props.accessibilityActions).toEqual([{ name: "expand" }])
+    await accessibilityAction("expand")
+    expect(trigger()).toBeExpanded()
+    expect(screen.getByText("Linen shirt")).toBeVisible()
+    expect(onOpenChange.mock.calls[0][1]).toMatchObject({
+      reason: "trigger-press",
+      source: "virtual",
+    })
+    expect(trigger().props.accessibilityActions).toEqual([{ name: "collapse" }])
+    await accessibilityAction("expand")
+    expect(trigger()).toBeExpanded()
+    expect(onOpenChange).toHaveBeenCalledTimes(1)
+    await accessibilityAction("collapse")
+    expect(trigger()).toBeCollapsed()
+    expect(screen.queryByText("Linen shirt")).toBeNull()
+    expect(onOpenChange.mock.calls[1]).toMatchObject([
+      false,
+      { source: "virtual" },
+    ])
+    await accessibilityAction("collapse")
+    expect(onOpenChange).toHaveBeenCalledTimes(2)
+  })
+
+  test("a disabled trigger ignores TalkBack's expand", async () => {
+    const onOpenChange = jest.fn()
+    await render(<Order disabled onOpenChange={onOpenChange} />)
+    if (Platform.OS === "android") {
+      await accessibilityAction("expand")
+    }
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(trigger()).toBeCollapsed()
   })
 
   test("a disabled trigger stays reachable and ignores a press", async () => {
