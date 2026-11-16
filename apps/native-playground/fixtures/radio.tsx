@@ -53,6 +53,7 @@ function Option({
       value={value}
       disabled={disabled}
       style={circle}
+      android_ripple={{ color: "#16a34a", radius: 28 }}
     >
       <RadioIndicator
         testID={`indicator-${value}`}

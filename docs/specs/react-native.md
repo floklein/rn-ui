@@ -75,7 +75,7 @@ From [Where native names diverge from @ui-sdk/react][names] and [How state reach
 
 - Part state is identical to the web's.
 - Native parts emit no `dataSet` and no `data-*` props. Every CSS variable and data attribute core writes on a part is a field of that part's state. For popups: `side`, `align`, `anchorWidth`, `anchorHeight`, `availableWidth`, `availableHeight`, `transformOrigin` and `arrowOffset` on the content, and `side`, `align` and `arrowClamped` on the arrow.
-- Press, hover and focus feedback is a separate argument: `(state, interaction) => ...` for `style`, `className` and `children`, and a third argument for `render`. `interaction` is `{ pressed, hovered, focused }`, on parts whose host is a `Pressable` or a `TextInput`.
+- Press, hover and focus feedback is a separate argument: `(state, interaction) => ...` for `style`, `className` and `children`, and a third argument for `render`. `interaction` is `{ pressed, hovered, focused }`, on parts whose host is a `Pressable` or a `TextInput`. A part disabled through `disabled` or `aria-disabled` reports no press or hover and takes no touch, so no ripple plays (#126).
 - No styling library is assumed. NativeWind v5 and Uniwind work as is; NativeWind v4 users call `cssInterop` on the parts they style, and the package keeps its compiled build and its name.
 
 ## Accessibility
