@@ -1,0 +1,247 @@
+---
+title: OTP Input
+description: Enter a one-time code in drawn slots, with one-time-code autofill and tap-to-select.
+---
+
+Use an OTP Input for a short code sent by text or email, like a sign-in or verification code. Each character gets its own slot, a code the keyboard suggests fills them all at once, and tapping a slot selects it so the next character replaces it.
+
+<ComponentExample
+  name="otp-input/basic"
+  caption="Type a six-digit code, then tap a slot to replace its digit."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build an `OTPInput`:
+
+```text
+OTPInput
+└── OTPInputGroup
+    ├── OTPInputSlot
+    └── OTPInputSlot
+```
+
+`OTPInput` renders a `View` holding the code, with one `TextInput` under the slots. That field takes focus, holds the whole code and is what screen readers reach. `OTPInputGroup` lays out a run of slots. Each `OTPInputSlot` draws the character at its zero-based `index`, and a tap on it selects that character. Add `OTPInputSeparator` between groups when the code is easier to read in sections.
+
+Name the code with a `FieldLabel` inside a [Field](/docs/react-native/components/field), whose label tap starts editing it, or with `aria-label`. Groups, slots and separators are only drawn: they're hidden from screen readers and aren't keyboard stops. The field asks for `one-time-code`, so iOS offers a code from Messages or Mail above the keyboard, and Android's autofill service can offer one from an SMS.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  OTPInput,
+  OTPInputGroup,
+  OTPInputSlot,
+} from "@ui-sdk/react-native/otp-input"
+
+function Example() {
+  return (
+    <OTPInput maxLength={4} aria-label="Verification code">
+      <OTPInputGroup style={{ flexDirection: "row", gap: 8 }}>
+        <OTPInputSlot index={0} />
+        <OTPInputSlot index={1} />
+        <OTPInputSlot index={2} />
+        <OTPInputSlot index={3} />
+      </OTPInputGroup>
+    </OTPInput>
+  )
+}
+
+export { Example }
+```
+
+Without children, a slot shows its character in a `Text`. Pass a function of the slot's state to draw it yourself, like a caret in the empty active slot.
+
+## Four Digits
+
+Set `maxLength` to the code's length and render that many slots. The default length is six.
+
+<ComponentExample
+  name="otp-input/four-digits"
+  caption="Type a four-digit PIN."
+/>
+
+## Alphanumeric
+
+Set `pattern="alphanumeric"` for codes with letters. The keyboard follows: a number pad for digits, a text keyboard otherwise. Set `inputMode` to choose another.
+
+<ComponentExample
+  name="otp-input/alphanumeric"
+  caption="Type a recovery code with letters and digits."
+/>
+
+## Custom Pattern
+
+Pass a regular expression that each character must match, like `/[0-9A-F]/i` for a hexadecimal code.
+
+<ComponentExample
+  name="otp-input/pattern"
+  caption="Type a device code. Letters past F are refused."
+/>
+
+## Refused Text and Pasted Codes
+
+`TextInput` reports an edit after it shows it, so a character that doesn't fit the pattern appears for a moment and then goes back, with the selection where it was. A pasted or autofilled code is cleaned the way it is on the web: spaces and dashes go, full-width digits become plain ones, and a whole code replaces what was there. Text with anything else in it, like "Your code is 123456", is refused rather than half pasted.
+
+## Validation
+
+Put the code in a [Field](/docs/react-native/components/field) with `invalid` and a `FieldError`. The error describes the field, and your styles draw the slots invalid from your own state.
+
+<ComponentExample
+  name="otp-input/invalid"
+  caption="The expired code is marked invalid until you change it."
+/>
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. Call `details.cancel()` to keep the code as it was.
+
+<ComponentExample
+  name="otp-input/controlled"
+  caption="Type a code. The console logs each change and its reason."
+/>
+
+## On Complete
+
+`onValueCommit` runs when a change fills every slot, with the whole code, which is the moment to verify it.
+
+<ComponentExample
+  name="otp-input/complete"
+  caption="Fill every slot. The console logs the code to check."
+/>
+
+## Disabled and Read Only
+
+Set `disabled` to stop the code from being edited or selected. Screen readers announce the field as dimmed or disabled, and Android's Tab skips it.
+
+`readOnly` keeps the code from changing. React Native has no read-only field that stays enabled, so screen readers announce it as dimmed or disabled too, and Android's Tab skips it. `required` stays in the state, for your styles and labels. It isn't announced.
+
+## Controller
+
+Create a `createOTPInputController()` and pass it as `controller` to read, fill, clear, or start editing the code from another control. Writes use the `imperative` reason and pass through the same filtering and change callbacks as typing.
+
+```tsx
+const [code] = useState(createOTPInputController)
+
+<Pressable onPress={() => code.setValue("123456")}><Text>Fill</Text></Pressable>
+<Pressable onPress={() => code.focus()}><Text>Focus</Text></Pressable>
+<OTPInput controller={code} aria-label="Verification code">
+  ...
+</OTPInput>
+```
+
+## Forms and Keys
+
+A native view takes part in no form, so there's no `name`, `form`, submission or reset: read the code from `onValueChange`, `onValueCommit` or the controller. The component handles no keys itself, since `TextInput` reports none, and keeps no undo history of its own. A paste is reported as `input-change`, like typing.
+
+## Custom Rendering
+
+The root's state has every slot in `slots`, so its children can be a function that draws them. Use `render` on a slot to render your own element, spreading the props it receives.
+
+<ComponentExample
+  name="otp-input/render"
+  caption="Type an invite code into the round slots."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(slot) => [styles.slot, slot.active && styles.active]`. Draw the caret yourself in a slot whose `hasFakeCaret` is true: the field's own text, caret and selection are hidden. Every part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+The root, groups and separators get the code's state; slots get their own.
+
+### OTPInput [#part-state-otpinput]
+
+<PartStateTable
+  component="otp-input"
+  part="root"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputState"
+/>
+
+### OTPInputGroup [#part-state-otpinputgroup]
+
+<PartStateTable
+  component="otp-input"
+  part="group"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputState"
+/>
+
+### OTPInputSlot [#part-state-otpinputslot]
+
+<PartStateTable
+  component="otp-input"
+  part="slot"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputSlotState"
+/>
+
+### OTPInputSeparator [#part-state-otpinputseparator]
+
+<PartStateTable
+  component="otp-input"
+  part="separator"
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputState"
+/>
+
+## API Reference
+
+`id`, `autoFocus`, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-invalid` go to the field; the root's other props go to its `View`.
+
+### OTPInput
+
+<TypeTable
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputOptions"
+  omit={["name", "form"]}
+/>
+
+### OTPInputSlot
+
+<TypeTable
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputSlotProps"
+/>
+
+### Reasons
+
+`details.reason` says why the code changed. On native, only `input-change` and `imperative` happen; autofill and a code from the keyboard's suggestions are `input-change`.
+
+<ReasonTable
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createOTPInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/otp-input/otp-input.ts"
+  name="OTPInputController"
+/>
+
+## Accessibility
+
+There's no WAI-ARIA pattern for a one-time code. Screen readers reach one text field with the whole code, named by a `FieldLabel` or an `aria-label`; the slots, groups and separators are hidden from them. VoiceOver and TalkBack read the code as they read any field, and their own editing gestures move through it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key       | Does                                                                           |
+| --------- | ------------------------------------------------------------------------------ |
+| Tab       | Moves to the field, which starts editing it, and on past it                    |
+| A digit   | Replaces the selected slot's character, or fills the empty slot after the code |
+| Backspace | Deletes the selected character, or the last one                                |
