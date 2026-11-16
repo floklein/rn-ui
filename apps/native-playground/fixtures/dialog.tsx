@@ -73,7 +73,7 @@ function Fixture() {
         <DialogClose
           testID="save"
           value="saved"
-          action={() => new Promise((done) => setTimeout(done, 800))}
+          action={() => new Promise((done) => setTimeout(done, 2000))}
           style={styles.action}
         >
           {(state) => <Text>{state.pending ? "Saving" : "Save"}</Text>}
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "#f4f4f5",
   },
-  backdrop: { position: "absolute", inset: 0, backgroundColor: "#00000066" },
+  backdrop: { position: "absolute", inset: 0, backgroundColor: "#3f3f46" },
   content: {
     marginTop: "auto",
     gap: 12,

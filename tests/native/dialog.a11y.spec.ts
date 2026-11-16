@@ -1,10 +1,17 @@
 import assert from "node:assert/strict"
-import { beforeEach, test } from "node:test"
+import { afterEach, beforeEach, test } from "node:test"
 import { useDevice } from "./device.ts"
 
 const device = useDevice("dialog.a11y")
 
 beforeEach(() => device.open("fixture-dialog"))
+
+afterEach(async () => {
+  if ((await device.tree()).has("content")) {
+    await device.press("done")
+    await device.expectTree((tree) => assert.equal(tree.has("content"), false))
+  }
+})
 
 async function open() {
   await device.press("trigger")

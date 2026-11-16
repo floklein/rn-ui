@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readdirSync } from "node:fs"
 import path from "node:path"
-import { beforeEach, test } from "node:test"
+import { afterEach, beforeEach, test } from "node:test"
 import { useDevice } from "./device.ts"
 
 const device = useDevice("dialog")
@@ -24,6 +24,23 @@ async function open() {
 }
 
 beforeEach(() => device.open("fixture-dialog"))
+
+// A Modal left open would cover the screen list the next test opens from.
+afterEach(async () => {
+  const tree = await device.tree()
+  if (tree.get("inside-cancel")?.label === "Allow changes") {
+    await device.press("inside-cancel")
+  }
+  for (const [id, close] of [
+    ["content", "done"],
+    ["controlled-content", "close-from-state"],
+  ]) {
+    if (tree.has(id)) {
+      await device.press(close)
+      await expectShown(id, false)
+    }
+  }
+})
 
 test("pressing the trigger opens it from a touch, and opening settles at once", async () => {
   await expectText("changes", "none")
@@ -97,7 +114,9 @@ test("a canceled open stays closed, and a canceled close stays open", async () =
 test("an async Close action keeps it open while it runs, then closes it", async () => {
   await open()
   await device.press("save")
-  await expectText("save", "Saving")
+  await device.expectTree((tree) =>
+    assert.equal(tree.get("save")?.label, "Saving")
+  )
   await expectShown("content", false)
   await expectText("changes", "true:trigger-press:touch false:action:touch")
 })

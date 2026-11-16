@@ -1,0 +1,285 @@
+---
+title: Dialog
+description: A window over the screen that asks for the user's attention, in a Modal.
+---
+
+Use a dialog for a task the user finishes before going back to the screen, like editing a profile or sharing a link.
+
+<ComponentExample
+  name="dialog/basic"
+  caption="Tap Share. The dialog opens over the screen, and VoiceOver or TalkBack moves to its title. Tap Done, the backdrop or Android's back to close it."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Dialog`:
+
+```text
+Dialog
+├── DialogTrigger
+├── DialogBackdrop
+└── DialogContent
+    ├── DialogTitle
+    ├── DialogDescription
+    └── DialogClose
+```
+
+`DialogTrigger`, `DialogBackdrop` and `DialogClose` render a `Pressable`, `DialogContent` a `View`, and `DialogTitle` and `DialogDescription` a `Text`. A modal dialog renders its backdrop and content in one React Native `Modal`, which `Dialog` renders, so the backdrop sits under the content and the rest of the screen is hidden from screen readers. Context from a provider placed between `Dialog` and `DialogContent` doesn't reach the content: put a provider above `Dialog` or inside the content.
+
+## Usage
+
+Import the parts and put them together. Style the backdrop to cover the screen, and place the content over it:
+
+```tsx
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@ui-sdk/react-native/dialog"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <Text>Edit profile</Text>
+      </DialogTrigger>
+      <DialogBackdrop style={styles.backdrop} />
+      <DialogContent style={styles.content}>
+        <DialogTitle>Profile</DialogTitle>
+        <DialogDescription>Change how others see you.</DialogDescription>
+        <DialogClose>
+          <Text>Done</Text>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const styles = StyleSheet.create({
+  backdrop: { position: "absolute", inset: 0, backgroundColor: "#00000066" },
+  content: { margin: 24, marginVertical: "auto", backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+## Closing
+
+A press on a Close part closes the dialog with the `"close-press"` reason, and its `value` becomes the close's `returnValue`. The dialog also closes when:
+
+- the backdrop is pressed, with `"outside-press"`, unless `closeOnOutsidePress` is `false`;
+- Android's back button or gesture is used, with `"back"`, through the `Modal`'s `onRequestClose`;
+- VoiceOver's escape gesture, a two-finger Z, is made on its content, with `"escape-key"`.
+
+Set `dismissible={false}` to refuse those three, and ask in `onDismissAttempt`. A refused back still belongs to the dialog: it never reaches your navigation.
+
+<ComponentExample
+  name="dialog/dirty-form"
+  caption="Tap Write a Post and type something, then tap the backdrop or use Android's back. The dialog stays open and asks whether to discard your changes."
+/>
+
+## Focus
+
+When the dialog opens, it asks VoiceOver or TalkBack to move to its title, which names it. `initialFocus="content"` moves to the content instead, and `"none"` leaves the screen reader where it is. When the dialog closes, it asks to move back to the trigger that opened it, unless `finalFocus` is `"none"`. A request does nothing without a screen reader running, and focusing a text field starts editing it.
+
+<ComponentExample
+  name="dialog/scrollable"
+  caption="Tap Scrollable Content. The terms scroll inside the dialog, and the screen reader starts on the content."
+/>
+
+## Controlled
+
+Pass `open` and update it in `onOpenChange`. Call `details.cancel()` in the callback to cancel the change.
+
+<ComponentExample
+  name="dialog/controlled"
+  caption="Check Open, or tap Notification Settings. The log shows each change and its reason."
+/>
+
+## Animation
+
+The content leaves through `onExit`. When the dialog closes, the content calls `onExit` with a `done` function and stays on screen, with the backdrop and the `Modal`, until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, the dialog leaves at once. The content's state has `startingStyle`, true for its first frame, and `endingStyle`, true while it leaves.
+
+```tsx
+const [progress] = useState(() => new Animated.Value(0))
+
+<DialogContent
+  render={<Animated.View style={{ opacity: progress }} />}
+  onExit={(done) =>
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => done())
+  }
+>
+```
+
+Opening settles at once, so `onOpenChangeComplete(true)` runs as the dialog opens. `onOpenChangeComplete(false)` runs once `done` is called, or at once without `onExit`.
+
+<ComponentExample
+  name="dialog/animation"
+  caption="Tap Slide In, then Close. The dialog fades and slides, and the log shows when opening and closing finish."
+/>
+
+## Modal
+
+`modal={false}` makes a dialog that sits beside the screen: it renders where you put its parts, not in a `Modal`, the screen stays usable, and the escape gesture closes it only from inside it. `modal="trap-focus"` doesn't exist on native: a `Modal` isolates the dialog for screen readers, and a keyboard trap would need native code.
+
+<ComponentExample
+  name="dialog/modal"
+  caption="Open Notes as it is, then check Modal and open it again. Without Modal the notes open in place and the screen stays usable."
+/>
+
+## Opening from Anywhere
+
+Create a controller with `createDialogController<Payload, Result>()` and pass it as `controller`, to the dialog and to triggers outside it, like one per row. Its `open({ payload })` opens the dialog and resolves once it closes, with why and the `returnValue`. A trigger's `payload` reaches the content's state the same way.
+
+<ComponentExample
+  name="dialog/payload"
+  caption="Tap Remind on Globex, or Open from Code. The dialog shows that invoice, and the log says how it closed."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its role and press.
+
+<ComponentExample
+  name="dialog/custom-rendering"
+  caption="Tap View Details. The trigger's text follows whether the dialog is open."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.content, state.endingStyle && styles.leaving]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### DialogTrigger [#part-state-dialogtrigger]
+
+<PartStateTable
+  component="dialog"
+  part="trigger"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogTriggerState"
+/>
+
+### DialogBackdrop [#part-state-dialogbackdrop]
+
+<PartStateTable
+  component="dialog"
+  part="backdrop"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogBackdropState"
+/>
+
+### DialogContent [#part-state-dialogcontent]
+
+<PartStateTable
+  component="dialog"
+  part="content"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation). `presentation` is always `"dialog"` until the sheet entry exists.
+
+### DialogClose [#part-state-dialogclose]
+
+<PartStateTable
+  component="dialog"
+  part="close"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogCloseState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `DialogTrigger`, `DialogBackdrop` and `DialogClose` also take `Pressable`'s props, `DialogContent` `View`'s, and `DialogTitle` and `DialogDescription` `Text`'s.
+
+### Dialog
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogOptions"
+  omit={["container", "persistentElements", "presentation"]}
+/>
+
+### DialogTrigger
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogTriggerProps"
+  omit={["shortcut"]}
+/>
+
+### DialogContent
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### DialogClose
+
+Its `action` receives `undefined` for the event, and `{ source }`, how the part was pressed.
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogCloseProps"
+/>
+
+### Reasons
+
+`details.reason` says why the dialog opened or closed. `"shortcut"` and `"swipe"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createDialogController<Payload, Result>()` and pass it as `controller`. Its `focus()` moves the screen reader to the trigger. Closing with a controller always works, even when the dialog isn't dismissible or an action is running.
+
+<ControllerTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogController"
+/>
+
+### Events
+
+| Prop                   | On       | Receives                                                                       |
+| ---------------------- | -------- | ------------------------------------------------------------------------------ |
+| `onOpenChange`         | `Dialog` | `(open, details)`: the new state, the [reason](#reasons) and any `returnValue` |
+| `onOpenChangeComplete` | `Dialog` | `(open)`, as described under [Animation](#animation)                           |
+| `onPayloadChange`      | `Dialog` | `(payload, details)`: the content's new payload                                |
+| `onDismissAttempt`     | `Dialog` | `({ reason })`, when a dismissal was refused                                   |
+
+## Accessibility
+
+The dialog follows the [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/), translated to React Native: the trigger is a button, the `Modal` hides the rest of the screen from VoiceOver and TalkBack, and the title has the header role and names the dialog. React Native has no dialog role, so screen readers announce the title, not "dialog". On iOS the content is also marked `accessibilityViewIsModal`.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                           |
+| ----- | -------------------------------------------------------------- |
+| Tab   | Moves through the controls, inside the `Modal` while it's open |
+| Space | Opens the dialog from the trigger, or presses a Close part     |
+| Enter | Does the same, on Android only                                 |

@@ -1,8 +1,10 @@
 import type {
+  AlertDialogController,
   dialog as dialogPrimitive,
   DialogBackdropState,
   DialogContentProps,
   DialogContentState,
+  DialogController,
   DialogOptions,
   DialogTriggerProps,
   DialogTriggerState,
@@ -11,8 +13,9 @@ import { dialogNative, pressTrigger } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Modal, Pressable, Text, View } from "react-native"
+import { useControllerEntry, useControllerTarget } from "./controller-target"
 import { layerInput, pressSource } from "./native-host"
-import { mergeProps } from "./render-element"
+import { mergeProps, renderElement } from "./render-element"
 import {
   createParts,
   type ExitProps,
@@ -20,13 +23,17 @@ import {
   type PartProps,
   type PrimitiveHandle,
   useHandle,
+  useNearest,
   usePart,
   usePressedPart,
   usePrimitive,
 } from "./use-primitive"
 
 type TriggerPartProps = PartProps<typeof Pressable, DialogTriggerState> &
-  Omit<DialogTriggerProps, "controller" | "shortcut">
+  Omit<DialogTriggerProps, "controller" | "shortcut"> & {
+    /** Connects a trigger outside the dialog, like one per row, to the dialog with this controller. */
+    controller?: DialogController<any, any> | AlertDialogController<any, any>
+  }
 type BackdropPartProps = PartProps<typeof Pressable, DialogBackdropState>
 type ContentPartProps = PartProps<
   typeof View,
@@ -127,6 +134,7 @@ function dialogParts(primitive: typeof dialogPrimitive) {
 
   function Root({ children, ...options }: RootProps) {
     const handle = usePrimitive(primitive, options, dialogNative)
+    useControllerEntry(options.controller, handle)
     const [outlet] = React.useState(createOutlet)
     return (
       <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
@@ -138,13 +146,34 @@ function dialogParts(primitive: typeof dialogPrimitive) {
     )
   }
 
-  function Trigger({
+  // Until the dialog it names mounts, a trigger outside it is a plain button.
+  function Trigger({ controller, ...props }: TriggerPartProps) {
+    const handle = useControllerTarget(controller, useNearest(primitive))
+    if (!handle) {
+      const { disabled, focusableWhenDisabled, render, ...rest } = props
+      return renderElement(
+        Pressable,
+        {
+          accessibilityRole: "button",
+          accessibilityState: { disabled: !!disabled },
+          disabled: disabled && !focusableWhenDisabled,
+          ...rest,
+        },
+        render,
+        { open: false, disabled: !!disabled }
+      )
+    }
+    const part = <TriggerPart {...props} />
+    return controller ? <HandleScope handle={handle}>{part}</HandleScope> : part
+  }
+
+  function TriggerPart({
     id,
     disabled,
     focusableWhenDisabled,
     payload,
     ...props
-  }: TriggerPartProps) {
+  }: Omit<TriggerPartProps, "controller">) {
     const fallback = React.useId()
     return usePressedPart(
       primitive,

@@ -43,6 +43,25 @@ function Example() {
       <Pressable role="button" onPress={remindFromCode} style={styles.button}>
         <Text>Open from Code</Text>
       </Pressable>
+      <View style={styles.list}>
+        {invoices.map((invoice) => (
+          <View key={invoice.id} style={styles.item}>
+            <Text style={styles.name}>{invoice.customer}</Text>
+            <Text style={styles.description}>
+              {invoice.amount} · {invoice.status}
+            </Text>
+            <DialogTrigger
+              controller={reminder}
+              payload={invoice}
+              disabled={invoice.status === "Paid"}
+              aria-label={`Remind ${invoice.customer}`}
+              style={styles.button}
+            >
+              <Text>Remind</Text>
+            </DialogTrigger>
+          </View>
+        ))}
+      </View>
       <Dialog
         controller={reminder}
         onOpenChange={(open, details) => {
@@ -51,24 +70,6 @@ function Example() {
           }
         }}
       >
-        <View style={styles.list}>
-          {invoices.map((invoice) => (
-            <View key={invoice.id} style={styles.item}>
-              <Text style={styles.name}>{invoice.customer}</Text>
-              <Text style={styles.description}>
-                {invoice.amount} · {invoice.status}
-              </Text>
-              <DialogTrigger
-                payload={invoice}
-                disabled={invoice.status === "Paid"}
-                aria-label={`Remind ${invoice.customer}`}
-                style={styles.button}
-              >
-                <Text>Remind</Text>
-              </DialogTrigger>
-            </View>
-          ))}
-        </View>
         <DialogBackdrop style={styles.backdrop} />
         <DialogContent style={styles.content}>
           {(state) => {

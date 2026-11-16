@@ -220,10 +220,14 @@ function HandleScope({
   return <context.Provider value={scope}>{children}</context.Provider>
 }
 
+function useNearest<P extends Primitive>(primitive: P) {
+  return React.useContext(scopeOf(primitive).context)?.handle as
+    PrimitiveHandle<P> | undefined
+}
+
 /** The nearest instance of a primitive, for a part written by hand that calls its api. */
 function useHandle<P extends Primitive>(primitive: P) {
-  const handle = React.useContext(scopeOf(primitive).context)?.handle as
-    PrimitiveHandle<P> | undefined
+  const handle = useNearest(primitive)
   if (!handle) {
     throw new Error(
       `The ${primitive.name} parts must be used inside their root.`
@@ -928,6 +932,7 @@ export {
   type Parts,
   type PrimitiveHandle,
   useHandle,
+  useNearest,
   usePart,
   usePressedPart,
   usePrimitive,

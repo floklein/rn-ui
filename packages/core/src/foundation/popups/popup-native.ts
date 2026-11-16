@@ -22,7 +22,6 @@ import { bindTrigger } from "./popup-slots"
 
 type PopupApi = { internal: ReturnType<typeof createPopup>["internal"] }
 
-/** Where focus goes on open, from the opener: `"auto"`, the popup itself, or nowhere. */
 type FocusPlan = ReturnType<typeof initialFocusPlan>
 
 const openerBySource: Partial<Record<ChangeSource, PopupOpener>> = {
@@ -83,7 +82,6 @@ function popupNative<Api extends PopupApi>({
     content(part) {
       const { api, store } = part
       const { internal } = api
-      const host = () => nativeHost()
       const rules = resolveBehavior(internal.preset.behavior, {})
       settleFlag(store, "titled")
       const release = holdExit(store)
@@ -109,7 +107,7 @@ function popupNative<Api extends PopupApi>({
         ) {
           return
         }
-        host()?.focus(focus?.(api, plan) ?? part)
+        nativeHost()?.focus(focus?.(api, plan) ?? part)
       }
 
       // The chain starts at the trigger: what had focus before can't be known.
@@ -127,7 +125,7 @@ function popupNative<Api extends PopupApi>({
         const run = () => {
           const target = trigger()
           if (target) {
-            host()?.focus(target)
+            nativeHost()?.focus(target)
           }
         }
         if (mode === "unless-moved") {
@@ -194,4 +192,4 @@ function popupNative<Api extends PopupApi>({
   return behavior
 }
 
-export { type FocusPlan, partIn, popupNative, pressTrigger }
+export { partIn, popupNative, pressTrigger }

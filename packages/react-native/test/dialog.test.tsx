@@ -262,6 +262,33 @@ describe("Dialog", () => {
     expect(result).toMatchObject({ reason: "unmount" })
     expect(layerInput()).toBeUndefined()
   })
+
+  test("a trigger outside the dialog opens it through the controller, with its payload", async () => {
+    const controller = createDialogController<string>()
+    const tree = (shown: boolean) => (
+      <>
+        <DialogTrigger controller={controller} payload="Globex">
+          <Text>Remind Globex</Text>
+        </DialogTrigger>
+        {shown && (
+          <Dialog controller={controller}>
+            <DialogContent testID="content">
+              {(state) => (
+                <DialogTitle>Remind {String(state.payload)}</DialogTitle>
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
+    )
+    const { rerender } = await render(tree(false))
+    const remind = () => screen.getByRole("button", { name: "Remind Globex" })
+    await fireEvent.press(remind())
+    expect(content()).toBeNull()
+    await rerender(tree(true))
+    await fireEvent.press(remind())
+    expect(screen.getByRole("header", { name: "Remind Globex" })).toBeVisible()
+  })
 })
 
 describe("AlertDialog", () => {
