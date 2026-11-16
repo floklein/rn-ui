@@ -74,10 +74,9 @@ function slotAt({ root, slots }: Views, field: HostInstance | null, x: number) {
   return nearest
 }
 
-// The slots draw the field's text, caret and selection, and the field lies
-// over them so a long press anywhere offers Paste. iOS draws selection handles
-// whatever `selectionColor` says, so the field is nearly transparent: above
-// 0.01, UIKit still hit-tests it and screen readers still reach it.
+// The field lies over the slots so a long press anywhere offers Paste. iOS
+// draws selection handles whatever `selectionColor` says, so it's nearly
+// transparent: above 0.01, UIKit hit-tests it and screen readers reach it.
 const hidden = StyleSheet.create({
   control: {
     position: "absolute",
