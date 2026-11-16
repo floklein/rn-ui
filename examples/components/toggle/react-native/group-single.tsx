@@ -29,7 +29,9 @@ function Example() {
         >
           {(state) => (
             <ToggleIcon mirror={item.mirror}>
-              <Text style={[styles.glyph, state.pressed && styles.pressedGlyph]}>
+              <Text
+                style={[styles.glyph, state.pressed && styles.pressedGlyph]}
+              >
                 {item.glyph}
               </Text>
             </ToggleIcon>

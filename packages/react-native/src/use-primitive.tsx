@@ -82,7 +82,6 @@ type NativeSlot<P extends Primitive> = Exclude<
   | (P extends FormInputOwner ? "input" : never)
 >
 
-// Each instance's native behavior, which its parts run.
 const behaviors = new WeakMap<object, NativeBehavior>()
 
 /**

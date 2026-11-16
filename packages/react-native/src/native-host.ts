@@ -3,7 +3,6 @@ import { setNativeHost } from "@ui-sdk/core/native"
 import { AccessibilityInfo, type HostInstance } from "react-native"
 
 const views: WeakMap<Part, HostInstance> = new WeakMap()
-// When each part last rendered, for views that can't say where they are.
 const renders: WeakMap<Part, number> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is

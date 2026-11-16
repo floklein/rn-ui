@@ -1,0 +1,338 @@
+---
+title: Toggle
+description: Keep a button pressed, or group toggles with a shared value.
+---
+
+Use a toggle for a button that stays on until you press it again, like starring a document or turning on Bold. Put several in a toggle group to share one value, as a text editor's formatting buttons or a view switcher do.
+
+<ComponentExample
+  name="toggle/basic"
+  caption="Tap the star beside Q3 Roadmap, or double-tap it with VoiceOver or TalkBack. It fills in while pressed, and its name stays Star."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Toggle`:
+
+```text
+Toggle
+└── ToggleIcon
+```
+
+And a `ToggleGroup`:
+
+```text
+ToggleGroup
+├── Toggle
+│   └── ToggleIcon
+└── Toggle
+    └── ToggleIcon
+```
+
+`Toggle` renders a `Pressable` with the toggle button role and its pressed state. `ToggleIcon` is optional: a `View` that holds an icon and hides it from screen readers. `ToggleGroup` renders a `View`. In a group, give each toggle a `value`; the group's value lists the pressed ones.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import { Toggle, ToggleIcon } from "@ui-sdk/react-native/toggle"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Toggle aria-label="Star">
+      {(state) => (
+        <ToggleIcon>
+          <Text>{state.pressed ? "★" : "☆"}</Text>
+        </ToggleIcon>
+      )}
+    </Toggle>
+  )
+}
+
+export { Example }
+```
+
+Keep the name the same in both states: VoiceOver and TalkBack announce whether the toggle is pressed. A toggle with only an icon needs an `aria-label`, as above; otherwise the `Text` inside names it. Set `defaultPressed` to start pressed.
+
+## Group
+
+Put toggles in a `ToggleGroup`, from the same `@ui-sdk/react-native/toggle` entry, to share a value. Give the group an `aria-label` and each toggle a `value`. Set `multiple` to let several toggles stay pressed.
+
+<ComponentExample
+  name="toggle/group"
+  caption="Tap Bold and Italic to keep both pressed. With VoiceOver or TalkBack, swipe from one toggle to the next."
+/>
+
+The group owns which toggles are pressed, so a toggle's own `pressed` and `defaultPressed` don't apply inside it. Its value is always an array, in the order the toggles render, whatever order they were pressed in. A toggle that mounts later between two others takes its place.
+
+## Single Selection
+
+Without `multiple`, pressing a toggle unpresses the others. Pressing the pressed toggle again clears the selection, unless you set `deselectable` to `false`, as this alignment group does. `deselectable` doesn't choose an initial value for you, so pair it with `defaultValue`.
+
+<ComponentExample
+  name="toggle/group-single"
+  caption="Tap Align center to replace Align start, then tap Align center again. One alignment always stays pressed."
+/>
+
+`mirror` on Align start and Align end flips their icons when the app runs right to left, with `I18nManager`. React Native has one direction for the whole app, so there's no direction for part of the screen.
+
+## Disabled
+
+Set `disabled` on a toggle or a group to prevent presses. A disabled toggle can still start pressed, and screen readers announce it as dimmed or disabled.
+
+```tsx
+<ToggleGroup multiple aria-label="Text formatting">
+  <Toggle value="bold">
+    <Text>Bold</Text>
+  </Toggle>
+  <Toggle value="underline" disabled>
+    <Text>Underline</Text>
+  </Toggle>
+</ToggleGroup>
+```
+
+On Android the disabled state disables the view, so Tab skips a disabled toggle, in a group too. `focusableWhenDisabled` leaves the `Pressable` of a toggle on its own enabled while it's disabled; presses still do nothing, and on Android the disabled state disables the view anyway.
+
+## Controlled
+
+Pass `pressed` and update it in `onPressedChange`. Call `details.cancel()` in the callback to keep the current state. A [controller](#toggle-controller) from `createToggleController()` presses the toggle from anywhere. Create one controller per mounted toggle.
+
+```tsx
+import { useState } from "react"
+import { Pressable, Text } from "react-native"
+import { createToggleController, Toggle } from "@ui-sdk/react-native/toggle"
+
+function StarButton() {
+  const [starred, setStarred] = useState(false)
+  const [star] = useState(createToggleController)
+
+  return (
+    <>
+      <Toggle
+        aria-label="Star"
+        pressed={starred}
+        onPressedChange={setStarred}
+        controller={star}
+      >
+        <Text>{starred ? "★" : "☆"}</Text>
+      </Toggle>
+      <Pressable accessibilityRole="button" onPress={() => star.toggle()}>
+        <Text>Toggle Star</Text>
+      </Pressable>
+    </>
+  )
+}
+
+export { StarButton }
+```
+
+The callback receives the new state and `details`, whose `reason` is `"press"` or `"imperative"`, and whose `source` is `"touch"`, or `"virtual"` while a screen reader runs. The controller's `focus()` moves VoiceOver's or TalkBack's focus to the toggle.
+
+## Controlled Group
+
+Pass `value` and update it in `onValueChange` to own the group's value. A toggle's own `onPressedChange` runs before the group's, and calling `details.cancel()` in either cancels the change. A [controller](#togglegroup-controller) from `createToggleGroupController()` changes the value from anywhere: `setValue([])` clears it, and `focus(value)` moves the screen reader's focus to a toggle.
+
+```tsx
+import { useState } from "react"
+import { Pressable, Text } from "react-native"
+import {
+  createToggleGroupController,
+  Toggle,
+  ToggleGroup,
+} from "@ui-sdk/react-native/toggle"
+
+function Formatting() {
+  const [formats, setFormats] = useState(["bold"])
+  const [editor] = useState(createToggleGroupController)
+
+  return (
+    <>
+      <ToggleGroup
+        multiple
+        aria-label="Text formatting"
+        value={formats}
+        onValueChange={setFormats}
+        controller={editor}
+      >
+        <Toggle value="bold">
+          <Text>Bold</Text>
+        </Toggle>
+        <Toggle value="italic">
+          <Text>Italic</Text>
+        </Toggle>
+      </ToggleGroup>
+      <Pressable accessibilityRole="button" onPress={() => editor.setValue([])}>
+        <Text>Clear Formatting</Text>
+      </Pressable>
+    </>
+  )
+}
+
+export { Formatting }
+```
+
+## Forms
+
+A native view takes part in no form. Read the toggle's state or the group's value from the change callbacks.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the toggle keeps its role, pressed state and press.
+
+<ComponentExample
+  name="toggle/render"
+  caption="Tap Favorite. The heart renders filled or empty from the toggle's pressed state."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.toggle, state.pressed && styles.pressed]`. Each part receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press feedback, and keyboard focus on Android. `children` can be a function of the same arguments, to change the icon with the state.
+
+<ComponentExample
+  name="toggle/first-component"
+  caption="Tap Bookmark. It fills in while pressed."
+/>
+
+## Part State
+
+### Toggle [#part-state-toggle]
+
+<PartStateTable
+  component="toggle"
+  part="root"
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleState"
+/>
+
+### ToggleIcon [#part-state-toggleicon]
+
+<PartStateTable
+  component="toggle"
+  part="icon"
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleIconState"
+/>
+
+### ToggleGroup [#part-state-togglegroup]
+
+<PartStateTable
+  component="toggle-group"
+  part="group"
+  path="../../packages/core/src/components/toggle/toggle-group.ts"
+  name="ToggleGroupState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `Toggle` also takes `Pressable`'s props, and `ToggleIcon` and `ToggleGroup` take `View`'s.
+
+### Toggle
+
+<TypeTable
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleOptions"
+/>
+
+### ToggleIcon
+
+<TypeTable
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleIconProps"
+/>
+
+### ToggleGroup
+
+<TypeTable
+  path="../../packages/core/src/components/toggle/toggle-group.ts"
+  name="ToggleGroupOptions"
+/>
+
+`orientation` and `loop` set the group's state; native builds no arrow keys between toggles.
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleState"
+/>
+
+In a group, a toggle's `disabled` includes the group's. The group:
+
+<StateTable
+  path="../../packages/core/src/components/toggle/toggle-group.ts"
+  name="ToggleGroupState"
+/>
+
+### Reasons
+
+`details.reason` says why the toggle was pressed or unpressed.
+
+<ReasonTable
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="TogglePressedChangeReason"
+/>
+
+For a group, it says why the pressed toggles changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/toggle/toggle-group.ts"
+  name="ToggleGroupValueChangeReason"
+/>
+
+### Toggle Controller
+
+Create one with `createToggleController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, runs the change callback like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/toggle/toggle.ts"
+  name="ToggleController"
+/>
+
+### ToggleGroup Controller
+
+Create one with `createToggleGroupController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, runs `onValueChange` like a press, and returns `false` when the change is canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/toggle/toggle-group.ts"
+  name="ToggleGroupController"
+/>
+
+### Events
+
+Callbacks get the new state or value first, then the details. `onValueChange` never runs on mount.
+
+| Prop              | On            | Receives                                                                                                                     |
+| ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `onPressedChange` | `Toggle`      | `(pressed, details)`: the new state, and the [reason](#reasons). In a group, it runs first and can cancel the group's change |
+| `onValueChange`   | `ToggleGroup` | `(value, details)`: the pressed toggles' values, and the [reason](#reasons)                                                  |
+
+## Accessibility
+
+A toggle follows the toggle button in the [WAI-ARIA button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/), translated to React Native's accessibility props: the `togglebutton` role with its checked and disabled state, so VoiceOver and TalkBack announce whether it's pressed, and a double-tap presses it. In a group, each toggle is its own accessible element, reached by swiping. The group is a `View` with no role, since React Native has no group role.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Presses or unpresses it                                      |
+| Enter      | Presses or unpresses it, on Android only                     |
+
+Every toggle in a group is its own stop: React Native delivers no arrow keys to views, so the group's single tab stop and arrow keys aren't built.

@@ -22,8 +22,8 @@ function inDocumentOrder<Entry extends { el: HTMLElement }>(entries: Entry[]) {
 function createOrder<Entry extends { key: string; el: HTMLElement }>() {
   const entries = new Map<string, Entry>()
   return {
-    list(): readonly Entry[] {
-      return inDocumentOrder([...entries.values()])
+    list() {
+      return inDocumentOrder([...entries.values()]) as readonly Entry[]
     },
     add(entry: Entry) {
       entries.set(entry.key, entry)

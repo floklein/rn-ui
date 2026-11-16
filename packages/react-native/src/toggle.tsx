@@ -43,9 +43,7 @@ function Toggle(
   props: ToggleOptions & PartProps<typeof Pressable, ToggleState>
 ) {
   const group = React.useContext(ToggleGroupContext)
-  return (
-    <parts.Root {...props} group={group ? () => group.api : undefined} />
-  )
+  return <parts.Root {...props} group={group ? () => group.api : undefined} />
 }
 
 /**

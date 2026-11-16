@@ -59,9 +59,7 @@ function Fixture() {
           aria-label="Pin"
           testID="toggle-pin"
           disabled
-          onPressedChange={() =>
-            setChanges((current) => [...current, "pin"])
-          }
+          onPressedChange={() => setChanges((current) => [...current, "pin"])}
           style={toggleStyle}
         >
           <Text>Pin</Text>

@@ -249,9 +249,7 @@ describe("checkPattern's button pattern on toggle buttons", () => {
 
   test("fails on a toggle with no name", async () => {
     await render(<Toggle />)
-    await expect(checkButton()).rejects.toThrow(
-      "the togglebutton has no name"
-    )
+    await expect(checkButton()).rejects.toThrow("the togglebutton has no name")
   })
 
   test("fails on a toggle whose pressed state doesn't change after the activate action", async () => {

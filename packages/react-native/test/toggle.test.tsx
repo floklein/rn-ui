@@ -21,8 +21,7 @@ const sendAccessibilityEvent = jest.mocked(
 
 afterEach(() => sendAccessibilityEvent.mockClear())
 
-const toggleNamed = (name: string) =>
-  screen.getByRole("togglebutton", { name })
+const toggleNamed = (name: string) => screen.getByRole("togglebutton", { name })
 
 // Jest's checked matchers don't take the toggle button role.
 const pressedOf = (name: string) =>
@@ -264,7 +263,10 @@ describe("ToggleGroup", () => {
 
   test("the controller's focus requests accessibility focus on a toggle by its value, or the first", async () => {
     const controller = createToggleGroupController()
-    const refs = { bold: createRef<HostInstance>(), italic: createRef<HostInstance>() }
+    const refs = {
+      bold: createRef<HostInstance>(),
+      italic: createRef<HostInstance>(),
+    }
     await render(<Formatting controller={controller} refs={refs} />)
     await act(() => controller.focus("italic"))
     expect(sendAccessibilityEvent.mock.lastCall?.[0]).toBe(refs.italic.current)
