@@ -103,7 +103,86 @@ A FieldSet's legend and description don't name the set: React Native reads a lab
 
 ## Styling
 
-Style each part with a function of its state, like `(state) => [styles.label, state.invalid && styles.invalid]`. It receives the fields listed under [State](#state).
+Style each part with a function of its state, like `(state) => [styles.label, state.invalid && styles.invalid]`. It receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### Field [#part-state-field]
+
+<PartStateTable
+  component="field"
+  part="root"
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldState"
+  omit={["valid"]}
+/>
+
+### FieldLabel [#part-state-fieldlabel]
+
+<PartStateTable
+  component="field"
+  part="label"
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldState"
+  omit={["valid"]}
+/>
+
+### FieldControl [#part-state-fieldcontrol]
+
+<PartStateTable
+  component="field"
+  part="control"
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldState"
+  omit={["valid"]}
+/>
+
+### FieldDescription [#part-state-fielddescription]
+
+<PartStateTable
+  component="field"
+  part="description"
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldState"
+  omit={["valid"]}
+/>
+
+### FieldError [#part-state-fielderror]
+
+<PartStateTable
+  component="field"
+  part="error"
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldErrorState"
+  omit={["valid", "message"]}
+/>
+
+### FieldSet [#part-state-fieldset]
+
+<PartStateTable
+  component="field-set"
+  part="set"
+  path="../../packages/core/src/components/field/field-set.ts"
+  name="FieldSetState"
+/>
+
+### FieldLegend [#part-state-fieldlegend]
+
+<PartStateTable
+  component="field-set"
+  part="legend"
+  path="../../packages/core/src/components/field/field-set.ts"
+  name="FieldSetState"
+/>
+
+### FieldDescription in a FieldSet [#part-state-fieldset-description]
+
+<PartStateTable
+  component="field-set"
+  part="description"
+  path="../../packages/core/src/components/field/field-set.ts"
+  name="FieldSetState"
+/>
 
 ## API Reference
 

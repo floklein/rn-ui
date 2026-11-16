@@ -11,11 +11,13 @@ function partStateRows({
   part,
   path,
   name,
+  omit = [],
 }: {
   component: string
   part: string
   path: string
   name: string
+  omit?: string[]
 }) {
   const described = new Map(
     stateRows({ path, name }).map((row) => [row.name, row])
@@ -23,7 +25,9 @@ function partStateRows({
   const sampled = new Map<string, unknown>()
   for (const state of partStates(component, part)) {
     for (const [field, value] of Object.entries(state)) {
-      sampled.set(field, value)
+      if (!omit.includes(field)) {
+        sampled.set(field, value)
+      }
     }
   }
   return [...sampled].map(
