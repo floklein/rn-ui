@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `2c7c277a` (2026-11-16, ticket 58: Button and the announcer's twin)
+Last reviewed: `d5efadab` (2026-11-16, ticket 84: Avatar, with its findings fixed)
 
 ## Settled
 
