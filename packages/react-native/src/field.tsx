@@ -242,9 +242,11 @@ function FieldControl({
 }: PartProps<typeof TextInput, FieldState>) {
   const field = React.useContext(FieldContext)
   const disabled = useInheritedDisabled()
-  useLabelPress(field, () =>
-    nativeHost()?.focus(field!.instance.part("control"))
-  )
+  useLabelPress(field, () => {
+    if (field) {
+      nativeHost()?.focus(field.instance.part("control"))
+    }
+  })
   if (!field) {
     return renderElement(
       TextInput,

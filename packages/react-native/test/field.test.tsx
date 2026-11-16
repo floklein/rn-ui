@@ -181,6 +181,8 @@ describe("FieldSet", () => {
 
     await fireEvent.press(screen.getByTestId("enable"))
     expect(props("email").editable).toBe(true)
+    // Android keeps a text field disabled when the state is only removed.
+    expect(props("email").accessibilityState.disabled).toBe(false)
     await fireEvent.press(screen.getByTestId("switch"))
     expect(onCheckedChange).toHaveBeenCalledTimes(1)
   })

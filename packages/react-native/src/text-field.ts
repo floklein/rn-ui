@@ -72,7 +72,9 @@ function useTextField(
       {
         value: field.state.value,
         editable: !off && !readOnly,
-        "aria-disabled": off || undefined,
+        // Android keeps a TextInput disabled when its disabled state is
+        // removed, so enabling it again needs an explicit false.
+        accessibilityState: { disabled: off, ...props.accessibilityState },
         onChangeText: type,
       }
     ),
