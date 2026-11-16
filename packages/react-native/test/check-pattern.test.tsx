@@ -769,11 +769,10 @@ describe("checkPattern's separator pattern on the native host", () => {
 })
 
 describe("checkPattern's progressbar and meter patterns on the native host", () => {
-  test("passes on progress bars, determinate or not, named by a label or aria-label", async () => {
+  test("passes on progress bars, determinate or not, named by aria-label or, while indeterminate, a label", async () => {
     await render(
       <View>
-        <Progress value={60}>
-          <ProgressLabel>Uploading photos</ProgressLabel>
+        <Progress value={60} aria-label="Uploading photos">
           <ProgressValue />
           <ProgressTrack>
             <ProgressIndicator />
@@ -794,12 +793,27 @@ describe("checkPattern's progressbar and meter patterns on the native host", () 
 
   test("passes on a meter whose range doesn't start at 0", async () => {
     await render(
-      <Meter value={-5} min={-10} max={10}>
-        <MeterLabel>Balance</MeterLabel>
+      <Meter value={-5} min={-10} max={10} aria-label="Balance">
         <MeterValue />
       </Meter>
     )
     await expect(checkMeter()).resolves.toBeUndefined()
+  })
+
+  test("a meter named only by its Label part has a name on iOS, not on Android", async () => {
+    await render(
+      <Meter value={68}>
+        <MeterLabel>Storage used</MeterLabel>
+        <MeterValue />
+      </Meter>
+    )
+    if (os === "ios") {
+      await expect(checkMeter()).resolves.toBeUndefined()
+    } else {
+      await expect(checkMeter()).rejects.toThrow(
+        'the progressbar "Storage used" has no name on Android, where its description is its value alone; name a meter with aria-label.'
+      )
+    }
   })
 
   test("fails with no progress bar", async () => {
@@ -815,9 +829,7 @@ describe("checkPattern's progressbar and meter patterns on the native host", () 
         <ProgressValue />
       </Progress>
     )
-    await expect(checkProgress()).rejects.toThrow(
-      "the progressbar has no name; a progressbar needs an accessibilityLabel or text inside it."
-    )
+    await expect(checkProgress()).rejects.toThrow(/the progressbar has no name/)
   })
 
   test("fails on a value outside its range, or read as a fraction", async () => {

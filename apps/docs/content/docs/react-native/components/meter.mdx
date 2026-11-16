@@ -27,7 +27,7 @@ Meter
 ```
 
 - `Meter` holds the value and range, and renders a `View`.
-- `MeterLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead.
+- `MeterLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead, and on Android you need it: see [Accessibility](#accessibility).
 - `MeterValue` displays the formatted value, as a `Text`.
 - `MeterTrack` gives the meter its size, and `MeterIndicator` fills it. Both are `View`s.
 
@@ -200,4 +200,4 @@ What render, style, class name and children functions receive. Every part gets t
 
 ## Accessibility
 
-On the web, the root has the [WAI-ARIA meter role](https://www.w3.org/TR/wai-aria-1.2/#meter). Neither iOS nor Android has a meter role, so a meter has the progress bar role, as Progress does. On iOS the meter is one element: VoiceOver reads its label from the text inside it and the formatted value. On Android the meter keeps its view with the progress bar role and range. Its description is the formatted value, and the label's text stays in the tree beside it. Neither platform makes a meter a keyboard stop.
+On the web, the root has the [WAI-ARIA meter role](https://www.w3.org/TR/wai-aria-1.2/#meter). Neither iOS nor Android has a meter role, so a meter has the progress bar role, as Progress does. On iOS the meter is one element: VoiceOver reads its label from the text inside it and the formatted value. On Android the meter keeps its view with the progress bar role and range. Its description is the formatted value, and the label's text stays in the tree beside it. `MeterLabel` doesn't name the meter on Android yet, so TalkBack hears the value with no name: give the root `aria-label` too. Neither platform makes a meter a keyboard stop.

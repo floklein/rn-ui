@@ -425,7 +425,19 @@ async function barPattern(context: Context, pattern: "progressbar" | "meter") {
       )
       continue
     }
-    requireName(context, bar, pattern)
+    // Android's description is the value text alone, unless a label leads it.
+    if (
+      context.os === "android" &&
+      bar.props.accessibilityValue?.text &&
+      !bar.props.accessibilityLabel
+    ) {
+      context.problem(
+        bar,
+        `has no name on Android, where its description is its value alone; name a ${pattern} with aria-label.`
+      )
+    } else {
+      requireName(context, bar, pattern)
+    }
     if (
       bar.props.focusable === true ||
       (context.os === "android" && bar.props.accessible === true)

@@ -173,7 +173,7 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
   }
   // Android writes the value's text into the description and rewrites it only
   // from a value that has one, so a bar turning indeterminate sends it empty.
-  if (os === "android" && "aria-valuetext" in attrs) {
+  if (os === "android" && role === "progressbar" && "aria-valuetext" in attrs) {
     value.text ??= ""
   }
   if (Object.keys(state).length) {
