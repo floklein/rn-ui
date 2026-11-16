@@ -76,6 +76,7 @@ export {
 export { inDocumentOrder } from "./foundation/kernel/order"
 export {
   createPresence,
+  onSettled,
   type PresenceState,
 } from "./foundation/motion/presence-native"
 export {

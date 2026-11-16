@@ -6,6 +6,7 @@
  * @module
  */
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export { ratingNative } from "./components/rating/rating-native"
 export { tabsNative } from "./components/tabs/tabs-native"
 export { toggleNative } from "./components/toggle/toggle-native"

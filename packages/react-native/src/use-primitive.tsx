@@ -340,11 +340,16 @@ const settled: PresenceState = { startingStyle: false, endingStyle: false }
 // Follows whether the part is shown, as its slot's `present` says without
 // `keepMounted`. The render that hides it already holds it for `onExit`.
 function usePresence(
+  part: Part,
   shown: boolean,
   onExit: OnExit | undefined,
   rerender: () => void
 ) {
-  const [presence] = React.useState(() => createPresence(rerender))
+  const current = React.useRef(part)
+  current.current = part
+  const [presence] = React.useState(() =>
+    createPresence(rerender, () => current.current)
+  )
   const was = React.useRef(shown)
   const exit = React.useRef(onExit)
   exit.current = onExit
@@ -443,8 +448,15 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
   }, [part])
   const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
   const { onExit, ...hostProps } = props as typeof props & ExitProps
+  // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted.
   const presence = usePresence(
-    animates && present(part, { ...slotProps, keepMounted: false }),
+    part,
+    animates &&
+      present(part, {
+        ...slotProps,
+        keepMounted: false,
+        hiddenUntilFound: false,
+      }),
     onExit,
     rerender
   )
