@@ -472,11 +472,14 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
         }
       : {}
     const translated = nativeProps(part, slotProps, user, presence.exiting)
+    const { role } = { ...attrs(part, slotProps), ...user } as { role?: string }
     // Fabric flattens a view with only a role or a label, and Android then
     // orders keyboard Tab by its children's edges across the whole screen.
     const container =
       !pressable &&
-      (translated.accessibilityRole || translated.accessibilityLabel)
+      ((role && role !== "none" && role !== "presentation") ||
+        translated.accessibilityRole ||
+        translated.accessibilityLabel)
         ? { collapsable: false }
         : {}
     element = renderElement(

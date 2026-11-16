@@ -4,6 +4,7 @@ import { createRef } from "react"
 import { Pressable, Text, View, type HostInstance } from "react-native"
 import type { TestInstance } from "test-renderer"
 import { createParts, type Interaction } from "../src/primitive"
+import { Checkbox, CheckboxGroup } from "../src/checkbox"
 import { Toggle, ToggleGroup, ToggleIcon } from "../src/toggle"
 
 const parts = createParts(switchPrimitive, { root: Pressable, thumb: View })
@@ -177,7 +178,7 @@ describe("a part's props", () => {
     expect(onCheckedChange).toHaveBeenCalledTimes(1)
   })
 
-  test("a container with a role or a label survives view flattening, and a pressed part is left as it is", async () => {
+  test("a container with a role or a label is marked not collapsable, and a pressed part is left as it is", async () => {
     let pressed: Record<string, unknown> = {}
     await render(
       <ToggleGroup aria-label="Text formatting" testID="group">
@@ -204,7 +205,22 @@ describe("a part's props", () => {
     expect("collapsable" in pressed).toBe(false)
   })
 
-  test("a part with no role or label can still be flattened", async () => {
+  test("a group with a role and no label keeps its view too", async () => {
+    await render(
+      <>
+        <ToggleGroup testID="toggles">
+          <Toggle aria-label="Bold" />
+        </ToggleGroup>
+        <CheckboxGroup testID="checkboxes">
+          <Checkbox value="cheese" aria-label="Cheese" />
+        </CheckboxGroup>
+      </>
+    )
+    expect(screen.getByTestId("toggles").props.collapsable).toBe(false)
+    expect(screen.getByTestId("checkboxes").props.collapsable).toBe(false)
+  })
+
+  test("a part with no role or label is left collapsable", async () => {
     await render(
       <parts.Root aria-label="Wi-Fi">
         <parts.Thumb testID="thumb" />
