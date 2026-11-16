@@ -104,7 +104,7 @@ describe("PasswordInput", () => {
     )
   })
 
-  test("a disabled one can't be edited or shown; a read-only one can't be edited but still shows", async () => {
+  test("a disabled one can't be edited or shown; a read-only one can't be edited, so it reads as disabled, but still shows", async () => {
     await render(
       <>
         <PasswordInput disabled defaultValue="secret">
@@ -128,7 +128,7 @@ describe("PasswordInput", () => {
     expect(screen.getByLabelText("Read-only").props.editable).toBe(false)
     expect(
       screen.getByLabelText("Read-only").props.accessibilityState
-    ).toMatchObject({ disabled: false })
+    ).toMatchObject({ disabled: true })
     await fireEvent.press(screen.getByLabelText("Show read-only"))
     expect(screen.getByLabelText("Read-only").props.secureTextEntry).toBe(false)
   })

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { beforeEach, test } from "node:test"
-import { useDevice } from "./device.ts"
+import { useDevice, type Node } from "./device.ts"
 
 const device = useDevice("password-input.a11y")
 
@@ -28,40 +28,35 @@ const toggle = (label: string, checked: boolean, enabled = true) => ({
 
 beforeEach(() => device.open("fixture-password-input"))
 
+// A hidden password's value is the OS's mask, read only for not being the password.
+const hidden = (label: string, enabled: boolean): Node => ({
+  role: "textbox",
+  label,
+  enabled,
+  secure: true,
+})
+
+const unmasked = (node: Node | undefined) => {
+  if (!node?.secure) {
+    return node
+  }
+  const { value: _value, ...rest } = node
+  return rest
+}
+
 test("the platform tree at first", async () => {
   await device.saveTree("first")
   const tree = await snapshot()
   assert.deepEqual(
     Object.fromEntries(
-      Object.entries(tree).map(([id, node]) => [
-        id,
-        node && { ...node, value: undefined },
-      ])
+      Object.entries(tree).map(([id, node]) => [id, unmasked(node)])
     ),
     {
-      "password-control": {
-        role: "textbox",
-        label: "Password",
-        enabled: true,
-        secure: true,
-        value: undefined,
-      },
+      "password-control": hidden("Password", true),
       "password-toggle": toggle("Show password", false),
-      "password-readonly": {
-        role: "textbox",
-        label: "Recovery key",
-        enabled: false,
-        secure: true,
-        value: undefined,
-      },
+      "password-readonly": hidden("Recovery key", false),
       "toggle-readonly": toggle("Show recovery key", false),
-      "password-disabled": {
-        role: "textbox",
-        label: "Account password",
-        enabled: false,
-        secure: true,
-        value: undefined,
-      },
+      "password-disabled": hidden("Account password", false),
       "toggle-disabled": toggle("Show account password", false, false),
     }
   )
