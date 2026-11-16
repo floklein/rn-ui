@@ -30,7 +30,7 @@ Dialog
     └── DialogClose
 ```
 
-`DialogTrigger`, `DialogBackdrop` and `DialogClose` render a `Pressable`, `DialogContent` a `View`, and `DialogTitle` and `DialogDescription` a `Text`. A modal dialog renders its backdrop and content in one React Native `Modal`, which `Dialog` renders, so the backdrop sits under the content and the rest of the screen is hidden from screen readers. Context from a provider placed between `Dialog` and `DialogContent` doesn't reach the content: put a provider above `Dialog` or inside the content.
+`DialogTrigger`, `DialogBackdrop` and `DialogClose` render a `Pressable`, `DialogContent` a `View`, and `DialogTitle` and `DialogDescription` a `Text`. A modal dialog renders its backdrop and content in one React Native `Modal`, which `Dialog` renders, so the backdrop sits under the content and the rest of the screen is hidden from screen readers. Context from your own provider placed between `Dialog` and `DialogContent` doesn't reach the content: put it above `Dialog` or inside the content. The library's own context does reach it, so a disabled `FieldSet` around the content disables the controls inside.
 
 ## Usage
 

@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { createRef } from "react"
+import { createRef, use } from "react"
 import {
   AccessibilityInfo,
   DeviceEventEmitter,
@@ -26,6 +26,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../src/dialog"
+import { dialog } from "@ui-sdk/core/dialog"
+import { carried } from "../src/carried-context"
+import "../src/checkbox"
+import { FieldSet } from "../src/field"
+import "../src/input"
+import "../src/rating"
+import { Switch } from "../src/switch"
+import "../src/tabs"
+import "../src/toggle"
 
 const sendAccessibilityEvent = jest.mocked(
   AccessibilityInfo.sendAccessibilityEvent
@@ -372,5 +381,90 @@ describe("AlertDialog", () => {
       alert.open()
     })
     expect(focusedViews().at(-1) === cancelRef.current).toBe(true)
+  })
+})
+
+describe("the adapter's contexts inside the Modal", () => {
+  test("a disabled FieldSet between the dialog and its content disables the controls inside", async () => {
+    const onCheckedChange = jest.fn()
+    await render(
+      <Dialog defaultOpen>
+        <FieldSet disabled>
+          <DialogContent testID="content">
+            <DialogTitle>Alerts</DialogTitle>
+            <Switch testID="switch" onCheckedChange={onCheckedChange} />
+          </DialogContent>
+        </FieldSet>
+      </Dialog>
+    )
+    const control = screen.getByTestId("switch")
+    expect(inModal(control)).toBe(true)
+    expect(control.props.accessibilityState).toMatchObject({ disabled: true })
+    await fireEvent.press(control)
+    expect(onCheckedChange).not.toHaveBeenCalled()
+  })
+
+  test("every context the adapter owns reaches the content with the value it has where the content renders", async () => {
+    const own = [...carried]
+      .map((context) => context.displayName)
+      .filter((name) => !name?.endsWith("Scope"))
+      .sort()
+    expect(own).toEqual([
+      "CheckboxGroup",
+      "Described",
+      "Disabled",
+      "Field",
+      "InputGroup",
+      "Outlet",
+      "RatingItem",
+      "TabsLayouts",
+      "ToggleGroup",
+    ])
+    const scopes = [...carried].filter((context) =>
+      context.displayName?.endsWith("Scope")
+    )
+    expect(scopes.length).toBeGreaterThan(1)
+
+    const dialogScope = `${dialog.name}Scope`
+    const replaced = [...carried].filter(
+      (context) =>
+        context.displayName !== "Outlet" && context.displayName !== dialogScope
+    )
+    const read = new Map<string, Map<React.Context<any>, unknown>>()
+    function Probe({ at }: { at: string }) {
+      const values = new Map<React.Context<any>, unknown>()
+      for (const context of carried) {
+        values.set(context, use(context))
+      }
+      read.set(at, values)
+      return null
+    }
+    let between: React.ReactNode = (
+      <>
+        <Probe at="between" />
+        <DialogContent>
+          <DialogTitle>Alerts</DialogTitle>
+          <Probe at="inside" />
+        </DialogContent>
+      </>
+    )
+    for (const Context of replaced) {
+      between = (
+        <Context value={{ from: Context.displayName }}>{between}</Context>
+      )
+    }
+    await render(<Dialog defaultOpen>{between}</Dialog>)
+
+    const outside = read.get("between")!
+    const inside = read.get("inside")!
+    for (const context of carried) {
+      expect([context.displayName, inside.get(context)]).toEqual([
+        context.displayName,
+        outside.get(context),
+      ])
+    }
+    for (const context of replaced) {
+      expect(inside.get(context)).toEqual({ from: context.displayName })
+    }
   })
 })

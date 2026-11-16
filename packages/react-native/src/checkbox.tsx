@@ -12,6 +12,7 @@ import { checkboxNative } from "@ui-sdk/core/native"
 import { type PresenceState, withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { carry } from "./carried-context"
 import { FieldContext, useFieldControl } from "./field-context"
 import { pressSource } from "./native-host"
 import {
@@ -27,9 +28,10 @@ type CheckboxParts = Parts<CheckboxPrimitive, { indicator: typeof View }>
 
 const parts: CheckboxParts = createParts(checkbox, { indicator: View })
 
-const CheckboxGroupContext = React.createContext<PrimitiveHandle<
-  typeof checkboxGroup
-> | null>(null)
+const CheckboxGroupContext = carry(
+  "CheckboxGroup",
+  React.createContext<PrimitiveHandle<typeof checkboxGroup> | null>(null)
+)
 
 /**
  * A checkbox: a `Pressable` with the checkbox role. It takes part in no

@@ -48,6 +48,7 @@ import {
   type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
+import { carry } from "./carried-context"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
 import {
   idsOf,
@@ -100,10 +101,13 @@ const behaviors = new WeakMap<object, NativeBehavior>()
 
 // A disabled FieldSet or Field around a component disables its controls, as
 // a disabled <fieldset> does on the web. `owner` is the instance that provides it.
-const DisabledContext = React.createContext<{
-  disabled: boolean
-  owner: object
-} | null>(null)
+const DisabledContext = carry(
+  "Disabled",
+  React.createContext<{
+    disabled: boolean
+    owner: object
+  } | null>(null)
+)
 
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
@@ -200,7 +204,10 @@ function scopeOf(primitive: Primitive) {
   let found = scopes.get(primitive)
   if (!found) {
     found = {
-      context: React.createContext<Scope | null>(null),
+      context: carry(
+        `${primitive.name}Scope`,
+        React.createContext<Scope | null>(null)
+      ),
       provides: new Set(),
       keyed: new Set(),
     }

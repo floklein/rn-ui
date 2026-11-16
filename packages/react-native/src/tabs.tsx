@@ -12,6 +12,7 @@ import {
   Pressable,
   View,
 } from "react-native"
+import { carry } from "./carried-context"
 import { withState } from "./render-element"
 import {
   createParts,
@@ -118,9 +119,10 @@ function createLayouts() {
   }
 }
 
-const LayoutsContext = React.createContext<ReturnType<
-  typeof createLayouts
-> | null>(null)
+const LayoutsContext = carry(
+  "TabsLayouts",
+  React.createContext<ReturnType<typeof createLayouts> | null>(null)
+)
 
 const noLayouts = () => () => {}
 const unmeasured = () => 0

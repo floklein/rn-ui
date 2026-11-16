@@ -1,11 +1,14 @@
 import type { FieldPrimitive } from "@ui-sdk/core/field"
 import { attrs } from "@ui-sdk/core/renderer"
 import * as React from "react"
+import { carry } from "./carried-context"
 import { controls } from "./native-host"
 import { DisabledContext, type PrimitiveHandle } from "./use-primitive"
 
-const FieldContext =
+const FieldContext = carry(
+  "Field",
   React.createContext<PrimitiveHandle<FieldPrimitive> | null>(null)
+)
 
 const noop = () => () => {}
 const none = () => undefined
