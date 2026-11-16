@@ -6,9 +6,11 @@ import { useDevice } from "./device.ts"
 
 const device = useDevice("otp-input")
 
-// The fixture's slots: 40 points wide, 8 apart, from the field's start.
+// The fixture's slots: 40 points wide, 8 apart, from the field's start, in
+// two groups with a 16-point separator between them.
 const slotWidth = 40
 const slotGap = 8
+const separator = 16 + slotGap
 const slotHeight = 48
 
 // The field takes no test ID of its own, but its keyboard says it's being
@@ -27,9 +29,9 @@ async function expectSlots(drawn: string) {
   )
 }
 
-// The slots are drawn only, out of the accessibility tree, so a press on one
-// lands at its place over the field.
-async function pressSlot(index: number) {
+// The slots are drawn only, out of the accessibility tree, under the field, so
+// a press on one lands on the field at the slot's place.
+async function pressSlot(index: number, hold?: number) {
   const field = await device.driver.$(
     device.platform === "ios"
       ? "~Code"
@@ -44,10 +46,22 @@ async function pressSlot(index: number) {
           }
         ).displayDensity / 160
       : 1
+  const start = index * (slotWidth + slotGap) + (index >= 2 ? separator : 0)
   await device.tapAt(
-    x + (slotWidth / 2 + index * (slotWidth + slotGap)) * scale,
-    y + (slotHeight / 2) * scale
+    x + (start + slotWidth / 2) * scale,
+    y + (slotHeight / 2) * scale,
+    hold
   )
+}
+
+async function paste() {
+  const item = await device.driver.$(
+    device.platform === "ios"
+      ? "~Paste"
+      : 'android=new UiSelector().text("Paste")'
+  )
+  await item.waitForDisplayed({ timeout: 5000 })
+  await item.click()
 }
 
 const backspace = ""
@@ -82,6 +96,40 @@ test("a press on a slot of a field not being edited starts editing with that slo
   await expectSlots("1, 2, 3 active, 4")
   await device.type("7")
   await expectSlots("1, 2, 7, 4 active")
+})
+
+test("a press on a slot after the separator selects that slot", async () => {
+  await device.press("fill-code")
+  await device.press("focus-code")
+  await expectFocused()
+  await pressSlot(3)
+  await expectSlots("1, 2, 3, 4 active")
+  await pressSlot(2)
+  await expectSlots("1, 2, 3 active, 4")
+  await pressSlot(0)
+  await expectSlots("1 active, 2, 3, 4")
+})
+
+test("a long press over a slot of a field not being edited offers Paste, which fills the code", async () => {
+  await device.driver.setClipboard(
+    Buffer.from("2468").toString("base64"),
+    "plaintext"
+  )
+  await pressSlot(1, 1500)
+  await paste()
+  await expectSlots("2, 4, 6, 8 active")
+})
+
+test("a long press over a slot of the field being edited offers Paste", async () => {
+  await device.driver.setClipboard(
+    Buffer.from("5791").toString("base64"),
+    "plaintext"
+  )
+  await device.press("focus-code")
+  await expectFocused()
+  await pressSlot(3, 1500)
+  await paste()
+  await expectSlots("5, 7, 9, 1 active")
 })
 
 test("a deletion leaves the caret where the character was", async () => {

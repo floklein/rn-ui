@@ -1,6 +1,12 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import { Text, TextInput, type TextInputInstance } from "react-native"
+import {
+  type HostInstance,
+  Text,
+  TextInput,
+  type TextInputInstance,
+  View,
+} from "react-native"
 import { Field, FieldDescription, FieldLabel, FieldSet } from "../src/field"
 import {
   createOTPInputController,
@@ -12,6 +18,24 @@ import {
 // Jest's TextInput mock shares one focus mock between instances, so any
 // field's ref reads it.
 afterEach(() => jest.clearAllMocks())
+
+// Slots 48 wide, 8 apart, in a field 4 in from the root's edge, where its
+// border ends. Jest's views share one measureLayout mock.
+let measureLayout: jest.Mock | undefined
+beforeEach(async () => {
+  const ref = createRef<HostInstance>()
+  await render(<View ref={ref} />)
+  measureLayout = ref.current!.measureLayout as unknown as jest.Mock
+  measureLayout.mockImplementation(function (
+    this: { props: { testID?: string } },
+    _root: unknown,
+    onSuccess: (x: number, y: number, width: number, height: number) => void
+  ) {
+    const index = /^slot-(\d)$/.exec(this.props.testID ?? "")?.[1]
+    onSuccess(index === undefined ? 4 : 4 + Number(index) * 56, 4, 48, 48)
+  })
+})
+afterEach(() => measureLayout?.mockReset())
 
 async function renderWithFocus(element: React.ReactElement) {
   const ref = createRef<TextInputInstance>()
@@ -49,6 +73,13 @@ const select = (start: number, end = start) =>
   fireEvent(field(), "selectionChange", {
     nativeEvent: { selection: { start, end } },
   })
+const tapAt = async (locationX: number) => {
+  const event = { nativeEvent: { locationX, locationY: 24 } }
+  await fireEvent(field(), "pressIn", event)
+  await fireEvent(field(), "pressOut", event)
+  await fireEvent(field(), "press", event)
+}
+const tap = (index: number) => tapAt(index * 56 + 24)
 const drawn = () =>
   [0, 1, 2, 3]
     .map(
@@ -107,38 +138,94 @@ describe("OTPInput", () => {
     expect(drawn()).toBe("1|2*|3|")
   })
 
-  test("a press on a slot of the focused field selects it through the selection prop", async () => {
+  test("a tap on the focused field selects the slot under it through the selection prop, and an empty slot past the code selects the one after the code", async () => {
+    await render(<Code defaultValue="12" />)
+    await fireEvent(field(), "focus")
+    await tap(0)
+    expect(field().props.selection).toEqual({ start: 0, end: 1 })
+    expect(drawn()).toBe("1*|2||")
+    await tap(1)
+    expect(drawn()).toBe("1|2*||")
+    await tap(3)
+    expect(field().props.selection).toEqual({ start: 2, end: 2 })
+    expect(drawn()).toBe("1|2|*|")
+  })
+
+  test("a tap between two slots selects the nearer one", async () => {
     await render(<Code defaultValue="123" />)
     await fireEvent(field(), "focus")
-    await fireEvent.press(slot(0))
+    await tapAt(56 + 48 + 5)
+    expect(drawn()).toBe("1|2|3*|")
+    await tapAt(56 + 48 + 1)
+    expect(drawn()).toBe("1|2*|3|")
+  })
+
+  test("the slot a tap selects wins over the caret the field puts under the finger, and a later caret move still counts", async () => {
+    await render(<Code defaultValue="123" />)
+    await fireEvent(field(), "focus")
+    await tap(2)
+    await select(1)
+    expect(field().props.selection).toEqual({ start: 2, end: 3 })
+    expect(drawn()).toBe("1|2|3*|")
+    await select(0)
     expect(field().props.selection).toEqual({ start: 0, end: 1 })
-    expect(drawn()).toBe("1*|2|3|")
-    await fireEvent.press(slot(3))
+  })
+
+  test("on Android, the echo of the tapped slot's selection doesn't let the finger's caret through", async () => {
+    await render(<Code defaultValue="123" />)
+    await fireEvent(field(), "focus")
+    const event = { nativeEvent: { locationX: 56 + 24, locationY: 24 } }
+    await fireEvent(field(), "pressIn", event)
+    await select(1, 2)
+    await select(3)
+    await fireEvent(field(), "pressOut", event)
+    await fireEvent(field(), "press", event)
+    expect(field().props.selection).toEqual({ start: 1, end: 2 })
+    expect(drawn()).toBe("1|2*|3|")
+  })
+
+  test("a long press on the unfocused field selects no slot, so the field's own Paste menu stays", async () => {
+    const focus = await renderWithFocus(<Code defaultValue="123" />)
+    const event = { nativeEvent: { locationX: 56 + 24, locationY: 24 } }
+    await fireEvent(field(), "pressIn", event)
+    await fireEvent(field(), "longPress", event)
+    await fireEvent(field(), "pressOut", event)
+    expect(focus).not.toHaveBeenCalled()
+    await fireEvent(field(), "focus")
     expect(field().props.selection).toEqual({ start: 3, end: 3 })
   })
 
-  test("a press on a slot focuses the field, then selects that slot", async () => {
+  test("a tap on the unfocused field focuses it, then selects the slot under it over the carets the field reports", async () => {
     const focus = await renderWithFocus(<Code defaultValue="123" />)
-    await fireEvent.press(slot(1))
+    await tap(1)
     expect(focus).toHaveBeenCalledTimes(1)
     expect(field().props.selection).toBeUndefined()
     await fireEvent(field(), "focus")
     expect(field().props.selection).toEqual({ start: 1, end: 2 })
-    // Android reports the caret it put at the end on focus.
+    // Android reports the caret it put at the end on focus, then the tap's.
     await select(3)
+    await select(0)
     expect(field().props.selection).toEqual({ start: 1, end: 2 })
     await fireEvent.changeText(field(), "173")
     await select(2)
     expect(drawn()).toBe("1|7|3*|")
   })
 
-  test("a press that focuses the field leaves a later caret move alone when Android reports no end caret", async () => {
-    await render(<Code defaultValue="123" />)
-    await fireEvent.press(slot(2))
+  test("a press that leaves the field before it ends selects nothing", async () => {
+    const focus = await renderWithFocus(<Code defaultValue="123" />)
+    const event = { nativeEvent: { locationX: 24, locationY: 24 } }
+    await fireEvent(field(), "pressIn", event)
+    await fireEvent(field(), "pressOut", event)
+    expect(focus).not.toHaveBeenCalled()
     await fireEvent(field(), "focus")
-    expect(field().props.selection).toEqual({ start: 2, end: 3 })
-    await select(0)
-    expect(field().props.selection).toEqual({ start: 0, end: 1 })
+    expect(field().props.selection).toEqual({ start: 3, end: 3 })
+  })
+
+  test("the field is drawn over the slots, so a long press anywhere on the code reaches it", async () => {
+    await render(<Code />)
+    const root = field().parent!
+    const children = root.children.filter((child) => typeof child !== "string")
+    expect(children.at(-1) === field()).toBe(true)
   })
 
   test("a change its controlled owner doesn't take leaves the active slot within the code", async () => {
@@ -154,7 +241,7 @@ describe("OTPInput", () => {
   test("typing over a selected slot replaces that character, and a deletion leaves the caret where it was", async () => {
     await render(<Code defaultValue="123" />)
     await fireEvent(field(), "focus")
-    await fireEvent.press(slot(1))
+    await tap(1)
     await fireEvent.changeText(field(), "193")
     await select(2)
     expect(drawn()).toBe("1|9|3*|")
@@ -180,7 +267,7 @@ describe("OTPInput", () => {
   test("a refused character keeps the selection, which the field gets back", async () => {
     await render(<Code defaultValue="123" />)
     await fireEvent(field(), "focus")
-    await fireEvent.press(slot(1))
+    await tap(1)
     await fireEvent.changeText(field(), "1a3")
     await select(2)
     expect(field().props.value).toBe("123")
@@ -213,11 +300,11 @@ describe("OTPInput", () => {
     expect(drawn()).toBe("5|6||")
   })
 
-  test("a disabled code can't be edited, says so, and ignores slot presses", async () => {
+  test("a disabled code can't be edited, says so, and ignores taps", async () => {
     await render(<Code disabled defaultValue="1" />)
     expect(field().props.editable).toBe(false)
     expect(field().props.accessibilityState).toMatchObject({ disabled: true })
-    await fireEvent.press(slot(0))
+    await tap(0)
     expect(field().props.selection).toBeUndefined()
   })
 

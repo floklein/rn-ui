@@ -3,6 +3,7 @@ import {
   OTPInput,
   OTPInputGroup,
   type OTPInputOptions,
+  OTPInputSeparator,
   OTPInputSlot,
   type OTPInputState,
 } from "@ui-sdk/react-native/otp-input"
@@ -17,10 +18,10 @@ const drawn = (state: OTPInputState) =>
     .map((slot) => `${slot.char ?? "empty"}${slot.active ? " active" : ""}`)
     .join(", ")
 
-function Slots() {
+function Group({ indexes }: { indexes: number[] }) {
   return (
     <OTPInputGroup style={styles.group}>
-      {[0, 1, 2, 3].map((index) => (
+      {indexes.map((index) => (
         <OTPInputSlot
           key={index}
           index={index}
@@ -30,6 +31,16 @@ function Slots() {
         </OTPInputSlot>
       ))}
     </OTPInputGroup>
+  )
+}
+
+function Slots() {
+  return (
+    <View style={styles.group}>
+      <Group indexes={[0, 1]} />
+      <OTPInputSeparator style={styles.separator} />
+      <Group indexes={[2, 3]} />
+    </View>
   )
 }
 
@@ -110,6 +121,12 @@ const styles = StyleSheet.create({
     borderColor: "#d4d4d8",
   },
   active: { borderWidth: 2, borderColor: "#18181b" },
+  separator: {
+    width: 16,
+    height: 2,
+    alignSelf: "center",
+    backgroundColor: "#18181b",
+  },
   char: { fontSize: 20 },
   actions: { flexDirection: "row", gap: 8 },
   action: { padding: 8, borderRadius: 6, backgroundColor: "#f4f4f5" },
