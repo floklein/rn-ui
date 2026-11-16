@@ -14,6 +14,15 @@ import {
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
 import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationList,
+  PaginationNext,
+  PaginationPrevious,
+} from "../src/pagination"
+import {
   PasswordInput,
   PasswordInputControl,
   PasswordInputToggle,
@@ -40,6 +49,8 @@ const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
+const checkPagination = () =>
+  checkPattern(screen.container, "pagination", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -779,6 +790,85 @@ describe("checkPattern's separator pattern on the native host", () => {
     )
     await expect(checkSeparator()).rejects.toThrow(
       'the Text "or" is an element a screen reader stops on'
+    )
+  })
+})
+
+function Pages(props: React.ComponentProps<typeof Pagination>) {
+  return (
+    <Pagination aria-label="Pagination" {...props}>
+      <PaginationList>
+        {({ items }) => (
+          <>
+            <PaginationItem>
+              <PaginationPrevious aria-label="Previous" />
+            </PaginationItem>
+            {items.map((item) => (
+              <PaginationItem key={item}>
+                {typeof item === "number" ? (
+                  <PaginationLink page={item} />
+                ) : (
+                  <PaginationEllipsis />
+                )}
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext aria-label="Next" />
+            </PaginationItem>
+          </>
+        )}
+      </PaginationList>
+    </Pagination>
+  )
+}
+
+describe("checkPattern's pagination pattern on the native host", () => {
+  test("passes on a pagination, going to another page from each enabled button", async () => {
+    const onPageChange = jest.fn()
+    await render(<Pages pageCount={12} onPageChange={onPageChange} />)
+    await expect(checkPagination()).resolves.toBeUndefined()
+    expect(onPageChange).toHaveBeenCalled()
+  })
+
+  test("fails with no current page", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>1</Text>
+      </Pressable>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      "has no selected page; the current page is selected."
+    )
+  })
+
+  test("fails on a page that goes nowhere", async () => {
+    await render(
+      <View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: true }}
+        >
+          <Text>1</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button">
+          <Text>2</Text>
+        </Pressable>
+      </View>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      `the button "2" leaves the current page "1" after the activate action; a page or a step that isn't disabled goes to another page.`
+    )
+  })
+
+  test("fails on an unnamed step", async () => {
+    await render(
+      <Pagination pageCount={3}>
+        <PaginationLink page={1} />
+        <PaginationNext />
+      </Pagination>
+    )
+    await expect(checkPagination()).rejects.toThrow(
+      "has no name; a button needs an accessibilityLabel or text inside it."
     )
   })
 })

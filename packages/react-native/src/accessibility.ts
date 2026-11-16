@@ -129,6 +129,12 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
       state[states[name as keyof typeof states]] = given === "true"
     } else if (name in values) {
       value[values[name as keyof typeof values]] = Number(given)
+    } else if (
+      name === "aria-current" &&
+      given === "page" &&
+      attrs["aria-selected"] === undefined
+    ) {
+      state.selected = true
     } else if (name === "aria-checked" || name === "aria-pressed") {
       state.checked = checkedOf(given)
     } else if (name === "aria-valuetext") {

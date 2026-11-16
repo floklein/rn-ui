@@ -8,6 +8,7 @@ import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
+import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
 import { createParts, usePart, usePrimitive } from "../src/primitive"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
@@ -143,12 +144,19 @@ const passwords = [
   <PasswordInputControl secureTextEntry={false} />,
 ]
 
+const paginations = [
+  <Pagination pageCount={10} onPageChange={() => {}} />,
+  // @ts-expect-error Pages are buttons on native, with no URL to link to.
+  <Pagination pageCount={10} getHref={(page) => `/posts/${page}`} />,
+]
+
 export {
   ComboboxInput,
   dialogs,
   exits,
   NativeDialog,
   NativeSwitch,
+  paginations,
   passwords,
   switches,
   type SwitchInput,

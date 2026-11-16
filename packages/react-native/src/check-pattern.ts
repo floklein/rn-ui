@@ -23,6 +23,7 @@ type NativePattern =
   | "checkbox"
   | "disclosure"
   | "img"
+  | "pagination"
   | "radio-group"
   | "separator"
   | "switch"
@@ -197,6 +198,48 @@ async function imgPattern(context: Context) {
       context.root,
       "has no image and no text, so a screen reader reads nothing."
     )
+  }
+}
+
+// Pages and steps are buttons, and the current page is the one selected
+// button, since neither OS has a current state.
+async function paginationPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  const current = () =>
+    buttons().filter((button) => stateOf(button).selected === true)
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no element with the button role, so it has no pages."
+    )
+    return
+  }
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  if (current().length !== 1) {
+    context.problem(
+      context.root,
+      current().length
+        ? `has ${current().length} selected pages; one page is current.`
+        : "has no selected page; the current page is selected."
+    )
+    return
+  }
+  for (const index of buttons().keys()) {
+    const button = buttons()[index]
+    if (!button || isDisabled(button) || stateOf(button).selected === true) {
+      continue
+    }
+    const before = nameOf(current()[0])
+    await performWatched(button, "activate", context.act)
+    const after = current()
+    if (after.length !== 1 || nameOf(after[0]) === before) {
+      context.problem(
+        button,
+        `leaves the current page "${before}" after the activate action; a page or a step that isn't disabled goes to another page.`
+      )
+    }
   }
 }
 
@@ -406,6 +449,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   checkbox: checkboxPattern,
   disclosure: disclosurePattern,
   img: imgPattern,
+  pagination: paginationPattern,
   "radio-group": radioGroupPattern,
   separator: separatorPattern,
   switch: switchPattern,
