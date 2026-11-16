@@ -47,7 +47,7 @@ function App() {
 
 The host lets every press through to your screens. A press outside a non-modal popup can still close it, as a click outside one does on the web. Android's back button closes the topmost open popup first. Each `Modal` carries a host of its own, so a popup opened from inside a modal dialog renders inside its `Modal`.
 
-Without an `OverlayHost`, a non-modal popup renders where it is in the tree, and development builds warn you.
+A non-modal popup renders inside the host, not where you wrote it, so it reads React context from above the host. Put the providers your popups read, like your navigation container or theme, above `OverlayHost`. Without an `OverlayHost`, a non-modal popup renders where it is in the tree, and development builds warn you.
 
 ## Pass the Safe-Area Insets
 

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
+import { createContext, useContext } from "react"
 import {
   DeviceEventEmitter,
   Platform,
@@ -131,6 +132,24 @@ describe("OverlayHost", () => {
     await open("profile")
     expect(modals("profile-content")).toBe(1)
     expect(warn).not.toHaveBeenCalled()
+  })
+
+  test("a modal dialog in an app with a host keeps the providers above it", async () => {
+    const Theme = createContext("missing")
+    function Themed() {
+      return <Text testID="theme">{useContext(Theme)}</Text>
+    }
+    await render(
+      <OverlayHost>
+        <Theme.Provider value="dark">
+          <Profile name="profile">
+            <Themed />
+          </Profile>
+        </Theme.Provider>
+      </OverlayHost>
+    )
+    await open("profile")
+    expect(screen.getByTestId("theme")).toHaveTextContent("dark")
   })
 
   test("a dialog opened from a modal dialog renders inside its Modal", async () => {

@@ -137,13 +137,11 @@ function DialogLayer({
       )}
     </HandleScope>
   )
-  return useHosted(
-    layer,
-    mounted,
-    modal
-      ? undefined
-      : { component: handle.primitive.name, id: handle.instance.id }
-  )
+  return useHosted(layer, mounted, {
+    component: handle.primitive.name,
+    id: handle.instance.id,
+    modal,
+  })
 }
 
 // Dialog and AlertDialog render the same parts over their own primitive.
@@ -241,8 +239,7 @@ function dialogParts(primitive: typeof dialogPrimitive) {
       { initialFocus, finalFocus, keepMounted },
       mergeProps(
         {
-          // The Modal hides the screen from VoiceOver. This would also hide
-          // the popups its host renders beside the content.
+          // The Modal's host isolates it, popups beside it included.
           accessibilityViewIsModal: false,
           onAccessibilityEscape: () => layerInput()?.escape(handle.api),
           onTouchStart: landIn(handle.api),

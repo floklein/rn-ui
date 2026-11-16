@@ -21,6 +21,7 @@ type OverlayHostProps = {
 }
 
 type Host = {
+  inModal: boolean
   insets: () => Insets
   entries: () => ReadonlyMap<string, React.ReactNode>
   set: (key: string, element: React.ReactNode) => void
@@ -28,7 +29,7 @@ type Host = {
   subscribe: (listener: () => void) => () => void
 }
 
-function createHost(insets: () => Insets) {
+function createHost(inModal: boolean, insets: () => Insets) {
   let entries: ReadonlyMap<string, React.ReactNode> = new Map()
   const listeners = new Set<() => void>()
   const update = (next: Map<string, React.ReactNode>) => {
@@ -36,6 +37,7 @@ function createHost(insets: () => Insets) {
     listeners.forEach((listener) => listener())
   }
   const host: Host = {
+    inModal,
     insets,
     entries: () => entries,
     set(key, element) {
@@ -61,8 +63,8 @@ function createHost(insets: () => Insets) {
 }
 
 // The open hosts, in the order they mounted: the root host, then each open
-// Modal's. A popup renders into the topmost, so it never opens as a sibling
-// Modal, which iOS doesn't show over an open one.
+// Modal's. A popup opened while a Modal is up renders in it, never as a
+// sibling Modal, which iOS doesn't show over an open one.
 let hosts: readonly Host[] = []
 const hostListeners = new Set<() => void>()
 const topmostHost = () => hosts.at(-1)
@@ -92,7 +94,9 @@ let started:
   { event: object; within: object[]; x: number; y: number } | undefined
 
 const landIn = (api: object) => () => {
-  landed.add(api)
+  if (hosts.length) {
+    landed.add(api)
+  }
 }
 
 function touchStart({ nativeEvent }: GestureResponderEvent) {
@@ -106,6 +110,10 @@ function touchStart({ nativeEvent }: GestureResponderEvent) {
     y: nativeEvent.pageY,
   }
   landed.clear()
+}
+
+function touchCancel() {
+  started = undefined
 }
 
 function touchEnd({ nativeEvent }: GestureResponderEvent) {
@@ -132,7 +140,15 @@ function HostView({
   React.useLayoutEffect(() => openHost(host), [host])
   return (
     <HostContext.Provider value={host}>
-      <View style={styles.host} onTouchStart={touchStart} onTouchEnd={touchEnd}>
+      <View
+        style={styles.host}
+        // A Modal hides the screen from VoiceOver. Here rather than on the
+        // content, it doesn't hide the popups rendered beside the content.
+        accessibilityViewIsModal={host.inModal}
+        onTouchStart={touchStart}
+        onTouchEnd={touchEnd}
+        onTouchCancel={touchCancel}
+      >
         {children}
         <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
           {[...entries].map(([key, element]) => (
@@ -156,7 +172,7 @@ function OverlayHost({ children, insets }: OverlayHostProps) {
   React.useLayoutEffect(() => {
     current.current = { ...zero, ...insets }
   })
-  const [host] = React.useState(() => createHost(() => current.current))
+  const [host] = React.useState(() => createHost(false, () => current.current))
   return <HostView host={host}>{children}</HostView>
 }
 
@@ -164,24 +180,31 @@ function OverlayHost({ children, insets }: OverlayHostProps) {
 function ModalHost({ children }: { children?: React.ReactNode }) {
   const around = React.useContext(HostContext)
   const [host] = React.useState(() =>
-    createHost(() => around?.insets() ?? zero)
+    createHost(true, () => around?.insets() ?? zero)
   )
   return <HostView host={host}>{children}</HostView>
 }
 
 /**
- * Renders a popup's layer in the topmost open host from the moment it shows
- * until it hides, or in place when there is none. `needsHost` warns then.
+ * Renders a non-modal popup's layer in the topmost open host from the moment
+ * it shows until it hides, or in place with a warning when there is none. A
+ * modal popup's `Modal` renders in place, keeping the providers above it,
+ * unless a `Modal` it isn't inside is up.
  */
 function useHosted(
   element: React.ReactNode,
   shown: boolean,
-  needsHost: { component: string; id: string } | undefined
+  popup: { component: string; id: string; modal: boolean }
 ) {
   const key = React.useId()
+  const nearest = React.useContext(HostContext)
   const topmost = React.useSyncExternalStore(subscribeHosts, topmostHost)
+  const target =
+    !popup.modal || (topmost?.inModal && topmost !== nearest)
+      ? topmost
+      : undefined
   const [chosen, setChosen] = React.useState<{ host?: Host }>()
-  const wanted = shown ? (chosen ?? { host: topmost }) : undefined
+  const wanted = shown ? (chosen ?? { host: target }) : undefined
   if (wanted !== chosen) {
     setChosen(wanted)
   }
@@ -190,12 +213,12 @@ function useHosted(
     host?.set(key, element)
   })
   React.useLayoutEffect(() => () => host?.remove(key), [host, key])
-  const missing = shown && !host && !!needsHost
+  const missing = shown && !host && !popup.modal
   React.useEffect(() => {
     if (missing) {
       warn(
         "a non-modal popup opened with no host to render it in. Wrap the app in <OverlayHost>.",
-        needsHost
+        popup
       )
     }
   }, [missing])
