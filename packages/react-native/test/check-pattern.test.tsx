@@ -256,13 +256,8 @@ describe("checkPattern's img pattern on the native host", () => {
     await expect(checkImage()).resolves.toBeUndefined()
   })
 
-  test("fails on a loaded image with no name", async () => {
-    await render(
-      <Avatar>
-        <AvatarImage source={source} testID="image" />
-      </Avatar>
-    )
-    await load()
+  test("fails on an image a screen reader reaches with no name", async () => {
+    await render(<View accessible accessibilityRole="image" />)
     await expect(checkImage()).rejects.toThrow("the image has no name")
   })
 

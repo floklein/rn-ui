@@ -64,9 +64,13 @@ const hiddenOn = (node: HostNode, os: OS) =>
 
 const otherOS = (os: OS) => (os === "ios" ? "android" : "ios")
 
-const isAccessible = (node: HostNode) =>
+// TalkBack reads a named image by its description, though it's no Tab stop.
+const isAccessible = (node: HostNode, os: OS) =>
   node.props.accessible === true ||
-  (node.type === "Text" && node.props.accessible !== false)
+  (node.type === "Text" && node.props.accessible !== false) ||
+  (os === "android" &&
+    roleOf(node) === "image" &&
+    !!node.props.accessibilityLabel)
 
 /** Every accessible element outside hidden content, in tree order, and the problems met finding them. */
 function readTree(root: HostNode, os: OS) {
@@ -83,7 +87,7 @@ function readTree(root: HostNode, os: OS) {
       })
     }
     let around = inside
-    if (isAccessible(node)) {
+    if (isAccessible(node, os)) {
       if (inside && node.props.accessible === true) {
         problems.push({
           node,

@@ -50,6 +50,9 @@ const capabilities =
         "appium:udid": process.env.ANDROID_SERIAL,
         "appium:app": process.env.APP_PATH,
         "appium:newCommandTimeout": limits.newCommand,
+        ...(process.env.ANDROID_ADB_SERVER_PORT && {
+          "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
+        }),
       }
 
 const roles: Record<string, string> = {

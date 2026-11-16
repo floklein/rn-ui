@@ -7,6 +7,7 @@ import {
 import * as React from "react"
 import {
   Image,
+  Platform,
   View,
   type ImageSourcePropType,
   type ImageStyle,
@@ -50,14 +51,15 @@ function Avatar({ onLoadingStatusChange, debug, ...props }: AvatarProps) {
 
 /**
  * An `Image`, kept out of sight and out of the accessibility tree until it
- * loads. Its `alt` names the avatar then, with the image role.
+ * loads. Its `alt` names the avatar then, with the image role; an empty or
+ * missing `alt` leaves it decorative.
  * @experimental
  */
-function AvatarImage({ render, ref, ...props }: AvatarImageProps) {
+function AvatarImage({ render, ref, alt, ...props }: AvatarImageProps) {
   const handle = useHandle(avatar)
-  const key = props.src || sourceKey(props.source)
+  const key = props.src || props.srcSet || sourceKey(props.source)
   React.useLayoutEffect(() => {
-    handle.api.internal.imageStatus(key ? "loading" : "error")
+    handle.api.internal.reportImageStatus(key ? "loading" : "error")
   }, [handle, key])
   // StrictMode and a remount unmount and mount again in the same task.
   const mounted = React.useRef(0)
@@ -67,7 +69,7 @@ function AvatarImage({ render, ref, ...props }: AvatarImageProps) {
       mounted.current--
       queueMicrotask(() => {
         if (!mounted.current) {
-          handle.api.internal.imageStatus("idle")
+          handle.api.internal.reportImageStatus("idle")
         }
       })
     }
@@ -84,20 +86,22 @@ function AvatarImage({ render, ref, ...props }: AvatarImageProps) {
         interaction: Interaction
       ) => {
         const loaded = state.loadingStatus === "loaded"
+        // `Image` makes itself accessible for any `alt`, and on Android an
+        // accessible image is a Tab stop, which a web image never is.
         return renderElement(
           Image,
           mergeProps(
             {
               accessibilityRole: "image",
-              accessibilityLabel: props.alt,
+              accessibilityLabel: alt || undefined,
+              accessible: loaded && !!alt && Platform.OS === "ios",
             },
             image,
             { ref },
             {
-              accessible: loaded,
               style: loaded ? undefined : hiddenStyle,
-              onLoad: () => handle.api.internal.imageStatus("loaded"),
-              onError: () => handle.api.internal.imageStatus("error"),
+              onLoad: () => handle.api.internal.reportImageStatus("loaded"),
+              onError: () => handle.api.internal.reportImageStatus("error"),
             }
           ),
           render,

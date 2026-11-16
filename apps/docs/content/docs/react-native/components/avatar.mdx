@@ -180,7 +180,7 @@ Callbacks get the new status first, then the details.
 
 ## Accessibility
 
-A loaded image has the `image` role and is named by its `alt`. Until it loads, it's hidden from VoiceOver and TalkBack, which read the fallback instead. Make the fallback read the person's name too: give it `accessible` and an `aria-label`, so a screen reader says the name rather than the initials.
+A loaded image has the `image` role and is named by its `alt`. Until it loads, it's hidden from VoiceOver and TalkBack, which read the fallback instead. Like an image on the web, it's never a stop for Tab on a hardware keyboard. Make the fallback read the person's name too: give it `accessible` and an `aria-label`, so a screen reader says the name rather than the initials.
 
 ```tsx
 <AvatarFallback accessible aria-label="shadcn">
@@ -188,4 +188,4 @@ A loaded image has the `image` role and is named by its `alt`. Until it loads, i
 </AvatarFallback>
 ```
 
-When a visible name beside the avatar already identifies the person, pass `aria-hidden` to `Avatar`, which hides it from screen readers with its image and fallback.
+When a visible name beside the avatar already identifies the person, give the image an empty `alt`, which leaves it decorative, and hide the fallback with `aria-hidden`.

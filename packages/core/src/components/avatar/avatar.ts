@@ -140,7 +140,7 @@ const avatarPrimitive = /* @__PURE__ */ definePrimitive({
     return {
       internal: {
         // The status a native image reports, with no event.
-        imageStatus(status: AvatarLoadingStatus) {
+        reportImageStatus(status: AvatarLoadingStatus) {
           if (status === "loading") {
             startLoading()
           } else {
