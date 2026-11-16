@@ -130,6 +130,17 @@
       "why": "What the panel slot's bind orchestrates through bindPanel: the panel settles (api.internal.settled) when the adapter's presence does, at once on opening and once onExit's done ends a close, through presence-native.ts's onSettled. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting flag stays the adapter's presence."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/gauge/gauge-native.ts",
+      "mirrors": [
+        "packages/core/src/components/progress/progress.ts",
+        "packages/core/src/components/meter/meter.ts",
+        "packages/core/src/foundation/gauge/gauge.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root and label slots' bind orchestrates for Progress and Meter: the root reads the page's locale through bindPageLocale while it's mounted, which the locale twin will answer from Intl, and a mounted label counts toward the root's aria-labelledby (api.internal.label)."
+    },
+    {
       "kind": "reroute",
       "file": "packages/core/src/components/collapsible/collapsible.ts",
       "mirrors": ["packages/core/src/components/collapsible/collapsible.ts"],
@@ -548,6 +559,32 @@
         }
       }
     },
+    "meter": {
+      "entry": "packages/react-native/src/meter.tsx",
+      "slots": {
+        "meter.root": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind reads the page's language, which gauge-native.ts asks for as the root mounts; until the locale twin lands it reads none and formats in English unless the locale option is given. Its missing-name warning comes with the names work."
+        },
+        "meter.label": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind counts the label that names the root, which gauge-native.ts does while the label is mounted."
+        }
+      }
+    },
+    "progress": {
+      "entry": "packages/react-native/src/progress.tsx",
+      "slots": {
+        "progress.root": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind reads the page's language, which gauge-native.ts asks for as the root mounts; until the locale twin lands it reads none and formats in English unless the locale option is given. Its missing-name warning comes with the names work."
+        },
+        "progress.label": {
+          "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
+          "reason": "Its bind counts the label that names the root, which gauge-native.ts does while the label is mounted."
+        }
+      }
+    },
     "separator": {
       "entry": "packages/react-native/src/separator.tsx",
       "slots": {}
@@ -739,12 +776,10 @@
     "listbox",
     "menu",
     "menubar",
-    "meter",
     "navigation-menu",
     "number-input",
     "otp-input",
     "popover",
-    "progress",
     "resizable",
     "scroll-area",
     "segmented-control",
@@ -798,7 +833,19 @@
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
+      "component": "meter",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
       "component": "pagination",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "progress",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
