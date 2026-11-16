@@ -102,6 +102,16 @@
     },
     {
       "kind": "behavior",
+      "file": "packages/core/src/components/segmented-control/segmented-control-native.ts",
+      "mirrors": [
+        "packages/core/src/components/segmented-control/segmented-control.ts",
+        "packages/core/src/components/radio/radio-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the item slot's bind orchestrates: each item joins the control's roving group (api.internal.roving.bind) while it's mounted, with a native element the order twin sorts in render order and the host focuses."
+    },
+    {
+      "kind": "behavior",
       "file": "packages/core/src/components/toggle/toggle-native.ts",
       "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -498,7 +508,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input and textarea."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, segmented-control, tabs, testing, input and textarea."
     }
   ],
   "components": {
@@ -582,6 +592,27 @@
         "progress.label": {
           "covered": "packages/core/src/foundation/gauge/gauge-native.ts",
           "reason": "Its bind counts the label that names the root, which gauge-native.ts does while the label is mounted."
+        }
+      }
+    },
+    "segmented-control": {
+      "entry": "packages/react-native/src/segmented-control.tsx",
+      "slots": {
+        "segmentedControl.root": {
+          "needs": "nothing",
+          "reason": "Its bind makes the control take part in a form and focuses an item from a label pointing at the control, neither of which native has. Its focus is the api's, through the items that joined."
+        },
+        "segmentedControl.item": {
+          "covered": "packages/core/src/components/segmented-control/segmented-control-native.ts",
+          "reason": "Its bind joins the roving group, which segmented-control-native.ts does while the item is mounted, and names it from a label, which native names from its text or aria-label. Its keydown and keyup move between items with arrow keys and check one with Space, which native doesn't build, and the OS activates the Pressable. Its mousedown keeps a disabled item from taking focus, which a disabled view never takes on native."
+        },
+        "segmentedControl.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        },
+        "segmentedControl.indicator": {
+          "covered": "packages/react-native/src/segmented-control.tsx",
+          "reason": "Its bind measures the checked item against the control and writes the --segmented-control-indicator-* variables; SegmentedControlIndicator measures them from the layouts of the control and its items and hands them to its state."
         }
       }
     },
@@ -782,7 +813,6 @@
     "popover",
     "resizable",
     "scroll-area",
-    "segmented-control",
     "select",
     "slider",
     "time-input",
@@ -906,6 +936,12 @@
     },
     {
       "component": "rating",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
+      "component": "segmented-control",
       "example": "form",
       "feature": "Form submission and reset",
       "reason": "Native has no forms: the app reads values from change callbacks."

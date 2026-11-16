@@ -31,6 +31,11 @@ import {
 } from "../src/password-input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
+import {
+  SegmentedControl,
+  SegmentedControlIndicator,
+  SegmentedControlItem,
+} from "../src/segmented-control"
 import { Separator } from "../src/separator"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
@@ -191,6 +196,28 @@ describe("checkDirection on the native host", () => {
                 <RadioIndicator />
               </Radio>
             </RadioGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a segmented control", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <SegmentedControl aria-label="View" defaultValue="list">
+              <SegmentedControlIndicator />
+              <SegmentedControlItem value="list">
+                <Text>List</Text>
+              </SegmentedControlItem>
+              <SegmentedControlItem value="grid">
+                <Text>Grid</Text>
+              </SegmentedControlItem>
+            </SegmentedControl>
           )
           return screen.container
         },
