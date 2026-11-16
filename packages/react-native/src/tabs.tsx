@@ -9,6 +9,7 @@ import { type LayoutChangeEvent, Pressable, View } from "react-native"
 import {
   createLayouts,
   type Layouts,
+  measuredStyle,
   useActiveBox,
   useItemLayout,
 } from "./indicator-layouts"
@@ -82,6 +83,7 @@ const Tabs: TabsParts["Root"] = parts.Root
  * @experimental
  */
 const TabsList = function TabsList({
+  style,
   onLayout,
   ...props
 }: React.ComponentProps<TabsParts["List"]>) {
@@ -90,6 +92,7 @@ const TabsList = function TabsList({
     <LayoutsContext value={layouts}>
       <parts.List
         {...props}
+        style={measuredStyle(layouts, style)}
         onLayout={(event: LayoutChangeEvent) => {
           layouts.container(event.nativeEvent.layout)
           onLayout?.(event)

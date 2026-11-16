@@ -14,6 +14,7 @@ import { type LayoutChangeEvent, Pressable, View } from "react-native"
 import {
   createLayouts,
   type Layouts,
+  measuredStyle,
   useActiveBox,
   useItemLayout,
 } from "./indicator-layouts"
@@ -79,6 +80,7 @@ function SegmentedControl<T extends string = string>({
   orientation,
   controller,
   debug,
+  style,
   onLayout,
   ...props
 }: Omit<SegmentedControlOptions<T>, "name" | "form"> &
@@ -108,6 +110,7 @@ function SegmentedControl<T extends string = string>({
         {},
         {
           ...props,
+          style: measuredStyle(layouts, style),
           onLayout: (event: LayoutChangeEvent) => {
             layouts.container(event.nativeEvent.layout)
             onLayout?.(event)

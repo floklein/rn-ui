@@ -5,7 +5,6 @@ import {
   SegmentedControl,
   SegmentedControlIndicator,
   SegmentedControlItem,
-  type SegmentedControlOptions,
 } from "../src/segmented-control"
 
 const sendAccessibilityEvent = jest.mocked(
@@ -25,7 +24,7 @@ const layout = (x: number, y: number, width: number, height: number) => ({
 function View({
   disabledValue,
   ...props
-}: SegmentedControlOptions & { disabledValue?: string }) {
+}: React.ComponentProps<typeof SegmentedControl> & { disabledValue?: string }) {
   return (
     <SegmentedControl aria-label="View" testID="control" {...props}>
       <SegmentedControlIndicator
@@ -155,6 +154,29 @@ describe("SegmentedControl", () => {
     expect(indicator()).toHaveStyle({ left: 110, right: 110, width: 80 })
   })
 
+  test("the indicator's box is measured inside the control's border, where absolute positions start", async () => {
+    await render(
+      <View
+        defaultValue="list"
+        style={() => ({ borderWidth: 2, borderLeftWidth: 3 })}
+      />
+    )
+    await fireEvent(
+      screen.getByTestId("control"),
+      "layout",
+      layout(0, 0, 300, 48)
+    )
+    await fireEvent(item("list"), "layout", layout(7, 6, 100, 36))
+    expect(indicator()).toHaveStyle({
+      left: 4,
+      right: 191,
+      top: 4,
+      bottom: 4,
+      width: 100,
+      height: 36,
+    })
+  })
+
   test("with nothing checked, the indicator's box is unset", async () => {
     const { rerender } = await render(<View value="list" />)
     await fireEvent(
@@ -170,7 +192,7 @@ describe("SegmentedControl", () => {
 
   test("right to left, the indicator's left and right follow React Native's swapped left and right styles", async () => {
     const isRTL = jest.replaceProperty(I18nManager, "isRTL", true)
-    await render(<View defaultValue="list" />)
+    const { rerender } = await render(<View defaultValue="list" />)
     await fireEvent(
       screen.getByTestId("control"),
       "layout",
@@ -178,6 +200,14 @@ describe("SegmentedControl", () => {
     )
     await fireEvent(item("list"), "layout", layout(196, 4, 100, 40))
     expect(indicator()).toHaveStyle({ left: 4, right: 196 })
+    await rerender(
+      <View
+        defaultValue="list"
+        style={{ borderStartWidth: 1, borderEndWidth: 3 }}
+      />
+    )
+    await fireEvent(item("list"), "layout", layout(195, 4, 100, 40))
+    expect(indicator()).toHaveStyle({ left: 4, right: 192 })
     isRTL.restore()
   })
 
