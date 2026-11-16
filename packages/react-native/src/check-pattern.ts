@@ -16,7 +16,7 @@ import {
  * or by its role where the Practices have none, like `"img"`.
  * @experimental
  */
-type NativePattern = "button" | "img" | "switch"
+type NativePattern = "button" | "checkbox" | "img" | "switch"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -90,6 +90,37 @@ async function buttonPattern(context: Context) {
   }
 }
 
+async function checkboxPattern(context: Context) {
+  const checkboxes = context.withRole("checkbox")
+  if (!checkboxes.length) {
+    context.problem(
+      context.root,
+      "has no element with the checkbox role, so it isn't a checkbox (APG checkbox)."
+    )
+    return
+  }
+  for (const control of checkboxes) {
+    requireName(context, control, "checkbox")
+    const { checked } = stateOf(control)
+    if (typeof checked !== "boolean" && checked !== "mixed") {
+      context.problem(
+        control,
+        'has no checked state; a checkbox is checked, true, unchecked, false, or partly checked, "mixed" (APG checkbox).'
+      )
+    }
+  }
+  for (const [index, control] of checkboxes.entries()) {
+    if (!isDisabled(control)) {
+      await checkActivationToggles(
+        context,
+        "checkbox",
+        index,
+        (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
 // An image still loading or that failed is hidden, and its fallback is read.
 async function imgPattern(context: Context) {
   const images = context.withRole("image")
@@ -136,6 +167,7 @@ async function switchPattern(context: Context) {
 
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
+  checkbox: checkboxPattern,
   img: imgPattern,
   switch: switchPattern,
 }

@@ -8,7 +8,7 @@ type Platform = "ios" | "android"
 type Node = {
   role: string
   label: string
-  checked?: boolean
+  checked?: boolean | "mixed"
   enabled: boolean
   text?: string
 }
@@ -62,6 +62,7 @@ const roles: Record<string, string> = {
   XCUIElementTypeStaticText: "text",
   XCUIElementTypeOther: "group",
   "android.widget.Switch": "switch",
+  "android.widget.CheckBox": "checkbox",
   "android.widget.Button": "button",
   "android.widget.ImageView": "image",
   "android.widget.TextView": "text",
@@ -90,6 +91,19 @@ function attributes(tag: string) {
   )
 }
 
+const checkedOf = (value: string) =>
+  value === "mixed" ? "mixed" : value === "checked"
+
+// Android has no mixed state: React Native appends it to the description.
+const androidMixed = ", mixed"
+
+const androidChecked = (attrs: Record<string, string>) =>
+  attrs["content-desc"]?.endsWith(androidMixed)
+    ? "mixed"
+    : attrs.checked === "true"
+      ? "checked"
+      : "unchecked"
+
 /** The OS's accessibility tree, as each element's role, label and state, keyed by test ID. */
 function parseTree(source: string) {
   const nodes = new Map<string, Node>()
@@ -99,7 +113,12 @@ function parseTree(source: string) {
       platform === "ios"
         ? attrs.name
         : attrs["resource-id"]?.replace(/^.*:id\//, "")
-    const role = roles[type] ?? type
+    // iOS has no checkbox element: React Native puts the role in the value.
+    const checkbox =
+      platform === "ios" && /^checkbox, /.test(attrs.value ?? "")
+        ? attrs.value.slice("checkbox, ".length)
+        : undefined
+    const role = checkbox ? "checkbox" : (roles[type] ?? type)
     const node: Node = {
       role,
       label: (platform === "ios" ? attrs.label : attrs["content-desc"]) ?? "",
@@ -108,6 +127,12 @@ function parseTree(source: string) {
     if (role === "switch") {
       node.checked =
         platform === "ios" ? attrs.value === "1" : attrs.checked === "true"
+    }
+    if (role === "checkbox") {
+      node.checked = checkedOf(checkbox ?? androidChecked(attrs))
+      if (node.checked === "mixed" && platform === "android") {
+        node.label = node.label.slice(0, -androidMixed.length)
+      }
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text

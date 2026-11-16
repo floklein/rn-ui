@@ -19,6 +19,7 @@
   "exports": {
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
+    "./checkbox": "./src/checkbox.tsx",
     "./primitive": "./src/primitive.ts",
     "./switch": "./src/switch.tsx",
     "./testing": "./src/testing.ts"
@@ -40,6 +41,10 @@
       "./button": {
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"
+      },
+      "./checkbox": {
+        "types": "./dist/checkbox.d.ts",
+        "default": "./dist/checkbox.js"
       },
       "./primitive": {
         "types": "./dist/primitive.d.ts",

@@ -6,12 +6,15 @@ import { useState } from "react"
 import { Platform, Pressable, Text, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
+import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkPattern } from "../src/testing"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
 const checkButton = () => checkPattern(screen.container, "button", { os, act })
+const checkCheckbox = () =>
+  checkPattern(screen.container, "checkbox", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
@@ -269,6 +272,49 @@ describe("checkPattern's img pattern on the native host", () => {
     )
     await expect(checkImage()).rejects.toThrow(
       "has no image and no text, so a screen reader reads nothing"
+    )
+  })
+})
+
+describe("checkPattern's checkbox pattern on the native host", () => {
+  test("passes on a checkbox, and on a group with a mixed parent", async () => {
+    await render(
+      <Checkbox aria-label="Accept">
+        <CheckboxIndicator />
+      </Checkbox>
+    )
+    await expect(checkCheckbox()).resolves.toBeUndefined()
+    await render(
+      <CheckboxGroup defaultValue={["tea"]} allValues={["tea", "coffee"]}>
+        <Checkbox aria-label="All" parent />
+        <Checkbox aria-label="Tea" value="tea" />
+        <Checkbox aria-label="Coffee" value="coffee" />
+      </CheckboxGroup>
+    )
+    await expect(checkCheckbox()).resolves.toBeUndefined()
+  })
+
+  test("fails on a checkbox with no name", async () => {
+    await render(<Checkbox />)
+    await expect(checkCheckbox()).rejects.toThrow("the checkbox has no name")
+  })
+
+  test("fails on a checkbox whose state doesn't change after the activate action", async () => {
+    await render(<Checkbox aria-label="Accept" checked={false} />)
+    await expect(checkCheckbox()).rejects.toThrow(
+      "stays false after the activate action"
+    )
+  })
+
+  test("fails on a checkbox with the wrong role", async () => {
+    await render(
+      <Checkbox
+        aria-label="Accept"
+        render={(props) => <Pressable {...props} accessibilityRole="switch" />}
+      />
+    )
+    await expect(checkCheckbox()).rejects.toThrow(
+      "has no element with the checkbox role"
     )
   })
 })

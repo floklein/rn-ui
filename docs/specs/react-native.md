@@ -363,6 +363,7 @@ Every difference the resolutions record, by subject.
 - A combobox's highlighted option is announced, not exposed as an active descendant ([How focus works on the native host][focus]).
 - With a hardware keyboard there are no arrow keys inside a composite, no Home, End or typeahead, no combobox arrow keys, no keyboard shortcuts, no keyboard focus trap, and Escape only where the OS routes it ([How focus works on the native host][focus]).
 - A part core keeps focusable but inert (`aria-disabled`: a pending Button, a disabled menu item, option or tab) is disabled on Android, since React Native has no way to say "disabled" to TalkBack without disabling the view. It leaves Android's keyboard order and a focused one loses keyboard focus; TalkBack still reaches it and says "disabled". iOS is unaffected ([aria-disabled on Android][aria-disabled]).
+- On Android, busy and a mixed checked state are spoken from the view's description, so they need the part's own `aria-label`. A mixed checkbox or toggle named by its text reads as unchecked on Android (ticket 60).
 
 **Popups**
 
@@ -388,6 +389,7 @@ Every difference the resolutions record, by subject.
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
+- A checkbox group orders its checkboxes by when they mounted, not by their place in the tree, since native views have no document order (ticket 60).
 
 **Forms**
 
