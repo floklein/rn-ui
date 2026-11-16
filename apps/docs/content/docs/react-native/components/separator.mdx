@@ -47,7 +47,7 @@ Set `orientation="vertical"` for a line between items in a row. Give it a width,
 
 <ComponentExample
   name="separator/vertical"
-  caption="A vertical line sits between Privacy, Terms and Cookies. Each link is its own stop for VoiceOver, TalkBack and Tab."
+  caption="A vertical line sits between Privacy, Terms and Cookies. Each link is its own stop for VoiceOver and TalkBack, and the lines are not."
 />
 
 ## Stacked Content
@@ -81,7 +81,7 @@ A decorative separator gets the `none` role. Neither platform reads a separator 
 
 ## Custom Rendering
 
-The separator takes `render`, an element or a function of the native props and its state. Spread the props on another host, such as an `Animated.View`, so it keeps its role and style.
+The separator takes `render`, an element or a function of the native props and its state. Spread the props on another host, such as an `Animated.View`, so it keeps its style and, when decorative, its `none` role.
 
 ## Styling
 
@@ -120,4 +120,4 @@ What render, style, class name and children functions receive.
 
 ## Accessibility
 
-On the web, a separator has the [WAI-ARIA separator role](https://www.w3.org/TR/wai-aria-1.2/#separator) and its orientation. React Native has no separator role on either platform, so the line is a plain `View`: VoiceOver and TalkBack pass over it and read the content on each side, and it never takes focus, so Tab moves past it on a hardware keyboard. Where the division matters to a screen reader user, say it in the content itself, with a heading or a label for each group.
+On the web, a separator has the [WAI-ARIA separator role](https://www.w3.org/TR/wai-aria-1.2/#separator) and its orientation. Neither iOS nor Android announces a separator role, so the line is a plain `View`: VoiceOver and TalkBack pass over it and read the content on each side, and it never takes focus, so Tab moves past it on a hardware keyboard. Where the division matters to a screen reader user, say it in the content itself, with a heading or a label for each group.

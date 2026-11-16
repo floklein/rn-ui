@@ -14,7 +14,8 @@ import {
 
 /**
  * A pattern the native check knows, by its WAI-ARIA Authoring Practices name,
- * or by its role where the Practices have none, like `"img"`.
+ * or by its role where the Practices have none, like `"img"`. Pass a
+ * separator's own view as the root of `"separator"`, since nothing marks one.
  * @experimental
  */
 type NativePattern =

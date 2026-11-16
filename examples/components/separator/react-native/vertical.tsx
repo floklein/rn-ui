@@ -1,4 +1,3 @@
-import { Button } from "@ui-sdk/react-native/button"
 import { Separator } from "@ui-sdk/react-native/separator"
 import { Fragment } from "react"
 import { Linking, StyleSheet, Text, View } from "react-native"
@@ -17,9 +16,13 @@ function Example() {
           {index > 0 && (
             <Separator orientation="vertical" style={styles.line} />
           )}
-          <Button role="link" onPress={() => Linking.openURL(link.url)}>
-            <Text style={styles.link}>{link.label}</Text>
-          </Button>
+          <Text
+            role="link"
+            onPress={() => Linking.openURL(link.url)}
+            style={styles.link}
+          >
+            {link.label}
+          </Text>
         </Fragment>
       ))}
     </View>

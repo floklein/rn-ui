@@ -8,7 +8,7 @@ const parts: SeparatorParts = createParts(separator, { root: View })
 
 /**
  * A line between groups of content: a `View` that no screen reader or
- * keyboard stops on, since neither platform has a separator role.
+ * keyboard stops on, since neither OS announces a separator role.
  * @experimental
  */
 const Separator: SeparatorParts["Root"] = parts.Root

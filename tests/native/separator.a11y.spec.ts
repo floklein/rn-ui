@@ -22,8 +22,10 @@ test("the platform tree reads the text around separators and nothing for them", 
     "separator-vertical",
     "separator-decorative",
   ]) {
-    assert.equal(tree.get(id)?.label ?? "", "", id)
-    assert.notEqual(tree.get(id)?.role, "text", id)
+    const node = tree.get(id)
+    assert.ok(node, id)
+    assert.equal(node.label, "", id)
+    assert.notEqual(node.role, "text", id)
   }
 })
 
