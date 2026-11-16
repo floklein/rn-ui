@@ -2,7 +2,7 @@
 
 What the React Native expert knows. Part 1 is React Native itself, part 2 is how `@ui-sdk/react-native` is built, part 3 is the checklist a review walks. Pinned to the versions the repo installs: React Native 0.88.1 with the New Architecture, Expo SDK 58, React 19.3.0 in the playground (`packages/react-native` peers `react >=19`, `react-native >=0.88`). The research behind part 1 is `docs/research/rn-accessibility-focus-keyboards.md` on the `research/rn-accessibility-focus-keyboards` branch, read against React Native's source at `v0.88.1`. When React Native changes, update this file and the date.
 
-Last checked: 2026-11-15, against `packages/react-native` and `node_modules/react-native` 0.88.1.
+Last checked: 2026-11-16, against `packages/react-native` and `node_modules/react-native` 0.88.1.
 
 ## 1. React Native, as it behaves
 
@@ -16,6 +16,8 @@ Last checked: 2026-11-15, against `packages/react-native` and `node_modules/reac
 - `accessibilityActions` with `onAccessibilityAction` is the only way to do anything but activate: `increment`/`decrement` (Adjustable on iOS, scroll actions on Android), `expand`/`collapse` (Android only), `escape` (iOS only, the two-finger scrub), `magicTap` (iOS only), `longpress` (Android only), and custom actions with a `label`.
 - No relationships: no `aria-controls`, `describedby`, `activedescendant`, `owns`, `haspopup`, `posinset`, `setsize`. `aria-labelledby` is Android only, one id.
 - Live regions are Android only. iOS has only `AccessibilityInfo.announceForAccessibility`.
+- Android writes `busy`, `expanded` and `checked: "mixed"` into the view's `contentDescription` with `accessibilityLabel` (`BaseViewManager.updateViewContentDescription`). With no label that hides the text inside the view ("Busy" instead of "Save"), and the description is rewritten only from a state that names one of those keys, and never cleared when nothing is left to write.
+- `announceForAccessibilityWithOptions`'s `queue` is iOS only; Android calls `announceForAccessibility`.
 
 ### Focus and keyboards
 

@@ -3,6 +3,13 @@
   "entries": [
     {
       "kind": "twin",
+      "file": "packages/core/src/foundation/platform/announce.native.ts",
+      "mirrors": ["packages/core/src/foundation/platform/announce.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hands an announcement to the native host's screen reader where the DOM module writes it into a live region."
+    },
+    {
+      "kind": "twin",
       "file": "packages/core/src/foundation/focus/focus-part.native.ts",
       "mirrors": ["packages/core/src/foundation/forms/toggle-control.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -265,10 +272,19 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive and switch."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch and button."
     }
   ],
   "components": {
+    "button": {
+      "entry": "packages/react-native/src/button.tsx",
+      "slots": {
+        "button.root": {
+          "needs": "nothing",
+          "reason": "Its bind reads what element it rendered as and a disabled fieldset, neither of which exists on native: the part stays unknown, whose type=\"button\" the translation makes the button role. Its keydown and keyup activate a non-button element, where the OS activates the Pressable with Space or Enter."
+        }
+      }
+    },
     "switch": {
       "entry": "packages/react-native/src/switch.tsx",
       "slots": {
@@ -288,7 +304,6 @@
     "alert-dialog",
     "autocomplete",
     "avatar",
-    "button",
     "calendar",
     "carousel",
     "checkbox",
@@ -352,6 +367,18 @@
     },
     {
       "component": "switch",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "button",
+      "example": "form",
+      "feature": "Submit and reset buttons",
+      "reason": "Native has no forms, so Button has no type: a button's onPress does what a submit would."
+    },
+    {
+      "component": "button",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

@@ -32,20 +32,22 @@ afterAll(() => {
 })
 
 describe("the registry's parity check", () => {
-  test("passes with switch out of pending and its skipped slots marked", () => {
+  test("passes with switch and button out of pending and their skipped slots marked", () => {
     const { status, stdout } = run(["parity"])
     expect(stdout).toContain("switch: native entry, 2 slots marked")
+    expect(stdout).toContain("button: native entry, 1 slot marked")
     expect(stdout).toContain(`${registry.pending.length} pending:`)
     expect(registry.pending).not.toContain("switch")
+    expect(registry.pending).not.toContain("button")
     expect(status).toBe(0)
   })
 
   test("fails when a component leaves pending with no native entry", () => {
     const file = registryFile((copy) => {
-      copy.pending = copy.pending.filter((name: string) => name !== "button")
+      copy.pending = copy.pending.filter((name: string) => name !== "checkbox")
     })
     const { status, stderr } = run(["parity", "--registry", file])
-    expect(stderr).toContain("button has no native entry and isn't pending")
+    expect(stderr).toContain("checkbox has no native entry and isn't pending")
     expect(status).toBe(1)
   })
 

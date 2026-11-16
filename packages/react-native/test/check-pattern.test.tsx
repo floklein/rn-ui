@@ -3,12 +3,14 @@ import { createSwitchController } from "@ui-sdk/core/switch"
 import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
-import { Platform, Pressable, View } from "react-native"
+import { Platform, Pressable, Text, View } from "react-native"
+import { Button } from "../src/button"
 import { Switch, SwitchThumb } from "../src/switch"
 import { checkPattern } from "../src/testing"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
+const checkButton = () => checkPattern(screen.container, "button", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -174,5 +176,47 @@ describe("checkPattern on the native host", () => {
         /react-native|test-renderer|testing-library|^react/.test(name)
       )
     ).toEqual([])
+  })
+})
+
+describe("checkPattern's button pattern on the native host", () => {
+  test("passes on a button, and activates it", async () => {
+    const onPress = jest.fn()
+    await render(
+      <Button onPress={onPress}>
+        <Text>Save</Text>
+      </Button>
+    )
+    await expect(checkButton()).resolves.toBeUndefined()
+    expect(onPress).toHaveBeenCalledTimes(1)
+  })
+
+  test("passes on a pending button, which ignores the activation", async () => {
+    const onPress = jest.fn(() => new Promise(() => {}))
+    await render(
+      <Button onPress={onPress}>
+        <Text>Save</Text>
+      </Button>
+    )
+    await checkButton()
+    await expect(checkButton()).resolves.toBeUndefined()
+    expect(onPress).toHaveBeenCalledTimes(1)
+  })
+
+  test("fails on a button with no name", async () => {
+    await render(<Button aria-label="" />)
+    await expect(checkButton()).rejects.toThrow("the button has no name")
+  })
+
+  test("fails on a button with the wrong role", async () => {
+    await render(
+      <Button
+        aria-label="Save"
+        render={(props) => <Pressable {...props} accessibilityRole="link" />}
+      />
+    )
+    await expect(checkButton()).rejects.toThrow(
+      "has no element with the button role"
+    )
   })
 })

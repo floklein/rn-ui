@@ -61,12 +61,12 @@ test("an example file added under examples/components/<name>/react-native is bun
   }
 })
 
-test("the bundle holds the native twin of focusing a part, not its DOM module", () => {
+test("the bundle holds the native twins of focusing a part and announcing, not their DOM modules", () => {
   for (const platform of ["ios", "android"]) {
     const sources = bundledSources(platform)
-    assert.ok(
-      sources.some((source) => source.endsWith("focus/focus-part.native.ts"))
-    )
-    assert.ok(!sources.some((source) => source.endsWith("focus/focus-part.ts")))
+    for (const twin of ["focus/focus-part", "platform/announce"]) {
+      assert.ok(sources.some((source) => source.endsWith(`${twin}.native.ts`)))
+      assert.ok(!sources.some((source) => source.endsWith(`${twin}.ts`)))
+    }
   }
 })

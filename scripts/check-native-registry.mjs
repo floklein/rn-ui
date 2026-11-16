@@ -91,7 +91,9 @@ function checkComponent(name, primitives) {
       }
     }
   }
-  console.log(`${name}: native entry, ${marked} slots marked`)
+  console.log(
+    `${name}: native entry, ${marked} slot${marked === 1 ? "" : "s"} marked`
+  )
 }
 
 async function checkParity() {

@@ -8,6 +8,8 @@ import type { Part } from "./primitive-types"
 type NativeHost = {
   /** Requests accessibility focus on the part's mounted view, and input focus for a text input. Does nothing when the part has no view. */
   focus: (part: Part) => void
+  /** Has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it. */
+  announce: (text: string, priority: "polite" | "assertive") => void
 }
 
 let host: NativeHost | undefined

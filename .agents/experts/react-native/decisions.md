@@ -2,7 +2,7 @@
 
 What's already decided about `@ui-sdk/react-native`, and what's known and open. The expert never re-raises a **Settled** item as a finding. Seeded from the planning map's resolutions (issues #6 to #37 and #119 on `floklein/rn-ui`), gathered in `docs/specs/react-native.md`, and from `docs/adr/0001-host-seam.md`. The spec's "Rules for the build" are settled too.
 
-Last reviewed: `8d95de3d` (2026-11-15, ticket 120: the web-only names left out of the native types and tables, and the keyboard focus findings)
+Last reviewed: `2c7c277a` (2026-11-16, ticket 58: Button and the announcer's twin)
 
 ## Settled
 
@@ -29,6 +29,8 @@ Last reviewed: `8d95de3d` (2026-11-15, ticket 120: the web-only names left out o
 
 ## Known and open (don't report again, check whether fixed)
 
+- **A pending Button loses Android keyboard focus**: its `aria-disabled` becomes `accessibilityState.disabled`, which disables the view, so Space on a button whose action is pending moves focus to the first focusable view (seen on an emulator, ticket 58). The web keeps focus on it. Same question as the `aria-disabled` item below; `focusableWhenDisabled` does nothing for Android's Tab either.
+- **Busy on Android only with a label**: the translation leaves `busy` out of `accessibilityState` on Android for a part with no `aria-label`, since it would replace the text inside (ticket 58). A labelled part gets `busy: false` once it's over, to clear the description.
 - `aria-labelledby` and `aria-describedby` are dropped by the translation until names land (ticket 7 of the build plan).
 - **Shared names keep core's web wording in the docs tables**: the native types and `TypeTable`s leave out the web-only names (#120), but descriptions of shared ones still mention forms, like `defaultChecked`'s form reset, `disabled`'s `<fieldset>`, and the `reset` and `restore` reasons that can't happen on native.
 - **Switch's `value` does nothing on native** but stays in its types and `TypeTable`: it only says what the hidden input submits. Removing it changes a public shape, so it waits for a decision (Checkbox keeps it, since it names an item in a group).

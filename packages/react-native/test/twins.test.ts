@@ -14,6 +14,9 @@ describe("the twin check", () => {
     expect(stdout).toContain(
       "focus-part.native.ts = foundation/focus/focus-part.ts"
     )
+    expect(stdout).toContain(
+      "announce.native.ts = foundation/platform/announce.ts"
+    )
     expect(status).toBe(0)
   })
 

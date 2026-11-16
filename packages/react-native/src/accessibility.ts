@@ -135,6 +135,16 @@ function toNativeProps(attrs: Attrs, os: OS) {
         given === "off" ? "none" : (given as "polite")
     }
   }
+  // Android writes busy into the view's description, which hides the text
+  // inside it and is rewritten only from a state that names busy. So busy
+  // goes only on a part with its own label, and says false once it's over.
+  if (os === "android") {
+    if (attrs["aria-label"] === undefined) {
+      delete state.busy
+    } else if ("aria-busy" in attrs) {
+      state.busy ??= false
+    }
+  }
   if (Object.keys(state).length) {
     props.accessibilityState = state
   }
