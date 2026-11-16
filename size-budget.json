@@ -426,6 +426,7 @@
   "@ui-sdk/react-native/button (lazy)": 180,
   "@ui-sdk/react-native/checkbox": 15051,
   "@ui-sdk/react-native/input": 11040,
+  "@ui-sdk/react-native/password-input": 12235,
   "@ui-sdk/react-native/primitive": 5153,
   "@ui-sdk/react-native/rating": 15391,
   "@ui-sdk/react-native/switch": 11396,
