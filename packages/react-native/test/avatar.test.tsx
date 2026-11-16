@@ -16,7 +16,11 @@ function Person({
 }) {
   return (
     <Avatar onLoadingStatusChange={onLoadingStatusChange} testID="avatar">
-      <AvatarImage source={image ?? undefined} alt="Ada Lovelace" testID="image" />
+      <AvatarImage
+        source={image ?? undefined}
+        alt="Ada Lovelace"
+        testID="image"
+      />
       <AvatarFallback delay={delay} testID="fallback">
         <Text>AL</Text>
       </AvatarFallback>

@@ -279,7 +279,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch and button."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button and avatar."
     }
   ],
   "components": {

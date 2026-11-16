@@ -26,8 +26,7 @@ type AvatarImageProps = PartProps<typeof Image, AvatarState>
 type AvatarFallbackPartProps = PartProps<typeof View, AvatarState> &
   AvatarFallbackProps
 
-// Until it loads, the image stays mounted so it loads, but out of sight and
-// out of the layout, as core's style keeps it on the web.
+// Mounted so it loads, but out of sight and out of the layout until then.
 const hiddenStyle: ImageStyle = { position: "absolute", opacity: 0 }
 
 // A source by what it loads, so a new object for the same image starts nothing.

@@ -1,9 +1,4 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-} from "@testing-library/react-native"
+import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createSwitchController } from "@ui-sdk/core/switch"
 import { build } from "esbuild"
 import path from "node:path"
