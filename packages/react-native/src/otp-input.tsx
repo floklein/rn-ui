@@ -128,6 +128,11 @@ function OTPInputControl(props: ControlProps) {
           pressed.current = undefined
         }
       },
+      // Without it, Pressability presses after a long press, and selecting a
+      // slot then would close the Paste menu.
+      onLongPress: () => {
+        pressed.current = undefined
+      },
       onPress: () => {
         if (pressed.current !== undefined) {
           internal.pressSlot(pressed.current)

@@ -171,6 +171,30 @@ describe("OTPInput", () => {
     expect(field().props.selection).toEqual({ start: 0, end: 1 })
   })
 
+  test("on Android, the echo of the tapped slot's selection doesn't let the finger's caret through", async () => {
+    await render(<Code defaultValue="123" />)
+    await fireEvent(field(), "focus")
+    const event = { nativeEvent: { locationX: 56 + 24, locationY: 24 } }
+    await fireEvent(field(), "pressIn", event)
+    await select(1, 2)
+    await select(3)
+    await fireEvent(field(), "pressOut", event)
+    await fireEvent(field(), "press", event)
+    expect(field().props.selection).toEqual({ start: 1, end: 2 })
+    expect(drawn()).toBe("1|2*|3|")
+  })
+
+  test("a long press on the unfocused field selects no slot, so the field's own Paste menu stays", async () => {
+    const focus = await renderWithFocus(<Code defaultValue="123" />)
+    const event = { nativeEvent: { locationX: 56 + 24, locationY: 24 } }
+    await fireEvent(field(), "pressIn", event)
+    await fireEvent(field(), "longPress", event)
+    await fireEvent(field(), "pressOut", event)
+    expect(focus).not.toHaveBeenCalled()
+    await fireEvent(field(), "focus")
+    expect(field().props.selection).toEqual({ start: 3, end: 3 })
+  })
+
   test("a tap on the unfocused field focuses it, then selects the slot under it over the carets the field reports", async () => {
     const focus = await renderWithFocus(<Code defaultValue="123" />)
     await tap(1)

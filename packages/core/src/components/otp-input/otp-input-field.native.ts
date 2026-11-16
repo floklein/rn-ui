@@ -29,8 +29,8 @@ function nativeField({
   // and Android's caret at the end when a press on a slot focused the field.
   let refused = false
   let focusCaret: Selection | undefined
-  // The caret a tap on the field puts under the finger, where the slot
-  // pressed wins. With no caret move there's no report, and this waits.
+  // After a tap, the caret the field puts under the finger loses to the slot
+  // pressed. Android first echoes the slot's selection, which is let pass.
   let tapped = false
 
   return {
@@ -74,7 +74,9 @@ function nativeField({
         return
       }
       if (tapped) {
-        tapped = false
+        const { selection } = store.get()
+        tapped =
+          current.start === selection.start && current.end === selection.end
         return
       }
       const deleted = afterDelete && current.start === current.end
