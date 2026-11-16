@@ -15,6 +15,7 @@ function host(rtl: boolean) {
     box: vi.fn(),
     follow: vi.fn(),
     adjustable: vi.fn(),
+    listen: vi.fn(),
   })
 }
 

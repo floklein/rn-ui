@@ -37,6 +37,10 @@ function host() {
     announce: vi.fn(),
     activate: vi.fn(),
     compare: () => 0,
+    isRTL: () => false,
+    box: vi.fn(),
+    follow: vi.fn(),
+    adjustable: vi.fn(),
     listen(next) {
       input = next
       return () => (input = undefined)
