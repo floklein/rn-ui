@@ -62,7 +62,7 @@ From [Where native names diverge from @ui-sdk/react][names] and [How state reach
 - The part forwards the resolved `className` as a string, `ref`, `disabled` and unknown props without reading them.
 - Host props are React Native's own (`onPress`, `style`, `testID`), forwarded as they are.
 - A user's `role` and `aria-*` props go through the same translation as core's and are consumed by it. They merge with core's attributes as in `@ui-sdk/react`: core's value wins where it has one, and the user's stands where core gives none, so `<Button role="link">` is a link. A user's `accessibility*` props win over the translation field by field: `accessibilityState={{ busy: true }}` merges over core's `checked` and `expanded`.
-- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form`, the hidden `input` part and Switch's `value` ([What forms become on the native host][forms]).
+- Web-only options, and a single web-only value of an option, are absent from the native types, not accepted and ignored. Today: `container`; `shortcut` and the `shortcuts` entry; the `modal` value `"trap-focus"`; `name`, `form`, the hidden `input` part and Switch's `value` ([What forms become on the native host][forms]); Pagination's `getHref` (ticket 87).
 - Native-only names: `OverlayHost` with `children` and `insets`; the `interaction` argument; File Input's `pick`; `onExit` ([How presence and exit animation work on native][presence]); the `/sheet` entry.
 
 ### Default hosts and `render`
@@ -348,6 +348,7 @@ Every difference the resolutions record, by subject.
 - No `dataSet`, `data-*` props or CSS variables; their values are state fields ([How state reaches native styles][styles]).
 - Press, hover and focus feedback is the `interaction` argument, not `:active`, `:hover` or `:focus-visible` ([How state reaches native styles][styles]).
 - `container`, `shortcut`, the `shortcuts` entry and the `modal` value `"trap-focus"` are absent ([Where native names diverge from @ui-sdk/react][names]).
+- Pagination has no `getHref`: native has no URLs to follow, so its pages and steps are always buttons, and an app navigates from `onPageChange` (ticket 87).
 - A part's host is a `react-native` component, not a tag string, and `render` receives native props with accessibility in `accessibility*` names only ([Where native names diverge from @ui-sdk/react][names]).
 - A user writes React Native's host props, such as `onPress` for `onClick` ([Where native names diverge from @ui-sdk/react][names]).
 - A change's details carry no `event` ([Where the host seam sits in core][seam]).
@@ -368,6 +369,7 @@ Every difference the resolutions record, by subject.
 - Android's keyboard Tab order follows the view tree, and Fabric removes a layout-only `View` from it. A part that isn't pressed and has a role or a label keeps its view (`collapsable={false}`), so a group's members stay together and in order. An app's own layout `View` can still be flattened, which lets Tab jump between its children and their neighbors; the app marks it `collapsable={false}` (#125).
 - A progress bar or meter is one element on iOS, where React Native gives no role word, only the trait for a value that changes often. On Android it keeps its view and is no Tab stop; its description joins its label and value text, and the label's text stays in the tree beside it; what TalkBack stops on is unchecked. A labelled indeterminate bar's Android description ends in a comma ("Connecting, "), since React Native joins the label and the empty value text that clears the old value. A meter has the progress bar role on both (ticket 86).
 - A separator is never announced: React Native takes `role="separator"` but neither OS gives it a trait or a class, so its role and `aria-orientation` reach no screen reader, and `decorative` changes nothing they hear (ticket 85).
+- The current page of a Pagination is announced as selected: `aria-current="page"` becomes `accessibilityState.selected` unless the part sets `aria-selected`, since React Native has no current state. Pagination has no landmark: `navigation` and `listitem` reach no screen reader, and each page and step is its own button (ticket 87).
 
 **Popups**
 
