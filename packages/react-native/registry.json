@@ -1004,6 +1004,12 @@
     },
     {
       "component": "label",
+      "example": "basic",
+      "feature": "A label for a radio group, with a label wrapping each radio",
+      "reason": "Native Label reaches no radio group and wraps no control: a radio holds its own text. The input example shows a Label for a text field instead."
+    },
+    {
+      "component": "label",
       "example": "wrap",
       "feature": "A label wrapping its control",
       "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."

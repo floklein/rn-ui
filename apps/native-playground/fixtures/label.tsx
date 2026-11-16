@@ -23,15 +23,6 @@ function Fixture() {
       >
         <Text>{disabled ? "Enable terms" : "Disable terms"}</Text>
       </Pressable>
-      <Label htmlFor="label-city" testID="city-label" style={styles.label}>
-        City
-      </Label>
-      <Input
-        id="label-city"
-        testID="input-city"
-        autoCorrect={false}
-        style={styles.input}
-      />
       <View style={styles.row}>
         <Switch
           id="label-alerts"
@@ -63,6 +54,15 @@ function Fixture() {
           Accept the terms
         </Label>
       </View>
+      <Label htmlFor="label-city" testID="city-label" style={styles.label}>
+        City
+      </Label>
+      <Input
+        id="label-city"
+        testID="input-city"
+        autoCorrect={false}
+        style={styles.input}
+      />
     </View>
   )
 }

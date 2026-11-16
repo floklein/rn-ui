@@ -26,7 +26,7 @@ function Label({
     {},
     mergeProps(props as Record<string, unknown>, {
       onPress: () => {
-        const activate = htmlFor && controlsById.get(htmlFor)
+        const activate = htmlFor && controlsById.get(htmlFor)?.at(-1)
         if (activate) {
           withSource(pressSource(), activate)
         }

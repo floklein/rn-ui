@@ -6,7 +6,7 @@ description: Name a control with a label beside it, and let a press on the label
 A native view has no `<label>`. Label names a control by its `htmlFor`, so a screen reader reads the control by the label's text, and a press on the label reaches the control.
 
 <ComponentExample
-  name="label/basic"
+  name="label/input"
   caption="Press Shipping city. The field starts editing, and VoiceOver and TalkBack read it as Shipping city."
 />
 
@@ -75,4 +75,4 @@ Props are the same as below, as React Native props, along with `htmlFor`, the `i
 
 The control takes the label's text as its name, `accessibilityLabel`, unless it has an `aria-label` or an `aria-labelledby` of its own, or a Field's label names it, which win. The name follows the label's text as it changes, and reaches the control a frame after both mount. A press on a disabled control's label does nothing.
 
-On Android, a label is its own stop for TalkBack and for Tab on a hardware keyboard, since a `Text` you can press is focusable there. Enter on it does what a press does.
+On Android, a label is its own stop for TalkBack and for Tab on a hardware keyboard, since a `Text` you can press is focusable there.

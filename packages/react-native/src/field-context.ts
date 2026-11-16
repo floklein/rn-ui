@@ -15,36 +15,48 @@ const none = () => undefined
 const useInheritedDisabled = () =>
   React.useContext(DisabledContext)?.disabled ?? false
 
-function useActivation<Key>(
-  registry: {
-    get: (key: Key) => (() => void) | undefined
-    set: (key: Key, run: () => void) => unknown
-    delete: (key: Key) => unknown
-  },
-  key: Key | null | undefined,
+// What a press on the nearest Field's label does.
+function useLabelPress(
+  field: PrimitiveHandle<FieldPrimitive> | null,
   activate: () => void
 ) {
   const latest = React.useRef(activate)
   latest.current = activate
   React.useLayoutEffect(() => {
-    if (key == null) {
+    if (!field) {
       return
     }
     const run = () => latest.current()
-    registry.set(key, run)
+    controls.set(field.api, run)
     return () => {
-      if (registry.get(key) === run) {
-        registry.delete(key)
+      if (controls.get(field.api) === run) {
+        controls.delete(field.api)
       }
     }
-  }, [registry, key])
+  }, [field])
 }
 
-// What a press on the nearest Field's label does.
-const useLabelPress = (
-  field: PrimitiveHandle<FieldPrimitive> | null,
-  activate: () => void
-) => useActivation(controls, field?.api, activate)
+// What a press on a Label for the control's id does. Two screens may hold the
+// same id: the control mounted last is pressed.
+function useLabelTarget(id: string | undefined, activate: () => void) {
+  const latest = React.useRef(activate)
+  latest.current = activate
+  React.useLayoutEffect(() => {
+    if (id === undefined) {
+      return
+    }
+    const run = () => latest.current()
+    controlsById.set(id, [...(controlsById.get(id) ?? []), run])
+    return () => {
+      const rest = controlsById.get(id)!.filter((other) => other !== run)
+      if (rest.length) {
+        controlsById.set(id, rest)
+      } else {
+        controlsById.delete(id)
+      }
+    }
+  }, [id])
+}
 
 /**
  * A control inside a Field: its props with the field's label and
@@ -59,7 +71,7 @@ function useFieldControl<Props extends Record<string, unknown>>(
   const field = React.useContext(FieldContext)
   useLabelPress(field, activate)
   const id = (props.id ?? props.nativeID) as string | undefined
-  useActivation(controlsById, id, activate)
+  useLabelTarget(id, activate)
   const label = useLabel(id)
   React.useSyncExternalStore(
     field ? field.instance.subscribe : noop,

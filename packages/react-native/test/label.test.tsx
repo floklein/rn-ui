@@ -88,6 +88,25 @@ describe("Label", () => {
     expect(props("news").accessibilityLabel).toBe("Newsletter")
   })
 
+  test("once a later control with the same id unmounts, the label presses the earlier one again", async () => {
+    const onCheckedChange = jest.fn()
+    function Stack({ top }: { top: boolean }) {
+      return (
+        <>
+          <Switch id="news" onCheckedChange={onCheckedChange} />
+          <Label htmlFor="news">News</Label>
+          {top && <Switch id="news" />}
+        </>
+      )
+    }
+    const { rerender } = await render(<Stack top />)
+    await tick()
+    await rerender(<Stack top={false} />)
+    await tick()
+    await fireEvent.press(screen.getByText("News"))
+    expect(onCheckedChange).toHaveBeenCalledTimes(1)
+  })
+
   test("a label for no control is plain text a press does nothing on", async () => {
     await render(<Label htmlFor="nothing">Alone</Label>)
     await fireEvent.press(screen.getByText("Alone"))

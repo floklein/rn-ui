@@ -46,7 +46,7 @@ test("each example opens, its control named by its label", async () => {
     "../../examples/components/label/react-native"
   )
   const names: Record<string, string> = {
-    basic: "Shipping city",
+    input: "Shipping city",
     switch: "Email me product updates",
   }
   for (const file of readdirSync(folder)) {
