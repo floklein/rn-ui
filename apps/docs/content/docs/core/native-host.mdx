@@ -35,6 +35,10 @@ setNativeHost({
   compare(a, b) {
     return viewOf(a).compareDocumentPosition(viewOf(b)) & 4 ? -1 : 1
   },
+  listen(next) {
+    input = next
+    return () => (input = undefined)
+  },
 })
 ```
 
@@ -43,6 +47,7 @@ setNativeHost({
 - `announce(text, priority)` has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it; Android has no such option. Core's `announce`, and a Button's `pendingAnnouncement`, go through it, where the web writes into a live region.
 - `activate(part)` activates the control that joined the Field of `part`, as a press on its label does: it starts editing a text field and presses any other control, like a switch. A FieldLabel's press goes through it, where the web finds the control in the field's element.
 - `compare(a, b)` says where two mounted parts render: negative when `a` comes first. A group orders its members with it, like a toggle group's value, which lists the pressed toggles in the order they render. `@ui-sdk/react-native` compares the parts' views in React Native's view tree.
+- `listen(input)` hears what dismisses a popup while one is open, and returns what stops it. The host calls `input.back()` for Android's back, from a `Modal`'s `onRequestClose`, `input.escape(api)` for VoiceOver's escape gesture on a popup's content, and `input.outsidePress()` for a press on a modal popup's backdrop. Each goes to the topmost open popup, and returns whether one took it: a popup that refuses the dismissal still takes it, so back never falls through to navigation.
 
 ## Native Behavior
 
@@ -57,7 +62,9 @@ import { Pressable, View } from "react-native"
 const parts = createParts(toggle, { root: Pressable, icon: View }, toggleNative)
 ```
 
-`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group, and `radioNative`, `ratingNative` and `segmentedControlNative` for each radio in a radio group, a rating or a segmented control, so the group focuses its checked radio. `tabsNative` is Tabs': while a tab is mounted it joins the tabs' roving group, so the tabs know their tabs in render order, select the first enabled one when nothing is selected and can focus the selected one. `collapsibleNative` is Collapsible's: while its panel is mounted it reports when the panel settles, so `onOpenChangeComplete` runs once an opening appears and once a closing's `onExit` calls `done`. `fieldNative` registers a Field's label, description and error parts while they're mounted, so the control's label and hint come from the parts that render. `gaugeNative` is Progress's and Meter's: while the root is mounted it reads the locale the value is formatted in, and while a label is mounted it names the root.
+`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group, and `radioNative`, `ratingNative` and `segmentedControlNative` for each radio in a radio group, a rating or a segmented control, so the group focuses its checked radio. `tabsNative` is Tabs': while a tab is mounted it joins the tabs' roving group, so the tabs know their tabs in render order, select the first enabled one when nothing is selected and can focus the selected one. `collapsibleNative` is Collapsible's: while its panel is mounted it reports when the panel settles, so `onOpenChangeComplete` runs once an opening appears and once a closing's `onExit` calls `done`. `fieldNative` registers a Field's label, description and error parts while they're mounted, so the control's label and hint come from the parts that render. `gaugeNative` is Progress's and Meter's: while the root is mounted it reads the locale the value is formatted in, and while a label is mounted it names the root. `dialogNative` is Dialog's and Alert Dialog's: while the content is mounted and the dialog open, it is a layer that back, the escape gesture and a backdrop press close, it asks the host to focus the title on open, or an alert dialog's first Close part, and the trigger on close, and it keeps the dialog mounted until the content's `onExit` calls `done`.
+
+A popup's trigger is pressed with `pressTrigger(part, source)`, where the web reads how it opened from the event: `"touch"` for a finger, `"virtual"` for a screen reader. Where focus goes on open follows from it, as on the web.
 
 ## Focus From a Controller
 

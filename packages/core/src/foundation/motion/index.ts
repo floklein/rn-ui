@@ -23,7 +23,8 @@ export {
 } from "./panel"
 export { sheetPhysics, type SheetPhysics } from "./physics"
 export { animateIn, animateOut, writeOpen } from "./presence"
-export { onSettled } from "./presence-native"
+export { endExit, holdExit, onSettled } from "./presence-native"
+export { afterExit, holdsMount } from "./exit"
 export { nearestIndex, projectDistance } from "./projection"
 export { rubberBand } from "./rubber-band"
 export {

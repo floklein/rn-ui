@@ -5,6 +5,7 @@
 // sheet. This file imports none of that, so a popup bundles only what its
 // preset names.
 import { deriveFromOptions } from "../kernel/derive"
+import { focusPart } from "../focus/focus-part"
 import { createChange } from "../kernel/input-source"
 import { elements } from "../kernel/elements"
 import type { ChangeDetails } from "../kernel/details"
@@ -525,7 +526,13 @@ function createPopup<
   const controller = {
     ...control.api,
     getPayload: () => store.get().payload,
-    focus: () => triggerElement()?.focus(),
+    focus: () =>
+      focusPart(
+        triggerElement,
+        context.parts,
+        triggerSlot,
+        store.get().trigger
+      ),
   } as unknown as PopupApiOf<Options>
 
   return {

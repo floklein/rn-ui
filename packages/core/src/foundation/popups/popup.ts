@@ -47,6 +47,7 @@ import {
 import { registerPopupElement } from "./popup-elements"
 import type { Anchor, position, PositionOptions } from "../platform/position"
 import { animateIn, animateOut, writeOpen } from "../motion/presence"
+import { afterExit, holdsMount } from "../motion/exit"
 import {
   nextTabbable,
   positiveTabStops,
@@ -575,6 +576,7 @@ function createPopupLayer<
   // Opened during a pointerdown: the browser's own focus change follows, so focus waits a frame.
   let openedOnPress = false
   let returnMode: ReturnMode = true
+  let closeFocus: ReturnMode = true
   let before: HTMLElement | undefined
   let openedWithoutTrigger = store.get().open
   // Where focus goes when what had it is gone: the popup this one opened from
@@ -595,7 +597,8 @@ function createPopupLayer<
 
   // Whether it stays in the page as `open` changes to this: an open mounts it,
   // and a close leaves it while it animates out, unless nothing of it is in the page.
-  const mountedAs = (open: boolean) => open || (!!shown?.el && isBrowser)
+  const mountedAs = (open: boolean) =>
+    open || (!!shown?.el && isBrowser) || holdsMount(store)
 
   // A controlled `open` mounts or unmounts the popup in the same pass.
   deriveOpen({ store }, ["mounted"], (open) =>
@@ -649,7 +652,7 @@ function createPopupLayer<
       }
       return
     }
-    const mode = behavior.movesFocus && returnMode
+    const mode = (closeFocus = behavior.movesFocus && returnMode)
     returnMode = true
     focusPending = false
     enterPending = false
@@ -662,8 +665,11 @@ function createPopupLayer<
     const from = upstream
     if (!el || !isBrowser) {
       options.onOpenChange?.(false, closed)
-      store.set({ mounted: false } as Partial<State>)
-      complete(false, closed)
+      stopExit = afterExit(store, () => {
+        stopExit = undefined
+        store.set({ mounted: false } as Partial<State>)
+        complete(false, closed)
+      })
       return
     }
     // Focus on the body belongs to no one, like in Safari, where pressing a
@@ -1428,6 +1434,8 @@ function createPopupLayer<
     returnFocus(mode: ReturnMode) {
       returnMode = mode
     },
+    // Where focus goes on the close under way, or the last one.
+    closeFocus: () => closeFocus,
     // Runs the component's initial focus now, like when a controller asks an open popup.
     initialFocus,
     // Places the shown popup again now, without animating, like once its size is known.

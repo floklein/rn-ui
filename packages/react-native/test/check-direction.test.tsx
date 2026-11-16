@@ -9,6 +9,13 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "../src/collapsible"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../src/dialog"
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
 import {
@@ -279,6 +286,30 @@ describe("checkDirection on the native host", () => {
                 <Text>Profile panel</Text>
               </TabsPanel>
             </Tabs>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a dialog", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Dialog>
+              <DialogTrigger>
+                <Text>Edit profile</Text>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>Profile</DialogTitle>
+                <DialogClose>
+                  <Text>Done</Text>
+                </DialogClose>
+              </DialogContent>
+            </Dialog>
           )
           return screen.container
         },
