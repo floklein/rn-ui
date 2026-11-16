@@ -25,6 +25,7 @@ function host() {
     focus,
     announce: vi.fn(),
     compare: (a, b) => rendered.indexOf(a) - rendered.indexOf(b),
+    field: vi.fn(),
   })
   return { rendered, focus }
 }

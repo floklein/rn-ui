@@ -18,12 +18,7 @@ import {
  * @experimental
  */
 type NativePattern =
-  | "button"
-  | "checkbox"
-  | "img"
-  | "switch"
-  | "tabs"
-  | "textbox"
+  "button" | "checkbox" | "img" | "switch" | "tabs" | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
