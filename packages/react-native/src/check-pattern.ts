@@ -376,7 +376,7 @@ async function switchPattern(context: Context) {
 // tab stop, so every tab on screen must be one.
 async function tabsPattern(context: Context) {
   const shown = shownNodes(context.root)
-  if (!shown.some((node) => roleOf(node) === "tablist")) {
+  if (!shown.some((node) => /^tab(list|bar)$/.test(roleOf(node) ?? ""))) {
     context.problem(
       context.root,
       "has no element with the tablist role, so it isn't tabs (APG tabs)."

@@ -213,6 +213,30 @@ describe("Button", () => {
     expect(screen.queryByRole("button")).toBeNull()
   })
 
+  test("presentation and none leave it a button, as a browser does for a focusable element", async () => {
+    await render(
+      <>
+        <Button role="presentation">
+          <Text>Save</Text>
+        </Button>
+        <Button role="none">
+          <Text>Share</Text>
+        </Button>
+      </>
+    )
+    expect(screen.getByRole("button", { name: "Save" })).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: "Share" })).toBeOnTheScreen()
+  })
+
+  test("an explicit accessibilityRole still wins over the button role", async () => {
+    await render(
+      <Button role="presentation" accessibilityRole="none" testID="button">
+        <Text>Save</Text>
+      </Button>
+    )
+    expect(screen.getByTestId("button").props.accessibilityRole).toBe("none")
+  })
+
   test("a role React Native has no counterpart for leaves it a button", async () => {
     await render(
       <Button role="group">

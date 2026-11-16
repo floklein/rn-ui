@@ -102,24 +102,32 @@ function hide(props: NativeProps, os: OS) {
  * `aria-labelledby` and `aria-describedby` become the label and hint
  * through `names`, the texts their ids name, given only for a single
  * accessible element: a container's label would hide what's inside it.
+ * A `pressable` part, one whose default host is `Pressable`, stays a button.
  */
 function toNativeProps(
   attrs: Attrs,
   os: OS,
   rtl = false,
-  names?: (ids: string[]) => string | undefined
+  names?: (ids: string[]) => string | undefined,
+  pressable = false
 ) {
   const props: NativeProps = {}
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
-  const role =
-    (attrs.role === undefined ? undefined : roles[attrs.role]) ??
-    (attrs.type === "button" ? "button" : undefined)
+  // As a browser keeps a focusable element's role, a pressable part ignores
+  // `presentation`. Only `tabbar` gives iOS's tab bar trait.
+  const given =
+    attrs.role === undefined || (pressable && roles[attrs.role] === "none")
+      ? undefined
+      : roles[attrs.role]
+  const role = given ?? (attrs.type === "button" ? "button" : undefined)
   if (role) {
     props.accessibilityRole =
       role === "button" && attrs["aria-pressed"] !== undefined
         ? "togglebutton"
-        : role
+        : role === "tablist" && os === "ios"
+          ? "tabbar"
+          : role
   }
   // VoiceOver reads an image or a bar as one element. On Android `accessible`
   // would make it a Tab stop, and Fabric would flatten it away with its label.
