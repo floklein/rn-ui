@@ -21,7 +21,7 @@ test("the platform tree reads each bar as one element, its value text hidden", a
     )
     assert.equal((await device.attributes("connecting")).label, "Connecting")
   } else {
-    assert.equal(bar["content-desc"], "40%")
+    assert.equal(bar["content-desc"], "Uploading photos, 40%")
     assert.equal(value["a11y-important"], "false")
     assert.equal(
       (await device.tree()).get("progress-label")?.text,

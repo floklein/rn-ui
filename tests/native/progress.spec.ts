@@ -8,16 +8,15 @@ const device = useDevice("progress")
 
 beforeEach(() => device.open("fixture-progress"))
 
-// iOS reads the label from the text inside and the value apart. Android's
-// description is the value text, or the text inside while there is none.
-async function reads(value: string, android = value) {
+// iOS reads the label and the value apart; Android joins them in the description.
+async function reads(value: string) {
   const deadline = Date.now() + 5000
   for (;;) {
     const attrs = await device.attributes("progress")
     const read =
       device.platform === "ios"
         ? attrs.label === "Uploading photos" && (attrs.value ?? "") === value
-        : (attrs["content-desc"] ?? "") === android
+        : attrs["content-desc"] === `Uploading photos, ${value}`
     if (read) {
       return
     }
@@ -41,7 +40,7 @@ test("the bar reads its value and follows it", async () => {
 
 test("an indeterminate bar reads no value", async () => {
   await device.press("unknown")
-  await reads("", "Uploading photos")
+  await reads("")
 })
 
 test("the indicator is as wide as the value", async () => {

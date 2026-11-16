@@ -888,10 +888,11 @@ describe("checkPattern's separator pattern on the native host", () => {
 })
 
 describe("checkPattern's progressbar and meter patterns on the native host", () => {
-  test("passes on progress bars, determinate or not, named by aria-label or, while indeterminate, a label", async () => {
+  test("passes on progress bars, determinate or not, named by a label or aria-label", async () => {
     await render(
       <View>
-        <Progress value={60} aria-label="Uploading photos">
+        <Progress value={60}>
+          <ProgressLabel>Uploading photos</ProgressLabel>
           <ProgressValue />
           <ProgressTrack>
             <ProgressIndicator />
@@ -919,20 +920,14 @@ describe("checkPattern's progressbar and meter patterns on the native host", () 
     await expect(checkMeter()).resolves.toBeUndefined()
   })
 
-  test("a meter named only by its Label part has a name on iOS, not on Android", async () => {
+  test("passes on a meter named by its Label part", async () => {
     await render(
       <Meter value={68}>
         <MeterLabel>Storage used</MeterLabel>
         <MeterValue />
       </Meter>
     )
-    if (os === "ios") {
-      await expect(checkMeter()).resolves.toBeUndefined()
-    } else {
-      await expect(checkMeter()).rejects.toThrow(
-        'the progressbar "Storage used" has no name on Android, where its description is its value alone; name a meter with aria-label.'
-      )
-    }
+    await expect(checkMeter()).resolves.toBeUndefined()
   })
 
   test("fails with no progress bar", async () => {

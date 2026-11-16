@@ -480,7 +480,7 @@ async function barPattern(context: Context, pattern: "progressbar" | "meter") {
     ) {
       context.problem(
         bar,
-        `has no name on Android, where its description is its value alone; name a ${pattern} with aria-label.`
+        `has no name on Android, where its description is its value alone; name a ${pattern} with a label part or aria-label.`
       )
     } else {
       requireName(context, bar, pattern)

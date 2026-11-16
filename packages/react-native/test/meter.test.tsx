@@ -35,6 +35,7 @@ describe("Meter", () => {
       now: 64,
       text: "25%",
     })
+    expect(meter.props.accessibilityLabel).toBe("Storage used")
   })
 
   test("shows the formatted value, hidden from screen readers", async () => {

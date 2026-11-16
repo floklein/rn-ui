@@ -39,6 +39,13 @@ describe("Progress", () => {
     expect(screen.getByText("Uploading photos")).toBeOnTheScreen()
   })
 
+  test("its label names it, on both platforms", async () => {
+    await render(<Upload value={60} />)
+    expect(screen.getByTestId("progress").props.accessibilityLabel).toBe(
+      "Uploading photos"
+    )
+  })
+
   test("shows the formatted value, which screen readers hear from the bar only", async () => {
     await render(<Upload value={60} />)
     const value = screen.getByTestId("value", hidden)

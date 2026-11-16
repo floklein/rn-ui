@@ -14,7 +14,7 @@ test("the platform tree reads the meter as one element, its value text hidden", 
     assert.equal(meter.value, "25%")
     assert.equal((await device.attributes("meter-value")).accessible, "false")
   } else {
-    assert.equal(meter["content-desc"], "25%")
+    assert.equal(meter["content-desc"], "Balance, 25%")
     assert.equal(
       (await device.attributes("meter-value"))["a11y-important"],
       "false"

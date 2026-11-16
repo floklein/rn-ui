@@ -314,13 +314,19 @@ function ariaOf(
   }
 }
 
-// A label on a container would hide what's inside it from screen readers.
+// A label on a container would hide what's inside it from screen readers. A
+// bar is read as one element, by VoiceOver and from TalkBack's description.
 const isSingleElement = (
   host: React.ElementType,
-  user: { accessible?: unknown }
+  user: { accessible?: unknown },
+  role: string | undefined
 ) =>
   user.accessible === undefined
-    ? host === Pressable || host === TextInput || host === Text
+    ? host === Pressable ||
+      host === TextInput ||
+      host === Text ||
+      role === "progressbar" ||
+      role === "meter"
     : user.accessible === true
 
 function useMissingNames(
@@ -528,7 +534,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     : {}
   const activate = shown ? press(part, slotProps) : undefined
   const host = Host ?? (activate ? Pressable : View)
-  const single = shown && isSingleElement(host, rest)
+  const single = shown && isSingleElement(host, rest, merged.role)
   const labelledBy = single ? idsOf(merged["aria-labelledby"]) : []
   useReferences([
     ...labelledBy,

@@ -5,7 +5,7 @@ description: Show a task’s progress, or an indeterminate state while its progr
 
 <ComponentExample
   name="progress/basic"
-  caption="Read the export bar. VoiceOver reads Exporting video and 60% as one element."
+  caption="Read the export bar. VoiceOver and TalkBack read Exporting video and 60% from the bar."
 />
 
 ## Installation
@@ -27,7 +27,7 @@ Progress
 ```
 
 - `Progress` holds the value and range, and renders a `View`.
-- `ProgressLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead, and on Android you need it: see [Accessibility](#accessibility).
+- `ProgressLabel` gives it a visible name, as a `Text`. You can use `aria-label` on the root instead.
 - `ProgressValue` displays the formatted value, as a `Text`.
 - `ProgressTrack` gives the bar its size, and `ProgressIndicator` fills it. Both are `View`s.
 
@@ -213,6 +213,6 @@ What render, style, class name and children functions receive. Every part gets t
 
 ## Accessibility
 
-On the web, the root has the [WAI-ARIA progressbar role](https://www.w3.org/TR/wai-aria-1.2/#progressbar) with its range and formatted value. On iOS the bar is one element: VoiceOver reads its label from the text inside it and the formatted value, and React Native gives it no role word, only the trait for a value that changes often. On Android the root keeps its view with the progress bar role and range. Its description is the formatted value, or the label's text while the bar is indeterminate, and the label's text stays in the tree beside it. `ProgressLabel` doesn't name the bar on Android yet, so TalkBack hears the value with no name: give the root `aria-label` too. Neither platform makes a bar a keyboard stop.
+On the web, the root has the [WAI-ARIA progressbar role](https://www.w3.org/TR/wai-aria-1.2/#progressbar) with its range and formatted value. On iOS the bar is one element: VoiceOver reads its label and the formatted value, and React Native gives it no role word, only the trait for a value that changes often. On Android the root keeps its view with the progress bar role and range. TalkBack reads its description, the label and the formatted value, and the label's text stays in the tree beside it. Neither platform makes a bar a keyboard stop.
 
 Name the bar with `ProgressLabel` or `aria-label`, and use `getValueLabel` when the value needs more explanation.
