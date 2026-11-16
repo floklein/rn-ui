@@ -202,6 +202,18 @@ function HandleScope({
   return <context.Provider value={scope}>{children}</context.Provider>
 }
 
+/** The nearest instance of a primitive, for a part written by hand that calls its api. */
+function useHandle<P extends Primitive>(primitive: P) {
+  const handle = React.useContext(scopeOf(primitive).context)?.handle as
+    PrimitiveHandle<P> | undefined
+  if (!handle) {
+    throw new Error(
+      `The ${primitive.name} parts must be used inside their root.`
+    )
+  }
+  return handle
+}
+
 // The host's own style, without the function `Pressable` takes in its place.
 type HostStyle<Host extends React.ElementType> = Exclude<
   React.ComponentProps<Host> extends { style?: infer Style } ? Style : never,
@@ -273,7 +285,8 @@ function nativeProps(
         { ...attrs(part, slotProps), ...liveAttrs(part, slotProps) },
         (name) => aria[name] !== undefined
       ),
-      ...(exiting && { inert: "" }),
+      // A part that animates out stays on screen, where its slot already hides it.
+      ...(exiting && { inert: "", hidden: undefined }),
     },
     Platform.OS === "android" ? "android" : "ios",
     I18nManager.isRTL
@@ -745,6 +758,7 @@ export {
   type PartProps,
   type Parts,
   type PrimitiveHandle,
+  useHandle,
   usePart,
   usePrimitive,
 }
