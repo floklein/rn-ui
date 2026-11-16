@@ -44,7 +44,7 @@
       "file": "packages/core/src/foundation/motion/presence-native.ts",
       "mirrors": ["packages/core/src/foundation/motion/presence.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Presence on the native host: the first-frame and closing flags as state, and an exit the app ends through onExit's done or a two-second timeout, where the DOM host reads the running animations."
+      "why": "Presence on the native host: the first-frame and closing flags as state, and an exit the app ends through onExit's done or a two-second timeout, where the DOM host reads the running animations. Entering and the end of an exit settle the part for a native behavior's onSettled listener, where bindPanel's settled and exited callbacks wait for the animations."
     },
     {
       "kind": "behavior",
@@ -107,6 +107,24 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the tab slot's bind orchestrates: a tab joins the roving group (api.internal.roving.bind) while it's mounted, so the tabs know their tabs in render order, select the first enabled one and focus the selected one. The disclosure trigger and panel it shares with Collapsible need nothing more on native: a Pressable is always a button and the OS activates it, find in page and the panel's tab stop don't exist, and the panel's exit is the adapter's presence."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/collapsible/collapsible-native.ts",
+      "mirrors": [
+        "packages/core/src/components/collapsible/collapsible.ts",
+        "packages/core/src/foundation/disclosure/disclosure.ts",
+        "packages/core/src/foundation/motion/panel.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the panel slot's bind orchestrates through bindPanel: the panel settles (api.internal.settled) when the adapter's presence does, at once on opening and once onExit's done ends a close, through presence-native.ts's onSettled. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting flag stays the adapter's presence."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/collapsible/collapsible.ts",
+      "mirrors": ["packages/core/src/components/collapsible/collapsible.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of element(\"trigger\")?.focus(), and the api reads parts from its context."
     },
     {
       "kind": "behavior",
@@ -190,6 +208,13 @@
     },
     {
       "kind": "edit",
+      "file": "packages/core/src/foundation/motion/index.ts",
+      "mirrors": ["packages/core/src/foundation/motion/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports onSettled, which native behavior files import."
+    },
+    {
+      "kind": "edit",
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -200,7 +225,7 @@
       "file": "packages/core/src/renderer.ts",
       "mirrors": ["packages/core/src/renderer.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports withSource, liveAttrs, createPresence and PresenceState for the native adapter."
+      "why": "Exports withSource, liveAttrs, createPresence, onSettled and PresenceState for the native adapter."
     },
     {
       "kind": "edit",
@@ -277,35 +302,35 @@
       "file": ".agents/experts/react/decisions.md",
       "mirrors": [".agents/experts/react/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/solid/decisions.md",
       "mirrors": [".agents/experts/solid/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/svelte/decisions.md",
       "mirrors": [".agents/experts/svelte/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/vue/decisions.md",
       "mirrors": [".agents/experts/vue/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/web/decisions.md",
       "mirrors": [".agents/experts/web/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ticket 78 branch in the last-reviewed line: the native Toggle, with no change on the web."
+      "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
@@ -424,7 +449,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, toggle, avatar, radio, rating, tabs, testing, input and textarea."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, tabs, testing, input and textarea."
     }
   ],
   "components": {
@@ -515,6 +540,23 @@
         }
       }
     },
+    "collapsible": {
+      "entry": "packages/react-native/src/collapsible.tsx",
+      "slots": {
+        "collapsible.root": {
+          "needs": "nothing",
+          "reason": "Its bind watches a disabled fieldset, which doesn't exist on native."
+        },
+        "collapsible.trigger": {
+          "needs": "nothing",
+          "reason": "Its bind gives a non-button element the button role and a tab stop, and its keydown activates it with Enter and Space; a Pressable is always a button the OS activates. Its press is the adapter's generic press, and its focus() goes through the focus-part twin."
+        },
+        "collapsible.panel": {
+          "covered": "packages/core/src/components/collapsible/collapsible-native.ts",
+          "reason": "Its bind settles the panel after its animations, which collapsible-native.ts does when the adapter's presence settles; writes the size variables, which CollapsiblePanel measures into its state (src/disclosure-panel.tsx); keeps it findable, which native has no find in page for; and moves focus out of a panel closing around it, which native never observes."
+        }
+      }
+    },
     "checkbox": {
       "entry": "packages/react-native/src/checkbox.tsx",
       "slots": {
@@ -587,7 +629,6 @@
     "autocomplete",
     "calendar",
     "carousel",
-    "collapsible",
     "color-picker",
     "combobox",
     "command",
@@ -727,6 +768,18 @@
     {
       "component": "toggle",
       "example": "group-rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "collapsible",
+      "example": "find-in-page",
+      "feature": "Find in page revealing a hidden panel",
+      "reason": "Native has no find in page, so a hidden panel has no text to match."
+    },
+    {
+      "component": "collapsible",
+      "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },

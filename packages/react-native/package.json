@@ -20,6 +20,7 @@
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./checkbox": "./src/checkbox.tsx",
+    "./collapsible": "./src/collapsible.tsx",
     "./input": "./src/input.tsx",
     "./primitive": "./src/primitive.ts",
     "./radio": "./src/radio.tsx",
@@ -51,6 +52,10 @@
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
+      },
+      "./collapsible": {
+        "types": "./dist/collapsible.d.ts",
+        "default": "./dist/collapsible.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",

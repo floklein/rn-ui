@@ -16,7 +16,7 @@ Last checked: 2026-11-16, against `packages/react-native` and `node_modules/reac
 - `accessibilityActions` with `onAccessibilityAction` is the only way to do anything but activate: `increment`/`decrement` (Adjustable on iOS, scroll actions on Android), `expand`/`collapse` (Android only), `escape` (iOS only, the two-finger scrub), `magicTap` (iOS only), `longpress` (Android only), and custom actions with a `label`.
 - No relationships: no `aria-controls`, `describedby`, `activedescendant`, `owns`, `haspopup`, `posinset`, `setsize`. `aria-labelledby` is Android only, one id.
 - Live regions are Android only. iOS has only `AccessibilityInfo.announceForAccessibility`.
-- Android writes `busy`, `expanded` and `checked: "mixed"` into the view's `contentDescription` with `accessibilityLabel` (`BaseViewManager.updateViewContentDescription`). With no label that hides the text inside the view ("Busy" instead of "Save"), and the description is rewritten only from a state that names one of those keys, and never cleared when nothing is left to write.
+- Android writes `busy` and `checked: "mixed"` into the view's `contentDescription` with `accessibilityLabel`, and an `expanded` state rewrites it (`BaseViewManager.updateViewContentDescription`). With no label that hides the text inside the view ("Busy" instead of "Save"), and the description is rewritten only from a state that names one of those keys, and never cleared when nothing is left to write.
 - `announceForAccessibilityWithOptions`'s `queue` is iOS only; Android calls `announceForAccessibility`.
 
 ### Focus and keyboards

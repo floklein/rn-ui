@@ -425,6 +425,7 @@
   "@ui-sdk/react-native/button": 8962,
   "@ui-sdk/react-native/button (lazy)": 180,
   "@ui-sdk/react-native/checkbox": 15107,
+  "@ui-sdk/react-native/collapsible": 12877,
   "@ui-sdk/react-native/input": 11103,
   "@ui-sdk/react-native/primitive": 5212,
   "@ui-sdk/react-native/radio": 15643,

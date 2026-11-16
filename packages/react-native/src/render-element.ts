@@ -180,4 +180,53 @@ function renderElement<State>(
   return React.createElement(host, resolved)
 }
 
-export { idle, type Interaction, mergeProps, renderElement, type RenderProp }
+type StateProps<State> = {
+  style?: unknown
+  className?: unknown
+  children?: unknown
+  render?: RenderProp<State>
+}
+
+/**
+ * A part's `style`, `className`, `children` and `render`, with their
+ * functions handed the fields `more` adds to the part's state, for a part
+ * written by hand whose state holds what the adapter measured.
+ */
+function withState<State, More>(
+  props: StateProps<State & More>,
+  more: (state: State) => More
+) {
+  const wrap = (value: unknown) => (state: State, interaction: Interaction) =>
+    (value as (state: State & More, interaction: Interaction) => unknown)(
+      { ...state, ...more(state) },
+      interaction
+    )
+  const { style, className, children, render } = props
+  // Typed as the part takes them, which hands them its own state.
+  return {
+    style: (typeof style === "function" ? wrap(style) : style) as any,
+    className: (typeof className === "function"
+      ? wrap(className)
+      : className) as any,
+    children: (typeof children === "function"
+      ? wrap(children)
+      : children) as any,
+    render:
+      typeof render === "function"
+        ? (
+            props: Record<string, any>,
+            state: State,
+            interaction: Interaction
+          ) => render(props, { ...state, ...more(state) }, interaction)
+        : (render as RenderProp<State> | undefined),
+  }
+}
+
+export {
+  idle,
+  type Interaction,
+  mergeProps,
+  renderElement,
+  type RenderProp,
+  withState,
+}

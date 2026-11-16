@@ -2,6 +2,7 @@ import { definePrimitive } from "@ui-sdk/core"
 import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
+import { collapsible } from "@ui-sdk/core/collapsible"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
 import { radioGroup } from "@ui-sdk/core/radio"
@@ -68,6 +69,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(tabs, {})).not.toThrow()
     expect(() =>
       checkCreation(tabs, { value: "a", orientation: "vertical" })
+    ).not.toThrow()
+  })
+
+  test("passes on a collapsible, open or closed", () => {
+    expect(() => checkCreation(collapsible, {})).not.toThrow()
+    expect(() =>
+      checkCreation(collapsible, { open: true, disabled: true })
     ).not.toThrow()
   })
 

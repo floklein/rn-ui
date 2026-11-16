@@ -18,7 +18,14 @@ import {
  * @experimental
  */
 type NativePattern =
-  "button" | "checkbox" | "img" | "radio-group" | "switch" | "tabs" | "textbox"
+  | "button"
+  | "checkbox"
+  | "disclosure"
+  | "img"
+  | "radio-group"
+  | "switch"
+  | "tabs"
+  | "textbox"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -139,6 +146,41 @@ async function checkboxPattern(context: Context) {
         (node) => stateOf(node).checked
       )
     }
+  }
+}
+
+// A disclosure's button says with its expanded state whether its content
+// shows, and activating it shows or hides the content (APG disclosure).
+async function disclosurePattern(context: Context) {
+  const buttons = () =>
+    context
+      .withRole("button")
+      .filter((node) => typeof stateOf(node).expanded === "boolean")
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no button with an expanded state, so it isn't a disclosure (APG disclosure)."
+    )
+    return
+  }
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  for (const index of buttons().keys()) {
+    const button = buttons()[index]
+    if (isDisabled(button)) {
+      continue
+    }
+    const before = stateOf(button).expanded
+    await performWatched(button, "activate", context.act)
+    if (stateOf(buttons()[index]).expanded === before) {
+      context.problem(
+        buttons()[index],
+        `stays ${before ? "expanded" : "collapsed"} after the activate action; activating a disclosure button shows or hides its content (APG disclosure).`
+      )
+      continue
+    }
+    await performWatched(buttons()[index], "activate", context.act)
   }
 }
 
@@ -334,6 +376,7 @@ async function textboxPattern(context: Context) {
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   checkbox: checkboxPattern,
+  disclosure: disclosurePattern,
   img: imgPattern,
   "radio-group": radioGroupPattern,
   switch: switchPattern,
