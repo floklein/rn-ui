@@ -8,6 +8,7 @@ import type {
 import { withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { TextInput } from "react-native"
+import { useFieldControl, useInheritedDisabled } from "./field-context"
 import { fields } from "./native-host"
 import { mergeProps } from "./render-element"
 import { type PartProps, type PrimitiveHandle, usePart } from "./use-primitive"
@@ -56,7 +57,8 @@ function useTextField(
   { disabled, readOnly, required, ...props }: TextFieldProps
 ) {
   const field = handle as PrimitiveHandle<InputPrimitive>
-  useGroup(field, { disabled, readOnly })
+  const off = disabled || useInheritedDisabled()
+  useGroup(field, { disabled: off, readOnly })
   const type = (text: string) =>
     withSource("keyboard", () =>
       field.api.setValue(text, { reason: "input-change" })
@@ -64,13 +66,16 @@ function useTextField(
   return usePart(
     field,
     "root",
-    { disabled, readOnly, required },
-    mergeProps(props, {
-      value: field.state.value,
-      editable: !disabled && !readOnly,
-      "aria-disabled": disabled || undefined,
-      onChangeText: type,
-    }),
+    { disabled: off, readOnly, required },
+    mergeProps(
+      useFieldControl(props, () => field.api.focus()),
+      {
+        value: field.state.value,
+        editable: !off && !readOnly,
+        "aria-disabled": off || undefined,
+        onChangeText: type,
+      }
+    ),
     TextInput
   )
 }

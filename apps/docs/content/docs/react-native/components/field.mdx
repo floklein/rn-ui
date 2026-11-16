@@ -1,0 +1,165 @@
+---
+title: Field
+description: Name a control with a label, describe it, show its errors, and disable a group of fields at once.
+---
+
+A field ties a control to its label, description and error messages. The label's text names the control for screen readers, the description and any error showing become its hint, and tapping the label starts editing the control or presses it.
+
+<ComponentExample
+  name="field/input"
+  caption="Tap Username. Editing starts in the input, which screen readers call Username and describe with the text below it."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Field` or a `FieldSet`:
+
+```text
+Field
+├── FieldLabel
+├── Input, Textarea, Switch or Checkbox
+├── FieldDescription
+└── FieldError
+
+FieldSet
+├── FieldLegend
+├── FieldDescription
+└── FieldGroup
+    └── Field
+```
+
+`Field` renders a `View`. `FieldLabel`, `FieldDescription`, `FieldError` and `FieldLegend` render a `Text`. An Input, Textarea, Switch or Checkbox inside a Field joins it. `FieldControl` is a plain `TextInput` that joins it, for a field without one of those.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import { Field, FieldDescription, FieldLabel } from "@ui-sdk/react-native/field"
+import { Input } from "@ui-sdk/react-native/input"
+
+function Example() {
+  return (
+    <Field>
+      <FieldLabel>Username</FieldLabel>
+      <Input />
+      <FieldDescription>Choose a unique username.</FieldDescription>
+    </Field>
+  )
+}
+
+export { Example }
+```
+
+## Labels and Descriptions
+
+The label names the control from its plain text, and the description describes it from its own: strings and numbers only. A label with other content, like an icon or a nested `Text`, names nothing, so pass `aria-label` to the control instead. In development, a control whose label names nothing logs a warning.
+
+## Validation
+
+Native computes no validity: the field is invalid only when you pass `invalid`, from your own checks or a server's answer. A `FieldError` shows while the field is invalid. `match={true}` shows it whatever `invalid` is, and `match={false}` hides it.
+
+<ComponentExample
+  name="field/validation"
+  caption="Tap Subscribe with an empty email. The error shows, is announced, and joins the input's hint."
+/>
+
+```tsx
+<Field invalid={!looksLikeEmail(email)}>
+  <FieldLabel>Email</FieldLabel>
+  <Input value={email} onValueChange={setEmail} />
+  <FieldError>Enter an email address.</FieldError>
+</Field>
+```
+
+An error is announced when it appears or its text changes, but not on the field's first render, which the screen already reads. There's no `name`, no form and no browser message: read values from the controls' change callbacks.
+
+## Disabled
+
+`disabled` on a Field disables its control and marks every part. On a `FieldSet` it disables every Field and control inside it, and a disabled FieldSet around another disables the controls in both.
+
+<ComponentExample
+  name="field/field-set"
+  caption="A field set groups the address fields under a legend and a description."
+/>
+
+```tsx
+<FieldSet disabled={saving}>
+  <FieldLegend>Account</FieldLegend>
+  <Field>
+    <FieldLabel>Email</FieldLabel>
+    <Input />
+  </Field>
+</FieldSet>
+```
+
+A FieldSet's legend and description don't name the set: React Native reads a label only on an element that hides what's inside it, so screen readers reach the legend as text and each field on its own.
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.label, state.invalid && styles.invalid]`. It receives the fields listed under [State](#state).
+
+## API Reference
+
+### Field
+
+<TypeTable
+  path="../../packages/core/src/components/field/field.ts"
+  name="FieldOptions"
+  omit={["name"]}
+/>
+
+### FieldError
+
+<TypeTable
+  path="../../packages/react-native/src/field.tsx"
+  name="FieldErrorProps"
+/>
+
+### FieldSet
+
+<TypeTable
+  path="../../packages/core/src/components/field/field-set.ts"
+  name="FieldSetOptions"
+/>
+
+### State
+
+`Field`, `FieldLabel`, `FieldDescription` and `FieldControl` receive the field's state.
+
+<StateTable
+  path="../../packages/react-native/src/field.tsx"
+  name="FieldState"
+/>
+
+`FieldError` receives the same.
+
+<StateTable
+  path="../../packages/react-native/src/field.tsx"
+  name="FieldErrorState"
+/>
+
+`FieldSet`, `FieldLegend`, and a `FieldDescription` right inside a FieldSet receive the set's.
+
+<StateTable
+  path="../../packages/core/src/components/field/field-set.ts"
+  name="FieldSetState"
+/>
+
+## Accessibility
+
+The control is one accessible element, named by the label's text and described by the description and any error showing. Tapping the label starts editing a text field and presses a switch or checkbox, as a label does on the web.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key | Does                                                                                 |
+| --- | ------------------------------------------------------------------------------------ |
+| Tab | Moves to the next control, and Shift-Tab to the previous one, skipping disabled ones |

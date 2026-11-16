@@ -6,6 +6,7 @@
  * @module
  */
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export { fieldNative } from "./components/field/field-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export {
   type NativeBehavior,

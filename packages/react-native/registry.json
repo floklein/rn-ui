@@ -102,6 +102,34 @@
       "why": "internal.reportImageStatus, the image's load, error and source decisions as an api method, which a native Image's events call where watchImage's handlers read an <img>."
     },
     {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/forms/form.native.ts",
+      "mirrors": ["packages/core/src/foundation/forms/form.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Form participation does nothing on the native host, which has no forms: hidden inputs, internals, change events, implicit submission, validity and labels. A disabled FieldSet hands its state down through the adapter, so no fieldset is watched. Focus registration and the disabled checks behave as the DOM module's."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/forms/label-press.native.ts",
+      "mirrors": ["packages/core/src/components/field/field.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A press on a field's label asks the native host to activate the control that joined the field, where the DOM module leaves a native <label> to the browser and finds the control in the field's element."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/field/field.ts",
+      "mirrors": ["packages/core/src/components/field/field.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The label slot's press is pressLabel from foundation/forms/label-press.ts, which has a native twin, instead of its inline HTMLLabelElement check and api.activate()."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/field/field-native.ts",
+      "mirrors": ["packages/core/src/components/field/field.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the label, description and error slots' bind orchestrates: each registers its id with the field while mounted, so the control points at the parts that render; the root marks the field bound."
+    },
+    {
       "kind": "edit",
       "file": "AGENTS.md",
       "mirrors": ["AGENTS.md"],
@@ -486,6 +514,43 @@
           "reason": "Its bind watches a disabled fieldset, which doesn't exist on native."
         }
       }
+    },
+    "field": {
+      "entry": "packages/react-native/src/field.tsx",
+      "slots": {
+        "field.root": {
+          "covered": "packages/core/src/components/field/field-native.ts",
+          "reason": "Its bind reads validity, watches fieldsets and focus, and follows submit and reset. field-native.ts marks the field bound; native computes no validity and has no form; the FieldSet around it hands its disabled state down through the adapter (DisabledContext in use-primitive.tsx); the field's focused state isn't followed."
+        },
+        "field.label": {
+          "covered": "packages/core/src/components/field/field-native.ts",
+          "reason": "Its bind registers its id, which field-native.ts does while it's mounted. Its press goes through the label-press twin."
+        },
+        "field.description": {
+          "covered": "packages/core/src/components/field/field-native.ts",
+          "reason": "Its bind registers its id, which field-native.ts does while it's mounted."
+        },
+        "field.error": {
+          "covered": "packages/core/src/components/field/field-native.ts",
+          "reason": "Its bind registers its id, which field-native.ts does, and announces its text when it appears or changes, which Field in packages/react-native/src/field.tsx does from the error's registered plain text."
+        },
+        "field.control": {
+          "needs": "nothing",
+          "reason": "Its bind records the control's id for a native <label for>, which native doesn't have; controls join the field through useFieldControl in packages/react-native/src/field-context.ts."
+        },
+        "fieldSet.set": {
+          "covered": "packages/react-native/src/field.tsx",
+          "reason": "Its bind watches a disabled fieldset around it; FieldSet reads the one around it from the adapter's DisabledContext and hands its own down."
+        },
+        "fieldSet.legend": {
+          "needs": "nothing",
+          "reason": "Its bind registers its id for the set's aria-labelledby, which names a container, and native never labels a container."
+        },
+        "fieldSet.description": {
+          "needs": "nothing",
+          "reason": "Its bind registers its id for the set's aria-describedby, which describes a container, and native never describes a container."
+        }
+      }
     }
   },
   "pending": [
@@ -502,7 +567,6 @@
     "date-picker",
     "dialog",
     "drawer",
-    "field",
     "file-input",
     "hover-card",
     "image-cropper",
@@ -613,6 +677,18 @@
     {
       "component": "toggle",
       "example": "group-rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "field",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "field",
+      "example": "field-set-rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
     }

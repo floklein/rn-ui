@@ -31,6 +31,7 @@ setNativeHost({
       queue: priority === "polite",
     })
   },
+  activate: (part) => controlOf(part)?.(),
   compare(a, b) {
     return viewOf(a).compareDocumentPosition(viewOf(b)) & 4 ? -1 : 1
   },
@@ -40,7 +41,7 @@ setNativeHost({
 - `focus(part)` requests accessibility focus on the part's mounted view, and starts editing when the view is a `TextInput`. The accessibility focus request is never treated as done: with no screen reader running, it moves nothing. A part with no view asks nothing, so a controller's `focus()` after its component unmounts does nothing.
 - `field(part)` returns the text field rendered inside the part's view, a `NativeTextField`, or `undefined`. An InputGroup's presses reach its field through it, where the web finds the field in the group's element: a press on the group's text starts editing the field, and its Clear part empties the field and starts editing it.
 - `announce(text, priority)` has the screen reader say `text`. On iOS, `"polite"` waits for what VoiceOver is saying and `"assertive"` interrupts it; Android has no such option. Core's `announce`, and a Button's `pendingAnnouncement`, go through it, where the web writes into a live region.
-
+- `activate(part)` activates the control that joined the Field of `part`, as a press on its label does: it starts editing a text field and presses any other control, like a switch. A FieldLabel's press goes through it, where the web finds the control in the field's element.
 - `compare(a, b)` says where two mounted parts render: negative when `a` comes first. A group orders its members with it, like a toggle group's value, which lists the pressed toggles in the order they render. `@ui-sdk/react-native` compares the parts' views in React Native's view tree.
 
 ## Native Behavior
@@ -56,7 +57,7 @@ import { Pressable, View } from "react-native"
 const parts = createParts(toggle, { root: Pressable, icon: View }, toggleNative)
 ```
 
-`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group.
+`createParts` and `usePrimitive` take it as their last argument. `toggleNative` is Toggle's: while a toggle's root is mounted it joins its group, so the group knows its toggles in render order, refuses a disabled one and can focus one. `checkboxNative` does the same for a checkbox in a checkbox group. `fieldNative` registers a Field's label, description and error parts while they're mounted, so the control's label and hint come from the parts that render.
 
 ## Focus From a Controller
 

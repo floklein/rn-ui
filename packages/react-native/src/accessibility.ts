@@ -7,6 +7,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from "react-native"
+import { idsOf } from "./names"
 
 type OS = "ios" | "android"
 
@@ -86,8 +87,16 @@ function hide(props: NativeProps, os: OS) {
  * What has no native counterpart is left out, like `aria-controls`, and so
  * is `tabindex`, which would take a roving item out of Android's traversal.
  * An icon marked to mirror flips when the app runs right to left, `rtl`.
+ * `aria-labelledby` and `aria-describedby` become the label and hint
+ * through `names`, the texts their ids name, given only for a single
+ * accessible element: a container's label would hide what's inside it.
  */
-function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
+function toNativeProps(
+  attrs: Attrs,
+  os: OS,
+  rtl = false,
+  names?: (ids: string[]) => string | undefined
+) {
   const props: NativeProps = {}
   const state: AccessibilityState = {}
   const value: { min?: number; max?: number; now?: number; text?: string } = {}
@@ -153,6 +162,14 @@ function toNativeProps(attrs: Attrs, os: OS, rtl = false) {
     } else if ("aria-busy" in attrs || state.checked !== undefined) {
       state.busy ??= false
     }
+  }
+  const label = names?.(idsOf(attrs["aria-labelledby"]))
+  if (label !== undefined) {
+    props.accessibilityLabel = label
+  }
+  const hint = names?.(idsOf(attrs["aria-describedby"]))
+  if (hint !== undefined) {
+    props.accessibilityHint = hint
   }
   if (Object.keys(state).length) {
     props.accessibilityState = state

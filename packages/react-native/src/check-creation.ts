@@ -46,6 +46,7 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
       return undefined
     },
     announce: () => report("asks the native host to announce"),
+    activate: () => report("asks the native host to activate a control"),
     compare: () => {
       report("asks the native host where parts render")
       return 0

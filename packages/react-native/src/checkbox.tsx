@@ -9,9 +9,11 @@ import {
   type CheckboxState,
 } from "@ui-sdk/core/checkbox"
 import { checkboxNative } from "@ui-sdk/core/native"
-import type { PresenceState } from "@ui-sdk/core/renderer"
+import { type PresenceState, withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { useFieldControl } from "./field-context"
+import { pressSource } from "./native-host"
 import {
   createParts,
   type PartProps,
@@ -71,13 +73,13 @@ function Checkbox({
     } as CheckboxOptions,
     checkboxNative
   )
-  return usePart(
-    handle,
-    "root",
-    {},
-    props as Record<string, unknown>,
-    Pressable
-  )
+  // In a group, the group's field names the group, not each checkbox.
+  const user = useFieldControl(props as Record<string, unknown>, () => {
+    if (!group) {
+      withSource(pressSource(), () => handle.api.toggle({ reason: "press" }))
+    }
+  })
+  return usePart(handle, "root", {}, group ? props : user, Pressable)
 }
 
 /**
