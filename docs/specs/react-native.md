@@ -362,6 +362,7 @@ Every difference the resolutions record, by subject.
 - No roving focus, arrow keys, Home, End or typeahead; the roving `tabindex` isn't forwarded ([How focus works on the native host][focus]).
 - A combobox's highlighted option is announced, not exposed as an active descendant ([How focus works on the native host][focus]).
 - With a hardware keyboard there are no arrow keys inside a composite, no Home, End or typeahead, no combobox arrow keys, no keyboard shortcuts, no keyboard focus trap, and Escape only where the OS routes it ([How focus works on the native host][focus]).
+- A part core keeps focusable but inert (`aria-disabled`: a pending Button, a disabled menu item, option or tab) is disabled on Android, since React Native has no way to say "disabled" to TalkBack without disabling the view. It leaves Android's keyboard order and a focused one loses keyboard focus; TalkBack still reaches it and says "disabled". iOS is unaffected ([aria-disabled on Android][aria-disabled]).
 
 **Popups**
 
@@ -502,3 +503,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [upstream]: https://github.com/floklein/rn-ui/issues/35
 [build-rules]: https://github.com/floklein/rn-ui/issues/37
 [gate]: https://github.com/floklein/rn-ui/issues/119
+[aria-disabled]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6904500686
