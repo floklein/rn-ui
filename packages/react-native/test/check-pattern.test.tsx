@@ -174,11 +174,15 @@ describe("checkPattern on the native host", () => {
     )
   })
 
-  test("fails when opening or closing requests no accessibility focus", async () => {
+  test("fails when escape requests no accessibility focus, while expand and collapse needn't move it", async () => {
     await render(<Disclosure requests={false} onAction={() => {}} />)
-    await expect(check()).rejects.toThrow(
-      `requests no accessibility focus after the ${os === "ios" ? "escape" : "expand"} action`
-    )
+    if (os === "ios") {
+      await expect(check()).rejects.toThrow(
+        "requests no accessibility focus after the escape action"
+      )
+    } else {
+      await expect(check()).resolves.toBeUndefined()
+    }
   })
 
   test("its module imports no renderer", async () => {
@@ -650,6 +654,45 @@ describe("checkPattern's tabs pattern on the native host", () => {
   })
 })
 
+// A disclosure written by hand. Its content follows a press when `pressShows`
+// and TalkBack's actions when `actionShows`, which it declares when `declares`.
+function HandDisclosure({
+  pressShows = true,
+  actionShows = true,
+  declares = true,
+}: {
+  pressShows?: boolean
+  actionShows?: boolean
+  declares?: boolean
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [shown, setShown] = useState(false)
+  const change = (next: boolean, shows: boolean) => {
+    setExpanded(next)
+    if (shows) {
+      setShown(next)
+    }
+  }
+  return (
+    <View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        accessibilityActions={
+          declares ? [{ name: expanded ? "collapse" : "expand" }] : undefined
+        }
+        onAccessibilityAction={(event) =>
+          change(event.nativeEvent.actionName === "expand", actionShows)
+        }
+        onPress={() => change(!expanded, pressShows)}
+      >
+        <Text>Order #4189</Text>
+      </Pressable>
+      {shown ? <Text>Linen shirt</Text> : null}
+    </View>
+  )
+}
+
 describe("checkPattern's disclosure pattern on the native host", () => {
   test("passes on a collapsible, opening and closing it, and on a disabled one", async () => {
     await render(
@@ -671,6 +714,37 @@ describe("checkPattern's disclosure pattern on the native host", () => {
       </Collapsible>
     )
     await expect(checkDisclosure()).resolves.toBeUndefined()
+  })
+
+  test("fails on a button whose content doesn't follow its expanded state after the activate action", async () => {
+    await render(<HandDisclosure pressShows={false} />)
+    await expect(checkDisclosure()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+
+  test("on Android, fails on a button whose content doesn't follow TalkBack's expand action", async () => {
+    await render(<HandDisclosure actionShows={false} />)
+    const checked = checkDisclosure()
+    if (os === "ios") {
+      await expect(checked).resolves.toBeUndefined()
+    } else {
+      await expect(checked).rejects.toThrow(
+        'the button "Order #4189" shows no content after the expand action'
+      )
+    }
+  })
+
+  test("on Android, fails on a disclosure button with no expand action", async () => {
+    await render(<HandDisclosure declares={false} />)
+    const checked = checkDisclosure()
+    if (os === "ios") {
+      await expect(checked).resolves.toBeUndefined()
+    } else {
+      await expect(checked).rejects.toThrow(
+        'the button "Order #4189" has no expand action'
+      )
+    }
   })
 
   test("fails with no button that has an expanded state", async () => {

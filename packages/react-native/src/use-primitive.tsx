@@ -43,6 +43,7 @@ import {
   Pressable,
   TextInput,
   View,
+  type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
@@ -484,6 +485,22 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
         }
       : {}
     const translated = nativeProps(part, slotProps, user, presence.exiting)
+    const actions =
+      activate && !presence.exiting && translated.accessibilityActions
+        ? {
+            onAccessibilityAction: (event: AccessibilityActionEvent) => {
+              const { actionName } = event.nativeEvent
+              const expanded =
+                attrs(part, slotProps)["aria-expanded"] === "true"
+              if (
+                (actionName === "expand" && !expanded) ||
+                (actionName === "collapse" && expanded)
+              ) {
+                withSource("virtual", activate)
+              }
+            },
+          }
+        : {}
     // Core keeps an aria-disabled part focusable and refuses its press, but
     // Pressability reads only `disabled`: without it the part shows feedback.
     const disabled =
@@ -502,6 +519,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       host,
       mergeProps(
         handlers,
+        actions,
         disabled ? { disabled } : {},
         container,
         translated,
