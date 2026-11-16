@@ -5,6 +5,7 @@ import { Pressable, Text, View, type HostInstance } from "react-native"
 import type { TestInstance } from "test-renderer"
 import { createParts, type Interaction } from "../src/primitive"
 import { Checkbox, CheckboxGroup } from "../src/checkbox"
+import { Radio, RadioGroup } from "../src/radio"
 import { Toggle, ToggleGroup, ToggleIcon } from "../src/toggle"
 
 const parts = createParts(switchPrimitive, { root: Pressable, thumb: View })
@@ -104,6 +105,86 @@ describe("a part's props", () => {
     }
     await fireEvent(screen.getByTestId("root"), "pressOut")
     expect(seen.style.at(-1)?.pressed).toBe(false)
+  })
+
+  test("a part disabled through aria-disabled reports no press and refuses the touch, so no ripple plays", async () => {
+    const seen: Record<string, Record<string, Interaction[]>> = {}
+    const hostDisabled: Record<string, unknown> = {}
+    const watch = (value: string) => {
+      seen[value] = { style: [], className: [], children: [], render: [] }
+      const calls = seen[value]
+      return {
+        style: (_state: unknown, interaction: Interaction) => {
+          calls.style.push(interaction)
+          return undefined
+        },
+        className: (_state: unknown, interaction: Interaction) => {
+          calls.className.push(interaction)
+          return undefined
+        },
+        render: (
+          props: Record<string, unknown>,
+          _state: unknown,
+          interaction: Interaction
+        ) => {
+          calls.render.push(interaction)
+          hostDisabled[value] = props.disabled
+          return <Pressable {...props} />
+        },
+        children: (_state: unknown, interaction: Interaction) => {
+          calls.children.push(interaction)
+          return null
+        },
+      }
+    }
+    await render(
+      <>
+        <RadioGroup aria-label="Size" disabled>
+          <Radio value="small" aria-label="small" {...watch("small")} />
+        </RadioGroup>
+        <RadioGroup aria-label="Color">
+          <Radio value="red" aria-label="red" {...watch("red")} />
+        </RadioGroup>
+      </>
+    )
+    const small = screen.getByRole("radio", { name: "small" })
+    const red = screen.getByRole("radio", { name: "red" })
+    expect(small.props.accessibilityState).toMatchObject({ disabled: true })
+    expect(hostDisabled).toEqual({ small: true, red: undefined })
+    await fireEvent(small, "pressIn")
+    await fireEvent(red, "pressIn")
+    for (const [name, interactions] of Object.entries(seen.small)) {
+      expect([name, interactions.some((it) => it.pressed)]).toEqual([
+        name,
+        false,
+      ])
+    }
+    for (const [name, interactions] of Object.entries(seen.red)) {
+      expect([name, interactions.at(-1)?.pressed]).toEqual([name, true])
+    }
+  })
+
+  test("a part that turns aria-disabled while held stops reporting the press", async () => {
+    const pressed: boolean[] = []
+    function Sizes({ disabled }: { disabled: boolean }) {
+      return (
+        <RadioGroup aria-label="Size" disabled={disabled}>
+          <Radio
+            value="small"
+            aria-label="small"
+            style={(_state, interaction) => {
+              pressed.push(interaction.pressed)
+              return undefined
+            }}
+          />
+        </RadioGroup>
+      )
+    }
+    const { rerender } = await render(<Sizes disabled={false} />)
+    await fireEvent(screen.getByRole("radio", { name: "small" }), "pressIn")
+    expect(pressed.at(-1)).toBe(true)
+    await rerender(<Sizes disabled />)
+    expect(pressed.at(-1)).toBe(false)
   })
 
   test("no dataSet or data-* prop reaches a host", async () => {

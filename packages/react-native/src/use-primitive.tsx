@@ -472,6 +472,10 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
         }
       : {}
     const translated = nativeProps(part, slotProps, user, presence.exiting)
+    // Core keeps an aria-disabled part focusable and refuses its press, but
+    // Pressability reads only `disabled`: without it the part shows feedback.
+    const disabled =
+      pressable && translated.accessibilityState?.disabled === true
     const { role } = { ...attrs(part, slotProps), ...user } as { role?: string }
     // Fabric flattens a view with only a role or a label, and Android then
     // orders keyboard Tab by its children's edges across the whole screen.
@@ -486,6 +490,7 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       host,
       mergeProps(
         handlers,
+        disabled ? { disabled } : {},
         container,
         translated,
         { ref: viewRef(part, behaviors.get(owner.instance)) },
@@ -496,7 +501,9 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
       (animates
         ? { ...partState(part, slotProps), ...presence.state }
         : partState(part, slotProps)) as PartState<P, S>,
-      interaction
+      disabled
+        ? { ...interaction, pressed: false, hovered: false }
+        : interaction
     )
   }
   if (provided === scope) {
