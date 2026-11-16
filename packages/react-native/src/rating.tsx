@@ -9,11 +9,13 @@ import {
 } from "@ui-sdk/core/rating"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { carry } from "./carried-context"
 import type { Interaction } from "./render-element"
 import { type PartProps, usePart, usePrimitive } from "./use-primitive"
 
-const ItemContext = React.createContext<{ index: number; step: number } | null>(
-  null
+const ItemContext = carry(
+  "RatingItem",
+  React.createContext<{ index: number; step: number } | null>(null)
 )
 
 /**

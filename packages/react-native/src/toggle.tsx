@@ -10,6 +10,7 @@ import {
 } from "@ui-sdk/core/toggle"
 import * as React from "react"
 import { Pressable, View } from "react-native"
+import { carry } from "./carried-context"
 import {
   createParts,
   type PartProps,
@@ -30,9 +31,10 @@ const parts: ToggleParts = createParts(
   toggleNative
 )
 
-const ToggleGroupContext = React.createContext<PrimitiveHandle<
-  typeof toggleGroup
-> | null>(null)
+const ToggleGroupContext = carry(
+  "ToggleGroup",
+  React.createContext<PrimitiveHandle<typeof toggleGroup> | null>(null)
+)
 
 /**
  * A button that stays pressed: a `Pressable` with the toggle button role.
