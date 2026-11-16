@@ -330,9 +330,18 @@ function usePart<P extends Primitive, S extends NativeSlot<P>>(
     : inside
 
   const part = owner.instance.part(slot, slotProps, true) as Part
-  renders.set(part, ++rendered)
-  const [, rerender] = React.useReducer((count: number) => count + 1, 0)
+  const [changes, rerender] = React.useReducer((count: number) => count + 1, 0)
   const [interaction, setInteraction] = React.useState(idle)
+  // A parent renders its children in tree order, so only a render it drives
+  // restamps the part: one from the part's own state would move it last.
+  const last = React.useRef<[number, Interaction]>(null)
+  if (
+    !last.current ||
+    (last.current[0] === changes && last.current[1] === interaction)
+  ) {
+    renders.set(part, ++rendered)
+  }
+  last.current = [changes, interaction]
   React.useLayoutEffect(() => {
     commit(part, slotProps)
   })

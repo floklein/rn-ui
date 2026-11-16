@@ -193,6 +193,17 @@ describe("ToggleGroup", () => {
     )
   })
 
+  test("pressing toggles in render order keeps that order in the value", async () => {
+    const onValueChange = jest.fn()
+    await render(<Formatting onValueChange={onValueChange} />)
+    await fireEvent.press(toggleNamed("bold"))
+    await fireEvent.press(toggleNamed("underline"))
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      ["bold", "underline"],
+      expect.anything()
+    )
+  })
+
   test("a toggle that renders later between two others takes its place in the value", async () => {
     const onValueChange = jest.fn()
     const { rerender } = await render(
