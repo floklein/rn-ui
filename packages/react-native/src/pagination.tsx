@@ -58,7 +58,7 @@ function PaginationLink({
     pagination,
     "link",
     { page, id: String(page) },
-    { ...props, children },
+    { ...(props as Record<string, unknown>), children },
     Pressable
   )
 }
@@ -69,7 +69,13 @@ function useStep(
   name: "previous" | "next" | "first" | "last",
   props: StepProps
 ) {
-  return usePart(pagination, name, {}, props, Pressable)
+  return usePart(
+    pagination,
+    name,
+    {},
+    props as Record<string, unknown>,
+    Pressable
+  )
 }
 
 /**
@@ -115,7 +121,13 @@ function PaginationEllipsis({
   children = "…",
   ...props
 }: PartProps<typeof Text>) {
-  return usePart(pagination, "ellipsis", {}, { ...props, children }, Text)
+  return usePart(
+    pagination,
+    "ellipsis",
+    {},
+    { ...(props as Record<string, unknown>), children },
+    Text
+  )
 }
 
 export {
