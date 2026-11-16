@@ -155,7 +155,8 @@ function popupNative<Api extends PopupApi>({
                 ? escape(api, within === api)
                 : internal.popup.requestClose("escape-key")
             ),
-          onBackdropPress: () => dismiss("outside-press", "touch"),
+          api,
+          onPressOutside: () => dismiss("outside-press", "touch"),
         }
         const pop = pushLayer(layer)
         const cleanup = internal.rules?.onShow?.(layer)

@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react-native"
+import { act, cleanup, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
@@ -267,10 +267,13 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  // The dialog opened in one direction stays open, and its Modal's host
+  // would take the next one.
   test("passes on a dialog", async () => {
     await expect(
       checkDirection(
         async () => {
+          await cleanup()
           await render(
             <Dialog>
               <DialogTrigger>
