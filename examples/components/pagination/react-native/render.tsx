@@ -78,7 +78,12 @@ function Example() {
 }
 
 const styles = StyleSheet.create({
-  list: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
+  list: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+  },
   step: { paddingHorizontal: 8, paddingVertical: 6 },
   disabled: { opacity: 0.4 },
   label: { fontSize: 16 },

@@ -1,0 +1,272 @@
+---
+title: Pagination
+description: Move between pages of results with page buttons and steps.
+---
+
+<ComponentExample
+  name="pagination/basic"
+  caption="Tap a page, or the arrows. The console logs each page and its reason, and the arrow at either end is disabled."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Pagination`:
+
+```text
+Pagination
+└── PaginationList
+    ├── PaginationItem
+    │   └── PaginationPrevious
+    ├── PaginationItem
+    │   └── PaginationLink
+    ├── PaginationItem
+    │   └── PaginationEllipsis
+    ├── PaginationItem
+    │   └── PaginationLink
+    └── PaginationItem
+        └── PaginationNext
+```
+
+`Pagination`, `PaginationList` and `PaginationItem` are `View`s. The pages and steps are `Pressable`s with the button role, and `PaginationEllipsis` is a `Text`.
+
+`items` contains page numbers and the strings `"ellipsis-start"` and `"ellipsis-end"`. Render a page for each number and an ellipsis for each gap. Key entries by the item itself, so a page keeps its view as the range moves.
+
+`PaginationLink` shows its page number in a `Text` unless you give it children. The current page is selected for screen readers. `PaginationEllipsis` shows “…” and is hidden from them.
+
+Give Previous, Next, First and Last an `aria-label`, or text inside them. At an end, a step is disabled and stops changing the page, but screen readers still reach it.
+
+## Usage
+
+Import the parts and put them together. Text inside a page or a step goes in a `Text` you write:
+
+```tsx
+import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationList,
+  PaginationNext,
+  PaginationPrevious,
+} from "@ui-sdk/react-native/pagination"
+import { StyleSheet, Text } from "react-native"
+
+function PageNavigation() {
+  return (
+    <Pagination aria-label="Pagination" pageCount={10}>
+      <PaginationList style={styles.list}>
+        {({ items }) => (
+          <>
+            <PaginationItem>
+              <PaginationPrevious>
+                <Text>Previous</Text>
+              </PaginationPrevious>
+            </PaginationItem>
+            {items.map((item) => (
+              <PaginationItem key={item}>
+                {typeof item === "number" ? (
+                  <PaginationLink page={item} />
+                ) : (
+                  <PaginationEllipsis />
+                )}
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext>
+                <Text>Next</Text>
+              </PaginationNext>
+            </PaginationItem>
+          </>
+        )}
+      </PaginationList>
+    </Pagination>
+  )
+}
+
+const styles = StyleSheet.create({
+  list: { flexDirection: "row", alignItems: "center", gap: 8 },
+})
+
+export { PageNavigation }
+```
+
+## Total and Page Size
+
+Instead of `pageCount`, pass `total`, how many items there are, and `pageSize`, how many fit on a page (10 by default). Pagination calculates the page count, with a minimum of one. This example goes back to page 1 when the page size changes.
+
+A page past the end, like after the count shrinks, reads as the last page.
+
+<ComponentExample
+  name="pagination/total"
+  caption="Tap a page, then a number of rows per page. The console logs each change, and a new size starts again at page 1."
+/>
+
+## Links
+
+On the web, `getHref` makes the pages and steps links to URLs. Native has no URLs to follow, so Pagination has no `getHref`: the pages are always buttons. To change screens with a router, navigate in `onPageChange`, or read the page from the route and [control](#controlled) the pagination with it.
+
+## Controlled
+
+Pass `page` and `onPageChange` to control the pagination.
+
+```tsx
+const [page, setPage] = useState(1)
+
+<Pagination aria-label="Pagination" pageCount={10} page={page} onPageChange={setPage}>
+  ...
+</Pagination>
+```
+
+Every change carries a [reason](#reasons): `item-press` for a page, `previous-press`, `next-press`, `first-press` or `last-press` for a step, and `imperative` from a [controller](#controller). Call `details.cancel()` to keep the page, like while a form has unsaved changes.
+
+## Default Page
+
+`defaultPage` is the page it starts on, when uncontrolled. It's 1 by default.
+
+## Siblings and Boundaries
+
+`siblings` is how many pages show on each side of the current one, and `boundaries` how many always show at each end, both 1 by default. Near an end, the window slides over instead of shrinking, so the range keeps its length. A gap of one page shows that page instead of an ellipsis.
+
+```tsx
+<Pagination
+  aria-label="Pagination"
+  pageCount={20}
+  defaultPage={10}
+  siblings={2}
+>
+  ...
+</Pagination>
+```
+
+## Paging from Anywhere
+
+A [controller](#controller), from `createPaginationController()`, pages the pagination from anywhere, like a button elsewhere on the screen, without controlling it. Pass it as `controller`.
+
+```tsx
+const [pagination] = useState(() => createPaginationController())
+
+<Pressable accessibilityRole="button" onPress={() => pagination.next()}>
+  <Text>Next Page</Text>
+</Pressable>
+<Pagination aria-label="Pagination" pageCount={10} controller={pagination}>
+  ...
+</Pagination>
+```
+
+## Your Own Markup
+
+`paginationRange({ page, pageCount, siblings, boundaries })` is the range the parts use, as a pure function, exported from the same entry. Use it for a strip of dots or anything that isn't a list of pages.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and its interaction. `style`, `className` and `children` can be functions of the same state: whether a page is `current`, and for a step, the `page` it goes to and whether it's `disabled`.
+
+<ComponentExample
+  name="pagination/render"
+  caption="Tap a page. The current page says Page 3, and each arrow shows the page it goes to."
+/>
+
+## Styling
+
+Parts are unstyled. Style each one with a function of its state, like `(state) => [styles.page, state.current && styles.current]` for a page, or `(state) => [styles.step, state.disabled && styles.disabled]` for a step. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`. A step at its end reports no press.
+
+## Part State
+
+### Pagination and PaginationList [#part-state-pagination]
+
+<PartStateTable
+  component="pagination"
+  part="root"
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationState"
+/>
+
+### PaginationLink [#part-state-paginationlink]
+
+<PartStateTable
+  component="pagination"
+  part="link"
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationLinkState"
+/>
+
+### PaginationPrevious, PaginationNext, PaginationFirst and PaginationLast [#part-state-paginationstep]
+
+<PartStateTable
+  component="pagination"
+  part="next"
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationStepState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Pagination
+
+<TypeTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationOptions"
+  omit={["getHref"]}
+/>
+
+### PaginationLink
+
+<TypeTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationLinkProps"
+/>
+
+`PaginationList`, `PaginationItem`, `PaginationPrevious`, `PaginationNext`, `PaginationFirst`, `PaginationLast` and `PaginationEllipsis` take no props of their own.
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationLinkState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationStepState"
+/>
+
+### Reasons
+
+`details.reason` says why the page changed.
+
+<ReasonTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationPageChangeReason"
+/>
+
+### Controller
+
+Create one with `createPaginationController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, runs `onPageChange` like a press, and returns `false` when the change is canceled or there's nowhere to go.
+
+<ControllerTable
+  path="../../packages/core/src/components/pagination/pagination.ts"
+  name="PaginationController"
+/>
+
+## Accessibility
+
+On the web, Pagination is a `navigation` landmark around a list, with `aria-current="page"` on the current page. React Native has no landmark or current state, so each page and step is its own button, reached by swiping, and the current page is announced as selected. Name each step and give each page a number or a label, since the buttons are all a screen reader hears.
+
+A step at its end is announced as dimmed on iOS and disabled on Android, where it also leaves Tab's order on a hardware keyboard. The ellipsis is skipped.

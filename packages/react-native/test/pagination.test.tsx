@@ -221,6 +221,8 @@ describe("Pagination", () => {
   test("its views receive no role or ARIA props", async () => {
     await render(<Pages pageCount={10} testID="root" />)
     const names = hostProps().flatMap((props) => Object.keys(props))
-    expect(names.filter((name) => /^(aria-|role$|page$|href$)/.test(name))).toEqual([])
+    expect(
+      names.filter((name) => /^(aria-|role$|page$|href$)/.test(name))
+    ).toEqual([])
   })
 })
