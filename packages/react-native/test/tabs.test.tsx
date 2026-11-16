@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
 import {
   AccessibilityInfo,
+  I18nManager,
   StyleSheet,
   Text,
   type HostInstance,
@@ -215,5 +216,74 @@ describe("Tabs", () => {
     expect(indicator()).toHaveStyle({ left: 104, right: 76, width: 120 })
     await fireEvent(tabNamed("Billing"), "layout", layout(110, 130))
     expect(indicator()).toHaveStyle({ left: 110, right: 60, width: 130 })
+  })
+
+  test("right to left, the indicator's left and right follow React Native's swapped left and right styles", async () => {
+    const isRTL = jest.replaceProperty(I18nManager, "isRTL", true)
+    const layout = (x: number, width: number) => ({
+      nativeEvent: { layout: { x, y: 0, width, height: 40 } },
+    })
+    const box = () =>
+      StyleSheet.flatten(
+        screen.getByTestId("indicator", { includeHiddenElements: true }).props
+          .style
+      )
+    await render(
+      <Tabs defaultValue="profile">
+        <TabsList aria-label="Account" testID="list">
+          <TabsTab value="profile">
+            <Text>Profile</Text>
+          </TabsTab>
+          <TabsIndicator
+            testID="indicator"
+            style={(state) => ({
+              left: state.activeTabLeft,
+              right: state.activeTabRight,
+            })}
+          />
+        </TabsList>
+      </Tabs>
+    )
+    await fireEvent(screen.getByTestId("list"), "layout", layout(0, 300))
+    await fireEvent(tabNamed("Profile"), "layout", layout(196, 100))
+    expect(box()).toEqual({ left: 4, right: 196 })
+    const swaps = jest.replaceProperty(
+      I18nManager,
+      "doLeftAndRightSwapInRTL",
+      false
+    )
+    await fireEvent(tabNamed("Profile"), "layout", layout(194, 100))
+    expect(box()).toEqual({ left: 194, right: 6 })
+    swaps.restore()
+    isRTL.restore()
+  })
+
+  test("a tab whose value changes keeps its box under the new value", async () => {
+    function Renamed({ value }: { value: string }) {
+      return (
+        <Tabs value={value}>
+          <TabsList aria-label="Account" testID="list">
+            <TabsTab value={value}>
+              <Text>Profile</Text>
+            </TabsTab>
+            <TabsIndicator
+              testID="indicator"
+              style={(state) => ({ width: state.activeTabWidth })}
+            />
+          </TabsList>
+        </Tabs>
+      )
+    }
+    const { rerender } = await render(<Renamed value="profile" />)
+    await fireEvent(screen.getByTestId("list"), "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 40 } },
+    })
+    await fireEvent(tabNamed("Profile"), "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 100, height: 40 } },
+    })
+    await rerender(<Renamed value="account" />)
+    expect(
+      screen.getByTestId("indicator", { includeHiddenElements: true })
+    ).toHaveStyle({ width: 100 })
   })
 })

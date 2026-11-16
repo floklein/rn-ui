@@ -473,6 +473,11 @@ describe("checkPattern's tabs pattern on the native host", () => {
     await expect(checkTabs()).rejects.toThrow("has 2 selected tabs")
   })
 
+  test("fails on tabs with no tab selected", async () => {
+    await render(<HandTabs selected={[]} stuck />)
+    await expect(checkTabs()).rejects.toThrow("has no selected tab")
+  })
+
   test("fails on a tab that isn't selected after the activate action", async () => {
     await render(<HandTabs selected={["Profile"]} stuck />)
     await expect(checkTabs()).rejects.toThrow(

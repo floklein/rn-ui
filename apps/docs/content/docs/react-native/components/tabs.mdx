@@ -23,9 +23,9 @@ Use the following composition to build a `Tabs`:
 ```text
 Tabs
 ├── TabsList
+│   ├── TabsIndicator
 │   ├── TabsTab
-│   ├── TabsTab
-│   └── TabsIndicator
+│   └── TabsTab
 ├── TabsPanel
 └── TabsPanel
 ```
@@ -95,7 +95,7 @@ Put decorative icons in `TabsTabIcon` so screen readers skip them and the tab ke
 
 ## Indicator
 
-`TabsIndicator` marks the selected tab. Render it inside `TabsList`: its state holds the selected tab's box in the list, measured from the layouts of the list and the tabs placed in it. Position it absolutely with those fields to draw a marker that follows the selection. It measures again when a tab or the list is laid out again.
+`TabsIndicator` marks the selected tab. Render it inside `TabsList`: its state holds the selected tab's box in the list, measured from the layouts of the list and the tabs placed straight in it. A tab wrapped in another view is measured inside that view. Position the indicator absolutely with those fields to draw a marker that follows the selection. It measures again when a tab or the list is laid out again.
 
 ```tsx
 <TabsIndicator
@@ -109,7 +109,7 @@ Put decorative icons in `TabsTabIcon` so screen readers skip them and the tab ke
 />
 ```
 
-The fields are unset until the list and the selected tab have been laid out. Render the indicator before the tabs to draw it behind them.
+The fields are unset until the list and the selected tab have been laid out. `activeTabLeft` and `activeTabRight` are what the `left` and `right` styles take: when the app runs right to left, React Native reads those styles from the other side, and the fields swap with them. Render the indicator before the tabs to draw it behind them.
 
 <ComponentExample
   name="tabs/indicator"
@@ -150,7 +150,7 @@ const opacity = useRef(new Animated.Value(1)).current
 />
 ```
 
-`LayoutAnimation` animates the indicator and the panels together without either: configure it in `onValueChange`, as this example does.
+`LayoutAnimation` animates the indicator and the panels together without either: configure it in `onValueChange`, as this example does. Every part's `direction` stays `"none"` on native, since core can't read where the tabs are on screen, so a panel can't slide in the direction of the selection.
 
 <ComponentExample
   name="tabs/animation"
@@ -230,14 +230,14 @@ Style each part with a function of its state, like `(state) => [styles.tab, stat
 
 With the selected tab's box, in pixels, described under [Indicator](#indicator):
 
-| Field             | Type     | Description                                         |
-| ----------------- | -------- | --------------------------------------------------- |
-| `activeTabLeft`   | `number` | The selected tab's left edge, from the list's left. |
-| `activeTabRight`  | `number` | Its right edge, from the list's right edge.         |
-| `activeTabTop`    | `number` | Its top edge, from the list's top edge.             |
-| `activeTabBottom` | `number` | Its bottom edge, from the list's bottom edge.       |
-| `activeTabWidth`  | `number` | Its width.                                          |
-| `activeTabHeight` | `number` | Its height.                                         |
+| Field             | Type     | Description                                   |
+| ----------------- | -------- | --------------------------------------------- |
+| `activeTabLeft`   | `number` | The selected tab's `left` in the list.        |
+| `activeTabRight`  | `number` | Its `right` in the list.                      |
+| `activeTabTop`    | `number` | Its top edge, from the list's top edge.       |
+| `activeTabBottom` | `number` | Its bottom edge, from the list's bottom edge. |
+| `activeTabWidth`  | `number` | Its width.                                    |
+| `activeTabHeight` | `number` | Its height.                                   |
 
 ### TabsPanel [#part-state-tabspanel]
 
@@ -324,7 +324,7 @@ Callbacks get the new value first, then the details. `onValueChange` never runs 
 
 ## Accessibility
 
-Tabs follow the [WAI-ARIA tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), translated to React Native's accessibility props: the list has the tab list role, and each tab the tab role with its selected and disabled state, so VoiceOver and TalkBack announce which tab is selected, and a double-tap selects one. Each tab is its own accessible element, reached by swiping. A panel is a `View` with no role, since React Native has no tab panel role.
+Tabs follow the [WAI-ARIA tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), translated to React Native's accessibility props: the list has the tab list role, and each tab the tab role with its selected and disabled state. TalkBack reads a tab as a tab, and says whether it's selected. React Native gives iOS no tab role, so VoiceOver reads a tab by its name and says whether it's selected. A double-tap selects a tab. Each tab is its own accessible element, reached by swiping. A panel is a `View` with no role, since React Native has no tab panel role.
 
 ### Keyboard
 

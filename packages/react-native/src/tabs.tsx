@@ -6,6 +6,7 @@ import {
 } from "@ui-sdk/core/tabs"
 import * as React from "react"
 import {
+  I18nManager,
   type LayoutChangeEvent,
   type LayoutRectangle,
   Pressable,
@@ -101,9 +102,13 @@ function createLayouts() {
       if (!box || !list) {
         return undefined
       }
+      const left = box.x
+      const right = list.width - box.x - box.width
+      // React Native reads `left` and `right` as start and end right to left.
+      const swap = I18nManager.isRTL && I18nManager.doLeftAndRightSwapInRTL
       return {
-        activeTabLeft: box.x,
-        activeTabRight: list.width - box.x - box.width,
+        activeTabLeft: swap ? right : left,
+        activeTabRight: swap ? left : right,
         activeTabTop: box.y,
         activeTabBottom: list.height - box.y - box.height,
         activeTabWidth: box.width,
@@ -161,12 +166,20 @@ const TabsTab = function TabsTab({
 }: React.ComponentProps<TabsParts["Tab"]>) {
   const layouts = React.useContext(LayoutsContext)
   const { value } = props
-  React.useEffect(() => () => layouts?.tab(value, undefined), [layouts, value])
+  // A new value lays nothing out again, so the box carries over to it.
+  const box = React.useRef<LayoutRectangle>(undefined)
+  React.useEffect(() => {
+    if (box.current) {
+      layouts?.tab(value, box.current)
+    }
+    return () => layouts?.tab(value, undefined)
+  }, [layouts, value])
   return (
     <parts.Tab
       {...props}
       onLayout={(event: LayoutChangeEvent) => {
-        layouts?.tab(value, event.nativeEvent.layout)
+        box.current = event.nativeEvent.layout
+        layouts?.tab(value, box.current)
         onLayout?.(event)
       }}
     />

@@ -216,10 +216,12 @@ async function tabsPattern(context: Context) {
     }
   }
   const selected = tabs.filter((tab) => stateOf(tab).selected === true)
-  if (selected.length > 1) {
+  if (tabs.length && selected.length !== 1) {
     context.problem(
       context.root,
-      `has ${selected.length} selected tabs; one tab is active (APG tabs).`
+      selected.length
+        ? `has ${selected.length} selected tabs; one tab is active (APG tabs).`
+        : "has no selected tab; one tab is active (APG tabs)."
     )
   }
   for (const index of tabs.keys()) {

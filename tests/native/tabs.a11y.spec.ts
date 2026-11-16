@@ -11,8 +11,8 @@ async function snapshot() {
   return Object.fromEntries(tabs.map((id) => [id, tree.get(id)]))
 }
 
-// React Native gives iOS no tab trait and Android no tab class: a tab is a
-// plain element whose selected state the OS reports.
+// React Native gives iOS no tab trait, and an Android tab its role only as a
+// description: the tree shows a plain element with its selected state.
 const tab = (label: string, selected = false, enabled = true): Node => ({
   role: device.platform === "ios" ? "group" : "android.view.View",
   label,
