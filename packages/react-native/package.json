@@ -25,6 +25,7 @@
     "./primitive": "./src/primitive.ts",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
+    "./separator": "./src/separator.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
@@ -72,6 +73,10 @@
       "./rating": {
         "types": "./dist/rating.d.ts",
         "default": "./dist/rating.js"
+      },
+      "./separator": {
+        "types": "./dist/separator.d.ts",
+        "default": "./dist/separator.js"
       },
       "./switch": {
         "types": "./dist/switch.d.ts",

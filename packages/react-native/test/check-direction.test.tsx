@@ -12,6 +12,7 @@ import {
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Radio, RadioGroup, RadioIndicator } from "../src/radio"
 import { Rating } from "../src/rating"
+import { Separator } from "../src/separator"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -68,6 +69,25 @@ describe("checkDirection on the native host", () => {
                 <Text>AL</Text>
               </AvatarFallback>
             </Avatar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on separators between text", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <Text>Profile</Text>
+              <Separator orientation="vertical" />
+              <Text>Billing</Text>
+              <Separator decorative />
+            </View>
           )
           return screen.container
         },
