@@ -9,6 +9,7 @@ type Node = {
   role: string
   label: string
   checked?: boolean | "mixed"
+  selected?: true
   enabled: boolean
   text?: string
   value?: string
@@ -187,6 +188,13 @@ function parseTree(source: string) {
     }
     if (role === "textbox") {
       node.value = (platform === "ios" ? attrs.value : attrs.text) ?? ""
+    }
+    const selected =
+      platform === "ios"
+        ? (attrs.traits ?? "").split(", ").includes("Selected")
+        : attrs.selected === "true"
+    if (selected) {
+      node.selected = true
     }
     nodes.set(id && !nodes.has(id) ? id : `#${nodes.size}`, node)
   }

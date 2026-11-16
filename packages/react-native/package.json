@@ -24,6 +24,7 @@
     "./primitive": "./src/primitive.ts",
     "./rating": "./src/rating.tsx",
     "./switch": "./src/switch.tsx",
+    "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
     "./textarea": "./src/textarea.tsx",
     "./toggle": "./src/toggle.tsx"
@@ -65,6 +66,10 @@
       "./switch": {
         "types": "./dist/switch.d.ts",
         "default": "./dist/switch.js"
+      },
+      "./tabs": {
+        "types": "./dist/tabs.d.ts",
+        "default": "./dist/tabs.js"
       },
       "./testing": {
         "types": "./dist/testing.d.ts",

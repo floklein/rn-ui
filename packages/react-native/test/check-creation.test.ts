@@ -6,6 +6,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { nativeHost } from "@ui-sdk/core/native"
 import { rating } from "@ui-sdk/core/rating"
 import { switchPrimitive } from "@ui-sdk/core/switch"
+import { tabs } from "@ui-sdk/core/tabs"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
 import { checkCreation } from "../src/testing"
 
@@ -52,6 +53,13 @@ describe("checkCreation", () => {
       checkCreation(rating, { readOnly: true, defaultValue: 4.2 })
     ).not.toThrow()
     expect(() => checkCreation(rating, { step: 0.5 })).not.toThrow()
+  })
+
+  test("passes on tabs, controlled or not", () => {
+    expect(() => checkCreation(tabs, {})).not.toThrow()
+    expect(() =>
+      checkCreation(tabs, { value: "a", orientation: "vertical" })
+    ).not.toThrow()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {

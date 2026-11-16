@@ -7,6 +7,7 @@ import { Checkbox, CheckboxIndicator } from "../src/checkbox"
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Rating } from "../src/rating"
 import { Switch, SwitchThumb } from "../src/switch"
+import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
 
@@ -110,6 +111,33 @@ describe("checkDirection on the native host", () => {
               <Toggle value="bold" aria-label="Bold" />
               <Toggle value="italic" aria-label="Italic" />
             </ToggleGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on tabs", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Tabs defaultValue="profile">
+              <TabsList aria-label="Account">
+                <TabsTab value="profile">
+                  <Text>Profile</Text>
+                </TabsTab>
+                <TabsTab value="billing">
+                  <Text>Billing</Text>
+                </TabsTab>
+                <TabsIndicator />
+              </TabsList>
+              <TabsPanel value="profile">
+                <Text>Profile panel</Text>
+              </TabsPanel>
+            </Tabs>
           )
           return screen.container
         },
