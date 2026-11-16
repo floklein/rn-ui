@@ -6,7 +6,7 @@ import {
   type OTPInputState,
 } from "@ui-sdk/core/otp-input"
 import { withSource } from "@ui-sdk/core/renderer"
-import { createContext, useCallback, useContext, useRef } from "react"
+import * as React from "react"
 import {
   type GestureResponderEvent,
   type HostInstance,
@@ -17,6 +17,7 @@ import {
   type TextInputSelectionChangeEvent,
   View,
 } from "react-native"
+import { carry } from "./carried-context"
 import { useFieldControl } from "./field-context"
 import { type Interaction, mergeProps } from "./render-element"
 import {
@@ -47,7 +48,10 @@ type ControlProps = Pick<TextInputProps, "id" | "autoFocus" | "aria-label"> & {
 
 type Views = { root: HostInstance | null; slots: Map<number, HostInstance> }
 
-const ViewsContext = createContext<Views>({ root: null, slots: new Map() })
+const ViewsContext = carry(
+  "OTPInputViews",
+  React.createContext<Views>({ root: null, slots: new Map() })
+)
 
 // Groups and separators offset slots, so each is measured from the root,
 // as the field is. Fabric measures synchronously.
@@ -100,11 +104,11 @@ function OTPInputControl(props: ControlProps) {
     otp.state
   const editable = !disabled && !formDisabled && !readOnly
   const { internal } = otp.api
-  const views = useContext(ViewsContext)
-  const field = useRef<HostInstance>(null)
+  const views = React.useContext(ViewsContext)
+  const field = React.useRef<HostInstance>(null)
   // A tap on the unfocused field selects its slot once the press ends, so a
   // scroll that starts on the code doesn't focus it.
-  const pressed = useRef<number>(undefined)
+  const pressed = React.useRef<number>(undefined)
   return usePart(
     otp,
     "control",
@@ -198,8 +202,8 @@ function OTPInput({
     controller,
     debug,
   })
-  const views = useRef<Views>({ root: null, slots: new Map() }).current
-  const rootRef = useCallback(
+  const views = React.useRef<Views>({ root: null, slots: new Map() }).current
+  const rootRef = React.useCallback(
     (view: HostInstance | null) => {
       views.root = view
     },
@@ -255,8 +259,8 @@ function OTPInputSlot({
   ...props
 }: OTPInputSlotProps & PartProps<typeof View, OTPInputSlotState>) {
   const otp = useHandle(otpInput)
-  const { slots } = useContext(ViewsContext)
-  const ref = useCallback(
+  const { slots } = React.useContext(ViewsContext)
+  const ref = React.useCallback(
     (view: HostInstance | null) => {
       if (view) {
         slots.set(index, view)
