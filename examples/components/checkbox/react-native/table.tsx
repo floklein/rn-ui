@@ -54,7 +54,7 @@ function Example() {
         <Checkbox aria-label="Select all" parent style={boxStyle}>
           <CheckboxIndicator>
             {(state) => (
-              <Text style={styles.mark}>{state.indeterminate ? "–" : "✓"}</Text>
+              <View style={state.indeterminate ? styles.dash : styles.check} />
             )}
           </CheckboxIndicator>
         </Checkbox>
@@ -69,7 +69,7 @@ function Example() {
             style={boxStyle}
           >
             <CheckboxIndicator>
-              <Text style={styles.mark}>✓</Text>
+              <View style={styles.check} />
             </CheckboxIndicator>
           </Checkbox>
           <View style={styles.cell}>
@@ -112,7 +112,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   boxChecked: { backgroundColor: "#16a34a", borderColor: "#16a34a" },
-  mark: { color: "#ffffff", fontSize: 14, fontWeight: "700" },
+  check: {
+    width: 6,
+    height: 11,
+    marginTop: -2,
+    borderColor: "#ffffff",
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    transform: [{ rotate: "45deg" }],
+  },
+  dash: { width: 10, height: 2, backgroundColor: "#ffffff" },
 })
 
 export { Example }

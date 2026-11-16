@@ -89,8 +89,15 @@ function attributes(tag: string) {
 const checkedOf = (value: string) =>
   value === "mixed" ? "mixed" : value === "checked"
 
+// Android has no mixed state: React Native appends it to the description.
+const androidMixed = ", mixed"
+
 const androidChecked = (attrs: Record<string, string>) =>
-  attrs.checked === "true" ? "checked" : "unchecked"
+  attrs["content-desc"]?.endsWith(androidMixed)
+    ? "mixed"
+    : attrs.checked === "true"
+      ? "checked"
+      : "unchecked"
 
 /** The OS's accessibility tree, as each element's role, label and state, keyed by test ID. */
 function parseTree(source: string) {
@@ -118,6 +125,9 @@ function parseTree(source: string) {
     }
     if (role === "checkbox") {
       node.checked = checkedOf(checkbox ?? androidChecked(attrs))
+      if (node.checked === "mixed" && platform === "android") {
+        node.label = node.label.slice(0, -androidMixed.length)
+      }
     }
     if (role === "text") {
       node.text = platform === "ios" ? attrs.label : attrs.text

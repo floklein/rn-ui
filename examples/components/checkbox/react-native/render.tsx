@@ -24,7 +24,7 @@ function Example() {
                 style={[styles.chip, state.checked && styles.chipChecked]}
               >
                 <Text style={state.checked && styles.chipText}>
-                  {state.checked ? "✓" : "+"} {topic.label}
+                  {topic.label}
                 </Text>
               </Pressable>
             )}

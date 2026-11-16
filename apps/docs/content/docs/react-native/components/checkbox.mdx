@@ -41,9 +41,9 @@ import { Text, View } from "react-native"
 function Example() {
   return (
     <Checkbox>
-      <View>
+      <View style={styles.box}>
         <CheckboxIndicator>
-          <Text>✓</Text>
+          <View style={styles.check} />
         </CheckboxIndicator>
       </View>
       <Text>Accept terms and conditions</Text>
@@ -54,7 +54,7 @@ function Example() {
 export { Example }
 ```
 
-The indicator is mounted while the checkbox is checked or indeterminate.
+The indicator is mounted while the checkbox is checked or indeterminate. Draw the check with views, not a text glyph like ✓: text inside the checkbox becomes part of its name, so screen readers would read the glyph too.
 
 ## Description
 
@@ -87,12 +87,16 @@ The indicator is mounted while the checkbox is checked or indeterminate.
 
 An indeterminate checkbox represents a partly checked set. Screen readers announce it as mixed. A press checks it; only your code puts it back into the mixed state.
 
+On Android, TalkBack reads the mixed state from the checkbox's own `aria-label`, so give a checkbox that can be mixed one. Named only by the text inside it, it reads as unchecked there.
+
 Start with `defaultChecked="indeterminate"`, or pass `"indeterminate"` as the controlled value. The indicator's state tells it which mark to show. A [parent checkbox](#parent-checkbox) derives this state from a group for you.
 
 ```tsx
 <Checkbox aria-label="Select all" defaultChecked="indeterminate">
   <CheckboxIndicator>
-    {(state) => <Text>{state.indeterminate ? "–" : "✓"}</Text>}
+    {(state) => (
+      <View style={state.indeterminate ? styles.dash : styles.check} />
+    )}
   </CheckboxIndicator>
 </Checkbox>
 ```
@@ -187,11 +191,11 @@ The indicator's state also has `startingStyle`, true for its first frame after i
 
 ## Custom Rendering
 
-`render` replaces the `Pressable` with your own element, here a chip that shows its own mark.
+`render` replaces the `Pressable` with your own element, here a chip whose fill shows its state.
 
 <ComponentExample
   name="checkbox/render"
-  caption="Tap a topic to follow it or stop following it."
+  caption="Tap a topic to follow it or stop following it. The chip's fill shows which ones you follow."
 />
 
 ## Styling

@@ -28,7 +28,7 @@ function Task({ label, done }: { label: string; done: boolean }) {
           onExit={(exited) => fade(0, exited)}
           render={<Animated.View style={[styles.fill, { opacity }]} />}
         >
-          <Text style={styles.mark}>✓</Text>
+          <View style={styles.check} />
         </CheckboxIndicator>
       </View>
       <Text style={styles.label}>{label}</Text>
@@ -69,7 +69,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  mark: { color: "#ffffff", fontSize: 14, fontWeight: "700" },
+  check: {
+    width: 6,
+    height: 11,
+    marginTop: -2,
+    borderColor: "#ffffff",
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    transform: [{ rotate: "45deg" }],
+  },
   label: { fontSize: 16 },
 })
 
