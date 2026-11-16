@@ -104,6 +104,7 @@ function attributes(tag: string) {
         .replaceAll("&apos;", "'")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
+        .replaceAll("&#10;", "\n")
         .replaceAll("&amp;", "&"),
     ])
   )

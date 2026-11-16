@@ -35,16 +35,10 @@ function Action({
 function Fixture() {
   const [email] = useState(createInputController)
   const [notes] = useState(createInputController)
-  const [values, setValues] = useState({
-    email: "",
-    notes: "",
-    search: "lisbon",
-  })
   const [changes, setChanges] = useState<string[]>([])
   const record =
-    (name: keyof typeof values): Change =>
-    (value, details) => {
-      setValues((current) => ({ ...current, [name]: value }))
+    (name: string): Change =>
+    (_value, details) => {
       setChanges((current) => [
         ...current,
         `${name}:${details.reason}:${details.source}`,
@@ -53,7 +47,6 @@ function Fixture() {
 
   return (
     <View style={styles.fixture}>
-      <Text testID="values">{JSON.stringify(values)}</Text>
       <Text testID="changes">{changes.join(" ") || "none"}</Text>
       <Input
         aria-label="Email"
