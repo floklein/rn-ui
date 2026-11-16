@@ -1,12 +1,14 @@
 import type { toolbar } from "@ui-sdk/core/toolbar"
 import * as React from "react"
+import { carry } from "./carried-context"
 import type { PrimitiveHandle } from "./use-primitive"
 
-const ToolbarContext = React.createContext<PrimitiveHandle<
-  typeof toolbar
-> | null>(null)
+const ToolbarContext = carry(
+  "Toolbar",
+  React.createContext<PrimitiveHandle<typeof toolbar> | null>(null)
+)
 
-const ToolbarGroupContext = React.createContext(false)
+const ToolbarGroupContext = carry("ToolbarGroup", React.createContext(false))
 
 function useToolbarScope() {
   const toolbar = React.useContext(ToolbarContext)

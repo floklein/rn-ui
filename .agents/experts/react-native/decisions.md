@@ -6,6 +6,7 @@ Last reviewed: ticket 80's branch (2026-11-16, Toolbar and `toolbarNative`, Togg
 
 ## Settled
 
+- **A toggle in a popup inside a toolbar joins the toolbar** (#80): the toolbar's contexts are carried across a popup's `Modal` like every adapter context (#131), so a toggle in a dialog's content joins the toolbar and takes a disabled group's state, as React's context gives it on the web.
 - **One primitive definition for both hosts** (ADR 0001, #13, #22). The adapter reads the declarative slot fields and delivers `press`; it never runs `bind`, `asleep`, `connect`, the `on` handlers or the DOM writers. Native behavior lives in core's twins and native behavior files; core never imports `react-native`. Edits inside upstream's files are limited to the ADR's list, and each is in the registry.
 - **Real native views, at parity** (#2, #15). Not React Native Web, no DOM layer, no native code in the adapter, no OS controls or native modules. Floor: React Native 0.88, New Architecture, Expo SDK 58, no Metro configuration.
 - **Dependencies** (#16): `react` and `react-native` only, plus Gesture Handler in Drawer's entry and the sheet entry. Insets come from the app through `OverlayHost`.
@@ -45,7 +46,6 @@ Last reviewed: ticket 80's branch (2026-11-16, Toolbar and `toolbarNative`, Togg
 
 ## Known and open (don't report again, check whether fixed)
 
-- **A toggle in a popup opened from a toolbar joins the toolbar** (#80, suspected, not reproduced): the toolbar's context reaches a `Toggle` inside a Dialog or Menu opened from a toolbar button, so it would join the toolbar's scope and take a disabled group's state. `@ui-sdk/react` does the same (`toggle.tsx`); a question for every adapter.
 - **The indicator box reads the container's border from its `style` only** (#79): a border set through `className` (NativeWind) or by a `render` host isn't seen, so the box is off by that border. Tabs' list and Segmented Control's root.
 - **A dialog's focus request on open may be overridden on iOS** (ticket 65): `dialogNative` asks for the title as the content's view mounts, before UIKit presents the `Modal`'s view controller, whose screen-changed notification may move VoiceOver elsewhere. Needs the VoiceOver pass.
 - **The escape gesture goes to the topmost layer** (ticket 65): `onAccessibilityEscape` on a dialog's content calls `escape(api)`, which the layer twin delivers to the topmost open layer, not to the dialog the gesture reached. A modal dialog hides what's under it from VoiceOver, so this only matters for non-modal layers stacked by OverlayHost (ticket 11).

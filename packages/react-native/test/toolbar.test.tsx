@@ -6,6 +6,7 @@ import {
   type TextInputInstance,
   type HostInstance,
 } from "react-native"
+import { Dialog, DialogContent, DialogTitle } from "../src/dialog"
 import { Toggle, ToggleGroup } from "../src/toggle"
 import {
   createToolbarController,
@@ -199,6 +200,22 @@ describe("Toolbar", () => {
       expect(field.props.readOnly).toBeUndefined()
       expect(field.props.accessibilityState).toMatchObject({ disabled: true })
     }
+  })
+
+  test("a disabled group between a dialog and its content disables a toggle in the content, as on the web", async () => {
+    await render(
+      <Toolbar aria-label="Edit">
+        <Dialog defaultOpen>
+          <ToolbarGroup disabled>
+            <DialogContent>
+              <DialogTitle>Options</DialogTitle>
+              <Toggle aria-label="Track changes" />
+            </DialogContent>
+          </ToolbarGroup>
+        </Dialog>
+      </Toolbar>
+    )
+    expect(toggleNamed("Track changes")).toBeDisabled()
   })
 
   test("style functions get the state: a separator runs across the toolbar", async () => {
