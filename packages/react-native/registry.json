@@ -161,6 +161,13 @@
       "why": "internal.reportImageStatus, the image's load, error and source decisions as an api method, which a native Image's events call where watchImage's handlers read an <img>."
     },
     {
+      "kind": "reroute",
+      "file": "packages/core/src/components/otp-input/otp-input-api.ts",
+      "mirrors": ["packages/core/src/components/otp-input/otp-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, selectText, focusText and pressSlot: the control's input, selection, focus and blur handlers and pressSlot as api methods, which a native TextInput's events and a slot's press call where bind reads an <input>. The controller's focus() calls focusPart instead of input()?.focus()."
+    },
+    {
       "kind": "edit",
       "file": "AGENTS.md",
       "mirrors": ["AGENTS.md"],
@@ -648,6 +655,15 @@
           "reason": "Its bind records the element, which is always a button on native. Its mousedown keeps focus in the field, which a Pressable never takes on native, and its keydown and keyup activate a non-button element, where the OS activates the Pressable."
         }
       }
+    },
+    "otp-input": {
+      "entry": "packages/react-native/src/otp-input.tsx",
+      "slots": {
+        "otpInput.control": {
+          "covered": "packages/react-native/src/otp-input.tsx",
+          "reason": "Its bind follows the <input>'s typing, paste, selection, focus and blur, which the TextInput's onChangeText, onSelectionChange, onFocus and onBlur hand to internal.typeText, selectText and focusText, and its value and selection props follow the state. A press on a slot calls internal.pressSlot. Arrow keys, Home and End, which TextInput doesn't report, the browser's undo history, a restored page, form reset, a disabled fieldset, password managers' badges and the selection stylesheet have no native counterpart."
+        }
+      }
     }
   },
   "pending": [
@@ -674,7 +690,6 @@
     "meter",
     "navigation-menu",
     "number-input",
-    "otp-input",
     "pagination",
     "popover",
     "progress",
@@ -858,6 +873,18 @@
     },
     {
       "component": "password-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "otp-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the code from change callbacks."
+    },
+    {
+      "component": "otp-input",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

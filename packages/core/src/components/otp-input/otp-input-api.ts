@@ -32,6 +32,7 @@ import {
   createCommit,
 } from "../../foundation/kernel/input-source"
 import { elements } from "../../foundation/kernel/elements"
+import { focusPart } from "../../foundation/focus/focus-part"
 import type { OTPInputSlotProps } from "./otp-input"
 
 /**
@@ -223,7 +224,7 @@ function otpInputApiBody(
     "root" | "control" | "slot" | "group" | "separator"
   >
 ) {
-  const { store, options, element } = context
+  const { store, options, element, parts } = context
   const change = createChange(context)
   const commit = createCommit(context)
   const input = () => element("control") as HTMLInputElement | undefined
@@ -236,6 +237,8 @@ function otpInputApiBody(
   let afterDelete = false
   // What pressed last, since only a mouse press is taken over.
   let pointerType = ""
+  // Where a native press on a slot puts the selection once the field has focus.
+  let pressed: Selection | undefined
 
   // A reset or a restored page puts a code back; nobody just entered it.
   function complete(
@@ -617,9 +620,82 @@ function otpInputApiBody(
     clear: ({ reason = "imperative", event }: OTPInputChangeOptions = {}) =>
       write("", reason, event),
     /** Moves focus to the input. */
-    focus: () => input()?.focus(),
+    focus: () => focusPart(input, parts, "control"),
     internal: {
       bind,
+      // What a native text field reports, with no element or event: its whole
+      // text after an edit, which is cleaned as `typed` and `insertMany` do.
+      typeText(text: string) {
+        const { pattern, maxLength, value: previous, selection } = store.get()
+        afterDelete = text.length < previous.length
+        let next = text
+        if (next !== previous && !isValidCode(next, pattern, maxLength)) {
+          const inserted = text.slice(
+            selection.start,
+            text.length - (previous.length - selection.end)
+          )
+          const code = pastedCode(inserted, pattern)
+          next = code
+            ? insertCode(previous, selection, code, maxLength)
+            : previous
+        }
+        if (
+          next === previous ||
+          !change("value", next, { reason: "input-change" })
+        ) {
+          return
+        }
+        if (!isControlled()) {
+          store.set({ value: next })
+        }
+        complete(next, "input-change")
+      },
+      // Its selection, moved onto the character under a collapsed caret as
+      // `syncSelection` does. A deletion's caret stays where the character was.
+      selectText(current: Selection) {
+        if (!store.get().focused) {
+          return
+        }
+        const deleted = afterDelete && current.start === current.end
+        afterDelete = false
+        const { selection, value, maxLength } = store.get()
+        const next = deleted
+          ? null
+          : slotSelection(current, selection, value.length, maxLength)
+        store.set({
+          selection: next ? { start: next.start, end: next.end } : current,
+        })
+      },
+      focusText(focused: boolean) {
+        const { value, maxLength } = store.get()
+        if (focused === store.get().focused) {
+          return
+        }
+        store.set(
+          focused
+            ? {
+                focused,
+                selection: pressed ?? focusSelection(value.length, maxLength),
+              }
+            : { focused }
+        )
+        pressed = undefined
+      },
+      // A press on a slot selects it, focusing the field first.
+      pressSlot(index: number) {
+        afterDelete = false
+        const { value, maxLength, focused } = store.get()
+        if (isDisabled(store.get())) {
+          return
+        }
+        const selection = pressSelection(index, value.length, maxLength)
+        if (focused) {
+          store.set({ selection })
+        } else {
+          pressed = selection
+          focusPart(input, parts, "control")
+        }
+      },
     },
   }
 }

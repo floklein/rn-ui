@@ -13,6 +13,7 @@ import {
   CollapsibleTrigger,
 } from "../src/collapsible"
 import { Input, InputClear, InputGroup } from "../src/input"
+import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -263,6 +264,30 @@ describe("checkPattern's textbox pattern on the native host", () => {
         </InputGroup>
         <Input aria-label="Account" disabled />
         <Textarea aria-label="Notes" />
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+  })
+
+  test("passes on an otp input, enabled, read-only or disabled, as one textbox with its slots hidden", async () => {
+    const slots = (
+      <OTPInputGroup>
+        <OTPInputSlot index={0} />
+        <OTPInputSlot index={1} />
+        <OTPInputSlot index={2} />
+      </OTPInputGroup>
+    )
+    await render(
+      <View>
+        <OTPInput aria-label="Code" maxLength={3} defaultValue="12">
+          {slots}
+        </OTPInput>
+        <OTPInput aria-label="Read-only" maxLength={3} readOnly>
+          {slots}
+        </OTPInput>
+        <OTPInput aria-label="Disabled" maxLength={3} disabled>
+          {slots}
+        </OTPInput>
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
