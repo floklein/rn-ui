@@ -24,10 +24,12 @@ import type { Layer } from "../platform/layers"
 import type { PhysicalSide } from "../platform/sides"
 import { nativeSheet, type NativeScrollArea } from "./native-sheet"
 import type * as Mirrored from "./sheet"
+import { reducedFade, reducedSettle } from "./sheet-driver"
 import { axisPoint, resolveSide, type SheetSide } from "./sheet-axis"
 import type * as Native from "./sheet.native"
 
 type SheetOptions = Mirrored.SheetOptions
+type SettleEffect = Extract<SheetEffect, { type: "settle" }>
 type Sheet = Mirrored.Sheet
 
 const none = () => {}
@@ -209,7 +211,7 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
     }
   }
 
-  function settle(effect: Extract<SheetEffect, { type: "settle" }>) {
+  function settle(effect: SettleEffect) {
     const settling = ++settles
     shown = effect.to
     const view = bridge.view
@@ -220,21 +222,40 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
       view?.move(effect.to)
       return finishSettle()
     }
+    view.settle(
+      view.reducedMotion() ? reducedMotion(effect) : spring(effect),
+      () => settling === settles && finishSettle()
+    )
+  }
+
+  function spring({ from, to, ...effect }: SettleEffect) {
     const solver = solveSpring(
       effect.response,
       effect.dampingRatio,
-      effect.from - effect.to,
+      from - to,
       effect.velocity
     )
-    view.settle(
-      {
-        from: effect.from,
-        to: effect.to,
-        duration: settleTime(solver),
-        extentAt: (elapsed) => effect.to + solver.position(elapsed),
-      },
-      () => settling === settles && finishSettle()
-    )
+    return {
+      from,
+      to,
+      duration: settleTime(solver),
+      extentAt: (elapsed: number) => to + solver.position(elapsed),
+    }
+  }
+
+  // As the web's pointer driver: an open or a close fades, a snap eases.
+  function reducedMotion({ from, to }: SettleEffect) {
+    const fade = from <= 0 ? "in" : to <= 0 ? "out" : undefined
+    const duration = fade ? reducedFade : reducedSettle
+    const ease = (t: number) => 1 - (1 - t) ** 3
+    return {
+      from,
+      to,
+      duration,
+      fade,
+      extentAt: (elapsed: number) =>
+        from + (to - from) * ease(Math.min(1, elapsed / duration)),
+    } as const
   }
 
   function finishSettle() {
@@ -485,7 +506,7 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
       dispatch({ type: "snap-to", time: now(), id: resolved[index].id, reason })
     },
     nudge() {
-      if (!closing) {
+      if (!closing && !bridge.view?.reducedMotion()) {
         dispatch({ type: "nudge", time: now() })
       }
     },

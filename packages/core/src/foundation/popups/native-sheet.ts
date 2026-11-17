@@ -2,7 +2,8 @@ import type { PhysicalSide } from "../platform/sides"
 
 /**
  * The shared spring a sheet settles with, from one extent to another in px
- * from its edge: `extentAt` the elapsed ms, landing after `duration` ms.
+ * from its edge: `extentAt` the elapsed ms, landing after `duration` ms. With
+ * reduced motion, a short eased move instead.
  * @experimental
  */
 type NativeSheetSpring = {
@@ -10,6 +11,8 @@ type NativeSheetSpring = {
   to: number
   duration: number
   extentAt: (elapsed: number) => number
+  /** With reduced motion, an open or a close fades the sheet where it rests instead of sliding it. */
+  fade?: "in" | "out"
 }
 
 /**
@@ -44,6 +47,8 @@ type NativeSheetView = {
   settle: (spring: NativeSheetSpring, done: () => void) => void
   /** The snap points resolved again, which moves these ranges. */
   ranges: (ranges: NativeSheetRanges) => void
+  /** Whether the device asks for reduced motion. */
+  reducedMotion: () => boolean
 }
 
 /**

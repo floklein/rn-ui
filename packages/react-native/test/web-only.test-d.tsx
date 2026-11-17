@@ -14,6 +14,8 @@ import type * as DialogEntry from "../src/dialog"
 import { Drawer, DrawerContent, DrawerTrigger } from "../src/drawer"
 import type * as DrawerEntry from "../src/drawer"
 import { Field, FieldError, FieldLabel } from "../src/field"
+import { FileInput, FileInputTrigger } from "../src/file-input"
+import type * as FileInputEntry from "../src/file-input"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
@@ -232,6 +234,32 @@ const paginations = [
   <Pagination pageCount={10} getHref={(page) => `/posts/${page}`} />,
 ]
 
+const files = [
+  <FileInput
+    multiple
+    accept="image/*"
+    pick={async ({ accept, multiple }) =>
+      multiple && accept.length
+        ? [{ name: "a.png", size: 1, type: "image/png", uri: "file:///a.png" }]
+        : null
+    }
+    onValueChange={(value) => value[0]?.uri}
+  >
+    <FileInputTrigger />
+  </FileInput>,
+  // @ts-expect-error A picked file carries its uri.
+  <FileInput pick={() => [{ name: "a.png", size: 1, type: "image/png" }]} />,
+  // @ts-expect-error `name` has no native meaning.
+  <FileInput name="attachments" />,
+  // @ts-expect-error The app's pick decides which picker opens.
+  <FileInput directory />,
+  // @ts-expect-error The app's pick decides whether the camera opens.
+  <FileInput capture="environment" />,
+]
+
+// @ts-expect-error The file input has no hidden input on native.
+type FileInputHiddenInput = typeof FileInputEntry.FileInputInput
+
 export {
   codes,
   ComboboxInput,
@@ -242,6 +270,8 @@ export {
   type DrawerShortcut,
   exits,
   fields,
+  type FileInputHiddenInput,
+  files,
   NativeDialog,
   NativeSwitch,
   paginations,

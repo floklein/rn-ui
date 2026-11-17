@@ -45,6 +45,13 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import {
+  FileInput,
+  FileInputItem,
+  FileInputItemRemove,
+  FileInputList,
+  FileInputTrigger,
+} from "../src/file-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -1260,6 +1267,91 @@ describe("checkPattern's pagination pattern on the native host", () => {
     )
     await expect(checkPagination()).rejects.toThrow(
       "has no name; a button needs an accessibilityLabel or text inside it."
+    )
+  })
+})
+
+describe("checkPattern's file-input pattern on the native host", () => {
+  const files = ["a.png", "b.png", "c.png"].map((name) => ({
+    name,
+    size: 1,
+    type: "image/png",
+    uri: `file:///${name}`,
+  }))
+  const checkFiles = () =>
+    checkPattern(screen.container, "file-input", { os, act })
+
+  function Files({ disabled }: { disabled?: boolean }) {
+    return (
+      <FileInput multiple defaultValue={files} disabled={disabled}>
+        <FileInputTrigger>
+          <Text>Choose files</Text>
+        </FileInputTrigger>
+        <FileInputList>
+          <FileInputItem>
+            {({ file }) => (
+              <>
+                <Text>{file.name}</Text>
+                <FileInputItemRemove />
+              </>
+            )}
+          </FileInputItem>
+        </FileInputList>
+      </FileInput>
+    )
+  }
+
+  test("passes on a file input, each remove button taking its own file away", async () => {
+    await render(<Files />)
+    await expect(checkFiles()).resolves.toBeUndefined()
+    expect(screen.queryByText("a.png")).toBeNull()
+    expect(screen.queryByText("c.png")).toBeNull()
+  })
+
+  test("passes on two files with the same name", async () => {
+    const twins = files
+      .slice(0, 2)
+      .map((file) => ({ ...file, name: "IMG_0001.jpg" }))
+    await render(
+      <FileInput multiple defaultValue={twins}>
+        <FileInputTrigger>
+          <Text>Choose files</Text>
+        </FileInputTrigger>
+        <FileInputList>
+          <FileInputItem>{() => <FileInputItemRemove />}</FileInputItem>
+        </FileInputList>
+      </FileInput>
+    )
+    await expect(checkFiles()).resolves.toBeUndefined()
+  })
+
+  test("passes on a disabled file input, leaving its files", async () => {
+    await render(<Files disabled />)
+    await expect(checkFiles()).resolves.toBeUndefined()
+    expect(screen.getByText("b.png")).toBeOnTheScreen()
+  })
+
+  test("fails on a remove button that takes another file away", async () => {
+    function Wrong() {
+      const [names, setNames] = useState(["a.png", "b.png"])
+      return (
+        <View accessibilityRole="list">
+          {names.map((name) => (
+            <Pressable
+              key={name}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${name}`}
+              onPress={() =>
+                setNames((all) => all.filter((n) => n !== "b.png"))
+              }
+            />
+          ))}
+        </View>
+      )
+    }
+    await render(<Wrong />)
+    await expect(checkFiles()).rejects.toThrow(
+      `the button "Remove a.png" doesn't remove only its own file after the activate action; a remove button in the list takes its item away.`
     )
   })
 })

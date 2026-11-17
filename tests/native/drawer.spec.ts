@@ -13,6 +13,7 @@ afterEach(async () => {
   for (const [drawer, close] of [
     ["notes", "close-notes"],
     ["places", "close-places"],
+    ["sign-in", "close-sign-in"],
   ]) {
     if (tree.has(close)) {
       await device.press(close)
@@ -143,6 +144,47 @@ test("the settle lands on each snap point the handle and a release pick", async 
   await device.drag({ x, y }, { x, y: y + points(250) }, 300, 50)
   await expectText("places-state", /^at 0\.4 by swipe$/)
   await expectTop("places", height * 0.6)
+})
+
+// Android's keyboard has no element in UiAutomator's tree.
+async function keyboardTop() {
+  if (device.platform === "ios") {
+    const keyboard = device.driver.$(
+      "-ios class chain:**/XCUIElementTypeKeyboard"
+    )
+    return (await keyboard.getLocation()).y
+  }
+  return undefined
+}
+
+test("a focused field in the drawer stays above the keyboard, and the drawer comes back down when it hides", async () => {
+  await device.press("open-sign-in")
+  const height = await screenHeight()
+  const sheet = await device.rect("sign-in")
+  await expectTop("sign-in", height - sheet.height)
+  const before = await device.rect("sign-in-email")
+  await device.press("sign-in-email")
+  await device.driver.waitUntil(() => device.driver.isKeyboardShown())
+  await pause(800)
+  const field = await device.rect("sign-in-email")
+  const top = await keyboardTop()
+  if (top !== undefined) {
+    assert.ok(
+      field.y + field.height <= top,
+      `the field ends at ${field.y + field.height}, under the keyboard at ${top}`
+    )
+  } else {
+    assert.ok(field.y < before.y - points(100), "the field didn't rise")
+  }
+  if (device.platform === "ios") {
+    await device.type("\n")
+  } else {
+    await device.driver.hideKeyboard()
+  }
+  await device.driver.waitUntil(
+    async () => !(await device.driver.isKeyboardShown())
+  )
+  await expectTop("sign-in", height - sheet.height)
 })
 
 test("each example opens", async () => {
