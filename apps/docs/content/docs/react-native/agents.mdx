@@ -1,0 +1,105 @@
+---
+title: Connect an Agent
+description: Let an agent read your app's components and call their actions on iOS and Android.
+---
+
+`createAgent` works in React Native as it does on the web: an agent reads the ui-sdk components on screen, finds the actions they take, and calls them through each component's API. [Connect an Agent](/docs/agents/connect-an-agent) covers the bridge itself. This page covers what differs on a device.
+
+## Create the Bridge
+
+Import it from the adapter, like your components:
+
+```ts title="agent.ts"
+import { createAgent } from "@ui-sdk/react-native/agent"
+
+const agent = createAgent()
+
+export { agent }
+```
+
+The bridge finds the components already on screen when you create it, and registers new ones as they mount.
+
+React Native has no browser agent to hand the tools to, so the adapter ships no transport. Your app or its tooling calls `agent.snapshot()`, `agent.act()` and `agent.query()`, and passes `agentTools` to the model you use. `registerTools` does nothing on a device.
+
+## Read the Screen
+
+For a screen with an input and a button:
+
+```tsx
+import { Button } from "@ui-sdk/react-native/button"
+import { Input } from "@ui-sdk/react-native/input"
+import { Text } from "react-native"
+
+function Project() {
+  return (
+    <>
+      <Input aria-label="Project name" defaultValue="Apollo" />
+      <Button onPress={save}>
+        <Text>Save</Text>
+      </Button>
+    </>
+  )
+}
+```
+
+`agent.snapshot()` returns:
+
+```json
+[
+  {
+    "ref": "c1",
+    "component": "input",
+    "label": "Project name",
+    "value": "Apollo",
+    "actions": ["setValue", "clear"]
+  },
+  { "ref": "c2", "component": "button", "label": "Save", "actions": ["press"] }
+]
+```
+
+A component's label and text come from what its parts render: the accessibility label a screen reader reads, and the plain text inside each part. A part counts as shown while its slot is present, not because it's mounted, so the fields in a closed collapsible with `keepMounted` aren't listed. A part hidden from accessibility by its own props or by a part around it isn't listed either, and neither is anything behind an open ui-sdk modal, like the screen under a Dialog.
+
+The bridge can't see what hides a view outside ui-sdk: a `View` of your own with `aria-hidden`, your own `Modal`, or a navigator's screen that stays mounted under the one on top. Mark those with `AgentRegion`, like `data-agent-hidden={!isFocused}` around each screen, with `useIsFocused` from your navigator.
+
+The bridge sees only ui-sdk components and their parts. A `Pressable` of your own isn't a part, so it isn't listed; a ui-sdk [Button](./components/button) is.
+
+## Change a Value
+
+`act` runs steps through each component's API:
+
+```ts
+await agent.act({
+  steps: [
+    { ref: "Project name", action: "setValue", args: ["Atlas"] },
+    { ref: "Save", action: "press" },
+  ],
+})
+```
+
+The input's `onValueChange` runs with `details.source === "agent"`. A press runs the part's own press, so the Button's `onPress` gets `details.source === "agent"` too.
+
+## Mark What Agents May Do
+
+The three marks are props on any part: `data-agent-confirm` for a change a person must make, `data-agent-hidden` for what agents never see, and `data-agent-secret` for values that read `"[redacted]"`. Each covers the part and everything rendered inside it. The adapter reads them and doesn't pass them to the view.
+
+To mark a region that isn't a part, wrap it in `AgentRegion`, which takes the same props and renders no view:
+
+```tsx
+import { AgentRegion } from "@ui-sdk/react-native/agent"
+
+function DangerZone() {
+  return (
+    <AgentRegion data-agent-confirm="Deletes the project">
+      <Button onPress={remove}>
+        <Text>Delete</Text>
+      </Button>
+    </AgentRegion>
+  )
+}
+```
+
+A step that presses **Delete** now needs a person. [Permissions](/docs/agents/connect-an-agent/permissions) shows how `allow` asks them.
+
+## Observe and Undo
+
+`observe` from `@ui-sdk/react-native/observe` and `createHistory` from `@ui-sdk/react-native/history` work as on the web, as [Observe Changes](/docs/agents/connect-an-agent/observe-changes) and [History and Undo](/docs/agents/connect-an-agent/history-and-undo) show. Their `within` option and `elementOf` point at DOM elements, which a native screen doesn't have.

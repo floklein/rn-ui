@@ -32,6 +32,7 @@ function host() {
     follow: vi.fn(),
     adjustable: vi.fn(),
     scrollNear: vi.fn(),
+    seen: vi.fn(),
     field: vi.fn(),
   })
   return { rendered, focus }

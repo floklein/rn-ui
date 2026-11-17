@@ -56,6 +56,7 @@ function host() {
       return () => steps.delete(part)
     },
     listen: () => () => {},
+    seen: vi.fn(),
   })
   return steps
 }

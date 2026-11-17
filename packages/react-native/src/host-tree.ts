@@ -227,6 +227,7 @@ async function performWatched(
     adjustable: (part, step) => host?.adjustable(part, step) ?? (() => {}),
     scrollNear: (point, options) => host?.scrollNear(point, options) ?? false,
     listen: (input) => host?.listen(input) ?? (() => {}),
+    seen: (part) => host?.seen(part),
   })
   try {
     await act(() => perform(node, action))

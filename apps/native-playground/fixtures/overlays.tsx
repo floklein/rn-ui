@@ -1,3 +1,4 @@
+import { confirm } from "@ui-sdk/react-native/alert-dialog"
 import {
   createDialogController,
   Dialog,
@@ -7,8 +8,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui-sdk/react-native/dialog"
+import { OverlayHost } from "@ui-sdk/react-native/overlays"
 import { useState } from "react"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native"
 
 function Action({
   id,
@@ -71,6 +73,15 @@ function Fixture() {
   const [sibling] = useState(createDialogController)
   const [presses, setPresses] = useState(0)
   const [changes, setChanges] = useState<string[]>([])
+  const [answer, setAnswer] = useState("none")
+  const [sheet, setSheet] = useState(false)
+  const ask = async () => {
+    const yes = await confirm({
+      title: "Discard changes?",
+      confirmLabel: "Discard",
+    })
+    setAnswer(String(yes))
+  }
   const onChanges = (change: string) =>
     setChanges((current) => [...current, change])
 
@@ -78,6 +89,7 @@ function Fixture() {
     <View style={styles.fixture}>
       <Text testID="changes">{changes.join(" ") || "none"}</Text>
       <Text testID="presses">{presses}</Text>
+      <Text testID="answer">{answer}</Text>
       <View style={styles.actions}>
         <Action
           id="under"
@@ -90,6 +102,7 @@ function Fixture() {
           onPress={() => {
             setChanges([])
             setPresses(0)
+            setAnswer("none")
           }}
         />
       </View>
@@ -111,6 +124,7 @@ function Fixture() {
               onChanges={onChanges}
             />
             <Panel name="confirm" title="Confirm" onChanges={onChanges} />
+            <Action id="ask" label="Ask" onPress={ask} />
             <Action
               id="open-sibling"
               label="Open sibling"
@@ -125,6 +139,23 @@ function Fixture() {
         controller={sibling}
         onChanges={onChanges}
       />
+      <Action
+        id="open-sheet"
+        label="Open sheet"
+        onPress={() => setSheet(true)}
+      />
+      <Modal visible={sheet} onRequestClose={() => setSheet(false)}>
+        <OverlayHost>
+          <View testID="sheet" style={styles.sheet}>
+            <Action id="sheet-ask" label="Ask" onPress={ask} />
+            <Action
+              id="sheet-close"
+              label="Close sheet"
+              onPress={() => setSheet(false)}
+            />
+          </View>
+        </OverlayHost>
+      </Modal>
     </View>
   )
 }
@@ -162,6 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   title: { fontSize: 17, fontWeight: "600" },
+  sheet: { flex: 1, justifyContent: "center", padding: 24, gap: 8 },
 })
 
 export { Fixture }

@@ -16,6 +16,7 @@ function host(rtl: boolean) {
     follow: vi.fn(),
     adjustable: vi.fn(),
     scrollNear: vi.fn(),
+    seen: vi.fn(),
     listen: vi.fn(),
   })
 }
