@@ -1,4 +1,5 @@
 import { definePrimitive } from "@ui-sdk/core"
+import { accordion } from "@ui-sdk/core/accordion"
 import { avatar } from "@ui-sdk/core/avatar"
 import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
@@ -172,6 +173,17 @@ describe("checkCreation", () => {
     expect(() => checkCreation(tabs, {})).not.toThrow()
     expect(() =>
       checkCreation(tabs, { value: "a", orientation: "vertical" })
+    ).not.toThrow()
+  })
+
+  test("passes on an accordion, with items open or none", () => {
+    expect(() => checkCreation(accordion, {})).not.toThrow()
+    expect(() =>
+      checkCreation(accordion, {
+        defaultValue: ["shipping", "returns"],
+        multiple: true,
+        disabled: true,
+      })
     ).not.toThrow()
   })
 

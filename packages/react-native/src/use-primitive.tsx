@@ -253,6 +253,10 @@ function useHandle<P extends Primitive>(primitive: P) {
   return handle
 }
 
+/** The props of the part of `slot` around a part written by hand, like its item's value. */
+const useAround = (primitive: Primitive, slot: string) =>
+  React.useContext(scopeOf(primitive).context)?.around[slot]
+
 // The host's own style, without the function `Pressable` takes in its place.
 type HostStyle<Host extends React.ElementType> = Exclude<
   React.ComponentProps<Host> extends { style?: infer Style } ? Style : never,
@@ -1022,6 +1026,7 @@ export {
   type PartProps,
   type Parts,
   type PrimitiveHandle,
+  useAround,
   useHandle,
   useNearest,
   usePart,
