@@ -1007,6 +1007,34 @@
       "mirrors": ["packages/core/src/foundation/number/parse.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/date-input/date-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-input/date-input-api.ts",
+        "packages/core/src/components/date-input/date-input-parts.ts",
+        "packages/core/src/components/date-input/date-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, pressKey, selectText, leaveText, adjust and mountSegment: a segment's beforeinput, input, keydown (Backspace, the arrow keys) and focusout restated for a native TextInput's onChangeText, onKeyPress, onSelectionChange and onBlur and a screen reader's increment and decrement, where bind and the on handlers read the <input>. An edit that puts in nothing the segment takes is written back with its selection (foundation/text/corrected-edit.ts). segmentElements lists the mounted segments as native element stand-ins in render order, where the DOM module reads the bound elements. The web module returns no methods, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/date-input/date-input-native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-input/date-input-parts.ts",
+        "packages/core/src/components/date-input/date-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's and the segments' bind orchestrate: the root reads the locale through bindRoot, and each segment you type in is listed while mounted (internal.mountSegment), so typing moves on and the controller focuses it, and a screen reader's increment and decrement step it."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/date-input/date-input-api.ts",
+      "mirrors": ["packages/core/src/components/date-input/date-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The segments come from segmentElements in date-input-field.ts, which has a native twin, instead of elements(context, \"segment\"), and internal spreads nativeField(...) from the same module. paste's body is pasteText(text, event), which the native field calls with pasted text; step, insert and remove take an optional event. Additive: the state's selection, which a native corrected edit writes back."
     }
   ],
   "components": {
@@ -1704,6 +1732,40 @@
           "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
+    },
+    "date-input": {
+      "entry": "packages/react-native/src/date-input.tsx",
+      "slots": {
+        "dateInput.root": {
+          "covered": "packages/core/src/components/date-input/date-input-native.ts",
+          "reason": "Its bind reads the page's language, which date-input-native.ts reads through bindRoot as the root mounts, watches fieldsets (a disabled FieldSet hands its state down through context) and makes the input take part in a form, which native doesn't have. Its mousedown and click focus the nearest segment; the root View's responder release calls internal.nearestSegment with the touch's pageX."
+        },
+        "dateInput.segment": {
+          "covered": "packages/core/src/components/date-input/date-input-field.native.ts",
+          "reason": "Its bind writes the segment's text and selects it, adopts digits typed before the page ran, and listens to beforeinput and input; its keydown handles the arrow keys, Page Up and Down, Home, End, Backspace, Delete and Enter, its paste sets the value and its focusout keeps the digits typed. The TextInput's onChangeText, onKeyPress, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText (pasted text included), pressKey, selectText, leaveText and blur, and the value and selection props follow the state. A screen reader's increment and decrement step it (date-input-native.ts). The arrow keys, Page Up and Down, Home, End and Delete, which TextInput doesn't report, and text typed before the app runs have no native counterpart."
+        },
+        "dateInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
+    "time-input": {
+      "entry": "packages/react-native/src/time-input.tsx",
+      "slots": {
+        "timeInput.root": {
+          "covered": "packages/core/src/components/date-input/date-input-native.ts",
+          "reason": "Its bind reads the page's language, which date-input-native.ts reads through bindRoot as the root mounts, watches fieldsets (a disabled FieldSet hands its state down through context) and makes the input take part in a form, which native doesn't have. Its mousedown and click focus the nearest segment; the root View's responder release calls internal.nearestSegment with the touch's pageX."
+        },
+        "timeInput.segment": {
+          "covered": "packages/core/src/components/date-input/date-input-field.native.ts",
+          "reason": "Its bind writes the segment's text and selects it, adopts digits typed before the page ran, and listens to beforeinput and input; its keydown handles the arrow keys, Page Up and Down, Home, End, Backspace, Delete and Enter, its paste sets the value and its focusout keeps the digits typed. The TextInput's onChangeText, onKeyPress, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText (pasted text included), pressKey, selectText, leaveText and blur, and the value and selection props follow the state. A screen reader's increment and decrement step it (date-input-native.ts). The arrow keys, Page Up and Down, Home, End and Delete, which TextInput doesn't report, and text typed before the app runs have no native counterpart."
+        },
+        "timeInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
     }
   },
   "pending": [
@@ -1712,7 +1774,6 @@
     "color-picker",
     "combobox",
     "command",
-    "date-input",
     "hover-card",
     "image-cropper",
     "listbox",
@@ -1720,7 +1781,6 @@
     "menubar",
     "navigation-menu",
     "select",
-    "time-input",
     "timeline",
     "token-input",
     "tree",
@@ -2189,6 +2249,12 @@
       "example": "wheel",
       "feature": "Stepping with the mouse wheel",
       "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
+    },
+    {
+      "component": "date-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
     }
   ]
 }
