@@ -143,7 +143,9 @@ function responder(part: Part, hold: (() => () => void) | null) {
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
     onStartShouldSetResponderCapture({ nativeEvent }: GestureResponderEvent) {
-      downs.set(part, { x: nativeEvent.pageX, y: nativeEvent.pageY })
+      if ((nativeEvent.touches?.length ?? 1) <= 1) {
+        downs.set(part, { x: nativeEvent.pageX, y: nativeEvent.pageY })
+      }
       return false
     },
     // A touch a button inside took becomes the part's drag once it moves.

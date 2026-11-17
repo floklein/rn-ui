@@ -15,7 +15,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "./alert-dialog"
-import { RootHost, type RootHostProps } from "./overlay-host"
+import { RootHost, type RootHostProps, useHost } from "./overlay-host"
 import { Region, type ToastRegionProps } from "./toast-parts"
 
 const noEntries: readonly OverlayEntry[] = []
@@ -53,11 +53,13 @@ function OverlayHost({
     () => noEntries
   )
   React.useLayoutEffect(() => overlays.attachHost(), [overlays])
+  // The outermost host's region follows the topmost host, into this one too.
+  const nested = !!useHost()
   return (
     <RootHost {...props}>
       {children}
       {entries.map((entry) => {
-        if (entry.type === "toaster") {
+        if (entry.type === "toaster" && !nested) {
           return (
             <HostedToaster
               key={entry.id}

@@ -24,6 +24,7 @@ import {
   I18nManager,
   Keyboard,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -215,17 +216,22 @@ function RegionView({
         typeof style === "function" ? style(state, interaction) : style,
       ],
       children: list,
-    }
+    } as Record<string, unknown>
   )
 }
 
 function useKeyboardHeight() {
   const [height, setHeight] = React.useState(0)
   React.useEffect(() => {
-    const shown = Keyboard.addListener("keyboardDidShow", (event) =>
+    // iOS says before it animates, so the toast moves with the keyboard.
+    const [show, hide] =
+      Platform.OS === "ios"
+        ? (["keyboardWillShow", "keyboardWillHide"] as const)
+        : (["keyboardDidShow", "keyboardDidHide"] as const)
+    const shown = Keyboard.addListener(show, (event) =>
       setHeight(event.endCoordinates.height)
     )
-    const hidden = Keyboard.addListener("keyboardDidHide", () => setHeight(0))
+    const hidden = Keyboard.addListener(hide, () => setHeight(0))
     return () => {
       shown.remove()
       hidden.remove()
@@ -326,7 +332,13 @@ function TextPart({
   ...props
 }: PartProps<typeof Text> & { text: "title" | "description" }) {
   const { region, toast } = useToast("ToastTitle")
-  return usePart(region, text, { id: toast.id }, props, Text)
+  return usePart(
+    region,
+    text,
+    { id: toast.id },
+    props as Record<string, unknown>,
+    Text
+  )
 }
 
 /**
@@ -367,7 +379,7 @@ function ActionPart({
         : { role: "button" }),
       ...props,
       children: children ?? (label == null ? label : <Text>{label}</Text>),
-    },
+    } as Record<string, unknown>,
     Pressable
   )
 }
@@ -383,7 +395,13 @@ function ToastClose({
   ToastCloseProps) {
   const { region, toast } = useToast("ToastClose")
   const part = { id: React.useId(), toast: toast.id, action }
-  return usePart(region, "close", part, { role: "button", ...props }, Pressable)
+  return usePart(
+    region,
+    "close",
+    part,
+    { role: "button", ...props } as Record<string, unknown>,
+    Pressable
+  )
 }
 
 /**

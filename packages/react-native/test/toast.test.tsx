@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import type { ReactNode } from "react"
-import { AccessibilityInfo, AppState, Text } from "react-native"
+import { AccessibilityInfo, AppState, Modal, Text } from "react-native"
 import {
   Dialog,
   DialogClose,
@@ -167,6 +167,29 @@ describe("toast()", () => {
     })
     expect(screen.queryByRole("header", { name: "Edit project" })).toBeNull()
     expect(modals(screen.getByText("Draft saved") as unknown as Node)).toBe(0)
+  })
+
+  test("an OverlayHost inside the app's own Modal shows the toast once, and it's heard once", async () => {
+    const app = (visible: boolean) => (
+      <OverlayHost>
+        <Modal visible={visible}>
+          <OverlayHost>
+            <Text>Sheet</Text>
+          </OverlayHost>
+        </Modal>
+      </OverlayHost>
+    )
+    const { rerender } = await render(app(false))
+    await rerender(app(true))
+    await act(async () => {
+      toast("Saved")
+      jest.advanceTimersByTime(500)
+    })
+    expect(screen.getAllByText("Saved")).toHaveLength(1)
+    expect(modals(screen.getByText("Saved") as unknown as Node)).toBe(1)
+    expect(
+      announced.mock.calls.filter(([text]) => text === "Saved")
+    ).toHaveLength(1)
   })
 
   test("the toast's action runs and dismisses it", async () => {
@@ -379,6 +402,30 @@ describe("swiping a toast", () => {
     root.props.onStartShouldSetResponderCapture(touch(100))
     expect(root.props.onMoveShouldSetResponderCapture(touch(103))).toBe(false)
     expect(root.props.onMoveShouldSetResponderCapture(touch(120))).toBe(true)
+  })
+
+  test("a second finger doesn't move where the swipe started", async () => {
+    const toaster = createToaster()
+    await render(
+      <OverlayHost>
+        <Region toaster={toaster} />
+      </OverlayHost>
+    )
+    let id = ""
+    await act(async () => {
+      id = toaster({ title: "Saved", duration: Infinity })
+    })
+    const root = screen.getByTestId(id)
+    const finger = (y: number) => ({ pageX: 100, pageY: y })
+    root.props.onStartShouldSetResponderCapture({
+      nativeEvent: { ...finger(0), touches: [finger(0)] },
+    })
+    root.props.onStartShouldSetResponderCapture({
+      nativeEvent: { ...finger(300), touches: [finger(0), finger(300)] },
+    })
+    expect(
+      root.props.onMoveShouldSetResponderCapture({ nativeEvent: finger(2) })
+    ).toBe(false)
   })
 
   test("a toast that isn't dismissible can't be swiped", async () => {
