@@ -532,7 +532,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog and alert-dialog."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog and alert-dialog."
     },
     {
       "kind": "twin",
@@ -634,6 +634,24 @@
       "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/accordion/accordion-native.ts",
+      "mirrors": [
+        "packages/core/src/components/accordion/accordion.ts",
+        "packages/core/src/foundation/disclosure/disclosure.ts",
+        "packages/core/src/foundation/motion/panel.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the item and panel slots' bind orchestrate: an item registers with a stand-in from nativeElement, so the items' order comes from the order twin; a panel settles (api.internal.settled(key, open)) when the adapter's presence does, through presence-native.ts's onSettled, as collapsible-native.ts does. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting list stays the adapter's presence."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/accordion/accordion.ts",
+      "mirrors": ["packages/core/src/components/accordion/accordion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The items' order sorts the registered items with inDocumentOrder instead of reading elements(context, \"item\"), so the order twin sorts native stand-ins; the controller's focus() calls focusPart, with the first item's key when no value is given."
     }
   ],
   "components": {
@@ -1052,10 +1070,30 @@
           "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
         }
       }
+    },
+    "accordion": {
+      "entry": "packages/react-native/src/accordion.tsx",
+      "slots": {
+        "accordion.root": {
+          "needs": "nothing",
+          "reason": "Its bind watches a disabled fieldset, which doesn't exist on native, and resyncs the items' order when they move in the page, which nothing reports on native; an item's index updates as items mount and unmount."
+        },
+        "accordion.item": {
+          "covered": "packages/core/src/components/accordion/accordion-native.ts",
+          "reason": "Its bind registers the item, which accordion-native.ts does while the item is mounted."
+        },
+        "accordion.trigger": {
+          "needs": "nothing",
+          "reason": "Its bind gives a non-button element the button role and a tab stop, and its keydown activates it with Enter and Space; a Pressable is always a button the OS activates. Its press is the adapter's generic press, and its focus() goes through the focus-part twin."
+        },
+        "accordion.panel": {
+          "covered": "packages/core/src/components/accordion/accordion-native.ts",
+          "reason": "Its bind settles the panel after its animations, which accordion-native.ts does when the adapter's presence settles; writes the size variables, which AccordionPanel measures into its state (src/disclosure-panel.tsx); registers it for the trigger's aria-controls, which has no native counterpart; keeps it findable, which native has no find in page for; and moves focus out of a panel closing around it, which native never observes."
+        }
+      }
     }
   },
   "pending": [
-    "accordion",
     "autocomplete",
     "calendar",
     "carousel",
@@ -1416,6 +1454,24 @@
       "example": "slider",
       "feature": "A label for a Slider",
       "reason": "Slider isn't on native yet; the example comes with it (#71)."
+    },
+    {
+      "component": "accordion",
+      "example": "deep-link",
+      "feature": "A link to text inside a closed panel",
+      "reason": "Native has no links into a screen's text and no find in page, so hiddenUntilFound has nothing to reveal."
+    },
+    {
+      "component": "accordion",
+      "example": "find-in-page",
+      "feature": "Find in page revealing a hidden panel",
+      "reason": "Native has no find in page, so a hidden panel has no text to match."
+    },
+    {
+      "component": "accordion",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     }
   ]
 }

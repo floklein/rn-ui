@@ -17,6 +17,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "exports": {
+    "./accordion": "./src/accordion.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
@@ -54,6 +55,10 @@
   ],
   "publishConfig": {
     "exports": {
+      "./accordion": {
+        "types": "./dist/accordion.d.ts",
+        "default": "./dist/accordion.js"
+      },
       "./alert-dialog": {
         "types": "./dist/alert-dialog.d.ts",
         "default": "./dist/alert-dialog.js"

@@ -5,6 +5,7 @@
  *
  * @module
  */
+export { accordionNative } from "./components/accordion/accordion-native"
 export { checkboxNative } from "./components/checkbox/checkbox-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"

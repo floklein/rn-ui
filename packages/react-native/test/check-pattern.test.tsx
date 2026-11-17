@@ -4,6 +4,13 @@ import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
 import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native"
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "../src/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import {
   AlertDialog,
@@ -104,6 +111,8 @@ const checkToolbar = () =>
   checkPattern(screen.container, "toolbar", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
+const checkAccordion = () =>
+  checkPattern(screen.container, "accordion", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -972,6 +981,56 @@ describe("checkPattern's disclosure pattern on the native host", () => {
     )
     await expect(checkDisclosure()).rejects.toThrow(
       "stays collapsed after the activate action"
+    )
+  })
+})
+
+function Faq(props: React.ComponentProps<typeof Accordion>) {
+  return (
+    <Accordion {...props}>
+      {["Shipping", "Returns"].map((name) => (
+        <AccordionItem key={name} value={name}>
+          <AccordionHeader>
+            <AccordionTrigger>
+              <Text>{name}</Text>
+            </AccordionTrigger>
+          </AccordionHeader>
+          <AccordionPanel>
+            <Text>{`${name} answer`}</Text>
+          </AccordionPanel>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  )
+}
+
+describe("checkPattern's accordion pattern on the native host", () => {
+  test("passes on one item open at a time, several, one that must stay open, and a disabled accordion", async () => {
+    await render(<Faq />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq multiple defaultValue={["Shipping"]} />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq collapsible={false} defaultValue={["Shipping"]} />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq disabled />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+  })
+
+  test("fails on a screen with no button that has an expanded state", async () => {
+    await render(
+      <Button>
+        <Text>Save</Text>
+      </Button>
+    )
+    await expect(checkAccordion()).rejects.toThrow(
+      "has no header button with an expanded state"
+    )
+  })
+
+  test("fails on a header button whose content doesn't follow the activate action", async () => {
+    await render(<HandDisclosure pressShows={false} />)
+    await expect(checkAccordion()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
     )
   })
 })

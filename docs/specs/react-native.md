@@ -353,6 +353,7 @@ Every difference the resolutions record, by subject.
 - A user writes React Native's host props, such as `onPress` for `onClick` ([Where native names diverge from @ui-sdk/react][names]).
 - A change's details carry no `event` ([Where the host seam sits in core][seam]).
 - NativeWind v4 users call `cssInterop` on the parts they style ([How state reaches native styles][styles]).
+- An Accordion item's `index` updates as items mount and unmount, not when they move: nothing reports a view that moves without remounting, where the web watches the page with a `MutationObserver` (ticket 89).
 
 **Accessibility, focus and keyboards**
 
@@ -374,6 +375,7 @@ Every difference the resolutions record, by subject.
 - A Toggle given `role="switch"` announces its on or off state from `aria-pressed`, where the web's switch ignores `aria-pressed` and announces no state; an app can still pass `aria-checked` ([council batch 2][council-2]).
 - The current page of a Pagination is announced as selected: `aria-current="page"` becomes `accessibilityState.selected` unless the part sets `aria-selected`, since React Native has no current state. Pagination has no landmark: `navigation` and `listitem` reach no screen reader, and each page and step is its own button (ticket 87).
 - A Label names and presses only a control beside it, through `htmlFor`: it can't wrap one, since VoiceOver reads a `Text` as one element. It reaches Input, Textarea, Switch and Checkbox, not a radio group or a slider; a control has one label, the one mounted last, and ids are shared by every mounted screen. On Android a Label is its own TalkBack and Tab stop, as a pressable `Text` (ticket 82).
+- An Accordion's header has no heading role: React Native gives an element one role, the trigger keeps the button's, and a header role on the `View` around it doesn't reach VoiceOver, which reads traits only from accessible elements; what TalkBack makes of a heading container around a button is unchecked. Heading navigation doesn't reach the items (ticket 89).
 
 **Popups**
 
