@@ -45,7 +45,7 @@ Last checked: 2026-11-17, against `packages/react-native` and `node_modules/reac
 ### Layout
 
 - Yoga never lets a flex basis go below a child's padding plus border (`yoga/algorithm/CalculateLayout.cpp`, `maxOrDefined(resolvedFlexBasis, paddingAndBorder)`), so `flexBasis: 0` with `flexGrow` shares hands out padding first and the shares only split what's left.
-- A percentage `flexBasis` resolves against the parent's main size as Yoga measures it, which an ancestor measured by its content leaves undefined: on an iOS device Resizable's `flexBasis: "50%"` panels laid out at their padding while Jest showed the style (#112). Size in points from a measured layout instead.
+- On an iOS device (React Native 0.88, Fabric) Resizable's panels with a `flexBasis`, as a percentage or in points, with `flexGrow: 0` laid out at their padding while Jest showed the style; a `width` or `height` in points from a measured layout works (#112). Prove a layout on a device with `device.rect`, not only in Jest.
 
 ### React on native
 

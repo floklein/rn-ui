@@ -77,9 +77,9 @@ describe("Resizable", () => {
     expect(flat(screen.getByTestId("files").props.style)).toMatchObject({
       flexGrow: 0,
       flexShrink: 1,
-      flexBasis: 60,
+      width: 60,
     })
-    expect(flat(screen.getByTestId("code").props.style).flexBasis).toBe(140)
+    expect(flat(screen.getByTestId("code").props.style).width).toBe(140)
   })
 
   test("a panel with a style of its own keeps its share", async () => {

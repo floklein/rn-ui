@@ -106,14 +106,25 @@ function ResizablePanel(props: React.ComponentProps<ResizableParts["Panel"]>) {
   const group = useHandle(resizable)
   const space = React.useContext(SpaceContext)
   // Until the group has measured its panels, they grow by their shares,
-  // which fills the group whatever their padding. After, each takes its
-  // share of the measured points, as a flex share would short their padding.
+  // which fills it whatever their padding. After, each takes its share of
+  // the measured points as its length: a flex basis lays out at the padding.
   const style = (state: ResizablePanelState) => {
     const laidOut = group.state.layout.length > 0
+    if (space && laidOut) {
+      const length = (state.size / 100) * space
+      return {
+        flexGrow: 0,
+        flexShrink: 1,
+        overflow: "hidden" as const,
+        ...(state.orientation === "vertical"
+          ? { height: length }
+          : { width: length }),
+      }
+    }
     return {
-      flexGrow: space && laidOut ? 0 : laidOut ? state.size : 1,
+      flexGrow: laidOut ? state.size : 1,
       flexShrink: 1,
-      flexBasis: space && laidOut ? (state.size / 100) * space : 0,
+      flexBasis: 0,
       overflow: "hidden" as const,
     }
   }
