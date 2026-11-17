@@ -225,6 +225,7 @@ async function performWatched(
     box: (part) => host?.box(part),
     follow: (part, drag) => host?.follow(part, drag) ?? (() => {}),
     adjustable: (part, step) => host?.adjustable(part, step) ?? (() => {}),
+    scrollNear: (point, options) => host?.scrollNear(point, options) ?? false,
     listen: (input) => host?.listen(input) ?? (() => {}),
   })
   try {

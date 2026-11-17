@@ -60,9 +60,11 @@ import {
   useText,
 } from "./names"
 import {
+  captures,
   parts as viewParts,
   pressSource,
   renders,
+  isFollowed,
   letGo,
   responder,
   steps,
@@ -575,6 +577,14 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
   const disabling = React.useContext(DisabledContext)
   const hold = React.useContext(ScrollHoldContext)
   React.useLayoutEffect(() => () => letGo(part), [part])
+  // The native behavior runs as the view mounts, after this render.
+  const follows = isFollowed(part)
+  const captured = captures(part)
+  React.useLayoutEffect(() => {
+    if (isFollowed(part) !== follows || captures(part) !== captured) {
+      rerender()
+    }
+  })
   React.useLayoutEffect(() => {
     const state = part.store.get() as { formDisabled?: boolean }
     if (
@@ -720,12 +730,17 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
         own.accessibilityLabel)
         ? { collapsable: false }
         : {}
-    // A part the web drags with a pointer follows touches with the responder.
+    // A part the web drags with a pointer follows touches with the responder,
+    // and so does one its native behavior follows, like a list holding its items' drags.
     const slots = primitive.slots as
       Record<string, { on?: object } | undefined> | undefined
     const drags =
-      !pressable && slots?.[slot]?.on && "pointerdown" in slots[slot].on
-        ? responder(part, hold)
+      !pressable &&
+      ((slots?.[slot]?.on && "pointerdown" in slots[slot].on) || follows)
+        ? {
+            ...responder(part, hold),
+            ...(captured && { pointerEvents: "box-only" as const }),
+          }
         : {}
     element = renderElement(
       host,

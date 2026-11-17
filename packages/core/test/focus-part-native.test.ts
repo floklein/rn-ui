@@ -24,6 +24,7 @@ describe("focusing a part on the native host", () => {
       box: vi.fn(),
       follow: vi.fn(),
       adjustable: vi.fn(),
+      scrollNear: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
     const root = instance.part("root", {}, true)
