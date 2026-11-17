@@ -431,6 +431,8 @@
   "@ui-sdk/react-native/checkbox": 16296,
   "@ui-sdk/react-native/collapsible": 14713,
   "@ui-sdk/react-native/date": 3630,
+  "@ui-sdk/react-native/date-picker": 44494,
+  "@ui-sdk/react-native/date-picker (lazy)": 13806,
   "@ui-sdk/react-native/dialog": 31223,
   "@ui-sdk/react-native/dialog (lazy)": 13531,
   "@ui-sdk/react-native/field": 13309,
