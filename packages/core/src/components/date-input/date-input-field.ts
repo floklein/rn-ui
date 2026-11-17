@@ -9,14 +9,13 @@ import type { DateInputSegmentData, EditableType } from "./date-input-model"
 
 type NativeFieldContext = {
   store: PrimitiveContext<SharedOptions, State, string>["store"]
-  /** The text a segment shows now. */
-  textOf: (type: EditableType) => string
   segmentElement: (type: EditableType) => HTMLElement | undefined
   insert: (type: EditableType, el: HTMLElement, text: string) => void
   remove: (type: EditableType, el: HTMLElement, backward: boolean) => void
   /** Sets the value from pasted text. Returns false when it isn't one. */
   pasteText: (text: string) => boolean
-  step: (type: EditableType, direction: 1 | -1) => void
+  /** Steps a segment as a key does, like `"ArrowUp"`. */
+  step: (type: EditableType, key: string) => void
   blur: () => void
 }
 

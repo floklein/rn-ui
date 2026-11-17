@@ -7,6 +7,7 @@ import { createCorrectedEdit } from "../../foundation/text/corrected-edit"
 import type * as Mirrored from "./date-input-field"
 import type { NativeFieldContext, SegmentProps } from "./date-input-field"
 import type * as Native from "./date-input-field.native"
+import { segmentFor } from "./date-input-api"
 import type { EditableType } from "./date-input-model"
 
 // A mounted segment's stand-in, the same one each time, so the api can find
@@ -41,7 +42,6 @@ function insertedText(previous: string, text: string) {
 
 function nativeField({
   store,
-  textOf,
   segmentElement,
   insert,
   remove,
@@ -62,6 +62,8 @@ function nativeField({
   // unpaired Backspace in an empty segment goes back.
   let keyFirst = false
   let deletionFirst = false
+  const textOf = (type: EditableType) =>
+    segmentFor(store.get(), type)?.text ?? ""
   const editable = () => !isDisabled(store.get()) && !store.get().readOnly
 
   return {
@@ -123,7 +125,7 @@ function nativeField({
     },
     adjust(type: EditableType, direction: 1 | -1) {
       if (editable()) {
-        step(type, direction)
+        step(type, direction === 1 ? "ArrowUp" : "ArrowDown")
       }
     },
     mountSegment(part: Part) {

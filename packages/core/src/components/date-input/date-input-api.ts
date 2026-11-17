@@ -636,13 +636,11 @@ function dateInputApiBody(
     internal: {
       ...nativeField({
         store,
-        textOf: (type) => segmentFor(store.get(), type)?.text ?? "",
         segmentElement,
         insert,
         remove,
         pasteText,
-        step: (type, direction) =>
-          step(type, direction === 1 ? "ArrowUp" : "ArrowDown"),
+        step,
         blur,
       }),
       keydown,
