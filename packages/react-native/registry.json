@@ -755,6 +755,25 @@
       "mirrors": ["packages/core/src/foundation/popups/sheet-driver.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Where the native sheet and the host meet: the host's view (sizes, moves and the spring) and the finger it feeds the sheet, the native counterpart of the DOM driver boundary."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/date-picker/date-picker-native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-picker/date-picker-parts.ts",
+        "packages/core/src/components/date-picker/date-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's, the root's and the days' bind orchestrate: the popup's layer, focus in and back and exit through popupNative, with focus on open going to the day with the calendar's tab stop, as initialFocus picks it on the DOM host; the root reads the locale and today through bindRoot, and each day joins the roving group. datePickerText gives the native input the text the input's bind writes into the element."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/date-picker/date-picker-api.ts",
+      "mirrors": [
+        "packages/core/src/components/date-picker/date-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal spreads the popup kit's internals under Calendar's, so popupNative and placeNative read the preset, parts, rules and trigger slot as they do on Popover; focusInput calls focusPart with the start input, so Clear and a Field's label focus the native input through the focus twin."
     }
   ],
   "components": {
@@ -1281,6 +1300,47 @@
           "reason": "Its bind registers the outlet for the sheet's effects, which write CSS variables and play keyframes; the adapter's DrawerOutlet plays its keyframes as Animated interpolations of the drawer's extent over the expand range the native sheet reports."
         }
       }
+    },
+    "date-picker": {
+      "entry": "packages/react-native/src/date-picker.tsx",
+      "slots": {
+        "datePicker.root": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind reads the locale and today through bindRoot, which date-picker-native.ts does as the root mounts, and joins a form through bindInternals, which native has none of (no form participation, spec rule on forms); a disabled Field or FieldSet reaches it through the adapter's disabled context."
+        },
+        "datePicker.input": {
+          "covered": "packages/react-native/src/date-picker.tsx",
+          "reason": "Its input listener sets the draft, which the adapter's onChangeText does through setText; its focusout and Enter commit the text, which onBlur and onSubmitEditing do through commit; its bind writes the text into the element, which the TextInput takes as its value from datePickerText, and sets the form validity, which native has none of. Alt+ArrowDown opens the popup from a key event a TextInput never reports."
+        },
+        "datePicker.hidden-input": {
+          "needs": "nothing",
+          "reason": "Native has no forms: the hidden input part isn't rendered, and the app reads the value from onValueChange."
+        },
+        "datePicker.trigger": {
+          "needs": "nothing",
+          "reason": "Its keydown wires Enter, Space and Escape into the popup, which a Pressable and the OS do; its press opens and closes the popup with the trigger-press reason, on the Pressable's onPress."
+        },
+        "datePicker.content": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in on the day with the tab stop, focus back and the exit, which popupNative in date-picker-native.ts restates, and its placement against the start input, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures; the adapter defaults align to start as the bind's placementOptions does. Its outside press comes through OverlayHost. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "datePicker.hint": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind marks the date picker hinted while it's mounted, which date-picker-native.ts does, so the inputs are described by its text."
+        },
+        "datePicker.month-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the month select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "datePicker.year-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the year select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "datePicker.day": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind joins the roving group, which date-picker-native.ts does while the day is mounted, so the controller's focus() and opening the popup move the screen reader to a day. Its focus listener, keydown, pointerdown, mousedown and pointerenter follow keyboard focus, arrow keys and a hovering pointer, which native doesn't report to views (spec, Hardware keyboards)."
+        }
+      }
     }
   },
   "pending": [
@@ -1290,7 +1350,6 @@
     "combobox",
     "command",
     "date-input",
-    "date-picker",
     "file-input",
     "hover-card",
     "image-cropper",
@@ -1695,6 +1754,12 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "date-picker",
+      "example": "form",
+      "feature": "Form submission and the valueMissing error",
+      "reason": "Native has no forms: the app reads the date from onValueChange, and a Field shows an error it sets itself."
     }
   ]
 }
