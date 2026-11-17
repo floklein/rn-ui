@@ -458,9 +458,16 @@ function checkEvent(
     string,
     (new () => Event) | undefined
   >
-  const known = allowed.flatMap((name) => constructors[name] ?? [])
-  // A host without these events, like React Native, has nothing to check.
-  if (!known.length || known.some((type) => event instanceof type)) {
+  // React Native hands core its own event objects, which aren't DOM events.
+  const base = constructors.Event
+  if (!base || !(event instanceof base)) {
+    return
+  }
+  const matches = allowed.some((name) => {
+    const constructor = constructors[name]
+    return !!constructor && event instanceof constructor
+  })
+  if (matches) {
     return
   }
   const key = `${reason}:${event.constructor.name}`

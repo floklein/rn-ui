@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@ui-sdk/react-native/tooltip"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
   type LayoutChangeEvent,
   Pressable,
@@ -17,6 +17,8 @@ function Fixture() {
   const [changes, setChanges] = useState<string[]>([])
   const [presses, setPresses] = useState(0)
   const [layouts, setLayouts] = useState<string[]>([])
+  const placed = useRef("unplaced")
+  const [side, setSide] = useState("unplaced")
   const changed =
     (name: string) => (open: boolean, details: { reason: string }) => {
       if (open) {
@@ -27,6 +29,7 @@ function Fixture() {
   const laidOut = ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
     const at = `${Math.round(layout.x)},${Math.round(layout.y)}`
     setLayouts((current) => (current.includes(at) ? current : [...current, at]))
+    setSide(placed.current)
   }
 
   return (
@@ -49,19 +52,15 @@ function Fixture() {
             testID="info-content"
             sideOffset={8}
             onLayout={laidOut}
-            style={styles.content}
+            style={(state) => {
+              placed.current = state.side ?? "unplaced"
+              return styles.content
+            }}
           >
-            {(state) => (
-              <>
-                <TooltipArrow style={styles.arrow} />
-                <Text testID="info-text" style={styles.text}>
-                  Files in the trash still use storage.
-                </Text>
-                <Text testID="info-side" style={styles.text}>
-                  {state.side ?? "unplaced"}
-                </Text>
-              </>
-            )}
+            <TooltipArrow style={styles.arrow} />
+            <Text testID="info-text" style={styles.text}>
+              Files in the trash still use storage.
+            </Text>
           </TooltipContent>
         </Tooltip>
         <Tooltip onOpenChange={changed("plain")}>
@@ -73,7 +72,8 @@ function Fixture() {
           </TooltipContent>
         </Tooltip>
       </View>
-      <Text testID="layouts">{layouts.join(" ")}</Text>
+      <Text testID="info-side">{side}</Text>
+      <Text testID="layouts">{layouts.join(" ") || "none"}</Text>
     </View>
   )
 }

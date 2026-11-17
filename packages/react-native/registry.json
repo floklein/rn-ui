@@ -727,7 +727,7 @@
       "file": "packages/core/src/foundation/kernel/dev.ts",
       "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "checkEvent skips a host that has none of a reason's event constructors, like React Native, whose hover reaches core as a pointer event's nativeEvent."
+      "why": "checkEvent skips an event that isn't a DOM Event, like the pointer event React Native hands a tooltip's hover."
     },
     {
       "kind": "edit",

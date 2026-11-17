@@ -122,7 +122,6 @@ function Tooltip({ children, ...options }: TooltipProps) {
   )
 }
 
-// A trigger's name of its own, which the tooltip then describes.
 const ownName = (props: Record<string, unknown>) =>
   !!(
     props["aria-label"] ||
