@@ -16,6 +16,7 @@ import { Modal, Pressable, Text, View } from "react-native"
 import { Carried, carry, useCarried } from "./carried-context"
 import { useControllerEntry, useControllerTarget } from "./controller-target"
 import { layerInput, pressSource } from "./native-host"
+import { landIn, ModalHost, useHosted } from "./overlay-host"
 import { mergeProps, renderElement } from "./render-element"
 import {
   createParts,
@@ -53,8 +54,8 @@ type DialogParts = Parts<
   { title: typeof Text; description: typeof Text; close: typeof Pressable }
 >
 
-// The backdrop and content of a modal dialog, which render in one `Modal`
-// the root renders, so the backdrop sits under the content.
+// The backdrop and content, which the root renders together in a host, or in
+// one `Modal` when modal, so the backdrop sits under the content.
 type Outlet = {
   get: () => { backdrop?: React.ReactNode; content?: React.ReactNode }
   set: (slot: "backdrop" | "content", element: React.ReactNode) => void
@@ -85,25 +86,21 @@ function createOutlet() {
 
 const OutletContext = carry("Outlet", React.createContext<Outlet | null>(null))
 
-// A modal dialog's part goes to the `Modal`, and a non-modal one renders in place.
-function useOutlet(
-  slot: "backdrop" | "content",
-  element: React.ReactElement | null,
-  modal: boolean
-) {
+function useOutlet(slot: "backdrop" | "content", element: React.ReactNode) {
   const outlet = React.useContext(OutletContext)!
   const values = useCarried()
   React.useLayoutEffect(() => {
     outlet.set(
       slot,
-      modal && element ? <Carried values={values}>{element}</Carried> : null
+      element ? <Carried values={values}>{element}</Carried> : null
     )
   })
   React.useLayoutEffect(() => () => outlet.set(slot, null), [outlet, slot])
-  return modal ? null : element
+  return null
 }
 
-function DialogModal({
+// A modal dialog's layer is a `Modal` carrying a host of its own.
+function DialogLayer({
   handle,
   outlet,
 }: {
@@ -118,7 +115,8 @@ function DialogModal({
     handle.instance.subscribe,
     () => handle.state.mounted
   )
-  return (
+  const modal = handle.state.modal !== false
+  const layer = modal ? (
     <Modal
       visible={mounted && !!content}
       transparent
@@ -129,10 +127,22 @@ function DialogModal({
         layerInput()?.back()
       }}
     >
+      <ModalHost>
+        {backdrop}
+        {content}
+      </ModalHost>
+    </Modal>
+  ) : (
+    <>
       {backdrop}
       {content}
-    </Modal>
+    </>
   )
+  return useHosted(layer, mounted, {
+    component: handle.primitive.name,
+    id: handle.instance.id,
+    modal,
+  })
 }
 
 // Dialog and AlertDialog render the same parts over their own primitive.
@@ -151,7 +161,7 @@ function dialogParts(primitive: typeof dialogPrimitive) {
       <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
         <OutletContext.Provider value={outlet}>
           {children}
-          <DialogModal handle={handle} outlet={outlet} />
+          <DialogLayer handle={handle} outlet={outlet} />
         </OutletContext.Provider>
       </HandleScope>
     )
@@ -186,18 +196,21 @@ function dialogParts(primitive: typeof dialogPrimitive) {
     ...props
   }: Omit<TriggerPartProps, "controller">) {
     const fallback = React.useId()
+    const handle = useHandle(primitive)
     return usePressedPart(
       primitive,
       "trigger",
       { id: id ?? fallback, disabled, focusableWhenDisabled, payload },
-      props as Record<string, unknown>,
+      mergeProps(
+        { onTouchStart: landIn(handle.api) },
+        props as Record<string, unknown>
+      ),
       Pressable,
       (part) => () => pressTrigger(part, pressSource())
     )
   }
 
   function Backdrop(props: BackdropPartProps) {
-    const handle = useHandle(primitive)
     const element = usePart(
       primitive,
       "backdrop",
@@ -211,7 +224,7 @@ function dialogParts(primitive: typeof dialogPrimitive) {
       ),
       Pressable
     )
-    return useOutlet("backdrop", element, handle.state.modal !== false)
+    return useOutlet("backdrop", element)
   }
 
   function Content({
@@ -226,12 +239,17 @@ function dialogParts(primitive: typeof dialogPrimitive) {
       "content",
       { initialFocus, finalFocus, keepMounted },
       mergeProps(
-        { onAccessibilityEscape: () => layerInput()?.escape(handle.api) },
+        {
+          // The Modal's host isolates it, popups beside it included.
+          accessibilityViewIsModal: false,
+          onAccessibilityEscape: () => layerInput()?.escape(handle.api),
+          onTouchStart: landIn(handle.api),
+        },
         props as Record<string, unknown>
       ),
       View
     )
-    return useOutlet("content", element, handle.state.modal !== false)
+    return useOutlet("content", element)
   }
 
   function Title(props: React.ComponentProps<DialogParts["Title"]>) {

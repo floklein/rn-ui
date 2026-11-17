@@ -1391,12 +1391,6 @@
     },
     {
       "component": "dialog",
-      "example": "nested",
-      "feature": "A modal dialog opened from another",
-      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
-    },
-    {
-      "component": "dialog",
       "example": "presentation",
       "feature": "Presenting as a sheet",
       "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a dialog presents as a dialog."
@@ -1421,12 +1415,6 @@
     },
     {
       "component": "alert-dialog",
-      "example": "nested",
-      "feature": "A modal alert dialog opened from another",
-      "reason": "A nested modal popup renders in its parent's Modal, as a nested Modal or a view in its host, which OverlayHost (ticket 11) decides with its device check."
-    },
-    {
-      "component": "alert-dialog",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
@@ -1448,12 +1436,6 @@
       "example": "wrap",
       "feature": "A label wrapping its control",
       "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
-    },
-    {
-      "component": "label",
-      "example": "slider",
-      "feature": "A label for a Slider",
-      "reason": "Slider isn't on native yet; the example comes with it (#71)."
     },
     {
       "component": "accordion",
