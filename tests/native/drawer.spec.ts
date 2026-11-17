@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readdirSync } from "node:fs"
 import path from "node:path"
-import { afterEach, beforeEach, test } from "node:test"
+import { afterEach, before, beforeEach, test } from "node:test"
 import { useDevice } from "./device.ts"
 
 const device = useDevice("drawer")
@@ -22,6 +22,18 @@ afterEach(async () => {
 })
 
 const pause = (ms: number) => new Promise((done) => setTimeout(done, ms))
+
+// Points on iOS; Android's driver measures in pixels, so distances scale.
+let scale = 1
+before(async () => {
+  if (device.platform === "android") {
+    const info = (await device.driver.execute("mobile: deviceInfo", {})) as {
+      displayDensity: number
+    }
+    scale = info.displayDensity / 160
+  }
+})
+const points = (distance: number) => distance * scale
 
 async function screenHeight() {
   return (await device.driver.getWindowSize()).height
@@ -70,7 +82,7 @@ test("dragging the drawer toward its edge dismisses it with the swipe reason", a
   const title = await device.rect("notes-title")
   const x = title.x + 40
   const y = title.y + title.height / 2
-  await device.drag({ x, y }, { x, y: y + 300 }, 300, 50)
+  await device.drag({ x, y }, { x, y: y + points(300) }, 300, 50)
   await expectText("notes-readout", /^closed by swipe$/)
 })
 
@@ -80,7 +92,7 @@ test("over the list at its top, pushing up scrolls the list and the drawer stays
   const list = await device.rect("notes-list")
   const x = list.x + list.width / 2
   const y = list.y + list.height / 2
-  await device.drag({ x, y: y + 100 }, { x, y: y - 100 })
+  await device.drag({ x, y: y + points(100) }, { x, y: y - points(100) })
   await expectText("notes-state", /scrolled down$/)
   await pause(800)
   assert.equal((await device.rect("notes")).y, before.y)
@@ -92,14 +104,19 @@ test("over the list scrolled down, pulling down scrolls it back, and at its top 
   const list = await device.rect("notes-list")
   const x = list.x + list.width / 2
   const y = list.y + list.height / 2
-  await device.drag({ x, y: y + 100 }, { x, y: y - 100 })
+  await device.drag({ x, y: y + points(100) }, { x, y: y - points(100) })
   await expectText("notes-state", /scrolled down$/)
   await pause(800)
-  await device.drag({ x, y: y - 100 }, { x, y: y + 150 })
+  await device.drag({ x, y: y - points(150) }, { x, y: y + points(150) })
   await expectText("notes-state", /scrolled to the top$/)
   assert.match(await text("notes-state"), /^open by trigger-press/)
   await pause(800)
-  await device.drag({ x, y: y - 100 }, { x, y: y + 250 }, 300, 50)
+  await device.drag(
+    { x, y: y - points(100) },
+    { x, y: y + points(250) },
+    300,
+    50
+  )
   await expectText("notes-readout", /^closed by swipe$/)
 })
 
@@ -114,7 +131,7 @@ test("the settle lands on each snap point the handle and a release pick", async 
   const handle = await device.rect("handle")
   const x = handle.x + handle.width / 2
   const y = handle.y + handle.height / 2
-  await device.drag({ x, y }, { x, y: y + 120 }, 150, 50)
+  await device.drag({ x, y }, { x, y: y + points(120) }, 150, 50)
   await expectText("places-state", /^at 0\.4 by swipe$/)
   await expectTop("places", height * 0.6)
 })
