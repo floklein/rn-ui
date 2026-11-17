@@ -12,7 +12,14 @@ import { views } from "./native-host"
 import { type Host, onTouch } from "./overlay-host"
 
 type Rect = { x: number; y: number; width: number; height: number }
-type PopupApi = Parameters<typeof placeNative>[0]
+type PopupApi = Parameters<typeof placeNative>[0] & {
+  internal: {
+    control: { anchor: () => unknown }
+    store: { get: () => { trigger: string | null } }
+    parts: () => Iterable<Part>
+    triggerSlot: string
+  }
+}
 type Placed = ReturnType<typeof placeNative>
 
 /**
@@ -58,7 +65,8 @@ function measure(view: HostInstance | null | undefined) {
   return box
 }
 
-function anchorBox({ internal }: PopupApi) {
+// The first slot with a mounted part, the trigger that opened it among triggers.
+function anchorBox({ internal }: PopupApi, slots: readonly string[]) {
   const setting = (internal.control.anchor() ??
     internal.contentProps().anchor) as NativeAnchor | null | undefined
   if (setting && "measureInWindow" in setting) {
@@ -68,16 +76,20 @@ function anchorBox({ internal }: PopupApi) {
     return { x: setting.x, y: setting.y, width: 0, height: 0 }
   }
   const key = internal.store.get().trigger
-  let trigger: Part | undefined
-  for (const part of internal.parts()) {
-    if (part.slot === internal.triggerSlot) {
-      trigger ??= part
-      if (part.key === key) {
-        trigger = part
+  for (const slot of slots) {
+    let found: Part | undefined
+    for (const part of internal.parts()) {
+      if (part.slot === slot && views.get(part)) {
+        found ??= part
+        if (slot === internal.triggerSlot && part.key === key) {
+          found = part
+        }
       }
     }
+    if (found) {
+      return measure(views.get(found))
+    }
   }
-  return trigger && measure(views.get(trigger))
 }
 
 function borderOf(style: unknown) {
@@ -106,7 +118,8 @@ function usePlacement(
   api: PopupApi,
   host: Host | null,
   style: unknown,
-  open: boolean
+  open: boolean,
+  anchors?: readonly string[]
 ) {
   const placement = placementOf(api)
   const border = borderOf(style)
@@ -120,7 +133,7 @@ function usePlacement(
       const origin = host?.view.current
         ? measure(host.view.current)
         : { x: 0, y: 0, ...Dimensions.get("window") }
-      const anchor = anchorBox(api)
+      const anchor = anchorBox(api, anchors ?? [api.internal.triggerSlot])
       const popup = measure(placement.content.current)
       if (!origin || !anchor || !popup) {
         return false
@@ -203,7 +216,7 @@ function usePlacement(
       placement.wake = () => {}
       placement.placed = undefined
     }
-  }, [api, host, placement, borderKey, open])
+  }, [api, host, placement, borderKey, open, anchors])
   React.useLayoutEffect(() => placement.wake())
   return placement
 }

@@ -49,6 +49,7 @@ import {
   PaginationPrevious,
 } from "../src/pagination"
 import { Calendar } from "../src/calendar"
+import { DatePicker } from "../src/date-picker"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -171,6 +172,27 @@ describe("checkDirection on the native host", () => {
       checkDirection(
         async () => {
           await render(<Calendar defaultValue="2026-02-16" locale="en-US" />)
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  }, 30_000)
+
+  test("passes on a date picker, open", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <DatePicker
+                defaultOpen
+                defaultValue="2026-02-16"
+                locale="en-US"
+              />
+            </OverlayHost>
+          )
           return screen.container
         },
         { os, act }

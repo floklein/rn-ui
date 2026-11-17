@@ -25,6 +25,7 @@
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./date": "./src/date.ts",
+    "./date-picker": "./src/date-picker.tsx",
     "./dialog": "./src/dialog.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
@@ -90,6 +91,10 @@
       "./date": {
         "types": "./dist/date.d.ts",
         "default": "./dist/date.js"
+      },
+      "./date-picker": {
+        "types": "./dist/date-picker.d.ts",
+        "default": "./dist/date-picker.js"
       },
       "./dialog": {
         "types": "./dist/dialog.d.ts",
