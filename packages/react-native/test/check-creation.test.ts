@@ -20,6 +20,7 @@ import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
+import { resizable } from "@ui-sdk/core/resizable"
 import { scrollArea } from "@ui-sdk/core/scroll-area"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
@@ -69,6 +70,16 @@ describe("checkCreation", () => {
     expect(() => checkCreation(slider, { defaultValue: 40 })).not.toThrow()
     expect(() =>
       checkCreation(slider, { defaultValue: [20, 80], locale: "de-DE" })
+    ).not.toThrow()
+  })
+
+  test("passes on a resizable group, vertical or with a layout", () => {
+    expect(() => checkCreation(resizable, {})).not.toThrow()
+    expect(() =>
+      checkCreation(resizable, {
+        orientation: "vertical",
+        defaultLayout: [30, 70],
+      })
     ).not.toThrow()
   })
 

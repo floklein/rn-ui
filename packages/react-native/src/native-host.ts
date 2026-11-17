@@ -112,7 +112,7 @@ setNativeHost({
     return (renders.get(a) ?? 0) - (renders.get(b) ?? 0)
   },
   isRTL: () => I18nManager.isRTL,
-  box: (part) => views.get(part)?.getBoundingClientRect(),
+  box: (part) => views.get(part)?.getBoundingClientRect?.(),
   follow: (part, drag) => register(drags, part, drag),
   adjustable: (part, step) => register(steps, part, step),
   // A Modal hears Android's back itself, through `onRequestClose`.
@@ -127,6 +127,8 @@ setNativeHost({
     }
   },
 })
+
+const isFollowed = (part: Part) => drags.has(part)
 
 // A part unmounted mid-drag hears no release, so its unmount lets go too.
 function letGo(part: Part) {
@@ -174,6 +176,7 @@ export {
   controls,
   controlsById,
   fields,
+  isFollowed,
   layerInput,
   letGo,
   parts,

@@ -60,6 +60,7 @@ import {
   useText,
 } from "./names"
 import {
+  isFollowed,
   parts as viewParts,
   pressSource,
   renders,
@@ -575,6 +576,13 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
   const disabling = React.useContext(DisabledContext)
   const hold = React.useContext(ScrollHoldContext)
   React.useLayoutEffect(() => () => letGo(part), [part])
+  // A native behavior starts following a part's touches once its view mounts.
+  const followed = isFollowed(part)
+  React.useLayoutEffect(() => {
+    if (isFollowed(part) !== followed) {
+      rerender()
+    }
+  })
   React.useLayoutEffect(() => {
     const state = part.store.get() as { formDisabled?: boolean }
     if (
@@ -720,11 +728,13 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
         own.accessibilityLabel)
         ? { collapsable: false }
         : {}
-    // A part the web drags with a pointer follows touches with the responder.
+    // A part the web drags with a pointer follows touches with the
+    // responder, as does one its native behavior follows.
     const slots = primitive.slots as
       Record<string, { on?: object } | undefined> | undefined
     const drags =
-      !pressable && slots?.[slot]?.on && "pointerdown" in slots[slot].on
+      !pressable &&
+      ((slots?.[slot]?.on && "pointerdown" in slots[slot].on) || followed)
         ? responder(part, hold)
         : {}
     element = renderElement(

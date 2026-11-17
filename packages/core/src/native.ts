@@ -21,6 +21,10 @@ export { drawerNative } from "./components/drawer/drawer-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
 export {
+  nativeResizable,
+  resizableNative,
+} from "./components/resizable/resizable-native"
+export {
   type NativeScroller,
   type NativeScrollReport,
   type NativeScrollView,

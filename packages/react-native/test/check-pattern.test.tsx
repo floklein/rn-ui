@@ -116,6 +116,11 @@ import {
   SliderThumb,
   SliderTrack,
 } from "../src/slider"
+import {
+  Resizable,
+  ResizableHandle,
+  ResizablePanel,
+} from "../src/resizable"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -1882,6 +1887,45 @@ describe("checkPattern's toolbar pattern on the native host", () => {
     )
     await expect(checkToolbar()).rejects.toThrow(
       "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
+    )
+  })
+})
+
+const checkSplitter = () =>
+  checkPattern(screen.container, "window-splitter", { os, act })
+
+describe("checkPattern's window splitter pattern on the native host", () => {
+  test("passes on a group's handles, and a disabled one", async () => {
+    await render(
+      <Resizable>
+        <ResizablePanel minSize={10}>
+          <Text>Files</Text>
+        </ResizablePanel>
+        <ResizableHandle aria-label="Resize files" />
+        <ResizablePanel>
+          <Text>Code</Text>
+        </ResizablePanel>
+        <ResizableHandle aria-label="Resize code" disabled />
+        <ResizablePanel>
+          <Text>Preview</Text>
+        </ResizablePanel>
+      </Resizable>
+    )
+    await act(async () => {})
+    await expect(checkSplitter()).resolves.toBeUndefined()
+  })
+
+  test("fails on a handle with no name", async () => {
+    await render(
+      <Resizable>
+        <ResizablePanel />
+        <ResizableHandle />
+        <ResizablePanel />
+      </Resizable>
+    )
+    await act(async () => {})
+    await expect(checkSplitter()).rejects.toThrow(
+      /has no name; a window splitter needs/
     )
   })
 })
