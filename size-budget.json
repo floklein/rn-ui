@@ -429,6 +429,7 @@
   "@ui-sdk/react-native/button": 12029,
   "@ui-sdk/react-native/button (lazy)": 181,
   "@ui-sdk/react-native/calendar": 22129,
+  "@ui-sdk/react-native/carousel": 26420,
   "@ui-sdk/react-native/checkbox": 17709,
   "@ui-sdk/react-native/collapsible": 16049,
   "@ui-sdk/react-native/date": 3630,
