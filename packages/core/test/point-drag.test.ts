@@ -31,7 +31,9 @@ const ranking = definePrimitive({
       }),
     }
   },
-  slots: (slot) => ({ item: slot<{ value: string }>({}) }),
+  slots: (slot) => ({
+    item: slot<{ value: string }>({ props: { value: "string" } }),
+  }),
 })
 
 type PackingState = { lists: TransferLists; moving: TransferDraft | null }
@@ -54,7 +56,9 @@ const packing = definePrimitive({
       }),
     }
   },
-  slots: (slot) => ({ item: slot<{ value: string }>({}) }),
+  slots: (slot) => ({
+    item: slot<{ value: string }>({ props: { value: "string" } }),
+  }),
 })
 
 // No items are bound, so every point places the moving item first.

@@ -38,6 +38,7 @@ import "../src/file-input"
 import "../src/input"
 import "../src/rating"
 import "../src/scroll-area"
+import "../src/toast"
 import { Switch } from "../src/switch"
 import "../src/tabs"
 import "../src/toggle"
@@ -430,6 +431,7 @@ describe("the adapter's contexts inside the Modal", () => {
       "ScrollAreaOrientation",
       "ScrollHold",
       "TabsLayouts",
+      "Toast",
       "ToggleGroup",
       "Toolbar",
       "ToolbarGroup",
