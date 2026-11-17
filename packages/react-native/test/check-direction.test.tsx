@@ -55,6 +55,8 @@ import {
   NumberInputIncrement,
   NumberInputScrubArea,
 } from "../src/number-input"
+import { DateInput } from "../src/date-input"
+import { TimeInput } from "../src/time-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -837,6 +839,23 @@ describe("checkDirection on the native host", () => {
                 <NumberInputIncrement aria-label="Increase" />
               </NumberInputGroup>
             </NumberInput>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a date input and a time input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <DateInput locale="en-US" defaultValue="2026-11-04" />
+              <TimeInput locale="en-US" defaultValue="14:30" />
+            </View>
           )
           return screen.container
         },
