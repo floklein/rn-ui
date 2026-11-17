@@ -52,6 +52,7 @@ function host() {
     listen: vi.fn(),
     seen: vi.fn(),
     scrollNear: vi.fn(),
+    screenReader: vi.fn(),
   })
   return { drags, focus }
 }
