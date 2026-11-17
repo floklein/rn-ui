@@ -31,9 +31,11 @@ function Example() {
         >
           <Text style={styles.solidText}>Publish</Text>
         </TooltipTrigger>
-        <TooltipContent side="right" style={styles.content}>
-          <Text style={styles.text}>Add a title to publish</Text>
-        </TooltipContent>
+        {blocked && (
+          <TooltipContent side="right" style={styles.content}>
+            <Text style={styles.text}>Add a title to publish</Text>
+          </TooltipContent>
+        )}
       </Tooltip>
     </View>
   )

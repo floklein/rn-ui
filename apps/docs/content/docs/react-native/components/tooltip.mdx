@@ -79,7 +79,7 @@ For an info button whose only job is the tip, add `toggleable`: a press on the t
 
 ## Pointer
 
-A tooltip opens when a pointer, like a mouse or a trackpad, rests on its trigger, after `delay`, and closes when it leaves, after `closeDelay`. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. Without them, and on a touch screen, a tooltip never opens on hover. A finger's pointer events never open it.
+A tooltip opens when a pointer, like a mouse or a trackpad, rests on its trigger, after `delay`, and closes when it leaves, after `closeDelay`. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a tooltip never opens on hover. A finger's pointer events never open it.
 
 Tooltips group without a provider. Once one is open, or was a moment ago, the next opens at once, and only one is open at a time. Its state's `instant` says so, so it can skip its animation.
 
@@ -105,11 +105,11 @@ Add a `TooltipArrow` to point at the trigger. It moves to the edge facing the tr
 
 ## Disabled Buttons
 
-A `Pressable` with `disabled` takes no presses, so a screen reader user can't learn why from its tooltip. When the tooltip explains why an action is unavailable, use `aria-disabled` instead and ignore the trigger's presses yourself. Screen readers announce it as dimmed and read the tooltip's text as its hint. `disabled` on the tooltip stops it from opening once the button works.
+A `Pressable` with `disabled` takes no presses, so a screen reader user can't learn why from its tooltip. When the tooltip explains why an action is unavailable, use `aria-disabled` instead and ignore the trigger's presses yourself. Screen readers announce it as dimmed and read the tooltip's text as its hint. Once the button works, leave the content out, as the example does, so the hint goes too.
 
 <ComponentExample
   name="tooltip/disabled-button"
-  caption="With VoiceOver or TalkBack, reach Publish: it's dimmed and its hint says what's missing. Type a title, and Publish works."
+  caption="With VoiceOver or TalkBack, reach Publish: it's dimmed and its hint says what's missing. Type a title, and Publish works and its hint goes away."
 />
 
 ## Keep Open on Press

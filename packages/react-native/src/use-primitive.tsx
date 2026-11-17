@@ -49,6 +49,7 @@ import {
   View,
   type AccessibilityActionEvent,
   type HostInstance,
+  type PointerEvent,
 } from "react-native"
 import { carry } from "./carried-context"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
@@ -677,8 +678,12 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
             (() => withSource(pressSource(), activate)),
           onPressIn: set({ pressed: true }),
           onPressOut: set({ pressed: false }),
-          onHoverIn: set({ hovered: true }),
-          onHoverOut: set({ hovered: false }),
+          // Not onHoverIn: behind a React Native flag it replaces a part's own
+          // onPointerEnter, and it drops pointerType, so a finger would hover.
+          onPointerEnter: (event: PointerEvent) =>
+            event.nativeEvent.pointerType !== "touch" &&
+            setInteraction((current) => ({ ...current, hovered: true })),
+          onPointerLeave: set({ hovered: false }),
           onFocus: set({ focused: true }),
           onBlur: set({ focused: false }),
         }

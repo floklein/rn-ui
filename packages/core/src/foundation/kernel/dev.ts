@@ -459,8 +459,9 @@ function checkEvent(
     (new () => Event) | undefined
   >
   // React Native hands core its own event objects, which aren't DOM events.
-  const base = constructors.Event
-  if (!base || !(event instanceof base)) {
+  if (
+    typeof (event as { composedPath?: unknown }).composedPath !== "function"
+  ) {
     return
   }
   const matches = allowed.some((name) => {

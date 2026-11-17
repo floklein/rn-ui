@@ -328,3 +328,42 @@ test("the escape gesture on its text closes it and takes the screen reader to it
       .testID
   ).toBe("trigger")
 })
+
+test("a mouse over the trigger sets interaction.hovered, and a finger doesn't", async () => {
+  const hovered: boolean[] = []
+  await render(
+    <OverlayHost>
+      <Tooltip>
+        <TooltipTrigger
+          testID="trigger"
+          aria-label="Info"
+          style={(_, interaction) => {
+            hovered.push(interaction.hovered)
+            return {}
+          }}
+        />
+        <TooltipContent>
+          <Text>Tip</Text>
+        </TooltipContent>
+      </Tooltip>
+    </OverlayHost>
+  )
+  await fireEvent(
+    screen.getByTestId("trigger"),
+    "pointerEnter",
+    pointerAt("touch")
+  )
+  expect(hovered.at(-1)).toBe(false)
+  await fireEvent(
+    screen.getByTestId("trigger"),
+    "pointerEnter",
+    pointerAt("mouse")
+  )
+  expect(hovered.at(-1)).toBe(true)
+  await fireEvent(
+    screen.getByTestId("trigger"),
+    "pointerLeave",
+    pointerAt("mouse")
+  )
+  expect(hovered.at(-1)).toBe(false)
+})

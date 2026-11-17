@@ -16,6 +16,7 @@ function Example() {
     <View style={styles.row}>
       <Text style={styles.code}>{command}</Text>
       <Tooltip
+        type="label"
         closeOnPress={false}
         onOpenChangeComplete={(open) => !open && setCopied(false)}
       >
