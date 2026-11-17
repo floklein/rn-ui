@@ -15,6 +15,10 @@ export { radioNative } from "./components/radio/radio-native"
 export { dialogNative } from "./components/dialog/dialog-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
+export {
+  pressSelectTrigger,
+  selectNative,
+} from "./components/select/select-native"
 export { segmentedControlNative } from "./components/segmented-control/segmented-control-native"
 export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"

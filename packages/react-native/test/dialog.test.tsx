@@ -36,6 +36,7 @@ import "../src/checkbox"
 import { FieldSet } from "../src/field"
 import "../src/input"
 import "../src/rating"
+import "../src/select"
 import { Switch } from "../src/switch"
 import "../src/tabs"
 import "../src/toggle"
@@ -422,6 +423,7 @@ describe("the adapter's contexts inside the Modal", () => {
       "Field",
       "InputGroup",
       "Outlet",
+      "Placed",
       "RatingItem",
       "TabsLayouts",
       "ToggleGroup",

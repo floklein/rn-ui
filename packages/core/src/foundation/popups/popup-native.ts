@@ -206,4 +206,4 @@ function popupNative<Api extends PopupApi>({
   return behavior
 }
 
-export { partIn, popupNative, pressTrigger }
+export { openerBySource, partIn, popupNative, pressTrigger }

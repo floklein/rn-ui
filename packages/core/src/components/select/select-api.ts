@@ -46,6 +46,7 @@ import { type ItemIcons } from "../../foundation/lists/item-icon"
 import { createValueSelection } from "../../foundation/lists/listbox-value"
 import { createChange } from "../../foundation/kernel/input-source"
 import { elements } from "../../foundation/kernel/elements"
+import { focusPart } from "../../foundation/focus/focus-part"
 
 type SelectState = PopupState & {
   value: unknown
@@ -543,9 +544,11 @@ function selectApiBody(
         event,
       }: SelectChangeOptions<SelectQueryChangeReason> = {}
     ) => setQuery(query, reason, event),
-    focus: () => focusTrigger(),
-    // Internal. Used by slots and adapters.
+    focus: () => focusPart(triggerElement, context.parts, "trigger"),
+    // Internal. Used by slots and adapters. The popup's own, which the
+    // native host reads, under the select's.
     internal: {
+      ...kit.internal,
       focusTrigger,
       options,
       listbox,

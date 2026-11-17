@@ -681,6 +681,40 @@
       "why": "What the root's and the day's bind orchestrate: the root reads the locale and today through bindRoot, and each day joins the roving group with a native element the order twin sorts and the host focuses."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/lists/listbox-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/lists/listbox-engine.ts",
+        "packages/core/src/foundation/lists/listbox-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The listbox engine on the native host, for Select now and Combobox, Autocomplete, Command and Trigger Menu after it: an option registers a stand-in from nativeElement that reads as connected, sorted by the order twin and focused through the host, with the label the adapter reads from its text where the engine reads the element's; and the highlighted option is announced while focus stays in a search field, where the web points aria-activedescendant at it."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/select/select-native.ts",
+      "mirrors": [
+        "packages/core/src/components/select/select-parts.ts",
+        "packages/core/src/components/select/select-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the label, trigger, content, list, input, item, select-all, group-label and item-icon slots' bind orchestrate: the flags they set while mounted, an option's registration with the engine (listbox-native.ts), the popup's layer, focus and exit (popup-native.ts) with focus on the item initialFocus picks, the settled flag, and the trigger's press with the opener its source stands for (pressSelectTrigger), where the trigger slot's press reads it from the event."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/select/select-api.ts",
+      "mirrors": ["packages/core/src/components/select/select-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal spreads the popup's own internals (createPopup's preset, parts, rules, label, trigger slot) under the select's, so popup-native.ts reaches them; the controller's focus() calls focusPart instead of focusing the trigger element. Neither changes the web."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/text/match.ts",
+      "mirrors": ["packages/core/src/foundation/text/match.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Listens for languagechange only where window has addEventListener: React Native's window is the global object, with no events, so filtering threw on native."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/foundation/date/week.native.ts",
       "mirrors": ["packages/core/src/foundation/date/week.ts"],
@@ -1214,6 +1248,67 @@
           "reason": "Its bind settles the panel after its animations, which accordion-native.ts does when the adapter's presence settles; writes the size variables, which AccordionPanel measures into its state (src/disclosure-panel.tsx); registers it for the trigger's aria-controls, which has no native counterpart; keeps it findable, which native has no find in page for; and moves focus out of a panel closing around it, which native never observes."
         }
       }
+    },
+    "select": {
+      "entry": "packages/react-native/src/select.tsx",
+      "slots": {
+        "select.root": {
+          "needs": "nothing",
+          "reason": "Its bind makes a web component's root take part in a form (ElementInternals, restore, reset, a disabled fieldset) and names the trigger from the <label>s pointing at the element, none of which exists on native: a Field's label names the trigger through useFieldControl, and a disabled FieldSet reaches it through usePart."
+        },
+        "select.label": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select labeled while it's mounted, which select-native.ts does, so the trigger takes the label as its name."
+        },
+        "select.trigger": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind settles whether a label is bound and sets the first trigger's key, which select-native.ts does while the trigger is mounted; it also prepares the hidden list so a value's label is known, which the adapter's learnLabels does from its children, and warns about a missing name. Its keydown handles arrow keys, Home, End, Enter, Space and typeahead, which React Native never reports; its pointerdown opens on a mouse press, which native has none of; its press goes through pressSelectTrigger, which passes the opener a touch or a screen reader stands for. Its pointerenter and focusin prepare the list early, which nothing needs on native."
+        },
+        "select.value": {
+          "needs": "nothing",
+          "reason": "Its bind writes the label into a web component's element, which native never needs: SelectValue renders the label from its state in a Text."
+        },
+        "select.content": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind shows the list: the layer, focus on the selected item as it opens and back to the trigger as it closes, and the exit, which popup-native.ts and select-native.ts restate, and its placement against the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. It settles whether the list is empty a microtask after it mounts, which select-native.ts does. It loads more when the list scrolls near its end, which needs the app's own ScrollView on native, so only the highlight reaching the last item calls onLoadMore. The sheet presentation is the sheet entry's (ticket 16). Its keydown handles the list's keys, which React Native never reports; VoiceOver's escape gesture and Android's back close it. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "select.list": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select listed while it's mounted, which select-native.ts does."
+        },
+        "select.input": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select searchable while the field is mounted, which select-native.ts does, and writes the query into the <input>, which SelectInput's value prop follows; its input event is the TextInput's onChangeText, which calls setQuery with the input-change reason. aria-activedescendant has no native counterpart: while focus stays in the field, select-native.ts announces the highlighted option through listbox-native.ts."
+        },
+        "select.item": {
+          "covered": "packages/core/src/foundation/lists/listbox-native.ts",
+          "reason": "Its bind registers the option with the listbox engine, which select-native.ts does with the stand-in listbox-native.ts makes, sorted by the order twin; the adapter passes the option's text as its label, where the DOM host reads the element's text. Its pointermove highlights under a mouse and its pointerdown and mousedown keep focus in the search field, none of which a touch does; an option's Pressable takes focus from Android's keyboard, which highlights it."
+        },
+        "select.item-text": {
+          "needs": "nothing",
+          "reason": "Its bind writes the marked segments into a web component's element, which native never needs: SelectItemText renders from its state's segments in a Text."
+        },
+        "select.item-indicator": {
+          "needs": "nothing",
+          "reason": "Its bind starts the web's enter animation as an option turns selected; on native the indicator's presence is the adapter's, with startingStyle in its state."
+        },
+        "select.group-label": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind lists the group's key among the labeled groups while it's mounted, which select-native.ts does, so the group is named by its label."
+        },
+        "select.empty": {
+          "needs": "nothing",
+          "reason": "Its bind stashes a web component's message while the list has items, which SelectEmpty does by rendering its children only while its state says empty."
+        },
+        "select.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "select.form-input": {
+          "needs": "nothing",
+          "reason": "The hidden input a form submits, resets and autofills: native has no forms, so it isn't rendered, and name, form and autoComplete are left out of the native types."
+        }
+      }
     }
   },
   "pending": [
@@ -1235,7 +1330,6 @@
     "number-input",
     "resizable",
     "scroll-area",
-    "select",
     "time-input",
     "timeline",
     "toast",
