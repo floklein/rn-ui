@@ -49,6 +49,8 @@ The host lets every press through to your screens. A press outside a non-modal p
 
 A non-modal popup renders inside the host, not where you wrote it, so it reads React context from above the host. Put the providers your popups read, like your navigation container or theme, above `OverlayHost`. Without an `OverlayHost`, a non-modal popup renders where it is in the tree, and development builds warn you.
 
+Your own `Modal`, or a screen your navigator presents modally, covers the root host. Wrap its content in an `OverlayHost` too, so popups and `confirm()` opened while it is up show above it. On iOS, a second `Modal` opened beside one that is up never shows.
+
 ## Pass the Safe-Area Insets
 
 `OverlayHost` takes `insets`, the safe-area insets that popups keep clear of: the notch, the status bar and the home indicator. UI SDK never reads them itself, so it adds no dependency. They're zero until you pass them. With `react-native-safe-area-context`, read them inside its provider and pass them on:

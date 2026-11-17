@@ -85,7 +85,7 @@ A Close part's `action` runs before the alert dialog closes. A Promise it return
 
 ## Confirm From Anywhere
 
-The shared `confirm()` asks a question with no alert dialog of your own. The [`OverlayHost`](../installation#wrap-your-app) that wraps your app shows each question as an alert dialog, a card on a dimmed screen, one at a time, and `confirm()` resolves `true` when someone agrees. Asked while a modal dialog is open, the question shows inside that dialog's `Modal`, above it. Without an `OverlayHost`, nothing shows it, and development builds warn you. [Confirm Options](#confirm-options) lists what you can pass. To style the question, use your own alert dialog with `createConfirm()`, as in [Confirm](#confirm).
+The shared `confirm()` asks a question with no alert dialog of your own. The [`OverlayHost`](../installation#wrap-your-app) that wraps your app shows each question as an alert dialog, a card on a dimmed screen, one at a time, and `confirm()` resolves `true` when someone agrees. Asked while a modal dialog is open, the question shows inside that dialog's `Modal`, above it. Over your own `Modal` or a modal screen, it shows only if that screen has an `OverlayHost` of its own, as [Wrap Your App](../installation#wrap-your-app) says. Without an `OverlayHost`, nothing shows it, and development builds warn you. [Confirm Options](#confirm-options) lists what you can pass. To style the question, use your own alert dialog with `createConfirm()`, as in [Confirm](#confirm).
 
 <ComponentExample
   name="alert-dialog/confirm-anywhere"

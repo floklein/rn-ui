@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { Text } from "react-native"
+import { Modal, Text } from "react-native"
 import { confirm, createConfirm } from "../src/alert-dialog"
 import {
   Dialog,
@@ -77,22 +77,23 @@ describe("confirm()", () => {
     ).toBeOnTheScreen()
   })
 
-  test("an OverlayHost inside another, like in an app's own Modal, leaves the question to the outer one", async () => {
-    const app = (inner: boolean) => (
+  test("asked while the app's own Modal with an OverlayHost is open, it renders inside that Modal", async () => {
+    const app = (sheet: boolean) => (
       <OverlayHost>
-        {inner && (
+        <Modal visible={sheet}>
           <OverlayHost>
             <Text>Sheet</Text>
           </OverlayHost>
-        )}
+        </Modal>
       </OverlayHost>
     )
-    const { rerender } = await render(app(true))
+    const { rerender } = await render(app(false))
+    await rerender(app(true))
     await act(async () => {
       confirm({ title: "Archive this project?" })
     })
-    await rerender(app(false))
-    expect(screen.getAllByRole("header")).toHaveLength(1)
+    const title = screen.getByRole("header")
+    expect(modals(title as unknown as Node)).toBe(2)
     await fireEvent.press(screen.getByRole("button", { name: "Cancel" }))
   })
 

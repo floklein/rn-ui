@@ -23,6 +23,9 @@ type RootHostProps = {
 
 type Host = {
   inModal: boolean
+  // A root host inside another, like in the app's own Modal: a modal popup
+  // opened under it renders in it, as in a ModalHost.
+  nested: boolean
   insets: () => Insets
   view: { current: HostInstance | null }
   entries: () => ReadonlyMap<string, React.ReactNode>
@@ -31,7 +34,7 @@ type Host = {
   subscribe: (listener: () => void) => () => void
 }
 
-function createHost(inModal: boolean, insets: () => Insets) {
+function createHost(inModal: boolean, nested: boolean, insets: () => Insets) {
   let entries: ReadonlyMap<string, React.ReactNode> = new Map()
   const listeners = new Set<() => void>()
   const update = (next: Map<string, React.ReactNode>) => {
@@ -40,6 +43,7 @@ function createHost(inModal: boolean, insets: () => Insets) {
   }
   const host: Host = {
     inModal,
+    nested,
     insets,
     view: { current: null },
     entries: () => entries,
@@ -186,7 +190,10 @@ function RootHost({ children, insets }: RootHostProps) {
   React.useLayoutEffect(() => {
     current.current = { ...zero, ...insets }
   })
-  const [host] = React.useState(() => createHost(false, () => current.current))
+  const around = React.useContext(HostContext)
+  const [host] = React.useState(() =>
+    createHost(false, !!around, () => current.current)
+  )
   return <HostView host={host}>{children}</HostView>
 }
 
@@ -194,7 +201,7 @@ function RootHost({ children, insets }: RootHostProps) {
 function ModalHost({ children }: { children?: React.ReactNode }) {
   const around = React.useContext(HostContext)
   const [host] = React.useState(() =>
-    createHost(true, () => around?.insets() ?? zero)
+    createHost(true, false, () => around?.insets() ?? zero)
   )
   return <HostView host={host}>{children}</HostView>
 }
@@ -214,7 +221,8 @@ function useHosted(
   const nearest = React.useContext(HostContext)
   const topmost = React.useSyncExternalStore(subscribeHosts, topmostHost)
   const target =
-    !popup.modal || (topmost?.inModal && topmost !== nearest)
+    !popup.modal ||
+    ((topmost?.inModal || topmost?.nested) && topmost !== nearest)
       ? topmost
       : undefined
   const [chosen, setChosen] = React.useState<{ host?: Host }>()
