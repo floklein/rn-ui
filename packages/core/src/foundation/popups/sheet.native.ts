@@ -406,6 +406,7 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
       }
     },
     down(x, y, area) {
+      stopCoast()
       if (touch || closing || pendingOpen !== null || state.restingIndex < 0) {
         return false
       }
@@ -413,7 +414,6 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
       if (area && area.position > 0.5 && shown >= largest - 0.5) {
         return false
       }
-      stopCoast()
       touch = { area, scroll: area?.position ?? 0 }
       axisPoint(side, x, y, point)
       dispatch({

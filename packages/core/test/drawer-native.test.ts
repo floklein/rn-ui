@@ -222,3 +222,21 @@ test("the handle steps through the snap points on a screen reader's increment an
   expect(instance.get().snapPoint).toBe(0.25)
   stop?.()
 })
+
+test("a touch the scroll view keeps stops the content coasting from the last one", async () => {
+  const { instance, motion, input } = mount()
+  instance.api.open()
+  motion.layout()
+  motion.land()
+  const area = { position: 0, max: 500, scrollTo: vi.fn() }
+  input().down(200, 400, area)
+  input().move(200, 380)
+  input().move(200, 300)
+  input().up({ x: 0, y: -3 })
+  await new Promise((done) => setTimeout(done, 20))
+  const coasted = area.scrollTo.mock.lastCall![0]
+  expect(input().down(200, 400, { ...area, position: coasted })).toBe(false)
+  const calls = area.scrollTo.mock.calls.length
+  await new Promise((done) => setTimeout(done, 50))
+  expect(area.scrollTo.mock.calls.length).toBe(calls)
+})
