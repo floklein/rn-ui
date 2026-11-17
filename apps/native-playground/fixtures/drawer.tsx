@@ -7,6 +7,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@ui-sdk/react-native/drawer"
+import { Input } from "@ui-sdk/react-native/input"
 import { useState } from "react"
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 
@@ -83,6 +84,24 @@ function Fixture() {
           </DrawerClose>
         </DrawerContent>
       </Drawer>
+      <Drawer>
+        <DrawerTrigger testID="open-sign-in" style={styles.button}>
+          <Text>Open Sign In</Text>
+        </DrawerTrigger>
+        <DrawerBackdrop style={styles.backdrop} />
+        <DrawerContent testID="sign-in" style={styles.sheet}>
+          <DrawerTitle style={styles.title}>Sign in</DrawerTitle>
+          <DrawerClose testID="close-sign-in" style={styles.button}>
+            <Text>Close Sign In</Text>
+          </DrawerClose>
+          <Input
+            testID="sign-in-email"
+            aria-label="Email"
+            placeholder="Email"
+            style={styles.field}
+          />
+        </DrawerContent>
+      </Drawer>
     </View>
   )
 }
@@ -109,6 +128,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: "600" },
   row: { paddingVertical: 12 },
   handle: { alignSelf: "stretch", alignItems: "center", paddingVertical: 12 },
+  field: {
+    padding: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: "#d4d4d8",
+  },
   grip: { width: 36, height: 5, borderRadius: 3, backgroundColor: "#d4d4d8" },
 })
 
