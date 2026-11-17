@@ -3,7 +3,7 @@ import {
   type NativeBehavior,
   nativeHost,
 } from "../../foundation/kernel/native-host"
-import { inDocumentOrder, isAfter } from "../../foundation/kernel/order"
+import { createOrder, isAfter } from "../../foundation/kernel/order"
 import { onProps } from "../../foundation/kernel/part"
 import type {
   Part,
@@ -26,34 +26,15 @@ const sizeProps = [
   "collapsedSize",
 ] as const
 
-function registry() {
-  const entries = new Map<string, Entry>()
-  return {
-    list: () => inDocumentOrder([...entries.values()]),
-    add(entry: Entry) {
-      entries.set(entry.key, entry)
-      return () => {
-        if (entries.get(entry.key) === entry) {
-          entries.delete(entry.key)
-        }
-      }
-    },
-  }
-}
-
-/**
- * A resizable group's panels and handles on the native host, which the
- * `resizable-dom` twin returns: the host orders the parts, measures the
- * panels and follows the touches that drag a handle.
- * @experimental
- */
+// The `resizable-dom` twin: the host orders the panels and handles, measures
+// the panels and follows the touches that drag a handle.
 function createNativeResizableDom(
   context: PrimitiveContext<ResizableOptions, State, string>,
   group: () => Group
 ) {
   const { store } = context
-  const panels = registry()
-  const handles = registry()
+  const panels = createOrder<Entry>()
+  const handles = createOrder<Entry>()
   let space = 0
 
   function spaceOf() {
@@ -102,7 +83,7 @@ function createNativeResizableDom(
   }
 
   function refresh() {
-    if (!panels.list().length) {
+    if (!panels.size()) {
       return
     }
     const { ids } = store.get()
@@ -113,7 +94,6 @@ function createNativeResizableDom(
     )
   }
 
-  // The handles being dragged.
   const drags = new Set<string>()
 
   function follow(key: string, part: Part) {

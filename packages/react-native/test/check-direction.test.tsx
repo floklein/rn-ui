@@ -76,11 +76,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
-import {
-  Resizable,
-  ResizableHandle,
-  ResizablePanel,
-} from "../src/resizable"
+import { Resizable, ResizableHandle, ResizablePanel } from "../src/resizable"
 import {
   ScrollArea,
   ScrollAreaContent,

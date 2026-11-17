@@ -73,7 +73,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#d4d4d8",
   },
   checked: { backgroundColor: "#16a34a" },
-  thumb: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#ffffff" },
+  thumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+  },
   thumbOn: { transform: [{ translateX: 20 }] },
   group: {
     width: 320,

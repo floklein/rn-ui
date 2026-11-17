@@ -35,7 +35,9 @@ function Example() {
           <Text style={styles.hint}>From Inès Moreau</Text>
         </ResizablePanel>
       </Resizable>
-      <Text style={styles.footer}>Archived conversations stay for 30 days.</Text>
+      <Text style={styles.footer}>
+        Archived conversations stay for 30 days.
+      </Text>
     </ScrollView>
   )
 }

@@ -1,0 +1,308 @@
+---
+title: Resizable
+description: Resize, collapse, and save panel layouts by dragging handles.
+---
+
+Use a resizable group to let people size the panes of a layout, like a file list beside an editor, by dragging the handle between them or with a screen reader's adjust gestures.
+
+<ComponentExample
+  name="resizable/basic"
+  caption="Drag the handle beside Files, then the one between page.tsx and Terminal."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Resizable`:
+
+```text
+Resizable
+├── ResizablePanel
+├── ResizableHandle
+└── ResizablePanel
+```
+
+Put a handle between the panels you want to resize, and name it with `aria-label`, like "Resize files". The group is a `View` that lays its panels out in a row, so give it a size, and each panel's size is a percentage of the space the panels share. A group can sit inside a panel, like an editor above a terminal.
+
+- **Resizable** holds the layout and renders a `View`, a row or a column.
+- **ResizablePanel** is a `View` whose size is a flex basis worked out from the layout. It clips what's inside it.
+- **ResizableHandle** is what you drag, a `View`. Give it a width in a row, or a height in a column, and widen a thin one's touch area with `hitSlop`.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Resizable,
+  ResizableHandle,
+  ResizablePanel,
+} from "@ui-sdk/react-native/resizable"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Resizable style={styles.group}>
+      <ResizablePanel defaultSize={30}>
+        <Text>Files</Text>
+      </ResizablePanel>
+      <ResizableHandle
+        aria-label="Resize files"
+        hitSlop={8}
+        style={styles.handle}
+      />
+      <ResizablePanel>
+        <Text>Editor</Text>
+      </ResizablePanel>
+    </Resizable>
+  )
+}
+
+const styles = StyleSheet.create({
+  group: { height: 200 },
+  handle: { width: 1, backgroundColor: "#d4d4d8" },
+})
+
+export { Example }
+```
+
+The panel without `defaultSize` takes what's left, here 70%.
+
+## Vertical
+
+Set `orientation="vertical"` to stack the panels, and give the group a height. Every part's state has `orientation`, so a style function can give a vertical group's handle a height instead of a width.
+
+<ComponentExample
+  name="resizable/vertical"
+  caption="Drag the handle between Inbox and Quarterly report up or down."
+/>
+
+## Inside a Scroll View
+
+A drag keeps its touch from a scroll view around it. On iOS, a `ScrollView` that scrolls along the group's axis, like a vertical group in a vertical `ScrollView`, still scrolls while the handle moves. Turn its scrolling off for the length of the drag: set `dragging` from the handle's responder events and pass `scrollEnabled={!dragging}`, as for a [Slider](./slider#inside-a-scroll-view).
+
+<ComponentExample
+  name="resizable/scroll-view"
+  caption="Drag the handle under the messages up or down. The page stays where it is, and a swipe elsewhere scrolls it."
+/>
+
+A scroll view across the group's axis needs nothing. A [Scroll Area](./scroll-area#drags-inside) does this for you: its viewport stops scrolling while a handle inside it is dragged.
+
+## Handle
+
+Put anything inside a handle, like a grip that shows it can be dragged. A thin line is hard to grab with a finger, so give the handle a `hitSlop`. `hitSlop` doesn't reach VoiceOver, which outlines the handle's own view and whose audit asks for 44 points: for that, give the handle that width and draw the line inside it.
+
+<ComponentExample
+  name="resizable/handle"
+  caption="Grab the grip beside Channels and drag it."
+/>
+
+## Collapsible
+
+`collapsible` lets a panel collapse below its `minSize` to `collapsedSize`, 0 by default: by dragging past the midpoint to its collapsed size, or through the controller. Dragging back past the same point opens it at its minimum. A collapsed panel's state has `collapsed`, and at size 0 its content leaves the screen reader's reach.
+
+<ComponentExample
+  name="resizable/collapsible"
+  caption="Drag the sidebar closed to leave only the initials, then drag it open again."
+/>
+
+## Sizes in Points
+
+Sizes are percentages as numbers, or strings with `%`, `px` or `rem`. On native a pixel is a point, and a rem is 16 points. Point bounds hold as the group resizes, like when the screen turns, so a navigation with `minSize="100px"` never gets narrower, and a change they cause reports the `resize` reason.
+
+<ComponentExample
+  name="resizable/sizes"
+  caption="Resize Docs. It stays between 100 and 200 points wide."
+/>
+
+## Default Layout
+
+`defaultLayout` sets every panel's size at once, in order. Otherwise panels without `defaultSize` share what's left evenly.
+
+<ComponentExample
+  name="resizable/default-layout"
+  caption="The three mail panels start at 25, 35 and 40 percent. Resize any of them."
+/>
+
+## Controlled
+
+Pass `layout` and `onLayoutChange` to control the group. The layout is one percentage per panel, in order, adding up to 100. Every change carries a [reason](#reasons), like `drag` or `step-key`, and `details.cancel()` keeps the current layout.
+
+<ComponentExample
+  name="resizable/controlled"
+  caption="Resize Files to log the layout and its reason. Split Evenly and Reset set the layout from outside."
+/>
+
+## Saving on Commit
+
+`onLayoutChange` runs on every move of a drag. `onLayoutCommit` runs once, when the interaction that changed the layout ends: the touch lifts, a screen reader adjusts a handle, or a panel collapses. Save there. A drag taken away, like by a system gesture, puts the layout back and commits nothing.
+
+<ComponentExample
+  name="resizable/complete"
+  caption="Drag the handle and lift your finger. The layout is logged once."
+/>
+
+## Storage
+
+Native has no `localStorage`, so `autoSaveId` saves only into the `storage` you pass: anything with `getItem` and `setItem` that answers at once, like a synchronous key-value store. The group saves the layout when an interaction completes and restores it when it lays out again. Each set of panels keeps its own layout, so give panels an `id`. This example keeps the layout in memory, for as long as the app runs:
+
+<ComponentExample
+  name="resizable/storage"
+  caption="Resize Messages, open another screen and come back. The width comes back."
+/>
+
+## Controller
+
+A controller, from `createResizableController()`, collapses, expands and resizes panels from anywhere, by id or index, and reads the layout with `getLayout()`. Changes it makes report the `imperative` reason.
+
+<ComponentExample
+  name="resizable/controller"
+  caption="Use Collapse, Expand and 120px to move Files from outside the group, and Read to log its sizes."
+/>
+
+## Disabled
+
+`disabled` on a handle fixes it in place. On the group it fixes every handle. Their panels keep their sizes, and screen readers announce the handle as dimmed or disabled. A disabled `FieldSet` around the group fixes every handle too.
+
+<ComponentExample
+  name="resizable/disabled"
+  caption="The handle after Pinned stays fixed. Drag the one after Inbox, then turn on Lock layout to fix it too."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state, like a panel's `size` and whether it's `collapsed`, or whether a handle is `dragging`.
+
+<ComponentExample
+  name="resizable/render"
+  caption="Resize Files to see both panels report their size."
+/>
+
+A panel's size is in its state, not a CSS variable, so every panel renders on each move of a drag. Keep what's inside it cheap to render, or memoize it.
+
+## Styling
+
+Parts are unstyled, apart from the layout they need: the group is a flex row or column, and panels take their size as a flex basis and clip what's inside them. Give the group a size, and the handle a width or height and a background.
+
+Style each part with a function of its state, like `(state) => [styles.handle, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`. `hovering` stays false, since a touch doesn't hover.
+
+## Part State
+
+### Resizable [#part-state-resizable]
+
+<PartStateTable
+  component="resizable"
+  part="root"
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableState"
+/>
+
+### ResizablePanel [#part-state-resizablepanel]
+
+<PartStateTable
+  component="resizable"
+  part="panel"
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizablePanelState"
+/>
+
+### ResizableHandle [#part-state-resizablehandle]
+
+<PartStateTable
+  component="resizable"
+  part="handle"
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableHandleState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Resizable
+
+<TypeTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableOptions"
+/>
+
+### ResizablePanel
+
+<TypeTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizablePanelProps"
+/>
+
+### ResizableHandle
+
+<TypeTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableHandleProps"
+/>
+
+### State
+
+What render, style and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableState"
+/>
+
+Panels:
+
+<StateTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizablePanelState"
+/>
+
+Handles:
+
+<StateTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableHandleState"
+/>
+
+### Reasons
+
+`details.reason` says why the layout changed. On native it's `"drag"`, `"step-key"` for a screen reader's adjustment, `"collapse"`, `"resize"` or `"imperative"`: no keys reach the handles.
+
+<ReasonTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableLayoutChangeReason"
+/>
+
+### Controller
+
+Create one with `createResizableController()` and pass it as `controller`.
+
+Write methods take an optional `{ reason }`, run the change callback like a drag, and return `false` when nothing changed or the change was canceled.
+
+<ControllerTable
+  path="../../packages/core/src/components/resizable/resizable.ts"
+  name="ResizableController"
+/>
+
+### Events
+
+Callbacks get the new layout first, then the details.
+
+| Prop             | On          | Receives                                                       |
+| ---------------- | ----------- | -------------------------------------------------------------- |
+| `onLayoutChange` | `Resizable` | `(layout, details)`: the new layout and the [reason](#reasons) |
+| `onLayoutCommit` | `Resizable` | `(layout, details)`: the layout once the interaction ends      |
+
+## Accessibility
+
+Handles follow the [WAI-ARIA window splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/), translated to React Native's accessibility props. React Native announces no separator, so each handle is its own element with the `adjustable` role, read as a slider: its value is the size of the panel before it, as a percentage, between the bounds the panels allow. Name each handle with `aria-label`. VoiceOver adjusts it with a swipe up or down, and TalkBack with its adjust gestures: each moves it one `step` and commits at once.
+
+A double tap doesn't collapse a panel, as Enter and a double-click do on the web: collapse one with a drag or the controller.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through the handles in order. React Native delivers no arrow keys, Home, End or Enter to views, so a keyboard can't move a handle, and `largeStep` changes nothing.

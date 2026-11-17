@@ -9,7 +9,12 @@ import { StyleSheet, Text } from "react-native"
 function Example() {
   return (
     <Resizable style={styles.group}>
-      <ResizablePanel defaultSize="140px" minSize="100px" maxSize="200px" style={styles.panel}>
+      <ResizablePanel
+        defaultSize="140px"
+        minSize="100px"
+        maxSize="200px"
+        style={styles.panel}
+      >
         <Text style={styles.title}>Docs</Text>
         <Text style={styles.item}>Getting Started</Text>
         <Text style={styles.item}>Components</Text>

@@ -19,7 +19,10 @@ import {
   usePrimitive,
 } from "./use-primitive"
 
-type ResizableParts = Parts<ResizablePrimitive, { panel: typeof View; handle: typeof View }>
+type ResizableParts = Parts<
+  ResizablePrimitive,
+  { panel: typeof View; handle: typeof View }
+>
 
 const parts: ResizableParts = createParts(
   resizable,
@@ -103,24 +106,25 @@ function Resizable({
  * every frame of a drag; keep what's inside it cheap to render, or memoized.
  * @experimental
  */
-function ResizablePanel(
-  props: ComponentProps<ResizableParts["Panel"]>
-) {
+function ResizablePanel(props: ComponentProps<ResizableParts["Panel"]>) {
   const group = useHandle(resizable)
   const { defaultSize } = props
-  // Shares add up to 100%, so the handles' length comes off every panel in
-  // proportion. Before the group lays out, a panel takes its default size,
-  // and one without grows into what's left.
+  // A panel grows by its share of what the handles leave: a percentage basis
+  // needs a width Yoga may not know yet. Before the group lays out, a panel
+  // takes its default size, and one without grows into what's left.
   const style = (state: ResizablePanelState) => {
-    const laidOut = group.state.layout.length > 0
+    if (group.state.layout.length > 0) {
+      return {
+        flexGrow: state.size,
+        flexShrink: 1,
+        flexBasis: 0,
+        overflow: "hidden" as const,
+      }
+    }
     return {
-      flexGrow: laidOut || defaultSize !== undefined ? 0 : 1,
+      flexGrow: defaultSize === undefined ? 1 : 0,
       flexShrink: 1,
-      flexBasis: laidOut
-        ? (`${state.size}%` as const)
-        : defaultSize === undefined
-          ? 0
-          : basisOf(defaultSize),
+      flexBasis: defaultSize === undefined ? 0 : basisOf(defaultSize),
       overflow: "hidden" as const,
     }
   }

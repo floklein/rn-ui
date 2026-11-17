@@ -116,11 +116,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from "../src/slider"
-import {
-  Resizable,
-  ResizableHandle,
-  ResizablePanel,
-} from "../src/resizable"
+import { Resizable, ResizableHandle, ResizablePanel } from "../src/resizable"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"

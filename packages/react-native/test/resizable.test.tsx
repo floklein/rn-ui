@@ -60,13 +60,32 @@ describe("Resizable", () => {
       flexDirection: "row",
     })
     expect(flat(screen.getByTestId("files").props.style)).toMatchObject({
-      flexGrow: 0,
+      flexGrow: 30,
       flexShrink: 1,
-      flexBasis: "30%",
+      flexBasis: 0,
     })
     expect(flat(screen.getByTestId("code").props.style)).toMatchObject({
-      flexBasis: "70%",
+      flexGrow: 70,
     })
+  })
+
+  test("a panel with a style of its own keeps its share", async () => {
+    await laidOut(
+      <Resizable defaultLayout={[30, 70]}>
+        <ResizablePanel testID="first" style={{ padding: 8 }}>
+          <Text>Files</Text>
+        </ResizablePanel>
+        <ResizableHandle aria-label="Resize files" />
+        <ResizablePanel testID="second">
+          <Text>Code</Text>
+        </ResizablePanel>
+      </Resizable>
+    )
+    expect(flat(screen.getByTestId("first").props.style)).toMatchObject({
+      flexGrow: 30,
+      padding: 8,
+    })
+    expect(flat(screen.getByTestId("second").props.style).flexGrow).toBe(70)
   })
 
   test("a touch drag moves the handle and commits once when it lifts", async () => {
@@ -92,7 +111,7 @@ describe("Resizable", () => {
       [70, 30],
       expect.objectContaining({ reason: "drag" })
     )
-    expect(flat(screen.getByTestId("files").props.style).flexBasis).toBe("70%")
+    expect(flat(screen.getByTestId("files").props.style).flexGrow).toBe(70)
   })
 
   test("a screen reader's increment and decrement move it a step and commit", async () => {
@@ -144,9 +163,9 @@ describe("Resizable", () => {
         <ResizablePanel />
       </Resizable>
     )
-    expect(
-      screen.getByTestId("handle").props.onStartShouldSetResponder()
-    ).toBe(false)
+    expect(screen.getByTestId("handle").props.onStartShouldSetResponder()).toBe(
+      false
+    )
     expect(handle().props.accessibilityState).toEqual({ disabled: true })
     await fireEvent(handle(), "accessibilityAction", {
       nativeEvent: { actionName: "increment" },
@@ -169,7 +188,7 @@ describe("Resizable", () => {
       controller.collapse(0)
     })
     const files = screen.getByTestId("files", { includeHiddenElements: true })
-    expect(flat(files.props.style).flexBasis).toBe("0%")
+    expect(flat(files.props.style).flexGrow).toBe(0)
     expect(screen.queryByText("Files")).toBeNull()
   })
 
@@ -191,8 +210,8 @@ describe("Resizable", () => {
 
   test("a disabled group takes no touch", async () => {
     await laidOut(<Editor disabled />)
-    expect(
-      screen.getByTestId("handle").props.onStartShouldSetResponder()
-    ).toBe(false)
+    expect(screen.getByTestId("handle").props.onStartShouldSetResponder()).toBe(
+      false
+    )
   })
 })

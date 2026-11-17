@@ -452,6 +452,7 @@
   "@ui-sdk/react-native/radio": 16456,
   "@ui-sdk/react-native/rating": 16267,
   "@ui-sdk/react-native/segmented-control": 17449,
+  "@ui-sdk/react-native/resizable": 19124,
   "@ui-sdk/react-native/scroll-area": 15307,
   "@ui-sdk/react-native/separator": 9530,
   "@ui-sdk/react-native/switch": 12561,
