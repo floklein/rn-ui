@@ -35,7 +35,7 @@ The function also receives the part's interaction, `{ pressed, hovered, focused 
 
 ## Wrap Your App
 
-A modal popup, like a dialog, renders in React Native's `Modal` and needs nothing from your app. A non-modal popup renders above your screens in an `OverlayHost`, so wrap your app in one, near the root:
+A modal popup, like a dialog, renders in React Native's `Modal` and needs nothing from your app. A non-modal popup renders above your screens in an `OverlayHost`, and so does what you open from code, like [`confirm()`](./components/alert-dialog#confirm-from-anywhere), so wrap your app in one, near the root:
 
 ```tsx title="App.tsx"
 import { OverlayHost } from "@ui-sdk/react-native/overlays"
@@ -48,6 +48,8 @@ function App() {
 The host lets every press through to your screens. A press outside a non-modal popup can still close it, as a click outside one does on the web. Android's back button closes the topmost open popup first. Each `Modal` carries a host of its own, so a popup opened from inside a modal dialog renders inside its `Modal`.
 
 A non-modal popup renders inside the host, not where you wrote it, so it reads React context from above the host. Put the providers your popups read, like your navigation container or theme, above `OverlayHost`. Without an `OverlayHost`, a non-modal popup renders where it is in the tree, and development builds warn you.
+
+Your own `Modal`, or a screen your navigator presents modally, covers the root host. Wrap its content in an `OverlayHost` too, so popups and `confirm()` opened while it is up show above it. On iOS, a second `Modal` opened beside one that is up never shows.
 
 ## Pass the Safe-Area Insets
 
@@ -72,3 +74,10 @@ function App() {
   )
 }
 ```
+
+## OverlayHost Props
+
+<TypeTable
+  path="../../packages/react-native/src/overlays.tsx"
+  name="OverlayHostProps"
+/>
