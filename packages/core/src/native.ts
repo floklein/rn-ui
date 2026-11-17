@@ -20,6 +20,13 @@ export { dialogNative } from "./components/dialog/dialog-native"
 export { drawerNative } from "./components/drawer/drawer-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
+export {
+  type NativeScroller,
+  type NativeScrollReport,
+  type NativeScrollView,
+  type NativeThumb,
+  nativeScrollView,
+} from "./components/scroll-area/scroll-area-native"
 export { segmentedControlNative } from "./components/segmented-control/segmented-control-native"
 export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"

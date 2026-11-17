@@ -99,6 +99,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../src/drawer"
+import {
+  ScrollArea,
+  ScrollAreaContent,
+  ScrollAreaCorner,
+  ScrollAreaScrollbar,
+  ScrollAreaScrollToEnd,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+} from "../src/scroll-area"
 import { Separator } from "../src/separator"
 import {
   Slider,
@@ -132,6 +141,8 @@ const checkRadioGroup = () =>
   checkPattern(screen.container, "radio-group", { os, act })
 const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
+const checkScrollArea = () =>
+  checkPattern(screen.container, "scroll-area", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
 const checkCalendar = () =>
@@ -1065,6 +1076,63 @@ describe("checkPattern's accordion pattern on the native host", () => {
     await render(<HandDisclosure pressShows={false} />)
     await expect(checkAccordion()).rejects.toThrow(
       'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+})
+
+describe("checkPattern's scroll area pattern on the native host", () => {
+  test("passes on a scroll area with its scrollbars and scroll-to-end button", async () => {
+    await render(
+      <ScrollArea>
+        <ScrollAreaViewport>
+          <ScrollAreaContent>
+            <Text>Release notes</Text>
+          </ScrollAreaContent>
+        </ScrollAreaViewport>
+        <ScrollAreaScrollbar>
+          <ScrollAreaThumb />
+        </ScrollAreaScrollbar>
+        <ScrollAreaScrollbar orientation="horizontal">
+          <ScrollAreaThumb />
+        </ScrollAreaScrollbar>
+        <ScrollAreaCorner />
+        <ScrollAreaScrollToEnd>
+          <Text>Latest</Text>
+        </ScrollAreaScrollToEnd>
+      </ScrollArea>
+    )
+    await expect(checkScrollArea()).resolves.toBeUndefined()
+  })
+
+  test("fails on content a screen reader reads beside the viewport", async () => {
+    await render(
+      <ScrollArea>
+        <ScrollAreaViewport />
+        <Text>Thumb</Text>
+      </ScrollArea>
+    )
+    await expect(checkScrollArea()).rejects.toThrow(
+      'the Text "Thumb" is read beside the ScrollView; a scroll area\'s scrollbars, thumbs and corner are hidden from screen readers.'
+    )
+  })
+
+  test("fails on a viewport read as one element", async () => {
+    await render(
+      <ScrollArea>
+        <ScrollAreaViewport accessible aria-label="Notes">
+          <Text>Release notes</Text>
+        </ScrollAreaViewport>
+      </ScrollArea>
+    )
+    await expect(checkScrollArea()).rejects.toThrow(
+      "is one accessible element, so a screen reader can't read its content item by item."
+    )
+  })
+
+  test("fails with no ScrollView", async () => {
+    await render(<View />)
+    await expect(checkScrollArea()).rejects.toThrow(
+      "The tree has no ScrollView, so a screen reader can't scroll it."
     )
   })
 })

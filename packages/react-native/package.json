@@ -42,6 +42,7 @@
     "./progress": "./src/progress.tsx",
     "./radio": "./src/radio.tsx",
     "./rating": "./src/rating.tsx",
+    "./scroll-area": "./src/scroll-area.tsx",
     "./segmented-control": "./src/segmented-control.tsx",
     "./separator": "./src/separator.tsx",
     "./slider": "./src/slider.tsx",
@@ -162,6 +163,10 @@
       "./rating": {
         "types": "./dist/rating.d.ts",
         "default": "./dist/rating.js"
+      },
+      "./scroll-area": {
+        "types": "./dist/scroll-area.d.ts",
+        "default": "./dist/scroll-area.js"
       },
       "./segmented-control": {
         "types": "./dist/segmented-control.d.ts",
