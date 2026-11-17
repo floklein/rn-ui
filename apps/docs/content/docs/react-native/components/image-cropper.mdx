@@ -1,0 +1,353 @@
+---
+title: Image Cropper
+description: Choose the part of an image to keep by moving and resizing a selection, or by panning and pinching the image under it.
+---
+
+Use an image cropper to choose the part of a photo to keep, like a profile picture or a cover image. The crop is a box in the image's own pixels, with a quarter-turn rotation and a flip. Native has no canvas to cut the file with, so hand the crop to your own image library, like Expo's image manipulator.
+
+<ComponentExample
+  name="image-cropper/basic"
+  caption="Pick a ratio, then drag the selection or one of its handles. Each crop is logged when you lift your finger."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build an `ImageCropper`:
+
+```text
+ImageCropper
+├── ImageCropperViewport
+│   ├── ImageCropperImage
+│   └── ImageCropperSelection
+│       ├── ImageCropperGrid
+│       └── ImageCropperHandle
+├── ImageCropperZoom
+├── ImageCropperRotate
+└── ImageCropperFlip
+```
+
+- **ImageCropper** holds the crop and the image's `src`, and renders a `View` around the parts, busy until the image loads.
+- **ImageCropperViewport** is the area the image shows in, a `View` that clips it. Give it a size, or an `aspectRatio` from its state's `imageAspectRatio`, and its padding keeps the image off its edges.
+- **ImageCropperImage** is an `Image` of `src`, turned and flipped. Give it `alt`.
+- **ImageCropperSelection** shows the crop over the image, one adjustable element you drag in a box.
+- **ImageCropperGrid** lays a `View` over the selection for lines you draw, in thirds.
+- **ImageCropperHandle** resizes the selection from one edge or corner, its `position`, like `"se"` for the bottom right.
+- **ImageCropperZoom** is a track from 1, the largest crop, to `maxZoom`. Place a thumb in it from its state's `zoomPosition`.
+- **ImageCropperRotate** is a button that turns the image a quarter clockwise.
+- **ImageCropperFlip** is a button that mirrors the image left to right, or top to bottom with `direction="vertical"`.
+
+The viewport, image and selection are needed. The rest are optional. The selection's children, the grid and handles, are drawn over it beside its own element, so a screen reader reaches each of them.
+
+## Usage
+
+Import the parts and put them together. Give the viewport a size and the handles a place on their edge or corner:
+
+```tsx
+import {
+  ImageCropper,
+  type ImageCropperHandleState,
+  ImageCropperHandle,
+  ImageCropperImage,
+  ImageCropperSelection,
+  ImageCropperViewport,
+  type ImageCropperViewportState,
+} from "@ui-sdk/react-native/image-cropper"
+import { StyleSheet, View } from "react-native"
+
+function Example({ uri }: { uri: string }) {
+  return (
+    <ImageCropper aria-label="Photo" src={uri}>
+      <ImageCropperViewport style={viewportStyle}>
+        <ImageCropperImage alt="Your photo" />
+        <ImageCropperSelection style={styles.selection}>
+          <ImageCropperHandle position="se" style={styles.corner}>
+            <View style={styles.dot} />
+          </ImageCropperHandle>
+        </ImageCropperSelection>
+      </ImageCropperViewport>
+    </ImageCropper>
+  )
+}
+
+const viewportStyle = (state: ImageCropperViewportState) => [
+  styles.viewport,
+  { aspectRatio: state.imageAspectRatio ?? 3 / 2 },
+]
+
+const styles = StyleSheet.create({
+  viewport: { width: 320 },
+  selection: {
+    outlineWidth: 1,
+    outlineColor: "#ffffff",
+    boxShadow: "0 0 0 1000px rgba(0, 0, 0, 0.5)",
+  },
+  corner: {
+    position: "absolute",
+    right: -22,
+    bottom: -22,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dot: { width: 12, height: 12, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+`src` is any URI an `Image` loads, like a file from the photo library. The crop is in the pixels the `Image` reports when it loads.
+
+## Aspect Ratio
+
+Set `aspectRatio` to keep the crop's width over its height, like `1` for a square or `16 / 9`. Changing it fits the crop to the new ratio about its middle. Without one, the crop is free. `minWidth` and `minHeight` stop it getting too small, in image pixels.
+
+<ComponentExample
+  name="image-cropper/aspect-ratio"
+  caption="Choose Square or Wide, then drag an edge. Flip mirrors the image and the crop with it."
+/>
+
+## Frame Mode
+
+Set `mode="frame"` for an avatar editor. The selection stays still and as large as it fits, and you pan the image under it with one finger and zoom it with two, a pinch, or with the zoom track. Handles don't show in a frame.
+
+`shape="circle"` rounds the selection in its state, so give it a `borderRadius`; the crop is still its box.
+
+<ComponentExample
+  name="image-cropper/avatar"
+  caption="Drag or pinch the image, or touch the zoom track, then lift your finger to log the crop."
+/>
+
+The pinch is worked out from the touches the responder reports: the point under the middle of your fingers stays under it as they spread or close, and a finger that lifts leaves the other panning.
+
+## Rotate and Flip
+
+`ImageCropperRotate` turns the image a quarter clockwise. `ImageCropperFlip` mirrors the image. The crop turns and flips with the image, so it keeps the same part of the photo. Its `x` and `y` count from the top left of the image as it shows, turned and flipped: turn the image by `rotation` and mirror it by `flipX` and `flipY` before you cut the crop out.
+
+## Inside a Scroll View
+
+A drag on the selection or a handle keeps its touch from a scroll view around it. On iOS, a `ScrollView` that scrolls along the drag's axis still scrolls while the crop moves, and the selection moves on both axes, so that's any `ScrollView` around it. Turn the scroll view's scrolling off for the length of the drag, as [Slider shows](./slider#inside-a-scroll-view): set `dragging` from the selection's and handles' responder events and pass `scrollEnabled={!dragging}`. In a frame, put them on the viewport instead.
+
+<ComponentExample
+  name="image-cropper/scroll-view"
+  caption="Drag the selection down: the page stays still. Swipe below the photo to scroll."
+/>
+
+A [Scroll Area](./scroll-area#drags-inside) does this for you: its viewport stops scrolling while a drag inside it holds the touch.
+
+## Disabled
+
+Set `disabled`. The selection, handles and zoom can't be dragged or adjusted, and the buttons are disabled.
+
+```tsx
+<ImageCropper aria-label="Photo" src={uri} disabled>
+  {/* … */}
+</ImageCropper>
+```
+
+## Controlled
+
+Pass `crop` and update it in `onCropChange`. Each change carries a [reason](#reasons), like `drag`, `pinch` or `zoom-input`. Call `details.cancel()` in the callback to keep the current crop.
+
+`onCropChange` runs on every step of a drag and once the image loads. `onCropCommit` runs once, when the touch lifts or a screen reader's adjustment is done, so use it to save. A drag taken away, like by a system gesture, puts the crop back and commits nothing. A controller from `createImageCropperController()` sets the crop from anywhere, like `controller.setZoom(2)`.
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state. Every part has the `crop`, the `zoom`, and whether it's `loading`, has an `error` or is `dragging`.
+
+## Styling
+
+Parts are unstyled, apart from the places they need: the viewport clips its content, the image and the selection get their place in points, and the grid fills the selection. Give the viewport a size, and the handles a size and a place on their edge or corner of the selection from their state's `position`. Handles 44 points across meet the iOS hit target.
+
+A box viewport fits the whole image, so set its `aspectRatio` to its state's `imageAspectRatio`. A wide spread `boxShadow` on the selection dims the image outside it, and follows a `borderRadius` for a circle. Show the grid only while its state says `dragging`.
+
+Style each part with a function of its state, like `(state) => [styles.grid, { opacity: state.dragging ? 1 : 0 }]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### ImageCropper [#part-state-imagecropper]
+
+<PartStateTable
+  component="image-cropper"
+  part="root"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+With the image's shape, the web's `--image-cropper-aspect-ratio`:
+
+| Field              | Type                  | Description                                                                      |
+| ------------------ | --------------------- | -------------------------------------------------------------------------------- |
+| `imageAspectRatio` | `number \| undefined` | The image's width over its height as it shows, turned; undefined until it loads. |
+
+### ImageCropperViewport [#part-state-imagecropperviewport]
+
+<PartStateTable
+  component="image-cropper"
+  part="viewport"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+With `imageAspectRatio`, for its `aspectRatio`.
+
+### ImageCropperImage [#part-state-imagecropperimage]
+
+<PartStateTable
+  component="image-cropper"
+  part="image"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+### ImageCropperSelection [#part-state-imagecropperselection]
+
+<PartStateTable
+  component="image-cropper"
+  part="selection"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+### ImageCropperGrid [#part-state-imagecroppergrid]
+
+<PartStateTable
+  component="image-cropper"
+  part="grid"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+### ImageCropperHandle [#part-state-imagecropperhandle]
+
+<PartStateTable
+  component="image-cropper"
+  part="handle"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperHandleState"
+/>
+
+### ImageCropperZoom [#part-state-imagecropperzoom]
+
+<PartStateTable
+  component="image-cropper"
+  part="zoom"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+With where it sits, for a thumb:
+
+| Field          | Type     | Description                                         |
+| -------------- | -------- | --------------------------------------------------- |
+| `zoomPosition` | `number` | Where the zoom sits along the track, from 0 to 100. |
+
+### ImageCropperRotate [#part-state-imagecropperrotate]
+
+<PartStateTable
+  component="image-cropper"
+  part="rotate"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+### ImageCropperFlip [#part-state-imagecropperflip]
+
+<PartStateTable
+  component="image-cropper"
+  part="flip"
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### ImageCropper
+
+<TypeTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperOptions"
+/>
+
+### ImageCropperHandle
+
+<TypeTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperHandleProps"
+/>
+
+### ImageCropperFlip
+
+<TypeTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperFlipProps"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the cropper's state.
+
+<StateTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperState"
+/>
+
+Handles add their own:
+
+<StateTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperHandleState"
+/>
+
+### Reasons
+
+`details.reason` says why the crop changed. On native it's `"image-load"`, `"drag"`, `"pinch"`, `"step-key"` for a screen reader's adjustment of the selection or a handle, `"zoom-input"`, `"rotate-press"`, `"flip-press"`, `"aspect-ratio-change"` or `"imperative"`: there's no wheel, and no keys reach the parts.
+
+<ReasonTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperCropChangeReason"
+/>
+
+### Controller
+
+Create one with `createImageCropperController()` and pass it as `controller`.
+
+Each write method takes an optional `{ reason }`, runs the change callback like a drag, and returns `false` when nothing changed or the change is canceled. `focus()` moves a screen reader's focus to the selection.
+
+<ControllerTable
+  path="../../packages/core/src/components/image-cropper/image-cropper.ts"
+  name="ImageCropperController"
+/>
+
+### Events
+
+Callbacks get the new crop first, then the details.
+
+| Prop           | On             | Receives                                                          |
+| -------------- | -------------- | ----------------------------------------------------------------- |
+| `onCropChange` | `ImageCropper` | `(crop, details)`: the new crop and the [reason](#reasons)        |
+| `onCropCommit` | `ImageCropper` | `(crop, details)`: the crop once the interaction ends, its reason |
+
+### Types
+
+`@ui-sdk/react-native/image` has the crop's types, `ImageCrop` and `ImageRotation`. The web's `cropImage` is absent: it draws pixels with a canvas, which native doesn't have.
+
+## Accessibility
+
+No WAI-ARIA pattern covers an image cropper, so it's built from ones that do, translated to React Native's accessibility props. The selection, each handle and the zoom follow the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/): each is one element with the `adjustable` role. The selection and handles say the crop in words, like "300 by 300 pixels, at 50, 0", and the zoom says its level, like "125%". The image is named by its `alt`.
+
+VoiceOver adjusts them with a swipe up or down, and TalkBack with its adjust gestures, each committing at once. The selection moves across by ten points on screen, as Shift with an arrow key does on the web, a handle grows the crop from its edge by ten points, and the zoom moves a tenth of the way to `maxZoom`.
+
+The selection, handles and zoom are named in English by default. Pass `aria-label` to name them in another language.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through the selection, the handles, the zoom and the buttons, and Return or Space presses a button. React Native delivers no arrow keys, Plus, Minus or R to views, so a keyboard can't move, zoom or turn the crop; use the buttons and a controller instead.

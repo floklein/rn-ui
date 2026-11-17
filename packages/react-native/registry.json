@@ -985,6 +985,35 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The api spreads nativeTouch(...) from color-picker-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusPicker, which on the web focuses the same elements as before."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-parts.ts",
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the viewport's, selection's and handles' pointerdown, the zoom input's input and change, and the viewport's and image's binds orchestrate: in a box the selection and each handle follow the responder's touches from the first move, in a frame the viewport pans with one finger and pinches with two from every finger the responder reports, the zoom track follows touches, and the selection, handles and zoom take a screen reader's increment and decrement as one step. A cancelled, taken or unmounted responder puts the crop back and commits nothing. nativeImageCropper(api) reports the image's load and the viewport's laid-out content box, and restates the inline styles the image and selection attrs write, and --image-cropper-aspect-ratio, as numbers and transforms."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/image-cropper/image-cropper-touch.native.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-touch.ts",
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.setBox, dragStart, dragTo, dragEnd and dragCancel: the box the viewport's bind measures and the startFrom, setCrop and commit the web's pointer handlers make, for native touches, with a cancel that puts the crop back and commits nothing and a disable that ends a drag where it is. focusSelection asks the host to focus the mounted selection. The web module returns no methods."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/image-cropper/image-cropper-api.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeTouch(...) from image-cropper-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusSelection, which on the web focuses the selection's element as before."
     }
   ],
   "components": {
@@ -1702,6 +1731,31 @@
           "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
+    },
+    "image-cropper": {
+      "entry": "packages/react-native/src/image-cropper.tsx",
+      "slots": {
+        "imageCropper.viewport": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown pans and pinches a frame, which image-cropper-native.ts does from the responder's touches. Its bind measures the content box, which the adapter reads from an inner view's onLayout and hands nativeImageCropper(api).measure. Its wheel zooms under a mouse, which native has none of."
+        },
+        "imageCropper.image": {
+          "covered": "packages/react-native/src/image-cropper.tsx",
+          "reason": "Its bind hears the <img> load and fail, which ImageCropperImage hears from the Image's onLoad and onError and reports through nativeImageCropper(api)."
+        },
+        "imageCropper.selection": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown drags the crop in a box, which image-cropper-native.ts does from the responder's touches. Its keydown moves, zooms and turns it with keys, which native doesn't build (spec, Hardware keyboards): a screen reader's increment and decrement move it."
+        },
+        "imageCropper.handle": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown resizes the crop in a box, which image-cropper-native.ts does from the responder's touches. Its keydown moves its edges with arrow keys, which native doesn't build: a screen reader's increment grows the crop from it."
+        },
+        "imageCropper.zoom": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its input and change follow a range <input>, and its bind writes its value, where image-cropper-native.ts follows touches on the track and a screen reader's increment and decrement, and ImageCropperZoom gives the value."
+        }
+      }
     }
   },
   "pending": [
@@ -1711,7 +1765,6 @@
     "command",
     "date-input",
     "hover-card",
-    "image-cropper",
     "listbox",
     "menu",
     "menubar",

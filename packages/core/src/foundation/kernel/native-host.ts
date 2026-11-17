@@ -33,6 +33,11 @@ type NativeDrag = {
   claims?: (dx: number, dy: number) => boolean
   start: (touch: NativeTouch) => void
   move: (touch: NativeTouch) => void
+  /**
+   * Every finger on the screen, where `box` measures, as one goes down,
+   * moves or lifts during the drag: for a pinch.
+   */
+  fingers?: (touches: readonly { x: number; y: number }[]) => void
   /** The touch lifted. */
   end: () => void
   /** The touch was cancelled or taken by another view, like a scroll view. */

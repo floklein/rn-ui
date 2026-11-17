@@ -237,7 +237,9 @@ function toNativeProps(
   if (attrs.type === "range") {
     value.min = Number(attrs.min)
     value.max = Number(attrs.max)
-    value.now = Number(attrs.value)
+    if (attrs.value !== undefined) {
+      value.now = Number(attrs.value)
+    }
   }
   const label = names?.(idsOf(attrs["aria-labelledby"]))
   if (label !== undefined) {

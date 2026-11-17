@@ -340,6 +340,36 @@ function useDevice(name: string) {
       }
       await finger.up().perform()
     },
+    /** Two fingers on either side of `center` along x, `from` apart, moved until they're `to` apart, then lifted. */
+    async pinch(
+      center: { x: number; y: number },
+      from: number,
+      to: number,
+      duration = 600
+    ) {
+      const steps = 6
+      const finger = (side: 1 | -1) => {
+        const action = driver
+          .action("pointer", { parameters: { pointerType: "touch" } })
+          .move({
+            x: Math.round(center.x + (side * from) / 2),
+            y: Math.round(center.y),
+          })
+          .down()
+          .pause(100)
+        for (let step = 1; step <= steps; step++) {
+          action.move({
+            duration: Math.round(duration / steps),
+            x: Math.round(
+              center.x + (side * (from + ((to - from) * step) / steps)) / 2
+            ),
+            y: Math.round(center.y),
+          })
+        }
+        return action.up()
+      }
+      await driver.actions([finger(-1), finger(1)])
+    },
     /** The element's attributes as the OS reports them, for what `tree` leaves out. */
     async attributes(id: string) {
       for (const [, , tag] of (await driver.getPageSource()).matchAll(

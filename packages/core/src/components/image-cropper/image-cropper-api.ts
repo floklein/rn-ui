@@ -38,6 +38,7 @@ import {
   type Rect,
   type Size,
 } from "./image-cropper-geometry"
+import { focusSelection, nativeTouch } from "./image-cropper-touch"
 
 type State = {
   src: string | undefined
@@ -161,7 +162,7 @@ const wheelUnit = (event: WheelEvent, el: HTMLElement) =>
 function imageCropperApiBody(
   context: PrimitiveContext<ImageCropperOptions, State, string>
 ) {
-  const { store, element } = context
+  const { store, element, parts } = context
   const change = createChange(context)
   const commitCrop = createCommit(context)
   const drags = createDragSession(context.onDestroy)
@@ -277,10 +278,9 @@ function imageCropperApiBody(
       )
     },
     /** Moves focus to the selection. */
-    focus() {
-      element("selection")?.focus()
-    },
+    focus: () => focusSelection(element, parts),
     internal: {
+      ...nativeTouch({ store, setCrop, startFrom, commit }),
       // The image's natural size, once it loads. A new image starts its own crop.
       loaded(img: HTMLImageElement) {
         const natural = { width: img.naturalWidth, height: img.naturalHeight }

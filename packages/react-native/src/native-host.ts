@@ -94,6 +94,14 @@ function register<Value>(map: WeakMap<Part, Value>, part: Part, value: Value) {
   }
 }
 
+// Every finger on the screen, for a drag that pinches.
+function fingersOf(event: GestureResponderEvent, part: Part) {
+  const touches = event.nativeEvent.touches ?? []
+  drags
+    .get(part)
+    ?.fingers?.(touches.map((touch) => ({ x: touch.pageX, y: touch.pageY })))
+}
+
 let input: NativeInput | undefined
 const layerInput = () => input
 
@@ -224,18 +232,28 @@ function responder(part: Part, hold: (() => () => void) | null) {
       const touch = touchOf(event, part)
       const from = claimed.get(part)
       claimed.delete(part)
-      if (touch) {
-        withSource("touch", () =>
+      withSource("touch", () => {
+        if (touch) {
           drags.get(part)?.start(from ? { ...touch, ...from } : touch)
-        )
-      }
+        }
+        fingersOf(event, part)
+      })
       return true
+    },
+    onResponderStart(event: GestureResponderEvent) {
+      withSource("touch", () => fingersOf(event, part))
     },
     onResponderMove(event: GestureResponderEvent) {
       const touch = touchOf(event, part)
-      if (touch) {
-        withSource("touch", () => drags.get(part)?.move(touch))
-      }
+      withSource("touch", () => {
+        if (touch) {
+          drags.get(part)?.move(touch)
+        }
+        fingersOf(event, part)
+      })
+    },
+    onResponderEnd(event: GestureResponderEvent) {
+      withSource("touch", () => fingersOf(event, part))
     },
     onResponderRelease() {
       letGo(part)

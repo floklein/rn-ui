@@ -102,6 +102,14 @@ import {
   ColorPickerSlider,
   ColorPickerSliderThumb,
 } from "../src/color-picker"
+import {
+  ImageCropper,
+  ImageCropperHandle,
+  ImageCropperImage,
+  ImageCropperSelection,
+  ImageCropperViewport,
+  ImageCropperZoom,
+} from "../src/image-cropper"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -218,6 +226,32 @@ describe("checkDirection on the native host", () => {
                 <ColorPickerSliderThumb />
               </ColorPickerSlider>
             </ColorPicker>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an image cropper, whose selection and zoom step the same either way", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ImageCropper
+              aria-label="Photo"
+              src="https://example.com/photo.png"
+              defaultCrop={{ x: 10, y: 10, width: 100, height: 80 }}
+            >
+              <ImageCropperViewport>
+                <ImageCropperImage alt="Mountains" />
+                <ImageCropperSelection>
+                  <ImageCropperHandle position="se" />
+                </ImageCropperSelection>
+              </ImageCropperViewport>
+              <ImageCropperZoom />
+            </ImageCropper>
           )
           return screen.container
         },

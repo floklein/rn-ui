@@ -444,6 +444,8 @@
   "@ui-sdk/react-native/field (lazy)": 178,
   "@ui-sdk/react-native/file-input": 18635,
   "@ui-sdk/react-native/history": 3108,
+  "@ui-sdk/react-native/image": 21,
+  "@ui-sdk/react-native/image-cropper": 23004,
   "@ui-sdk/react-native/input": 14647,
   "@ui-sdk/react-native/label": 11600,
   "@ui-sdk/react-native/meter": 12222,

@@ -22,6 +22,10 @@ export {
   bindTransferList,
   bindTransferItem,
 } from "./foundation/drag-and-drop/drag-and-drop-native"
+export {
+  imageCropperNative,
+  nativeImageCropper,
+} from "./components/image-cropper/image-cropper-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { popoverNative } from "./components/popover/popover-native"
 export { tooltipNative } from "./components/tooltip/tooltip-native"
