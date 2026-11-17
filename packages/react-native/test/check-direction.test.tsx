@@ -399,7 +399,7 @@ describe("checkDirection on the native host", () => {
                 <PopoverTrigger>
                   <Text>Share</Text>
                 </PopoverTrigger>
-                <PopoverContent side="inline-end">
+                <PopoverContent side="right">
                   <PopoverArrow />
                   <PopoverTitle>Share link</PopoverTitle>
                 </PopoverContent>
