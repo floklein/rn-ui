@@ -47,8 +47,16 @@ const setScreenReader = (on: boolean) => {
     screenReaderChanges.forEach((change) => change(on))
   }
 }
-AccessibilityInfo.isScreenReaderEnabled().then(setScreenReader)
-AccessibilityInfo.addEventListener("screenReaderChanged", setScreenReader)
+let screenReaderChanged = false
+AccessibilityInfo.isScreenReaderEnabled().then((on) => {
+  if (!screenReaderChanged) {
+    setScreenReader(on)
+  }
+})
+AccessibilityInfo.addEventListener("screenReaderChanged", (on) => {
+  screenReaderChanged = true
+  setScreenReader(on)
+})
 const pressSource = () => nativePressSource(screenReader ? "virtual" : "touch")
 
 const following = 4
