@@ -122,6 +122,8 @@ function toastRegionApiBody(
   const heights = new Map<string, number>()
   // Toasts held open by a pending action.
   const held = new Set<string>()
+  // What else holds each toast open, like a screen reader on its buttons.
+  const holders = new Map<string, Set<object>>()
   // The toast of each button with a pending or failed state, by part key.
   const buttonToasts = new Map<string, string>()
   // Where focus was before it came into the region, to go back to.
@@ -182,7 +184,7 @@ function toastRegionApiBody(
         id: toast.id,
         version: toast.version,
         duration: toast.duration,
-        held: held.has(toast.id),
+        held: held.has(toast.id) || holders.has(toast.id),
       })),
       new Set(
         toaster()
@@ -380,6 +382,22 @@ function toastRegionApiBody(
       held.delete(toastId)
     }
     updateTimers()
+  }
+
+  function hold(toastId: string) {
+    const holder = {}
+    holders.set(toastId, (holders.get(toastId) ?? new Set()).add(holder))
+    updateTimers()
+    return () => {
+      const toastHolders = holders.get(toastId)
+      if (!toastHolders?.delete(holder)) {
+        return
+      }
+      if (!toastHolders.size) {
+        holders.delete(toastId)
+      }
+      updateTimers()
+    }
   }
 
   // Moves focus to the newest toast, or back where it was when it's already in the region.
@@ -788,6 +806,7 @@ function toastRegionApiBody(
       label,
       press,
       close,
+      hold,
       toaster,
       // Follows the toaster while the region is on the page. Headless tests call it without an element.
       connect,

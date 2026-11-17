@@ -382,6 +382,7 @@ Every difference the resolutions record, by subject.
 **Popups**
 
 - Modal popups render in `Modal`, and non-modal popups and toasts need the app wrapped in `OverlayHost` ([How native popups layer, dismiss and place themselves][popups]).
+- Tooltip's `closeDelay` is at least 100 ms, so a pointer can cross from the trigger to the content: native has no bridge spanning the two, and the content's pointer-enter keeps it open. While a screen reader runs, a toast with an action or a close button waits until it stops, since native never tells core that focus reached a toast; other toasts still close on time, and durations aren't scaled ([council batch 5][council-5]).
 - Android back dismisses the topmost layer with the `"back"` reason, and a refused dismissal still consumes it ([How native popups layer, dismiss and place themselves][popups]).
 - The iOS escape gesture stands for Escape, with the `"escape-key"` reason ([How native popups layer, dismiss and place themselves][popups]).
 - `presentation="auto"` is the sheet only when the app imports the sheet entry ([How native popups layer, dismiss and place themselves][popups]).
@@ -415,6 +416,7 @@ Every difference the resolutions record, by subject.
 - A multiline field has no modifier-plus-Enter submit, and Number Input has no arrow-key stepping ([How text entry components work on TextInput][text-entry]).
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
 - A drag inside a plain `ScrollView` that scrolls along the same axis needs the app to pass `scrollEnabled={!dragging}`, with `dragging` set from the drag part's responder grant, release and termination. On iOS the scroll view otherwise pans along with the drag, since Fabric only stops it for a responder above it, not inside it. A perpendicular scroll view needs nothing, and the library's Scroll Area stops its own scrolling ([council batch 3][council-3]).
+- A touch drag starts on the first move, as upstream's `touch-action: none` does, so a swipe that starts on a draggable item drags it and never scrolls its list. A list that must scroll gives each item a handle: the item's content takes its own touches, like a `Pressable`, so a swipe there goes to the scroll view, and a drag starts only on the handle the content leaves free. A transfer's list takes its items' touches, so its items have no handle. Carousel, Timeline, Waterfall and reordering follow this ([council batch 5][council-5]).
 - Scroll Area scrolls one axis, as a `ScrollView` does: vertical, or horizontal with the viewport's `horizontal` prop. Android has no `ScrollView` that scrolls both, so both axes need a horizontal `ScrollView` inside the viewport. Its edges reach styles as the `atStart` and `atEnd` state, not as the web's overflow and progress variables; touch never hovers, so `type="hover"` shows the scrollbars while scrolling; a touch on the scrollbar beside the thumb pages once, and the wheel, Alt and Escape behaviors of a mouse are absent ([Scroll area](https://github.com/floklein/rn-ui/issues/110)).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - Reordering and moving between lists bind their parts with `bindReorderItem`, `bindTransferList` and `bindTransferItem` from `@ui-sdk/core/native`; a transfer's list takes its items' touches (`pointerEvents="box-only"`), since a touch on an item that moves to another list ends with no release when its old view unmounts, so an item's own buttons take no touches. The moving item doesn't follow the finger between places (no `--drag-x`/`--drag-y`), an item the app doesn't `label` is announced by its key, and the keys and the `preview` option are the web's ([Reordering and moving between lists](https://github.com/floklein/rn-ui/issues/111)).
@@ -467,6 +469,7 @@ Nothing in the resolutions was run on a device, apart from the playground and th
 
 - Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android. Resolved for Slider on iOS: the app passes `scrollEnabled={!dragging}` and the view stays while the slider moves, and a perpendicular scroll view needs nothing ([council batch 3][council-3]). Reordering on iOS (#111): with the same wiring from an item's responder events the list reorders and a same-axis `ScrollView` stays at 0, and a swipe beside the items still scrolls it; inside a Scroll Area no wiring is needed and a drag held at its edge scrolls it. Android is checked in #124.
 - Pinch computed from the responder's touches.
+- A reorderable list's handle on iOS and Android (#133): a swipe on the item's content, which takes its own touches, scrolls the list, and a drag on the handle reorders it.
 
 **Locale** ([How direction and locale are read on native][direction])
 
@@ -544,3 +547,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [council-1]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6909822604
 [council-2]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6920083782
 [council-3]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6922314446
+[council-5]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6947711242

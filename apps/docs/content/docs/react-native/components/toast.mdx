@@ -156,7 +156,7 @@ Give an action an `href` and `ToastAction` opens it with `Linking`, and screen r
 
 ## Duration
 
-Set `duration` in milliseconds, on the toaster or on one toast, or `Infinity` for a toast that stays until it's dismissed. The default is five seconds. Timers pause while a toast is swiped and while the app is in the background.
+Set `duration` in milliseconds, on the toaster or on one toast, or `Infinity` for a toast that stays until it's dismissed. The default is five seconds. Timers pause while a toast is swiped and while the app is in the background. While a screen reader runs, a toast with an action or a close button waits, as [Accessibility](#accessibility) explains.
 
 <ComponentExample
   name="toast/duration"
@@ -313,7 +313,7 @@ Props and callbacks are the same as below, as React Native props. `ToastRegion` 
 
 ## Accessibility
 
-VoiceOver and TalkBack announce each toast once, from its title and description, without moving to it: politely by default, so it waits for what the screen reader is saying, and right away for errors. Only text is read: a title or description that isn't a string isn't announced. Keep messages short, and use `duration: Infinity` for one that has to stay available. The action and close buttons are buttons, and an action with an `href` is a link.
+VoiceOver and TalkBack announce each toast once, from its title and description, without moving to it: politely by default, so it waits for what the screen reader is saying, and right away for errors. Only text is read: a title or description that isn't a string isn't announced. Keep messages short, and use `duration: Infinity` for one that has to stay available. While a screen reader runs, a toast with an action or a close button waits until it's dismissed or the screen reader stops, so there's time to reach its buttons; other toasts still close after their duration. The action and close buttons are buttons, and an action with an `href` is a link.
 
 On native a toast leaves at once: it has no exit animation. A focused toast can't be dismissed with a key, and the iOS escape gesture doesn't dismiss it: give a toast that stays a close button.
 

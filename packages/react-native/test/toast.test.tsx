@@ -254,6 +254,45 @@ describe("ToastRegion", () => {
     expect(screen.queryByText("Saved")).toBeNull()
   })
 
+  test("while a screen reader runs, a toast with an action or a close button waits and a plain one still times out", async () => {
+    const [, screenReader] = jest
+      .mocked(AccessibilityInfo.addEventListener)
+      .mock.calls.find(([event]) => event === "screenReaderChanged")!
+    await render(
+      <OverlayHost>
+        <Text>App</Text>
+      </OverlayHost>
+    )
+    await act(async () => {
+      screenReader(true)
+      toast({ title: "Saved", duration: 1000 })
+      toast({
+        title: "Deleted",
+        duration: 1000,
+        action: { label: "Undo", onAction: () => {} },
+      })
+      toast({
+        title: "Archived",
+        duration: 1000,
+        cancel: { label: "Dismiss" },
+      })
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(5000)
+    })
+    await settle()
+    expect(screen.queryByText("Saved")).toBeNull()
+    expect(screen.getByText("Deleted")).toBeOnTheScreen()
+    expect(screen.getByText("Archived")).toBeOnTheScreen()
+    await act(async () => {
+      screenReader(false)
+      jest.advanceTimersByTime(1000)
+    })
+    await settle()
+    expect(screen.queryByText("Deleted")).toBeNull()
+    expect(screen.queryByText("Archived")).toBeNull()
+  })
+
   test("takes over its toaster, so OverlayHost renders no second region", async () => {
     const toaster = createToaster()
     await render(
