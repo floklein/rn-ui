@@ -9,6 +9,11 @@ const device = useDevice("date-picker")
 const expectText = (id: string, text: string) =>
   device.expectTree((tree) => assert.equal(tree.get(id)?.text, text))
 
+const expectValue = (text: string) =>
+  device.expectTree((tree) =>
+    assert.equal(tree.get("input")?.value ?? "", text)
+  )
+
 const expectOpen = (open: boolean) =>
   device.expectTree((tree) => assert.equal(tree.has("content"), open))
 
@@ -23,11 +28,18 @@ async function closeKeyboard() {
   }
 }
 
+// XCUITest refuses a key pressed twice in one action.
+async function typeKeys(text: string) {
+  for (const key of text) {
+    await device.type(key)
+  }
+}
+
 beforeEach(() => device.open("fixture-date-picker"))
 
 test("the input shows the date, and the trigger names it", async () => {
   const tree = await device.tree()
-  assert.equal(tree.get("input")?.text, "10/16/2026")
+  assert.equal(tree.get("input")?.value, "10/16/2026")
   assert.equal(
     tree.get("trigger")?.label,
     "Choose date, Friday, October 16, 2026"
@@ -47,7 +59,7 @@ test("the trigger opens the calendar under the input, and a day picks a date and
   await device.pressNamed("Tuesday, October 20, 2026")
   await expectText("value-readout", "2026-10-20:item-press:touch")
   await expectOpen(false)
-  await expectText("input", "10/20/2026")
+  await expectValue("10/20/2026")
 })
 
 test("a press outside closes it, and reaches what's there", async () => {
@@ -57,7 +69,7 @@ test("a press outside closes it, and reaches what's there", async () => {
   await expectOpen(false)
   await expectText("open-readout", "false:outside-press:touch")
   await expectText("value-readout", "2026-12-25:imperative:programmatic")
-  await expectText("input", "12/25/2026")
+  await expectValue("12/25/2026")
 })
 
 test("an unavailable date can't be picked", async () => {
@@ -82,16 +94,16 @@ test("Android's back closes it", async () => {
 test("Clear empties it, a typed date is read on submit, and text that isn't one stays", async () => {
   await device.press("clear")
   await expectText("value-readout", "null:clear-press:touch")
-  await expectText("input", "")
+  await expectValue("")
   await device.press("input")
-  await device.type("12/24/2026\n")
+  await typeKeys("12/24/2026\n")
   await closeKeyboard()
   await expectText("value-readout", "2026-12-24:input-commit:keyboard")
   await device.press("clear")
   await device.press("input")
-  await device.type("soon\n")
+  await typeKeys("soon\n")
   await closeKeyboard()
-  await expectText("input", "soon")
+  await expectValue("soon")
   await expectText("value-readout", "null:clear-press:touch")
 })
 

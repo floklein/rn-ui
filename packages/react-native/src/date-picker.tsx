@@ -32,7 +32,12 @@ import {
   usePlaced,
   usePlacement,
 } from "./placement"
-import { createOutlet, OutletContext, PopupLayer, useOutlet } from "./popup-parts"
+import {
+  createOutlet,
+  OutletContext,
+  PopupLayer,
+  useOutlet,
+} from "./popup-parts"
 import { mergeProps, withState } from "./render-element"
 import {
   createParts,
@@ -230,7 +235,8 @@ function DatePickerInput({ end, ...props }: InputPartProps) {
   const { disabled, formDisabled, readOnly } = picker.state
   const field = useFieldControl(props, () => picker.api.internal.focusInput())
   const editable = !disabled && !formDisabled && !readOnly
-  const commit = () => picker.api.internal.commit(index)
+  const commit = () =>
+    withSource("keyboard", () => picker.api.internal.commit(index))
   return usePart(
     picker,
     "input",

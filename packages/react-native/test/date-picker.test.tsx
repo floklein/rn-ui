@@ -88,7 +88,9 @@ const day = (name: string) => screen.getByRole("button", { name })
 test("the input shows the date, and the trigger names it", async () => {
   await render(<Example defaultValue="2026-10-16" />)
   expect(input().props.value).toBe("10/16/2026")
-  expect(trigger()).toHaveAccessibleName("Choose date, Friday, October 16, 2026")
+  expect(trigger()).toHaveAccessibleName(
+    "Choose date, Friday, October 16, 2026"
+  )
   expect(trigger()).toBeCollapsed()
 })
 
@@ -128,7 +130,7 @@ test("a typed date is read when editing ends", async () => {
   await fireEvent(input(), "blur")
   expect(onValueChange).toHaveBeenLastCalledWith(
     "2026-12-24",
-    expect.objectContaining({ reason: "input-commit" })
+    expect.objectContaining({ reason: "input-commit", source: "keyboard" })
   )
 })
 
