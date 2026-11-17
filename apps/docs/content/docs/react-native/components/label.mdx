@@ -45,7 +45,7 @@ Inside a [Field](./field), use `FieldLabel`, which also ties the field's descrip
 
 ## Slider
 
-Point the label at the slider's `id`. It names each thumb that has no name of its own, so the thumb reads as **Volume**, and a press on the label moves the screen reader to it.
+Point the label at the slider's `id`. It names each thumb that has no name of its own, so the thumb reads as **Volume**, and a press on the label moves the screen reader to it. In a range, every thumb without a name reads as the label, so give each thumb its own `aria-label`.
 
 <ComponentExample
   name="label/slider"

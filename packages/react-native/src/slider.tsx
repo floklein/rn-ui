@@ -82,6 +82,7 @@ function Slider<Value extends number | number[] = number | number[]>({
     sliderNative
   )
   const id = (props.id ?? props.nativeID) as string | undefined
+  // A copy keeps the handle's getters, which a spread would drop.
   const labelled = React.useMemo<LabelledHandle>(
     () => Object.assign(Object.create(handle), { labelId: id }),
     [handle, id]
@@ -247,7 +248,11 @@ function ThumbInput({
   const handle = useHandle(slider) as LabelledHandle
   const { id: _, ...user } = useFieldControl(
     { ...named, id: handle.labelId, accessible: true, style: styles.input },
-    () => handle.api.focus()
+    () => {
+      if (!handle.state.disabled) {
+        handle.api.focus()
+      }
+    }
   )
   return usePart(
     slider,

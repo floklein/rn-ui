@@ -84,6 +84,20 @@ describe("Label", () => {
     expect(event).toBe("focus")
   })
 
+  test("a press on a disabled slider's label leaves focus where it is", async () => {
+    await render(
+      <>
+        <Label htmlFor="volume">Volume</Label>
+        <Slider id="volume" defaultValue={75} disabled>
+          <SliderThumb />
+        </Slider>
+      </>
+    )
+    await tick()
+    await fireEvent.press(screen.getByText("Volume"))
+    expect(AccessibilityInfo.sendAccessibilityEvent).not.toHaveBeenCalled()
+  })
+
   test("a control's own name wins, and so does its field's label", async () => {
     await render(
       <>
