@@ -18,6 +18,7 @@ import {
   SelectItemIndicator,
   SelectLabel,
   SelectList,
+  type SelectProps,
   SelectTrigger,
   SelectValue,
 } from "../src/select"
@@ -47,10 +48,10 @@ beforeEach(async () => {
 })
 afterEach(() => measureInWindow?.mockReset())
 
-function Fruit(props: React.ComponentProps<typeof Select>) {
+function Fruit(props: SelectProps<string, boolean>) {
   return (
     <OverlayHost>
-      <Select placeholder="Pick a fruit" {...props}>
+      <Select<string, boolean> placeholder="Pick a fruit" {...props}>
         <SelectLabel>Fruit</SelectLabel>
         <SelectTrigger testID="trigger">
           <SelectValue testID="value" />
@@ -155,6 +156,34 @@ test("the label of a value is known before the list has ever opened", async () =
   expect(screen.getByTestId("value")).toHaveTextContent("Apple")
 })
 
+test("a value set before the list ever opened shows its item's label", async () => {
+  const controller = createSelectController()
+  await render(<Fruit controller={controller} />)
+  await act(() => controller.setValue("cherry"))
+  expect(screen.getByTestId("value")).toHaveTextContent("Cherry")
+  expect(screen.getByTestId("trigger").props.accessibilityValue).toEqual({
+    text: "Cherry",
+  })
+})
+
+test("a labelled trigger cleared with no placeholder sends an empty value", async () => {
+  const controller = createSelectController()
+  await render(
+    <Fruit
+      controller={controller}
+      placeholder={undefined}
+      defaultValue="apple"
+    />
+  )
+  expect(screen.getByTestId("trigger").props.accessibilityValue).toEqual({
+    text: "Apple",
+  })
+  await act(() => controller.clear())
+  expect(screen.getByTestId("trigger").props.accessibilityValue).toEqual({
+    text: "",
+  })
+})
+
 test("typing in the search field announces the highlighted option", async () => {
   const host = nativeHost()!
   const announce = jest.fn()
@@ -181,9 +210,13 @@ test("typing in the search field announces the highlighted option", async () => 
     announce.mockClear()
     await fireEvent.changeText(screen.getByTestId("search"), "ch")
     expect(announce).toHaveBeenCalledWith("Cherry", "polite")
-    expect(
-      screen.getByRole("button", { name: "Apple", includeHiddenElements: true })
-    ).toBeTruthy()
+    await fireEvent.changeText(screen.getByTestId("search"), "")
+    announce.mockClear()
+    await fireEvent(option("Cherry"), "focus")
+    expect(announce).not.toHaveBeenCalled()
+    await fireEvent(screen.getByTestId("search"), "focus")
+    await fireEvent.changeText(screen.getByTestId("search"), "ap")
+    expect(announce).toHaveBeenCalledWith("Apple", "polite")
   } finally {
     setNativeHost(host)
   }

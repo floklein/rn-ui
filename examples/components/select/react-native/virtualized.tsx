@@ -10,7 +10,7 @@ import {
   SelectValue,
   type SelectValueState,
 } from "@ui-sdk/react-native/select"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { FlatList, StyleSheet, Text } from "react-native"
 
 const manyItems = Array.from({ length: 10_000 }, (_, index) => ({
@@ -22,12 +22,16 @@ const row = 44
 
 function Example() {
   const list = useRef<FlatList<(typeof manyItems)[number]>>(null)
+  const [value, setValue] = useState<string | null>(null)
+  const selected = manyItems.findIndex((item) => item.value === value)
   return (
     <Field style={styles.field}>
       <FieldLabel style={styles.label}>Item</FieldLabel>
       <Select
         items={manyItems}
         placeholder="Select an item"
+        value={value}
+        onValueChange={setValue}
         onHighlight={(value, { index }) => {
           if (index >= 0) {
             list.current?.scrollToIndex({ index, viewPosition: 0.5 })
@@ -48,6 +52,7 @@ function Example() {
                 style={styles.virtual}
                 data={state.items as typeof manyItems}
                 keyExtractor={(item) => item.value}
+                initialScrollIndex={Math.max(selected, 0)}
                 getItemLayout={(_, index) => ({
                   length: row,
                   offset: row * index,

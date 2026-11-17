@@ -514,16 +514,16 @@ Create one with `createSelectController<Value, Multiple>()` and pass it as `cont
 
 ## Accessibility
 
-The trigger has the combobox role and an expanded state, which TalkBack can expand and collapse, and it's named by `SelectLabel`, a [Field](./field)'s label or its own `aria-label`. The selected label is its accessibility value. TalkBack announces it as a combo box; React Native gives iOS no combo box trait, so VoiceOver reads its label, value and whether it's expanded. Each option is its own element, a button whose selected state is the committed value; React Native has no option role. A separator and an indicator are hidden from screen readers.
+The trigger has the combobox role and an expanded state, which TalkBack can expand and collapse, and it's named by `SelectLabel`, a [Field](./field)'s label or its own `aria-label`. The selected label is its accessibility value. TalkBack announces it as a combo box; React Native gives iOS no combo box trait, so VoiceOver reads its label and value. Each option is its own element, a button whose selected state is the committed value; React Native has no option role. A separator and an indicator are hidden from screen readers.
 
 ### Keyboard
 
 With a hardware keyboard, with iOS Full Keyboard Access or on Android:
 
-| Key   | Does                                                          |
-| ----- | ------------------------------------------------------------- |
-| Tab   | Moves through the controls, and through a list's options      |
-| Space | Opens or closes the list from the trigger, or chooses an item |
-| Enter | Does the same, on Android only                                |
+| Key   | Does                                                                                   |
+| ----- | -------------------------------------------------------------------------------------- |
+| Tab   | Moves through the controls, and through a list's options; Android skips a disabled one |
+| Space | Opens or closes the list from the trigger, or chooses an item                          |
+| Enter | Does the same, on Android only                                                         |
 
 Arrow keys, Home, End and typeahead don't move through the list: React Native doesn't report them.

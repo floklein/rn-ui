@@ -49,6 +49,7 @@ import {
 } from "./placement"
 import {
   createOutlet,
+  type Outlet,
   OutletContext,
   PopupLayer,
   useOutlet,
@@ -188,9 +189,31 @@ function Select<T = string, Multiple extends boolean | undefined = false>({
         <PlacedProvider value={null}>
           {options.items && !placed && !found && <SelectContent />}
         </PlacedProvider>
-        <PopupLayer handle={handle} outlet={outlet} pressOutside />
+        <SelectLayer handle={handle} outlet={outlet} />
       </OutletContext.Provider>
     </HandleScope>
+  )
+}
+
+// A hidden React Native Modal renders nothing, so a closed modal select keeps
+// its prepared content in place, hidden, where its items tell their labels.
+function SelectLayer({
+  handle,
+  outlet,
+}: {
+  handle: PrimitiveHandle<SelectPrimitive>
+  outlet: Outlet
+}) {
+  const { content } = React.useSyncExternalStore(outlet.subscribe, outlet.get)
+  const parked = React.useSyncExternalStore(
+    handle.instance.subscribe,
+    () => !handle.state.mounted && handle.state.modal !== false
+  )
+  return (
+    <>
+      {parked && content}
+      <PopupLayer handle={handle} outlet={outlet} pressOutside />
+    </>
   )
 }
 
@@ -268,7 +291,9 @@ function TriggerPart({
     user["aria-labelledby"] ||
     handle.state.labeled
   )
-  const value = labels.length ? labels.join(", ") : placeholder
+  // Android rewrites the description only from a value with text, so an
+  // empty one is sent as "".
+  const value = labels.length ? labels.join(", ") : (placeholder ?? "")
   return usePressedPart(
     select,
     "trigger",
@@ -279,7 +304,7 @@ function TriggerPart({
     mergeProps(
       {
         onTouchStart: landIn(handle.api),
-        accessibilityValue: named && value ? { text: value } : undefined,
+        accessibilityValue: named ? { text: value } : undefined,
       },
       { ...user, children }
     ),
@@ -491,6 +516,7 @@ function SelectInput(
         value: query,
         onChangeText: (text: string) =>
           handle.api.setQuery(text, { reason: "input-change" }),
+        onFocus: () => handle.api.internal.store.set({ focusInList: false }),
       },
       props
     ),
@@ -561,8 +587,12 @@ function SelectItem<T = string>({
     } as never,
     mergeProps(
       {
-        onFocus: () =>
-          handle.api.internal.listbox.highlight(key, { focus: false }),
+        // Keyboard focus in the list says the option itself, so the
+        // highlight it moves isn't announced too.
+        onFocus: () => {
+          handle.api.internal.store.set({ focusInList: true })
+          handle.api.internal.listbox.highlight(key, { focus: false })
+        },
       },
       { ...props, children }
     ),
