@@ -128,20 +128,22 @@ setNativeHost({
   },
 })
 
+// A part unmounted mid-drag hears no release, so its unmount lets go too.
+function letGo(part: Part) {
+  holds.get(part)?.()
+  holds.delete(part)
+}
+
 // Refusing termination and blocking native responders are meant to keep a
 // scroll view from taking the touch; iOS pans a same-axis one anyway, so
 // the app turns its scrollEnabled off (#71), and a Scroll Area its own.
 function responder(part: Part, hold: (() => () => void) | null) {
-  const letGo = () => {
-    holds.get(part)?.()
-    holds.delete(part)
-  }
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
     onResponderTerminationRequest: () => false,
     onResponderGrant(event: GestureResponderEvent) {
       fingers.set(part, String(event.nativeEvent.identifier))
-      letGo()
+      letGo(part)
       if (hold) {
         holds.set(part, hold())
       }
@@ -158,11 +160,11 @@ function responder(part: Part, hold: (() => () => void) | null) {
       }
     },
     onResponderRelease() {
-      letGo()
+      letGo(part)
       withSource("touch", () => drags.get(part)?.end())
     },
     onResponderTerminate() {
-      letGo()
+      letGo(part)
       withSource("touch", () => drags.get(part)?.cancel())
     },
   }
@@ -173,6 +175,7 @@ export {
   controlsById,
   fields,
   layerInput,
+  letGo,
   parts,
   pressSource,
   renders,

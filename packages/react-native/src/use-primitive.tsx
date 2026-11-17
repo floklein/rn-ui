@@ -63,6 +63,7 @@ import {
   parts as viewParts,
   pressSource,
   renders,
+  letGo,
   responder,
   steps,
   textInputs,
@@ -573,6 +574,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
   // What a fieldset watcher in `bind` writes on the web.
   const disabling = React.useContext(DisabledContext)
   const hold = React.useContext(ScrollHoldContext)
+  React.useLayoutEffect(() => () => letGo(part), [part])
   React.useLayoutEffect(() => {
     const state = part.store.get() as { formDisabled?: boolean }
     if (

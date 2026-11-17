@@ -19,6 +19,9 @@ import {
   Pressable,
   ScrollView,
   type ScrollViewInstance,
+  type StyleProp,
+  StyleSheet,
+  type ViewStyle,
   View,
 } from "react-native"
 import { carry } from "./carried-context"
@@ -81,10 +84,15 @@ function ScrollAreaViewport({
   const scroll = React.useRef<ScrollViewInstance>(null)
   const width = React.useRef({ client: 0, scroll: 0 })
   const [holds, setHolds] = React.useState(0)
+  const outer = React.use(ScrollHoldContext)
   const hold = React.useCallback(() => {
     setHolds((count) => count + 1)
-    return () => setHolds((count) => count - 1)
-  }, [])
+    const releaseOuter = outer?.()
+    return () => {
+      setHolds((count) => count - 1)
+      releaseOuter?.()
+    }
+  }, [outer])
   React.useLayoutEffect(
     () =>
       view.attach({
@@ -180,6 +188,7 @@ function ScrollAreaScrollbar({
   const view = nativeScrollView(handle.api)
   const axis = axisOf(orientation)
   const track = React.useRef<HostInstance>(null)
+  const insets = React.useRef({ start: 0, end: 0 })
   React.useLayoutEffect(() => view.scrollbar(axis), [view, axis])
   const pointOf = (event: GestureResponderEvent) => {
     const box = track.current?.getBoundingClientRect()
@@ -187,10 +196,19 @@ function ScrollAreaScrollbar({
       return 0
     }
     const { pageX, pageY } = event.nativeEvent
-    if (axis === "y") {
-      return pageY - box.top
-    }
-    return I18nManager.isRTL ? box.left + box.width - pageX : pageX - box.left
+    const point =
+      axis === "y"
+        ? pageY - box.top
+        : I18nManager.isRTL
+          ? box.left + box.width - pageX
+          : pageX - box.left
+    return point - insets.current.start
+  }
+  // The thumb moves inside the padding and border, as the web's content box.
+  const { style } = props
+  const measured = (resolved: unknown) => {
+    insets.current = insetsAlong(resolved, axis)
+    return resolved
   }
   const state = handle.state
   const overflow = axis === "x" ? state.overflowX : state.overflowY
@@ -212,9 +230,11 @@ function ScrollAreaScrollbar({
             onLayout: ({ nativeEvent }: LayoutChangeEvent) =>
               view.track(
                 axis,
-                axis === "y"
+                (axis === "y"
                   ? nativeEvent.layout.height
-                  : nativeEvent.layout.width
+                  : nativeEvent.layout.width) -
+                  insets.current.start -
+                  insets.current.end
               ),
             onStartShouldSetResponder: () => overflow,
             onResponderTerminationRequest: () => false,
@@ -225,7 +245,14 @@ function ScrollAreaScrollbar({
             onResponderRelease: () => view.lift(),
             onResponderTerminate: () => view.lift(),
           },
-          props
+          {
+            ...props,
+            style:
+              typeof style === "function"
+                ? (...args: Parameters<typeof style>) =>
+                    measured(style(...args))
+                : measured(style),
+          }
         ),
         View
       )}
@@ -286,6 +313,48 @@ function ScrollAreaCorner(props: PartProps<typeof View>) {
  * @experimental
  */
 const ScrollAreaScrollToEnd: ScrollAreaParts["ScrollToEnd"] = parts.ScrollToEnd
+
+function insetsAlong(style: unknown, axis: "x" | "y") {
+  const flat: ViewStyle =
+    StyleSheet.flatten(style as StyleProp<ViewStyle>) ?? {}
+  const padding = (value: ViewStyle["padding"]) =>
+    typeof value === "number" ? value : 0
+  if (axis === "y") {
+    return {
+      start:
+        padding(flat.paddingTop ?? flat.paddingVertical ?? flat.padding) +
+        (flat.borderTopWidth ?? flat.borderWidth ?? 0),
+      end:
+        padding(flat.paddingBottom ?? flat.paddingVertical ?? flat.padding) +
+        (flat.borderBottomWidth ?? flat.borderWidth ?? 0),
+    }
+  }
+  const rtl = I18nManager.isRTL
+  return {
+    start:
+      padding(
+        flat.paddingStart ??
+          (rtl ? flat.paddingRight : flat.paddingLeft) ??
+          flat.paddingHorizontal ??
+          flat.padding
+      ) +
+      (flat.borderStartWidth ??
+        (rtl ? flat.borderRightWidth : flat.borderLeftWidth) ??
+        flat.borderWidth ??
+        0),
+    end:
+      padding(
+        flat.paddingEnd ??
+          (rtl ? flat.paddingLeft : flat.paddingRight) ??
+          flat.paddingHorizontal ??
+          flat.padding
+      ) +
+      (flat.borderEndWidth ??
+        (rtl ? flat.borderLeftWidth : flat.borderRightWidth) ??
+        flat.borderWidth ??
+        0),
+  }
+}
 
 const styles = {
   vertical: { position: "absolute", top: 0, bottom: 0, end: 0 },

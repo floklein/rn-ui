@@ -102,6 +102,25 @@ describe("ScrollArea", () => {
     expect(thumb()).toMatchObject({ transform: [{ translateY: 37.5 }] })
   })
 
+  test("the thumb moves inside the scrollbar's padding and border", async () => {
+    await render(
+      <ScrollArea>
+        <ScrollAreaViewport testID="viewport" />
+        <ScrollAreaScrollbar
+          testID="scrollbar"
+          style={() => ({ padding: 2, borderTopWidth: 1 })}
+        >
+          <ScrollAreaThumb testID="thumb" />
+        </ScrollAreaScrollbar>
+      </ScrollArea>
+    )
+    await scrollTo(0)
+    await layOutScrollbar(105)
+    expect(thumb()).toMatchObject({ height: 25 })
+    await scrollTo(300)
+    expect(thumb()).toMatchObject({ transform: [{ translateY: 75 }] })
+  })
+
   test("hides the scrollbar and its thumb while nothing overflows", async () => {
     await render(<List />)
     await scrollTo(0, 100)
@@ -202,6 +221,47 @@ describe("ScrollArea", () => {
     expect(scrolled).toHaveBeenLastCalledWith({ y: 300, animated: true })
     await scrollTo(300)
     expect(screen.queryByText("Latest")).toBeNull()
+  })
+
+  test("a drag inside a nested scroll area stops both viewports", async () => {
+    await render(
+      <List>
+        <ScrollArea>
+          <ScrollAreaViewport testID="inner" horizontal>
+            <Slider defaultValue={10}>
+              <SliderControl testID="control">
+                <SliderThumb aria-label="Volume" />
+              </SliderControl>
+            </Slider>
+          </ScrollAreaViewport>
+        </ScrollArea>
+      </List>
+    )
+    const control = screen.getByTestId("control")
+    await fireEvent(control, "responderGrant", {
+      nativeEvent: { pageX: 30, pageY: 10 },
+    })
+    expect(viewport().props.scrollEnabled).toBe(false)
+    expect(screen.getByTestId("inner").props.scrollEnabled).toBe(false)
+    await fireEvent(control, "responderRelease")
+    expect(viewport().props.scrollEnabled).toBe(true)
+  })
+
+  test("scrolls again when a drag inside it unmounts mid-drag", async () => {
+    const slider = (
+      <Slider defaultValue={10}>
+        <SliderControl testID="control">
+          <SliderThumb aria-label="Volume" />
+        </SliderControl>
+      </Slider>
+    )
+    await render(<List>{slider}</List>)
+    await fireEvent(screen.getByTestId("control"), "responderGrant", {
+      nativeEvent: { pageX: 30, pageY: 10 },
+    })
+    expect(viewport().props.scrollEnabled).toBe(false)
+    await screen.rerender(<List />)
+    expect(viewport().props.scrollEnabled).toBe(true)
   })
 
   test("stops its own scrolling for the length of a drag inside it", async () => {
