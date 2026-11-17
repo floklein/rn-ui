@@ -40,6 +40,9 @@ import {
   createChange,
   createCommit,
 } from "../../foundation/kernel/input-source"
+import { focusPart } from "../../foundation/focus/focus-part"
+import type { TextSelection } from "../../foundation/text/corrected-edit"
+import { nativeField } from "./number-input-field"
 
 type State = {
   value: number | null
@@ -68,6 +71,8 @@ type State = {
   platform: "ios" | "android" | "other"
   // Where the scrub cursor is drawn, while the pointer is locked.
   cursor: { x: number; y: number } | null
+  // The selection a native field's corrected edit writes back with its text.
+  selection: TextSelection | null
 }
 
 function settings(options: NumberInputOptions) {
@@ -166,7 +171,7 @@ function isAndroid() {
 function numberInputApiBody(
   context: PrimitiveContext<NumberInputOptions, State, string>
 ) {
-  const { store, element } = context
+  const { store, element, parts } = context
   const drags = createDragSession(context.onDestroy)
   const change = createChange(context)
   const commitValue = createCommit(context)
@@ -308,8 +313,17 @@ function numberInputApiBody(
       large = false,
     }: NumberInputChangeOptions & { large?: boolean } = {}) =>
       stepFromCode(-1, large ? "large" : "step", reason, event),
-    focus: () => input()?.focus(),
+    focus: () => focusPart(input, parts, "control"),
     internal: {
+      ...nativeField({
+        store,
+        type: (text) => api.internal.type(text),
+        commitText: () => api.internal.commitText(),
+        stepBy,
+        canStep: (direction) => canStep(store.get(), direction),
+        commit: () => commit(),
+        focus: () => focusPart(input, parts, "control"),
+      }),
       // Refuses an edit that couldn't become a number, like a letter. Deleting is always allowed.
       beforeinput(event: InputEvent, el: HTMLInputElement) {
         if (

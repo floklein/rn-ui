@@ -13,6 +13,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { numberInput } from "@ui-sdk/core/number-input"
 import { fileInput } from "@ui-sdk/core/file-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
@@ -203,6 +204,17 @@ describe("checkCreation", () => {
     ).not.toThrow()
     expect(() =>
       checkCreation(fileInput, { disabled: true }, props)
+    ).not.toThrow()
+  })
+
+  test("passes on a number input, empty, formatted or disabled", () => {
+    expect(() => checkCreation(numberInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(numberInput, {
+        defaultValue: 0.25,
+        format: { style: "percent" },
+        disabled: true,
+      })
     ).not.toThrow()
   })
 

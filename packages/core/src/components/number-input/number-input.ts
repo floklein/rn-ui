@@ -328,6 +328,7 @@ const numberInputPrimitive = /* @__PURE__ */ definePrimitive({
       scrubbing: false,
       platform: "other",
       cursor: null,
+      selection: null,
     }
   },
   live: ["cursor"],
