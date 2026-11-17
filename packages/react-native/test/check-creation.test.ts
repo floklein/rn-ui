@@ -5,6 +5,7 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
+import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
@@ -193,6 +194,11 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(collapsible, { open: true, disabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on a drawer, open or closed", () => {
+    expect(() => checkCreation(drawer, {})).not.toThrow()
+    expect(() => checkCreation(drawer, { open: true })).not.toThrow()
   })
 
   test("passes on a popover, open or closed, modal or not", () => {

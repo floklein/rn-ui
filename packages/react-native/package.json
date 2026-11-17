@@ -26,6 +26,7 @@
     "./collapsible": "./src/collapsible.tsx",
     "./date": "./src/date.ts",
     "./dialog": "./src/dialog.tsx",
+    "./drawer": "./src/drawer.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
@@ -94,6 +95,10 @@
       "./dialog": {
         "types": "./dist/dialog.d.ts",
         "default": "./dist/dialog.js"
+      },
+      "./drawer": {
+        "types": "./dist/drawer.d.ts",
+        "default": "./dist/drawer.js"
       },
       "./field": {
         "types": "./dist/field.d.ts",
@@ -195,7 +200,13 @@
   "peerDependencies": {
     "@ui-sdk/core": "workspace:^",
     "react": ">=19",
-    "react-native": ">=0.88"
+    "react-native": ">=0.88",
+    "react-native-gesture-handler": ">=3.3"
+  },
+  "peerDependenciesMeta": {
+    "react-native-gesture-handler": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@react-native/babel-preset": "0.88.1",
@@ -207,6 +218,7 @@
     "jest": "^29.7.0",
     "react": "catalog:",
     "react-native": "0.88.1",
+    "react-native-gesture-handler": "~3.3.0",
     "test-renderer": "^1.0.0"
   }
 }

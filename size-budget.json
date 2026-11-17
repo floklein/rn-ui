@@ -433,6 +433,8 @@
   "@ui-sdk/react-native/date": 3630,
   "@ui-sdk/react-native/dialog": 31223,
   "@ui-sdk/react-native/dialog (lazy)": 13531,
+  "@ui-sdk/react-native/drawer": 41651,
+  "@ui-sdk/react-native/drawer (lazy)": 180,
   "@ui-sdk/react-native/field": 13309,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 13208,
