@@ -41,7 +41,7 @@ type SegmentProps = Omit<
 type Segmented = typeof dateInput
 type EditableType = Exclude<DateInputSegmentType, "literal">
 
-// What names the input as a whole, which each segment says after its own name.
+// A container's label reaches no screen reader, so each segment says it.
 const NamesContext = carry(
   "SegmentedInput",
   React.createContext<{ describedBy?: string; hint?: string }>({})
@@ -83,8 +83,6 @@ function useSegmentedRoot(
     {},
     mergeProps(named, {
       children: content,
-      // A press around the segments, or on the text between them, starts
-      // editing the nearest one.
       onStartShouldSetResponder: () => editable,
       onResponderRelease: (event: GestureResponderEvent) =>
         handle.api.internal
@@ -155,7 +153,6 @@ function useSegment(
           internal.selectText(type, nativeEvent.selection),
         onBlur: () => withSource("keyboard", () => internal.leaveText(type)),
         onSubmitEditing: () => withSource("keyboard", internal.blur),
-        // Screen readers adjust a segment as the arrow keys step it.
         accessibilityActions: editable
           ? [{ name: "increment" }, { name: "decrement" }]
           : undefined,

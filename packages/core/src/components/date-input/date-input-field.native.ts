@@ -24,7 +24,6 @@ function segmentElements(context: { parts(): Iterable<Part> }) {
   return inDocumentOrder(list)
 }
 
-// The text an edit put in, between what it kept on either side.
 function insertedText(previous: string, text: string) {
   let start = 0
   while (start < previous.length && previous[start] === text[start]) {
