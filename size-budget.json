@@ -442,6 +442,7 @@
   "@ui-sdk/react-native/field (lazy)": 179,
   "@ui-sdk/react-native/file-input": 18124,
   "@ui-sdk/react-native/history": 3109,
+  "@ui-sdk/react-native/hover-card": 31664,
   "@ui-sdk/react-native/input": 14129,
   "@ui-sdk/react-native/label": 11090,
   "@ui-sdk/react-native/meter": 11669,

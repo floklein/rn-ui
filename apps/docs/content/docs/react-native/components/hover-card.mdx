@@ -1,0 +1,235 @@
+---
+title: Hover Card
+description: Preview a link under a pointer while keeping its normal navigation.
+---
+
+A hover card shows a preview of where a link goes, like a person's profile, to someone who rests a pointer on it. On a touch screen it stays closed, and a tap follows the link. With a pointer, like a trackpad on an iPad, it opens when the pointer rests on the link.
+
+<ComponentExample
+  name="hover-card/basic"
+  caption="The card starts open below @hollis. Tap anywhere else to close it, and tap @hollis to open the profile."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+The content renders in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app. Without one, it renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `HoverCard`:
+
+```text
+HoverCard
+├── HoverCardTrigger
+└── HoverCardContent
+    └── HoverCardArrow
+```
+
+`HoverCardTrigger` renders a `Pressable` with the link role, and `HoverCardContent` and `HoverCardArrow` a `View`. A link on native has no `href`: follow it in the trigger's `onPress`, with your router or `Linking`. The content renders in the `OverlayHost`, so context from your own provider placed between `HoverCard` and `HoverCardContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+The card only adds a preview for people with a pointer: everything in it should be reachable from the screen the link opens, since touch and screen reader users never open it. For a tip on a button, use a [Tooltip](./tooltip). For content that opens with a press, use a [Popover](./popover).
+
+## Usage
+
+Import the parts and put them together. Give the content a look, not a position:
+
+```tsx
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@ui-sdk/react-native/hover-card"
+import { Linking, StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <HoverCard>
+      <HoverCardTrigger
+        onPress={() => Linking.openURL("https://example.com/people/hollis")}
+      >
+        <Text>@hollis</Text>
+      </HoverCardTrigger>
+      <HoverCardContent style={styles.card}>
+        <Text>Hollis Grant</Text>
+        <Text>Design engineer on the payments team.</Text>
+      </HoverCardContent>
+    </HoverCard>
+  )
+}
+
+const styles = StyleSheet.create({
+  card: { width: 260, padding: 12, borderRadius: 10, backgroundColor: "#fff" },
+})
+
+export { Example }
+```
+
+## Pointer
+
+A card opens when a pointer, like a mouse or a trackpad, rests on its link for `delay`, 600 milliseconds by default, and closes once the pointer has left the link and the card for `closeDelay`, 300 milliseconds by default. The pointer can move from the link onto the card within `closeDelay` without closing it. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a card never opens on hover. A finger's pointer events never open it.
+
+`disabled` stops the card from opening and leaves a plain link.
+
+## Touch
+
+A tap on the link only presses it: the card stays closed and your `onPress` runs. A long press doesn't open it either. An open card, like one opened from code, closes on a press anywhere else, on Android's back and on VoiceOver's escape gesture.
+
+## Side
+
+`side` picks where the card opens: `"bottom"` by default. `align` lines it up with the start, center or end of the link. It flips to the other side when there isn't room, and shifts along the link to stay on screen. Its state's `side` says where it landed. `sideOffset` is the gap to the link, 4 points by default, `alignOffset` shifts it along the link, and `collisionPadding` keeps it from the edges of the space it may use. `anchor` places it against something other than its link: a view, like a ref's `current`, or a point in window coordinates.
+
+<ComponentExample
+  name="hover-card/side"
+  caption="Choose a side and an alignment. The card below @ines moves there, and its arrow points at the link."
+/>
+
+Add a `HoverCardArrow` to point at the link. It moves to the edge facing the link, including after a flip.
+
+## Controlled
+
+Pass `open` and update it in `onOpenChange`. Every change carries a [reason](#reasons). Call `details.cancel()` to stop it.
+
+## One Card for Many Links
+
+A feed or a list can share one card. Connect the links and the card to one `createHoverCardController<Payload>()`. Each link passes a `payload`, like its person, and the content reads it from its state. `controller.open({ payload })` opens the card from code.
+
+## Animation
+
+The content leaves through `onExit`, as in [Dialog](./dialog#animation): it stays on screen until you call `done`, or two seconds pass. Its state's `transformOrigin` is the point facing the link. `onOpenChangeComplete` runs once the card has finished opening or closing.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the link keeps its role and its press.
+
+## Styling
+
+Style each part with a function of its state, like `(state, interaction) => [styles.link, interaction.hovered && styles.underlined]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### HoverCardTrigger [#part-state-hovercardtrigger]
+
+<PartStateTable
+  component="hover-card"
+  part="trigger"
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardTriggerState"
+/>
+
+### HoverCardContent [#part-state-hovercardcontent]
+
+<PartStateTable
+  component="hover-card"
+  part="content"
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation), and what placement measured, undefined until it's first placed:
+
+| Field             | Type                                     | Description                                                        |
+| ----------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| `side`            | `"top" \| "right" \| "bottom" \| "left"` | The side it opened on, after flipping.                             |
+| `align`           | `"start" \| "center" \| "end"`           | How it lines up with the link.                                     |
+| `anchorWidth`     | `number`                                 | The link's width, or the anchor's.                                 |
+| `anchorHeight`    | `number`                                 | The link's height, or the anchor's.                                |
+| `availableWidth`  | `number`                                 | The width it has before the edge of the space it may use.          |
+| `availableHeight` | `number`                                 | The height it has before that edge.                                |
+| `transformOrigin` | `string`                                 | The point facing the link, as a `transformOrigin` style.           |
+| `arrowOffset`     | `number`                                 | Where the link's center falls along the edge facing it, in points. |
+
+### HoverCardArrow [#part-state-hovercardarrow]
+
+<PartStateTable
+  component="hover-card"
+  part="arrow"
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardArrowState"
+/>
+
+With what placement measured:
+
+| Field          | Type                                     | Description                                                 |
+| -------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| `side`         | `"top" \| "right" \| "bottom" \| "left"` | The edge of the card it sits on, facing the link.           |
+| `align`        | `"start" \| "center" \| "end"`           | How the card lines up with the link.                        |
+| `arrowClamped` | `boolean`                                | Whether it stopped at a corner, short of the link's center. |
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `HoverCardTrigger` also takes `Pressable`'s props, and `HoverCardContent` and `HoverCardArrow` `View`'s.
+
+### HoverCard
+
+`delay` and `closeDelay` apply to a [pointer](#pointer).
+
+<TypeTable
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardOptions"
+  omit={["container"]}
+/>
+
+### HoverCardTrigger
+
+A trigger outside the card also takes `controller`.
+
+<TypeTable
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardTriggerProps"
+/>
+
+### HoverCardContent
+
+`anchor` takes a view or a point, described under [Side](#side).
+
+<TypeTable
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why the card opened or closed. `"trigger-focus"`, `"trigger-press"`, `"focus-out"` and `"window-blur"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createHoverCardController<Payload>()` and pass it as `controller`, to the card and to any links outside it.
+
+<ControllerTable
+  path="../../packages/core/src/components/hover-card/hover-card.ts"
+  name="HoverCardController"
+/>
+
+### Events
+
+| Prop                   | On          | Receives                                                    |
+| ---------------------- | ----------- | ----------------------------------------------------------- |
+| `onOpenChange`         | `HoverCard` | `(open, details)`: the new state and the [reason](#reasons) |
+| `onOpenChangeComplete` | `HoverCard` | `(open)`, as described under [Animation](#animation)        |
+| `onPayloadChange`      | `HoverCard` | `(payload, details)`: the content's new payload             |
+
+## Accessibility
+
+The trigger stays a plain link, named by its text. React Native has no role for the card, so it's a plain view whose text a screen reader can reach while it's open; the rest of the screen stays reachable. Opening it never moves the screen reader. The arrow is hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                                   |
+| ----- | ---------------------------------------------------------------------- |
+| Tab   | Moves through the controls; keyboard focus on the link doesn't open it |
+| Space | Presses the link                                                       |
+| Enter | Does the same, on Android only                                         |

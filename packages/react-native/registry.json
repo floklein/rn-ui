@@ -723,6 +723,16 @@
       "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/components/hover-card/hover-card-native.ts",
+      "mirrors": [
+        "packages/core/src/components/hover-card/hover-card.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hover Card's content bind is a plain popup's: the layer, back, escape, outside press and the exit, which popup-native.ts restates; a hover open moves no focus, as initialFocusPlan(\"hover\") says on the DOM host."
+    },
+    {
       "kind": "edit",
       "file": "packages/core/src/foundation/kernel/dev.ts",
       "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
@@ -1387,6 +1397,23 @@
         }
       }
     },
+    "hover-card": {
+      "entry": "packages/react-native/src/hover-card.tsx",
+      "slots": {
+        "hoverCard.trigger": {
+          "covered": "packages/react-native/src/hover-card.tsx",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its focusin, focusout and keydown open on keyboard focus and move Tab into the card, which a native view doesn't report (spec, Hardware keyboards). It has no press: the link's onPress is the app's."
+        },
+        "hoverCard.content": {
+          "covered": "packages/core/src/components/hover-card/hover-card-native.ts",
+          "reason": "Its bind shows the popup: the layer, back, escape and the exit, which popup-native.ts restates, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave; there is no bridge across the gap, so the pointer must reach the card within closeDelay. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture."
+        },
+        "hoverCard.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1515,7 +1542,6 @@
     "combobox",
     "command",
     "date-input",
-    "hover-card",
     "image-cropper",
     "listbox",
     "menu",
@@ -1904,6 +1930,12 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "hover-card",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "tooltip",
