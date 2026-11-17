@@ -42,6 +42,11 @@ Last checked: 2026-11-17, against `packages/react-native` and `node_modules/reac
 - `I18nManager.isRTL` is app wide and fixed at startup; changing it needs a reload. Flexbox `start`/`end` and `row` follow it.
 - With `doLeftAndRightSwapInRTL`, on by default on both OSes, the `left` and `right` styles (position, margin, padding, border) mean start and end when the app runs right to left, while `onLayout` reports a physical `x` (`YogaLayoutableShadowNode.cpp`).
 
+### Layout
+
+- Yoga never lets a flex basis go below a child's padding plus border (`yoga/algorithm/CalculateLayout.cpp`, `maxOrDefined(resolvedFlexBasis, paddingAndBorder)`), so `flexBasis: 0` with `flexGrow` shares hands out padding first and the shares only split what's left.
+- A percentage `flexBasis` resolves against the parent's main size as Yoga measures it, which an ancestor measured by its content leaves undefined: on an iOS device Resizable's `flexBasis: "50%"` panels laid out at their padding while Jest showed the style (#112). Size in points from a measured layout instead.
+
 ### React on native
 
 - Same rules of React as the web: pure render, effects only sync with the outside, StrictMode double-invokes initializers and effects. There is no server rendering and no `document`.
@@ -52,7 +57,7 @@ Last checked: 2026-11-17, against `packages/react-native` and `node_modules/reac
 - **The seam** (ADR 0001): a part reads its slot's declarative fields (`attrs`, `state`, `present`, `focus`) and delivers `press`. It never runs `bind`, `asleep`, `connect` or the `on` handlers. Native behavior lives in core's twins (`*.native.ts`, with a compile-time `Twin<>` check) and native behavior files, never in the adapter. Core never imports `react-native`.
 - A part's `el` and its press `event` are undefined on native, so a branch on either in a core `press` handler (Pagination's `opensElsewhere`, `keepFocus`) does nothing there.
 - **`createParts(primitive, hosts)`** in `src/use-primitive.tsx` makes `Root` and one component per slot given a host, named in Pascal case; `usePrimitive` and `usePart` are the hand-written path. Same names and argument order as `@ui-sdk/react`, with a host component where React takes a tag.
-- **Translation** is in one place, `src/accessibility.ts` (`toNativeProps(attrs, os)`): core's ARIA in, `accessibility*` props out, never `role` or `aria-*`. A user's `role`/`aria-*` go through it too, merged with core's in `ariaOf` as `@ui-sdk/react` merges them: core's value wins where it has one, the user's stands where core's is `undefined`, and `yieldToAuthor`'s names are the user's (#128). A role with no native counterpart falls back to the button role of `type="button"`. A user's `accessibility*` props win field by field (`mergeAccessibility`).
+- **Translation** is in one place, `src/accessibility.ts` (`toNativeProps(attrs, os)`): core's ARIA in, `accessibility*` props out, never `role` or `aria-*`. A user's `role`/`aria-*` go through it too, merged with core's in `ariaOf` as `@ui-sdk/react` merges them: core's value wins where it has one, the user's stands where core's is `undefined`, and `yieldToAuthor`'s names are the user's (#128). A role with no native counterpart falls back to the button role of `type="button"`. A user's `accessibility*` props win field by field (`mergeAccessibility`). A separator with `aria-valuenow` (a window splitter, Resizable's handle) becomes an accessible `adjustable` with its value as an `Intl` percent text.
 - **Styling**: `style`, `className` and `children` may be functions of `(state, interaction)`; `render` is an element or `(props, state, interaction)`. Styles merge as arrays, never flattened (`mergeProps` in `src/render-element.ts`). No `data-*`, no `dataSet`: every data attribute and CSS variable core writes is a state field.
 - **Host interface**: `NativeHost` in core (`foundation/kernel/native-host.ts`) is implemented by `src/native-host.ts`, which maps parts to mounted views in a `WeakMap` filled by each part's ref.
 - **Source**: a press reports `touch`, and `virtual` while a screen reader runs (`pressSource`).
