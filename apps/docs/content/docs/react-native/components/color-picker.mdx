@@ -1,0 +1,441 @@
+---
+title: Color Picker
+description: Choose a color by dragging across an area and along sliders, typing any CSS color, or picking a preset.
+---
+
+Use a color picker to choose a color, like a brand or theme color. The value is a CSS color string, and every part edits it: an area for two channels at once, a slider per channel, a text field that reads any CSS color, and presets.
+
+<ComponentExample
+  name="color-picker/basic"
+  caption="Drag across the area or along the sliders, or choose a preset. Choose HSL to write the color another way, or type one like rebeccapurple and press Return."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `ColorPicker`:
+
+```text
+ColorPicker
+├── ColorPickerArea
+│   ├── ColorPickerAreaCanvas
+│   └── ColorPickerAreaThumb
+├── ColorPickerSlider
+│   └── ColorPickerSliderThumb
+├── ColorPickerSwatch
+├── ColorPickerInput
+├── ColorPickerChannelInput
+└── ColorPickerSwatches
+    └── ColorPickerSwatchItem
+```
+
+Every part is optional, so use the ones your picker needs.
+
+- **ColorPicker** holds the value and renders a `View` around the parts.
+- **ColorPickerArea** edits two channels, like saturation across and brightness up, a `View`. A touch moves the color there and starts a drag. Give it a size, and its state's `areaBackground` as its `backgroundImage`.
+- **ColorPickerAreaCanvas** draws the area for channels no two gradients can, like OKLCH's chroma and lightness, as rows of gradients.
+- **ColorPickerAreaThumb** shows where the color sits in the area, a `View` placed on it. It's one adjustable element that screen readers hear as both channels.
+- **ColorPickerSlider** edits one `channel`, like `hue` or `alpha`, a `View`. Its state's `sliderBackground` draws it.
+- **ColorPickerSliderThumb** shows where the channel sits along its slider, one adjustable element.
+- **ColorPickerSwatch** shows the color, named for screen readers, like "vivid blue".
+- **ColorPickerInput** is a `TextInput` that reads any CSS color when you press Return or leave it. Text that isn't a color goes back to the value.
+- **ColorPickerChannelInput** edits one `channel` as a number, in the units people read it in, like 0 to 255 for red.
+- **ColorPickerSwatches** and **ColorPickerSwatchItem** are preset colors, each its own button.
+
+There's no CSS on native, so each part's state carries what the web writes as CSS variables, in a form React Native draws: `displayColor` for `backgroundColor`, and `areaBackground` and `sliderBackground` for `backgroundImage`. The web's `ColorPickerEyeDropper` is absent, since apps can't pick a color from the screen.
+
+## Usage
+
+Import the parts and put them together. Give the area and sliders a size and their background from their state:
+
+```tsx
+import {
+  ColorPicker,
+  ColorPickerArea,
+  type ColorPickerAreaState,
+  ColorPickerAreaThumb,
+  ColorPickerSlider,
+  ColorPickerSliderThumb,
+  type ColorPickerSliderTrackState,
+} from "@ui-sdk/react-native/color-picker"
+import { StyleSheet } from "react-native"
+
+function Example() {
+  return (
+    <ColorPicker aria-label="Brand color" defaultValue="#0ea5e9">
+      <ColorPickerArea style={areaStyle}>
+        <ColorPickerAreaThumb style={styles.thumb} />
+      </ColorPickerArea>
+      <ColorPickerSlider channel="hue" style={sliderStyle}>
+        <ColorPickerSliderThumb style={styles.thumb} />
+      </ColorPickerSlider>
+    </ColorPicker>
+  )
+}
+
+const areaStyle = (state: ColorPickerAreaState) => [
+  styles.area,
+  { backgroundImage: state.areaBackground },
+]
+
+const sliderStyle = (state: ColorPickerSliderTrackState) => [
+  styles.slider,
+  { backgroundImage: state.sliderBackground },
+]
+
+const styles = StyleSheet.create({
+  area: { width: 240, height: 160 },
+  slider: { width: 240, height: 28 },
+  thumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: "#ffffff",
+  },
+})
+
+export { Example }
+```
+
+## Spaces and Channels
+
+`space` decides which channels the parts edit, and what the value is written in:
+
+| `space` | Area, across and up    | Slider | Value written as              |
+| ------- | ---------------------- | ------ | ----------------------------- |
+| `hsv`   | saturation, brightness | hue    | hex, like `#0ea5e9`           |
+| `hsl`   | saturation, lightness  | hue    | `hsl(198.63 88.66% 48.43%)`   |
+| `srgb`  | red, green             | blue   | `rgb(14 165 233)`             |
+| `oklch` | chroma, lightness      | hue    | `oklch(0.6847 0.1479 237.32)` |
+
+Set `format` to write the value another way, like `format="hex"` in any space. Every space has an `alpha` channel too. Set `x` and `y` on the area, or `channel` on a slider, to edit other channels. An area of saturation by brightness or lightness gets an `areaBackground`; any other pair needs a `ColorPickerAreaCanvas`.
+
+The parts keep a hue while the color turns gray or black, so dragging back out of a corner returns to the same hue. React Native can't draw a value like `oklch(…)` itself, so draw with `displayColor`, the color fit into sRGB in hex, never with `value`.
+
+## OKLCH
+
+OKLCH spaces its colors evenly for the eye, so two colors with the same lightness look equally bright. Its edge with the colors a screen can show is a curve, which no gradient can draw. Add `ColorPickerAreaCanvas` to the area, and it draws the colors inside sRGB as `rows` horizontal gradients of `columns` colors each, 48 by 24 by default, and leaves the rest clear. It redraws only when a channel the area doesn't show changes, like the hue.
+
+<ComponentExample
+  name="color-picker/oklch"
+  caption="Drag the thumb right, past the painted edge, and let go. The thumb moves back to the closest color inside."
+/>
+
+While a drag holds a color past the edge, the value is already the closest color inside it, and every part's state has `outOfGamut`. Once the drag ends, the thumb moves to that color. The value stays inside sRGB by default; `gamut="p3"` or `gamut={false}` widen the value, but React Native draws sRGB only.
+
+## Presets and Channel Inputs
+
+Put `ColorPickerSwatchItem`s inside `ColorPickerSwatches` for preset colors. Each is a button named by its color, and selected while the value is its color, however either is written, so `#0000ff` selects `rgb(0 0 255)`.
+
+`ColorPickerChannelInput` edits one channel as a number and sets it when you press Return or leave it.
+
+<ComponentExample
+  name="color-picker/swatches"
+  caption="Choose a preset. Type 255 into the first number and press Return to set red."
+/>
+
+## Popover
+
+Put a `Popover` inside the picker to open it from a swatch. The parts inside the popup edit the same color, and the swatch in the trigger shows it.
+
+<ComponentExample
+  name="color-picker/popover"
+  caption="Press the swatch to open the picker, and drag to change Background."
+/>
+
+## Inside a Scroll View
+
+A drag on the area or a slider keeps its touch from a scroll view around it. On iOS, a `ScrollView` that scrolls along the drag's axis still scrolls while the color moves; the area moves on both axes, so that's any `ScrollView` around it. Turn the scroll view's scrolling off for the length of the drag, as [Slider shows](./slider#inside-a-scroll-view): set `dragging` from the area's or slider's responder events and pass `scrollEnabled={!dragging}`.
+
+```tsx
+const [dragging, setDragging] = useState(false)
+
+return (
+  <ScrollView scrollEnabled={!dragging}>
+    <ColorPicker aria-label="Brand color" defaultValue="#0ea5e9">
+      <ColorPickerArea
+        onResponderGrant={() => setDragging(true)}
+        onResponderRelease={() => setDragging(false)}
+        onResponderTerminate={() => setDragging(false)}
+        style={areaStyle}
+      >
+        <ColorPickerAreaThumb style={styles.thumb} />
+      </ColorPickerArea>
+    </ColorPicker>
+  </ScrollView>
+)
+```
+
+A [Scroll Area](./scroll-area#drags-inside) does this for you: its viewport stops scrolling while a drag inside it holds the touch.
+
+## Disabled
+
+Set `disabled`. A disabled picker can't be dragged, adjusted or typed into, and screen readers announce its thumbs and fields as dimmed or disabled. A disabled `FieldSet` around it disables it too. `readOnly` keeps it reachable while nothing changes the value.
+
+<ComponentExample
+  name="color-picker/disabled"
+  caption="Brand color keeps its value, but a drag doesn't move it."
+/>
+
+## Controlled
+
+Pass `value` and `onValueChange` to control the picker. Every change carries a [reason](#reasons), like `drag` or `item-press`, and `details.color`, the color in the picker's space, for `@ui-sdk/react-native/color`. Call `details.cancel()` to keep the current value. `onValueCommit` runs once an interaction that changed the value ends: the touch lifts, a screen reader steps a thumb, a preset is pressed, or a field is committed. A drag taken away, like by a system gesture, puts the color back and commits nothing.
+
+<ComponentExample
+  name="color-picker/controlled"
+  caption="Drag the area to change Theme color, and lift your finger to log the commit. Use Purple sets the value from outside."
+/>
+
+## Forms
+
+A native view takes part in no form, so the picker has no `name` or `form` prop and renders no hidden input. Read the value from `onValueChange`, `onValueCommit` or a controller. `required` stays in the state for your styles and labels.
+
+## Color Functions
+
+`@ui-sdk/react-native/color` has the functions behind the picker, for colors from `details.color` or anywhere else: `parseColor`, `formatColor`, `convertColor`, `mixColor`, `colorDistance`, `contrastRatio`, `isInGamut` and `toGamut`.
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state, like a thumb's `areaX` and `areaY`, or a slider's `channelValue`.
+
+## Styling
+
+Parts are unstyled, apart from the places they need: each thumb is centered on its value with a box as large as its area or track, so give the thumbs a size. Give the area and the sliders a size, and their background from their state. `ColorPickerAreaCanvas` fills its area.
+
+Style each part with a function of its state, like `(state) => [styles.swatch, { backgroundColor: state.displayColor }]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### ColorPicker [#part-state-colorpicker]
+
+<PartStateTable
+  component="color-picker"
+  part="root"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+With the color React Native draws, the web's `--color-picker-color`:
+
+| Field          | Type     | Description                                                 |
+| -------------- | -------- | ----------------------------------------------------------- |
+| `displayColor` | `string` | The color the parts show, fit into sRGB and written in hex. |
+
+### ColorPickerArea [#part-state-colorpickerarea]
+
+<PartStateTable
+  component="color-picker"
+  part="area"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+With its background, the web's `--color-area-background`:
+
+| Field            | Type                  | Description                                                                                                                         |
+| ---------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `areaBackground` | `string \| undefined` | Two gradients for `backgroundImage`, for saturation by brightness or lightness. Otherwise undefined, for a `ColorPickerAreaCanvas`. |
+
+### ColorPickerAreaThumb [#part-state-colorpickerareathumb]
+
+<PartStateTable
+  component="color-picker"
+  part="area-thumb"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+With where it sits, the web's `--area-x` and `--area-y`, and `displayColor`:
+
+| Field          | Type     | Description                                                  |
+| -------------- | -------- | ------------------------------------------------------------ |
+| `areaX`        | `number` | Where the thumb sits across the area, from 0 to 1.           |
+| `areaY`        | `number` | Where the thumb sits up the area, from 0 at the bottom to 1. |
+| `displayColor` | `string` | The color the parts show, fit into sRGB and written in hex.  |
+
+### ColorPickerSlider [#part-state-colorpickerslider]
+
+<PartStateTable
+  component="color-picker"
+  part="slider"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSliderState"
+/>
+
+With its track, the web's `--color-slider-background`:
+
+| Field              | Type     | Description                                                                                |
+| ------------------ | -------- | ------------------------------------------------------------------------------------------ |
+| `sliderBackground` | `string` | A gradient for `backgroundImage`: the color as the channel runs from its start to its end. |
+
+### ColorPickerSliderThumb [#part-state-colorpickersliderthumb]
+
+<PartStateTable
+  component="color-picker"
+  part="slider-thumb"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSliderState"
+/>
+
+With where it sits, the web's `--color-slider-thumb-position`:
+
+| Field                 | Type     | Description                                          |
+| --------------------- | -------- | ---------------------------------------------------- |
+| `sliderThumbPosition` | `number` | Where the thumb sits along the track, from 0 to 100. |
+
+### ColorPickerInput [#part-state-colorpickerinput]
+
+<PartStateTable
+  component="color-picker"
+  part="input"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+### ColorPickerChannelInput [#part-state-colorpickerchannelinput]
+
+<PartStateTable
+  component="color-picker"
+  part="channel-input"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+### ColorPickerSwatch [#part-state-colorpickerswatch]
+
+<PartStateTable
+  component="color-picker"
+  part="swatch"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+With `displayColor`, the color the parts show, fit into sRGB and written in hex.
+
+### ColorPickerSwatches [#part-state-colorpickerswatches]
+
+<PartStateTable
+  component="color-picker"
+  part="swatches"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+### ColorPickerSwatchItem [#part-state-colorpickerswatchitem]
+
+<PartStateTable
+  component="color-picker"
+  part="swatch-item"
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSwatchItemState"
+/>
+
+With `displayColor`, the preset's own color, fit into sRGB and written in hex.
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### ColorPicker
+
+<TypeTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerOptions"
+  omit={["name", "form"]}
+/>
+
+### ColorPickerArea
+
+<TypeTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerAreaProps"
+/>
+
+### ColorPickerSlider
+
+<TypeTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSliderProps"
+/>
+
+### ColorPickerChannelInput
+
+<TypeTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerChannelInputProps"
+/>
+
+### ColorPickerSwatchItem
+
+<TypeTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSwatchItemProps"
+/>
+
+### State
+
+What render, style, class name and children functions receive. Every part gets the picker's state.
+
+<StateTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerState"
+/>
+
+Sliders and their thumbs add their channel:
+
+<StateTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSliderState"
+/>
+
+Preset items have their own:
+
+<StateTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerSwatchItemState"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed. On native it's `"track-press"`, `"drag"`, `"step-key"` for a screen reader's step, `"input-commit"`, `"item-press"` or `"imperative"`: there's no eye dropper, and no form to reset or restore.
+
+<ReasonTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createColorPickerController()` and pass it as `controller`.
+
+`setValue()` takes any CSS color and an optional `{ reason }`, runs the change callback like a drag, and returns `false` when the color can't be read or the change is canceled. `focus()` moves a screen reader's focus to the area's thumb, else the first slider's, else the text field.
+
+<ControllerTable
+  path="../../packages/core/src/components/color-picker/color-picker.ts"
+  name="ColorPickerController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details.
+
+| Prop            | On            | Receives                                                                                |
+| --------------- | ------------- | --------------------------------------------------------------------------------------- |
+| `onValueChange` | `ColorPicker` | `(value, details)`: the new value, the [reason](#reasons) and `details.color`           |
+| `onValueCommit` | `ColorPicker` | `(value, details)`: the value once the interaction ends, its reason and `details.color` |
+
+## Accessibility
+
+No WAI-ARIA pattern covers a color picker, so it's built from ones that do, translated to React Native's accessibility props. The area's thumb and each slider's thumb follow the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/): each is one element with the `adjustable` role. VoiceOver adjusts it with a swipe up or down, and TalkBack with its adjust gestures; each moves one step and commits at once. The area's thumb says both channels, like "Saturation 76%, Brightness 96%", and its adjustments step the channel across, as its value on the web does; reach the other channel with a slider or a channel field. Each preset is a button named by its color, like "vivid red", selected while it's the value, as is `ColorPickerSwatch`, an image.
+
+The thumbs, fields and presets are named in English by default. Pass `aria-label` to name them in another language.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through the thumbs, the fields and each preset in order, and Return or Space presses a preset. React Native delivers no arrow keys, Page Up, Page Down, Home or End to views, so a keyboard can't move a thumb; type into a field instead.

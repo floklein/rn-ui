@@ -8,6 +8,10 @@
 export { accordionNative } from "./components/accordion/accordion-native"
 export { calendarNative } from "./components/calendar/calendar-native"
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export {
+  colorPickerNative,
+  nativeColorPicker,
+} from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export {
   datePickerNative,
