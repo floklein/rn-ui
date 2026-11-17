@@ -33,6 +33,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../src/pagination"
+import { Calendar } from "../src/calendar"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -149,6 +150,18 @@ describe("checkDirection on the native host", () => {
       )
     ).resolves.toBeUndefined()
   })
+
+  test("passes on a calendar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(<Calendar defaultValue="2026-02-16" locale="en-US" />)
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  }, 30_000)
 
   test("passes on a pagination", async () => {
     await expect(

@@ -634,6 +634,30 @@
       "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/calendar/calendar-native.ts",
+      "mirrors": [
+        "packages/core/src/components/calendar/calendar.ts",
+        "packages/core/src/components/calendar/calendar-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's and the day's bind orchestrate: the root reads the locale and today through bindRoot, and each day joins the roving group with a native element the order twin sorts and the host focuses."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/week.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/week.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl has no Intl.Locale, so the first day of the week comes from the tag's region and CLDR's table, where the DOM module asks Intl.Locale's week info and maximizes the tag."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/format.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/format.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
     }
   ],
   "components": {
@@ -1052,12 +1076,32 @@
           "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
         }
       }
+    },
+    "calendar": {
+      "entry": "packages/react-native/src/calendar.tsx",
+      "slots": {
+        "calendar.root": {
+          "covered": "packages/core/src/components/calendar/calendar-native.ts",
+          "reason": "Its bind reads the page's language and today, which calendar-native.ts does through bindRoot as the root mounts, and watches a fieldset around it, which native replaces with the adapter's disabled context."
+        },
+        "calendar.month-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the month select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "calendar.year-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the year select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "calendar.day": {
+          "covered": "packages/core/src/components/calendar/calendar-native.ts",
+          "reason": "Its bind joins the roving group, which calendar-native.ts does while the day is mounted, so the controller's focus() and a press on another month's day move the screen reader to a day. Its focus listener, keydown, pointerdown, mousedown and pointerenter follow keyboard focus, arrow keys and a hovering pointer, which native doesn't report to views (spec, Hardware keyboards), and the focus recovery follows document focus, which native never observes."
+        }
+      }
     }
   },
   "pending": [
     "accordion",
     "autocomplete",
-    "calendar",
     "carousel",
     "color-picker",
     "combobox",
@@ -1398,6 +1442,24 @@
       "example": "wrap",
       "feature": "A label wrapping its control",
       "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
+    },
+    {
+      "component": "calendar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "calendar",
+      "example": "month-year-select",
+      "feature": "Native selects of the months and years",
+      "reason": "Native has no select element, so the month and year select parts aren't rendered."
+    },
+    {
+      "component": "calendar",
+      "example": "custom-select",
+      "feature": "A styled Select for the month and year",
+      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
     }
   ]
 }

@@ -91,7 +91,8 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
  * slot's attributes, state and presence, checking none of it reads a web
  * global or asks the native host anything: those belong to a part's mounted
  * view, never to creating or rendering one. The counterpart of
- * `checkServer`'s rule. Throws one error that lists every problem.
+ * `checkServer`'s rule. Throws one error that lists every problem. `props`
+ * gives a slot the props it can't render without, like a calendar day's `value`.
  *
  * @example
  * checkCreation(switchPrimitive, { defaultChecked: true })
@@ -100,7 +101,8 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
  */
 function checkCreation<P extends Primitive>(
   primitive: P,
-  options: OptionsOf<P>
+  options: OptionsOf<P>,
+  props: { [S in SlotName<P>]?: PropsOf<P, S> } = {}
 ) {
   const problems = new Set<string>()
   const instance = watchHostReads(
@@ -111,7 +113,10 @@ function checkCreation<P extends Primitive>(
       )
   )
   for (const slot of Object.keys(schemaOf(primitive).slots) as SlotName<P>[]) {
-    const part = instance.part(slot, {} as PropsOf<P, typeof slot>) as Part
+    const part = instance.part(
+      slot,
+      props[slot] ?? ({} as PropsOf<P, typeof slot>)
+    ) as Part
     watchHostReads(
       (what) => problems.add(`\`${slot}\` ${what} while it renders`),
       () => {

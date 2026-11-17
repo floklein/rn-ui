@@ -45,6 +45,7 @@ const roles: Record<string, AccessibilityRole> = {
   checkbox: "checkbox",
   combobox: "combobox",
   grid: "grid",
+  gridcell: "button",
   heading: "header",
   img: "image",
   link: "link",
