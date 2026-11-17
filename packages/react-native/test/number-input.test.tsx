@@ -152,14 +152,22 @@ describe("NumberInput", () => {
       expect.objectContaining({ reason: "increment-press", source: "touch" })
     )
     expect(onValueCommit).not.toHaveBeenCalled()
-    await fireEvent(increment(), "pressOut")
     await fireEvent.press(increment())
+    await fireEvent(increment(), "pressOut")
     expect(field().props.value).toBe("6")
     expect(onValueCommit).toHaveBeenCalledTimes(1)
     expect(onValueCommit).toHaveBeenCalledWith(
       6,
       expect.objectContaining({ reason: "increment-press" })
     )
+  })
+
+  test("a press that slid off a step button doesn't swallow the next activation", async () => {
+    await render(<Amount defaultValue={1} />)
+    await fireEvent(increment(), "pressIn")
+    await fireEvent(increment(), "pressOut")
+    await fireEvent.press(increment())
+    expect(field().props.value).toBe("3")
   })
 
   test("a held step button repeats from the touch until it lifts", async () => {

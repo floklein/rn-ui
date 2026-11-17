@@ -160,6 +160,15 @@ describe("a native number input's buttons", () => {
     expect(commits).toHaveBeenCalledWith(2, "increment-press")
   })
 
+  test("a press that slid off doesn't swallow the next activation", async () => {
+    const { api, state } = mount({ defaultValue: 1 })
+    api.internal.pressStep(1)
+    api.internal.releaseStep()
+    await Promise.resolve()
+    api.internal.activateStep(1)
+    expect(state().value).toBe(3)
+  })
+
   test("a held press repeats until released", () => {
     vi.useFakeTimers()
     const { api, state } = mount({ defaultValue: 0 })

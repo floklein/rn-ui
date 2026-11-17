@@ -84,6 +84,11 @@ function nativeField({
     releaseStep() {
       clearTimeout(repeat)
       commit()
+      // The press that follows a release comes in the same task, or never
+      // when the touch slid off.
+      queueMicrotask(() => {
+        pressedIn = false
+      })
     },
     activateStep(direction: 1 | -1) {
       if (pressedIn) {
