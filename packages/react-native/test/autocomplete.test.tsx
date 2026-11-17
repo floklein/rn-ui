@@ -49,6 +49,9 @@ afterEach(() => {
   measureInWindow?.mockReset()
   jest.clearAllMocks()
 })
+// Typing leaves core's result count announcement pending for 500 ms; let it
+// fire here, not in the next file the worker runs once this one is torn down.
+afterAll(() => new Promise((done) => setTimeout(done, 600)))
 
 function Fruit(props: AutocompleteProps) {
   return (
