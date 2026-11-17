@@ -118,7 +118,7 @@ Set `locale` to choose separators, currency symbols, and grouping. Without it, t
 
 ## Keyboards
 
-The field picks the keyboard the number needs: a number pad, with a decimal key when the step or the format has fractions. On iPhone a number pad has no minus key, so a field that takes negatives, which is every field without a `min` of 0 or more, gets the text keyboard there. Android's number pad has both keys. Set `min` when negatives make no sense, and the number pad follows.
+The field picks the keyboard the number needs: a number pad, with a decimal key when the step or the format has fractions. A field that takes negatives, which is every field without a `min` of 0 or more, needs a minus key too: on iPhone, where number pads have none, it gets the text keyboard, and on Android the numeric keyboard with its sign and decimal keys. Set `min` when negatives make no sense, and the number pad follows.
 
 ## Refused Edits
 
@@ -291,4 +291,4 @@ With a hardware keyboard, with iOS Full Keyboard Access or on Android:
 | Space, Enter | On a step button, steps once                                 |
 | Enter        | In the field, commits what's typed                           |
 
-There's no arrow-key stepping, Home, End, Page Up or Page Down, since `TextInput` doesn't report those keys. The step buttons are Tab stops for that reason, where the web keeps them out of the Tab order.
+There's no arrow-key stepping, Home, End, Page Up or Page Down, since `TextInput` doesn't report those keys. The step buttons are Tab stops for that reason, where the web keeps them out of the Tab order. On Android a step button is disabled once the value reaches its bound, which takes keyboard focus off it.

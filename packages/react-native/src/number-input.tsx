@@ -19,7 +19,7 @@ import {
 } from "react-native"
 import { useFieldControl } from "./field-context"
 import { pressSource } from "./native-host"
-import { mergeProps } from "./render-element"
+import { type Interaction, mergeProps, renderElement } from "./render-element"
 import {
   createParts,
   type PartProps,
@@ -99,16 +99,22 @@ const NumberInputGroup: NumberInputParts["Group"] = parts.Group
  * commits what's typed.
  * @experimental
  */
-function NumberInputControl(
-  props: Omit<
-    PartProps<typeof TextInput, NumberInputState>,
-    "value" | "defaultValue" | "editable" | "selection" | "readOnly"
-  >
-) {
+function NumberInputControl({
+  render,
+  ...props
+}: Omit<
+  PartProps<typeof TextInput, NumberInputState>,
+  "value" | "defaultValue" | "editable" | "selection" | "readOnly"
+>) {
   const handle = useHandle(numberInput)
-  const { text, selection, disabled, formDisabled, readOnly } = handle.state
+  const { text, selection, disabled, formDisabled, readOnly, min } =
+    handle.state
   const { internal } = handle.api
   const editable = !disabled && !formDisabled && !readOnly
+  // On Android `inputMode="numeric"` is the bare number pad, and it wins over
+  // `keyboardType`: only `keyboardType="numeric"` asks for the minus and
+  // decimal keys a field that takes negatives needs.
+  const signed = Platform.OS === "android" && min < 0
   return usePart(
     handle,
     "control",
@@ -136,6 +142,20 @@ function NumberInputControl(
           disabled: !editable,
           ...props.accessibilityState,
         },
+        render: signed
+          ? (
+              own: Record<string, unknown>,
+              state: NumberInputState,
+              interaction: Interaction
+            ) =>
+              renderElement(
+                TextInput,
+                { ...own, inputMode: undefined, keyboardType: "numeric" },
+                render,
+                state,
+                interaction
+              )
+          : render,
       }
     ),
     TextInput

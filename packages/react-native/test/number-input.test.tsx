@@ -130,8 +130,10 @@ describe("NumberInput", () => {
       autoComplete: "off",
     })
     expect(screen.getByLabelText("Half").props.inputMode).toBe("decimal")
-    expect(screen.getByLabelText("Signed").props.inputMode).toBe(
-      Platform.OS === "ios" ? "text" : "numeric"
+    // iPhone number pads have no minus key; Android's bare one may have none.
+    const signed = screen.getByLabelText("Signed").props
+    expect([signed.inputMode, signed.keyboardType]).toEqual(
+      Platform.OS === "ios" ? ["text", undefined] : [undefined, "numeric"]
     )
   })
 
