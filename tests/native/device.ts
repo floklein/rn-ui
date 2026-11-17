@@ -131,10 +131,11 @@ function attributes(tag: string) {
   )
 }
 
+// Android's own views, like `android:id/content`, aren't test IDs.
 const idOf = (attrs: Record<string, string>) =>
   platform === "ios"
     ? attrs.name
-    : attrs["resource-id"]?.replace(/^.*:id\//, "")
+    : attrs["resource-id"]?.match(/^(?!android:)(?:.*:id\/)?(.+)$/)?.[1]
 
 const checkedOf = (value: string) =>
   value === "mixed" ? "mixed" : value === "checked"
@@ -253,6 +254,8 @@ function parseTree(source: string) {
         : attrs.heading === "true"
     if (heading) {
       node.heading = true
+      // A header is a plain view on Android, so its text isn't read above.
+      node.text ??= platform === "ios" ? attrs.label : attrs.text
     }
     nodes.set(id && !nodes.has(id) ? id : `#${nodes.size}`, node)
   }

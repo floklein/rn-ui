@@ -30,6 +30,7 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { dialog } from "@ui-sdk/core/dialog"
+import "../src/calendar"
 import { carried, carry } from "../src/carried-context"
 import "../src/checkbox"
 import { FieldSet } from "../src/field"
@@ -413,6 +414,8 @@ describe("the adapter's contexts inside the Modal", () => {
       .filter((name) => !name?.endsWith("Scope"))
       .sort()
     expect(own).toEqual([
+      "Calendar",
+      "CalendarGrid",
       "CheckboxGroup",
       "Described",
       "Disabled",
@@ -422,6 +425,8 @@ describe("the adapter's contexts inside the Modal", () => {
       "RatingItem",
       "TabsLayouts",
       "ToggleGroup",
+      "Toolbar",
+      "ToolbarGroup",
     ])
     const scopes = [...carried].filter((context) =>
       context.displayName?.endsWith("Scope")
@@ -498,6 +503,8 @@ describe("the adapter's contexts inside the Modal", () => {
     const carriedMade = sources.match(
       /carry\([^,]+,\s*React\.createContext[<(]/g
     )!
-    expect(carriedMade.length).toBe(made)
+    // Where a popup renders: a Modal's host replaces it inside the Modal.
+    const hosts = sources.match(/const HostContext = React\.createContext/g)!
+    expect(carriedMade.length + hosts.length).toBe(made)
   })
 })

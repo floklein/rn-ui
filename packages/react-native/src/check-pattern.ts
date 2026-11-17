@@ -18,11 +18,15 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A calendar's days are its buttons with a selected state; pass one that can
+ * change, since read-only isn't in the native tree.
+ * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * @experimental
  */
 type NativePattern =
   | "alertdialog"
   | "button"
+  | "calendar"
   | "checkbox"
   | "dialog"
   | "disclosure"
@@ -36,6 +40,7 @@ type NativePattern =
   | "switch"
   | "tabs"
   | "textbox"
+  | "toolbar"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -395,6 +400,40 @@ async function paginationPattern(context: Context) {
   }
 }
 
+// Days are buttons with a selected state, since neither OS has a grid cell.
+// Each is found again by name, since a day of another month turns the months.
+async function calendarPattern(context: Context) {
+  const days = () =>
+    context
+      .withRole("button")
+      .filter((button) => typeof stateOf(button).selected === "boolean")
+  if (!days().length) {
+    context.problem(
+      context.root,
+      "has no button with a selected state, so it has no days."
+    )
+    return
+  }
+  for (const day of days()) {
+    requireName(context, day, "day")
+  }
+  for (const name of days().map(nameOf)) {
+    const day = () => days().find((node) => nameOf(node) === name)
+    const before = day()
+    if (!name || !before || isDisabled(before) || stateOf(before).selected) {
+      continue
+    }
+    await performWatched(before, "activate", context.act)
+    const after = day()
+    if (after && stateOf(after).selected !== true) {
+      context.problem(
+        after,
+        "isn't selected after the activate action; activating a day that isn't disabled selects it."
+      )
+    }
+  }
+}
+
 // Activating a radio checks it and unchecks the one checked before.
 async function radioGroupPattern(context: Context) {
   const radios = context.withRole("radio")
@@ -598,6 +637,54 @@ async function separatorPattern(context: Context) {
   }
 }
 
+async function toolbarPattern(context: Context) {
+  const bars = shownNodes(context.root).filter(
+    (node) => roleOf(node) === "toolbar"
+  )
+  if (!bars.length) {
+    context.problem(
+      context.root,
+      "has no view with the toolbar role, so it isn't a toolbar (APG toolbar)."
+    )
+    return
+  }
+  const elements = context.elements()
+  const controls = new Set<HostNode>()
+  for (const bar of bars) {
+    if (elements.includes(bar)) {
+      context.problem(
+        bar,
+        "is one accessible element; each control in a toolbar is its own, reached by swiping."
+      )
+      continue
+    }
+    if (bars.length > 1 && !nameOf(bar)) {
+      context.problem(
+        bar,
+        "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel (APG toolbar)."
+      )
+    }
+    const inside = shownNodes(bar).filter((node) => elements.includes(node))
+    if (!inside.length) {
+      context.problem(
+        bar,
+        "holds no control; a toolbar groups buttons, toggles, links and fields."
+      )
+    }
+    inside.forEach((node) => controls.add(node))
+  }
+  const isButton = (node: HostNode) =>
+    roleOf(node) === "button" || roleOf(node) === "togglebutton"
+  for (const control of controls) {
+    if (!isButton(control)) {
+      requireName(context, control, roleOf(control) ?? "control")
+    }
+  }
+  if ([...controls].some(isButton)) {
+    await buttonPattern(context)
+  }
+}
+
 // Without value text, VoiceOver reads the value as a share of max minus min.
 async function barPattern(context: Context, pattern: "progressbar" | "meter") {
   const bars = shownNodes(context.root).filter(
@@ -751,6 +838,7 @@ async function sliderPattern(context: Context) {
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
+  calendar: calendarPattern,
   checkbox: checkboxPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: disclosurePattern,
@@ -764,6 +852,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
+  toolbar: toolbarPattern,
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's

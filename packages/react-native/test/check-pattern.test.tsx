@@ -60,6 +60,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import { Calendar } from "../src/calendar"
 import { Separator } from "../src/separator"
 import {
   Slider,
@@ -73,6 +74,14 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
 import { checkPattern } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+  ToolbarInput,
+  ToolbarLink,
+  ToolbarSeparator,
+} from "../src/toolbar"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
@@ -87,11 +96,15 @@ const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
+const checkCalendar = () =>
+  checkPattern(screen.container, "calendar", { os, act })
 const checkPagination = () =>
   checkPattern(screen.container, "pagination", { os, act })
 const checkProgress = () =>
   checkPattern(screen.container, "progressbar", { os, act })
 const checkMeter = () => checkPattern(screen.container, "meter", { os, act })
+const checkToolbar = () =>
+  checkPattern(screen.container, "toolbar", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 
@@ -1100,6 +1113,68 @@ describe("checkPattern's pagination pattern on the native host", () => {
   })
 })
 
+describe("checkPattern's calendar pattern on the native host", () => {
+  test("passes on a calendar picking one date, several or a range, selecting each enabled day", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <View>
+        <Calendar
+          defaultValue="2026-10-16"
+          unavailable={["2026-10-20"]}
+          locale="en-US"
+          onValueChange={onValueChange}
+        />
+        <Calendar mode="multiple" defaultMonth="2026-11" locale="en-US" />
+        <Calendar mode="range" defaultMonth="2026-12" locale="en-US" />
+      </View>
+    )
+    await expect(checkCalendar()).resolves.toBeUndefined()
+    expect(onValueChange).toHaveBeenCalled()
+  }, 30_000)
+
+  test("passes on a disabled calendar, which ignores the activation", async () => {
+    await render(<Calendar disabled defaultMonth="2026-10" locale="en-US" />)
+    await expect(checkCalendar()).resolves.toBeUndefined()
+  })
+
+  test("fails with no day", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Next month</Text>
+      </Pressable>
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      "has no button with a selected state, so it has no days."
+    )
+  })
+
+  test("fails on a day with no name", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: true }}
+      />
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      "has no name; a day needs an accessibilityLabel or text inside it."
+    )
+  })
+
+  test("fails on a day that isn't selected after the activate action", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: false }}
+      >
+        <Text>16</Text>
+      </Pressable>
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      `the button "16" isn't selected after the activate action; activating a day that isn't disabled selects it.`
+    )
+  })
+})
+
 describe("checkPattern's progressbar and meter patterns on the native host", () => {
   test("passes on progress bars, determinate or not, named by a label or aria-label", async () => {
     await render(
@@ -1371,6 +1446,87 @@ describe("checkPattern's dialog patterns on the native host", () => {
       os === "ios"
         ? "stays open after the escape action."
         : "stays open after Android's back."
+    )
+  })
+})
+
+describe("checkPattern's toolbar pattern on the native host", () => {
+  test("passes on a toolbar whose buttons, toggles, links and fields are each their own element", async () => {
+    const onPressedChange = jest.fn()
+    await render(
+      <Toolbar aria-label="Formatting">
+        <Toggle aria-label="Bold" onPressedChange={onPressedChange} />
+        <ToggleGroup aria-label="Alignment" defaultValue={["left"]}>
+          <Toggle value="left" aria-label="Align left" />
+          <Toggle value="right" aria-label="Align right" />
+        </ToggleGroup>
+        <ToolbarSeparator />
+        <ToolbarGroup disabled aria-label="History">
+          <ToolbarButton aria-label="Undo" />
+        </ToolbarGroup>
+        <ToolbarLink>
+          <Text>Help</Text>
+        </ToolbarLink>
+        <ToolbarInput aria-label="Find" />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).resolves.toBeUndefined()
+    expect(onPressedChange.mock.calls.map(([pressed]) => pressed)).toEqual([
+      true,
+      false,
+    ])
+  })
+
+  test("fails with no toolbar role", async () => {
+    await render(
+      <View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Bold" />
+      </View>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "has no view with the toolbar role"
+    )
+  })
+
+  test("fails on a toolbar read as one element, which hides its controls", async () => {
+    await render(
+      <Toolbar aria-label="Formatting" accessible>
+        <ToolbarButton aria-label="Bold" />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "is one accessible element; each control in a toolbar is its own"
+    )
+  })
+
+  test("fails on a toolbar with no control, and on a control with no name", async () => {
+    await render(
+      <Toolbar aria-label="Empty">
+        <ToolbarSeparator />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow("holds no control")
+    await render(
+      <Toolbar aria-label="Formatting">
+        <ToolbarButton />
+      </Toolbar>
+    )
+    await expect(checkToolbar()).rejects.toThrow("the button has no name")
+  })
+
+  test("fails on two toolbars when one has no name", async () => {
+    await render(
+      <View>
+        <Toolbar aria-label="Formatting">
+          <ToolbarButton aria-label="Bold" />
+        </Toolbar>
+        <Toolbar>
+          <ToolbarButton aria-label="Undo" />
+        </Toolbar>
+      </View>
+    )
+    await expect(checkToolbar()).rejects.toThrow(
+      "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
     )
   })
 })

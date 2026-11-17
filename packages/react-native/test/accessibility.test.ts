@@ -360,7 +360,7 @@ const roles: Record<string, string | undefined> = {
   dialog: undefined,
   feed: undefined,
   grid: "grid",
-  gridcell: undefined,
+  gridcell: "button",
   group: undefined,
   heading: "header",
   img: "image",

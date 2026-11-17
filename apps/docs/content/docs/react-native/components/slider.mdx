@@ -393,7 +393,7 @@ Callbacks get the new value first, then the details.
 
 ## Accessibility
 
-The slider follows the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/), and the [multi-thumb slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/) for ranges, translated to React Native's accessibility props. Each thumb is its own element with the `adjustable` role, named by a `FieldLabel` or its own `aria-label`, and says its value as `format` writes it. VoiceOver adjusts it with a swipe up or down, and TalkBack with its adjust gestures: each moves one `step` and commits at once.
+The slider follows the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/), and the [multi-thumb slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/) for ranges, translated to React Native's accessibility props. Each thumb is its own element with the `adjustable` role, named by a `FieldLabel`, a [Label](./label) for the slider's `id` or its own `aria-label`, and says its value as `format` writes it. VoiceOver adjusts it with a swipe up or down, and TalkBack with its adjust gestures: each moves one `step` and commits at once.
 
 ### Keyboard
 

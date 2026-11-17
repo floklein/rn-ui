@@ -9,6 +9,7 @@ import {
   type SliderValueState,
 } from "@ui-sdk/core/slider"
 import { partState } from "@ui-sdk/core/renderer"
+import * as React from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { useFieldControl } from "./field-context"
 import { type Interaction, mergeProps, withState } from "./render-element"
@@ -16,6 +17,7 @@ import {
   createParts,
   type PartProps,
   type Parts,
+  type PrimitiveHandle,
   useHandle,
   usePart,
   usePrimitive,
@@ -25,6 +27,8 @@ type SliderParts = Parts<
   SliderPrimitive,
   { control: typeof View; track: typeof View }
 >
+
+type LabelledHandle = PrimitiveHandle<SliderPrimitive> & { labelId?: string }
 
 const parts: SliderParts = createParts(slider, { control: View, track: View })
 
@@ -77,7 +81,13 @@ function Slider<Value extends number | number[] = number | number[]>({
     },
     sliderNative
   )
-  return usePart(handle, "root", {}, props as Record<string, unknown>, View)
+  const id = (props.id ?? props.nativeID) as string | undefined
+  // A copy keeps the handle's getters, which a spread would drop.
+  const labelled = React.useMemo<LabelledHandle>(
+    () => Object.assign(Object.create(handle), { labelId: id }),
+    [handle, id]
+  )
+  return usePart(labelled, "root", {}, props as Record<string, unknown>, View)
 }
 
 /**
@@ -170,7 +180,8 @@ function place(state: SliderThumbState) {
 /**
  * A thumb, a `View`, with the element screen readers adjust filling it. Its
  * `aria-label`, `aria-labelledby` and `aria-describedby` name that element;
- * inside a Field, the field's label names every thumb.
+ * inside a Field, the field's label names every thumb, and outside one, a
+ * Label for the slider's `id` names those without a name of their own.
  * @experimental
  */
 function SliderThumb({
@@ -234,10 +245,14 @@ function ThumbInput({
   "aria-labelledby"?: string
   "aria-describedby"?: string
 }) {
-  const handle = useHandle(slider)
-  const user = useFieldControl(
-    { ...named, accessible: true, style: styles.input },
-    () => handle.api.focus()
+  const handle = useHandle(slider) as LabelledHandle
+  const { id: _, ...user } = useFieldControl(
+    { ...named, id: handle.labelId, accessible: true, style: styles.input },
+    () => {
+      if (!handle.state.disabled) {
+        handle.api.focus()
+      }
+    }
   )
   return usePart(
     slider,

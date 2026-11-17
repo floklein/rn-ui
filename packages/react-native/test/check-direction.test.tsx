@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react-native"
+import { act, cleanup, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
@@ -33,6 +33,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../src/pagination"
+import { Calendar } from "../src/calendar"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -51,6 +52,7 @@ import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
+import { Toolbar, ToolbarButton, ToolbarSeparator } from "../src/toolbar"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 
@@ -148,6 +150,18 @@ describe("checkDirection on the native host", () => {
       )
     ).resolves.toBeUndefined()
   })
+
+  test("passes on a calendar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(<Calendar defaultValue="2026-02-16" locale="en-US" />)
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  }, 30_000)
 
   test("passes on a pagination", async () => {
     await expect(
@@ -307,6 +321,24 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  test("passes on a toolbar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Toolbar aria-label="Formatting">
+              <Toggle aria-label="Bold" />
+              <ToolbarSeparator />
+              <ToolbarButton aria-label="Insert link" />
+            </Toolbar>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
   test("passes on tabs", async () => {
     await expect(
       checkDirection(
@@ -334,10 +366,13 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  // The dialog opened in one direction stays open, and its Modal's host
+  // would take the next one.
   test("passes on a dialog", async () => {
     await expect(
       checkDirection(
         async () => {
+          await cleanup()
           await render(
             <Dialog>
               <DialogTrigger>
