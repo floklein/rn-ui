@@ -22,6 +22,7 @@ import * as React from "react"
 import {
   Animated,
   type HostInstance,
+  I18nManager,
   type LayoutChangeEvent,
   Pressable,
   StyleSheet,
@@ -44,7 +45,7 @@ import {
   useOutlet,
 } from "./dialog-parts"
 import { layerInput } from "./native-host"
-import { renderElement } from "./render-element"
+import { mergeProps, renderElement } from "./render-element"
 import {
   HandleScope,
   type PartProps,
@@ -407,18 +408,22 @@ function DrawerBackdrop(
     drawer,
     "backdrop",
     {},
-    {
-      accessible: false,
-      onPress: () => layerInput()?.outsidePress(),
-      pointerEvents: handle.state.interactive ? "none" : "auto",
-      ...props,
-      style: (state: DrawerBackdropState, interaction: never) => [
-        typeof props.style === "function"
-          ? props.style(state, interaction)
-          : props.style,
-        { opacity },
-      ],
-    } as Record<string, unknown>,
+    mergeProps(
+      {
+        accessible: false,
+        onPress: () => layerInput()?.outsidePress(),
+        pointerEvents: handle.state.interactive ? "none" : "auto",
+      },
+      props as Record<string, unknown>,
+      {
+        style: (state: DrawerBackdropState, interaction: never) => [
+          typeof props.style === "function"
+            ? props.style(state, interaction)
+            : props.style,
+          { opacity },
+        ],
+      }
+    ),
     AnimatedPressable
   )
   return useOutlet("backdrop", element, motion.modal)
@@ -436,7 +441,6 @@ function DrawerContent({
   finalFocus,
   keepMounted,
   style,
-  onLayout,
   ...props
 }: ContentPartProps) {
   const handle = useHandle(drawer)
@@ -457,29 +461,32 @@ function DrawerContent({
     drawer,
     "content",
     { initialFocus, finalFocus, keepMounted },
-    {
-      ref: view,
-      onAccessibilityEscape: () => layerInput()?.escape(handle.api),
-      ...props,
-      onExit: motion.exitWith,
-      onLayout(event: LayoutChangeEvent) {
-        const { width, height } = event.nativeEvent.layout
-        motion.lay({ content: vertical(side) ? height : width })
-        laidOut()
-        onLayout?.(event)
-      },
-      style: (state: DrawerContentState, interaction: never) => [
-        typeof style === "function" ? style(state, interaction) : style,
-        {
-          opacity: content ? 1 : 0,
-          transform: [
-            vertical(side)
-              ? { translateY: translate }
-              : { translateX: translate },
-          ],
+    mergeProps(
+      {
+        ref: view,
+        onAccessibilityEscape: () => layerInput()?.escape(handle.api),
+        onLayout(event: LayoutChangeEvent) {
+          const { width, height } = event.nativeEvent.layout
+          motion.lay({ content: vertical(side) ? height : width })
+          laidOut()
         },
-      ],
-    } as Record<string, unknown>,
+      },
+      props as Record<string, unknown>,
+      {
+        onExit: motion.exitWith,
+        style: (state: DrawerContentState, interaction: never) => [
+          typeof style === "function" ? style(state, interaction) : style,
+          {
+            opacity: content ? 1 : 0,
+            transform: [
+              vertical(side)
+                ? { translateY: translate }
+                : { translateX: translate },
+            ],
+          },
+        ],
+      }
+    ),
     Animated.View
   )
   const viewport = element && (
@@ -509,7 +516,7 @@ function Viewport({
   return (
     <View
       pointerEvents="box-none"
-      style={[StyleSheet.absoluteFill, placement[side]]}
+      style={[StyleSheet.absoluteFill, placement(side)]}
       onLayout={(event) => {
         const { width, height } = event.nativeEvent.layout
         motion.lay({ container: vertical(side) ? height : width })
@@ -521,12 +528,19 @@ function Viewport({
   )
 }
 
-const placement = StyleSheet.create({
-  bottom: { justifyContent: "flex-end" },
-  top: { justifyContent: "flex-start" },
-  left: { flexDirection: "row", justifyContent: "flex-start" },
-  right: { flexDirection: "row", justifyContent: "flex-end" },
-})
+// A row starts at the right edge right to left, and `side` is physical.
+function placement(side: Side) {
+  if (vertical(side)) {
+    return {
+      justifyContent: side === "top" ? "flex-start" : "flex-end",
+    } as const
+  }
+  const atEnd = (side === "right") !== I18nManager.isRTL
+  return {
+    flexDirection: "row",
+    justifyContent: atEnd ? "flex-end" : "flex-start",
+  } as const
+}
 
 /**
  * The grabber, a `Pressable` VoiceOver and TalkBack adjust like a slider.
@@ -541,8 +555,12 @@ function DrawerHandle(props: PartProps<typeof Pressable, DrawerHandleState>) {
     {},
     {
       accessibilityRole: "adjustable",
-      accessibilityActions: [{ name: "increment" }, { name: "decrement" }],
       ...props,
+      accessibilityActions: [
+        { name: "increment" },
+        { name: "decrement" },
+        ...(props.accessibilityActions ?? []),
+      ],
     } as Record<string, unknown>,
     Pressable
   )

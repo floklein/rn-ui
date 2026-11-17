@@ -101,6 +101,8 @@ A `ScrollView` inside the content shares the touch with the drawer:
 - While the scroll view is at its start, the drawer takes the touch. Pulling toward the edge moves the drawer, and pushing the other way scrolls the content, after growing the drawer to its largest snap point.
 - While it's scrolled away from its start and the drawer rests at its largest snap point, the scroll view takes the whole touch and scrolls on its own. Reaching its start doesn't hand the rest of that touch to the drawer, as it does on the web: lift your finger and pull again.
 
+The drawer turns a scroll view's scrolling off for the touches it takes, and back on after them, so a scroll view inside it keeps `scrollEnabled` on.
+
 <ComponentExample
   name="drawer/scrollable"
   caption="Tap Scrollable Content and push the notes up to scroll them. Scroll back to the top, then pull down to close the drawer."

@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { Text } from "react-native"
+import { createRef } from "react"
+import { I18nManager, StyleSheet, Text, type HostInstance } from "react-native"
 import {
   Drawer,
   DrawerBackdrop,
@@ -163,5 +164,40 @@ describe("Drawer", () => {
       false,
       expect.objectContaining({ reason: "outside-press" })
     )
+  })
+
+  test("a user's backdrop press and content ref merge with the drawer's", async () => {
+    const onOpenChange = jest.fn()
+    const onPress = jest.fn()
+    const ref = createRef<HostInstance>()
+    await render(
+      <Drawer defaultOpen onOpenChange={onOpenChange}>
+        <DrawerBackdrop testID="backdrop" onPress={onPress} />
+        <DrawerContent testID="content" ref={ref}>
+          <DrawerTitle>Move goal</DrawerTitle>
+        </DrawerContent>
+      </Drawer>
+    )
+    expect(ref.current).not.toBeNull()
+    await fireEvent.press(
+      screen.getByTestId("backdrop", { includeHiddenElements: true })
+    )
+    expect(onPress).toHaveBeenCalled()
+    expect(onOpenChange).toHaveBeenCalledWith(
+      false,
+      expect.objectContaining({ reason: "outside-press" })
+    )
+  })
+
+  test("right to left, a drawer from the start edge sits at the right", async () => {
+    const isRTL = jest.replaceProperty(I18nManager, "isRTL", true)
+    await render(<Sheet defaultOpen side="start" />)
+    await layOut()
+    const viewport = content()!.parent!.parent!
+    expect(StyleSheet.flatten(viewport.props.style)).toMatchObject({
+      flexDirection: "row",
+      justifyContent: "flex-start",
+    })
+    isRTL.restore()
   })
 })
