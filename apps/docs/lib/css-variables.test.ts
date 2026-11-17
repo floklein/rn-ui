@@ -265,6 +265,7 @@ const allPages = frameworkIds.flatMap((framework) =>
 const pages = allPages.filter((page) => !isCodeOnly(page.framework))
 
 // A native part has no data attributes or CSS variables: its state replaces both.
+// A part the native entry doesn't export, like Calendar's selects, has none.
 test("a native page has a Part State section per part with data attributes", async () => {
   for (const { framework, component, page, source } of allPages) {
     if (!isCodeOnly(framework) || !hasDataAttributes(component)) {
@@ -272,8 +273,15 @@ test("a native page has a Part State section per part with data attributes", asy
     }
     expect(source, page).not.toMatch(/<(?:DataAttributes|CssVariables)\b/)
     const states = parts(section(source, "Part State"))
+    const entry = readFileSync(
+      path.join(repoRoot, "packages/react-native/src", `${component}.tsx`),
+      "utf8"
+    )
     for (const part of (await dataAttributeTables(component, framework))
       .styled) {
+      if (!new RegExp(`\\b${part.name}\\b`).test(entry)) {
+        continue
+      }
       expect(
         states.some(
           (each) =>

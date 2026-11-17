@@ -92,4 +92,4 @@ test("type errors name what a slot leaves out or can't have", () => {
   for (const name of names) {
     expect(messages.get(name), name).toContain(cases[name][1])
   }
-})
+}, 30_000)

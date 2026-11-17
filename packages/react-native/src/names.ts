@@ -10,19 +10,22 @@ function notify(id: string) {
 }
 
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
-function plain(children: unknown): string | undefined {
+function plain(children: unknown, nested = false): string | undefined {
   if (typeof children === "string" || typeof children === "number") {
     return String(children)
   }
   if (children == null || typeof children === "boolean") {
     return ""
   }
+  if (nested && React.isValidElement<{ children?: unknown }>(children)) {
+    return plain(children.props.children, nested)
+  }
   if (!Array.isArray(children)) {
     return
   }
   let text = ""
   for (const child of children) {
-    const part = plain(child)
+    const part = plain(child, nested)
     if (part === undefined) {
       return
     }
@@ -31,9 +34,12 @@ function plain(children: unknown): string | undefined {
   return text
 }
 
-/** The text of children that are only strings and numbers, or `undefined`. */
-function plainText(children: unknown) {
-  const text = plain(children)?.replace(/\s+/g, " ").trim()
+/**
+ * The text of children that are only strings and numbers, or `undefined`.
+ * `nested` reads the text inside elements too, as a screen reader does.
+ */
+function plainText(children: unknown, nested = false) {
+  const text = plain(children, nested)?.replace(/\s+/g, " ").trim()
   return text || undefined
 }
 

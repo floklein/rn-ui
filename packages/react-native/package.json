@@ -17,11 +17,14 @@
   "type": "module",
   "license": "Apache-2.0",
   "exports": {
+    "./accordion": "./src/accordion.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
+    "./calendar": "./src/calendar.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./date": "./src/date.ts",
     "./dialog": "./src/dialog.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
@@ -56,6 +59,10 @@
   ],
   "publishConfig": {
     "exports": {
+      "./accordion": {
+        "types": "./dist/accordion.d.ts",
+        "default": "./dist/accordion.js"
+      },
       "./alert-dialog": {
         "types": "./dist/alert-dialog.d.ts",
         "default": "./dist/alert-dialog.js"
@@ -68,6 +75,10 @@
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"
       },
+      "./calendar": {
+        "types": "./dist/calendar.d.ts",
+        "default": "./dist/calendar.js"
+      },
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
@@ -75,6 +86,10 @@
       "./collapsible": {
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
+      },
+      "./date": {
+        "types": "./dist/date.d.ts",
+        "default": "./dist/date.js"
       },
       "./dialog": {
         "types": "./dist/dialog.d.ts",

@@ -24,10 +24,11 @@ function bindPageLocale(_el: Element, set: (locale: string | null) => void) {
   set(userLocale() ?? null)
 }
 
+// No server renders first, so the first frame is already in the device's language.
 const localeOf = (state: {
   locale?: string | null | undefined
   pageLocale?: string | null
-}) => state.locale ?? state.pageLocale ?? "en-US"
+}) => state.locale ?? state.pageLocale ?? userLocale() ?? "en-US"
 
 true satisfies Twin<typeof Mirrored, typeof Native>
 

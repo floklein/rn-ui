@@ -39,6 +39,7 @@ import {
 } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import {
+  AccessibilityInfo,
   I18nManager,
   Platform,
   Pressable,
@@ -252,6 +253,10 @@ function useHandle<P extends Primitive>(primitive: P) {
   return handle
 }
 
+/** The props of the part of `slot` around a part written by hand, like its item's value. */
+const useAround = (primitive: Primitive, slot: string) =>
+  React.useContext(scopeOf(primitive).context)?.around[slot]
+
 // The host's own style, without the function `Pressable` takes in its place.
 type HostStyle<Host extends React.ElementType> = Exclude<
   React.ComponentProps<Host> extends { style?: infer Style } ? Style : never,
@@ -379,6 +384,23 @@ function useMissingNames(
     })
     return () => clearTimeout(timer)
   }, [key, from.component, from.id])
+}
+
+// iOS has no live regions, so a live part's new text is announced, as
+// Android's live region reads it.
+function useLiveText(live: string | undefined, text: string | undefined) {
+  const last = React.useRef(text)
+  React.useEffect(() => {
+    if (last.current === text) {
+      return
+    }
+    last.current = text
+    if (Platform.OS === "ios" && text && live && live !== "off") {
+      AccessibilityInfo.announceForAccessibilityWithOptions(text, {
+        queue: live === "polite",
+      })
+    }
+  })
 }
 
 let rendered = 0
@@ -610,13 +632,18 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
     typeof rest.children === "function"
       ? rest.children(state, interaction)
       : rest.children
+  const text = shown && !render ? plainText(content) : undefined
   useText(
     shown
       ? (translated.nativeID ??
           (rest.nativeID as string | undefined) ??
           (rest.id as string | undefined))
       : undefined,
-    shown && !render ? plainText(content) : undefined
+    text
+  )
+  useLiveText(
+    merged["aria-live"],
+    shown && merged["aria-live"] ? plainText(content, true) : undefined
   )
 
   let element: React.ReactElement | null = null
@@ -999,6 +1026,7 @@ export {
   type PartProps,
   type Parts,
   type PrimitiveHandle,
+  useAround,
   useHandle,
   useNearest,
   usePart,

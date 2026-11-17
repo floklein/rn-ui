@@ -353,6 +353,7 @@ Every difference the resolutions record, by subject.
 - A user writes React Native's host props, such as `onPress` for `onClick` ([Where native names diverge from @ui-sdk/react][names]).
 - A change's details carry no `event` ([Where the host seam sits in core][seam]).
 - NativeWind v4 users call `cssInterop` on the parts they style ([How state reaches native styles][styles]).
+- An Accordion item's `index` updates as items mount and unmount, not when they move: nothing reports a view that moves without remounting, where the web watches the page with a `MutationObserver` (ticket 89).
 
 **Accessibility, focus and keyboards**
 
@@ -374,6 +375,9 @@ Every difference the resolutions record, by subject.
 - A Toggle given `role="switch"` announces its on or off state from `aria-pressed`, where the web's switch ignores `aria-pressed` and announces no state; an app can still pass `aria-checked` ([council batch 2][council-2]).
 - The current page of a Pagination is announced as selected: `aria-current="page"` becomes `accessibilityState.selected` unless the part sets `aria-selected`, since React Native has no current state. Pagination has no landmark: `navigation` and `listitem` reach no screen reader, and each page and step is its own button (ticket 87).
 - A Label names and presses only a control beside it, through `htmlFor`: it can't wrap one, since VoiceOver reads a `Text` as one element. It reaches Input, Textarea, Switch, Checkbox and Slider, not a radio group; a Label for a range names every thumb without a name of its own, where the web names the group; a control has one label, the one mounted last, and ids are shared by every mounted screen. On Android a Label is its own TalkBack and Tab stop, as a pressable `Text` (ticket 82).
+- A Calendar's days are buttons named by their full date, selected when picked: React Native has no grid cell, so days are reached by swiping, and a month's grid role reaches Android only. Today isn't announced, since neither OS has a current-date state. Unavailable days are disabled on Android, where they also leave the keyboard's Tab order (ticket 102).
+- A live region's new text is announced on iOS, which has no live regions; Android keeps its own (`accessibilityLiveRegion`). Calendar's heading is the first part with one (ticket 102).
+- An Accordion's header has no heading role: React Native gives an element one role, the trigger keeps the button's, and a header role on the `View` around it doesn't reach VoiceOver, which reads traits only from accessible elements; what TalkBack makes of a heading container around a button is unchecked. Heading navigation doesn't reach the items (ticket 89).
 
 **Popups**
 
@@ -408,6 +412,7 @@ Every difference the resolutions record, by subject.
 - A drag inside a plain `ScrollView` that scrolls along the same axis needs the app to pass `scrollEnabled={!dragging}`, with `dragging` set from the drag part's responder grant, release and termination. On iOS the scroll view otherwise pans along with the drag, since Fabric only stops it for a responder above it, not inside it. A perpendicular scroll view needs nothing, and the library's Scroll Area stops its own scrolling ([council batch 3][council-3]).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
+- Calendar has no month or year select, since native has no select element; an app controls `month` from its own picker. No focus is observed, so its `focused` state moves only when the months turn to show a day, and a press on a day of the month shown reports no `onFocusedChange` (ticket 102).
 
 **Forms**
 
@@ -419,6 +424,7 @@ Every difference the resolutions record, by subject.
 **Direction and the agent layer**
 
 - One direction for the whole app, with none for part of the screen ([How direction and locale are read on native][direction]).
+- Hermes's `Intl` has no `Intl.Locale` and no `formatRange`. The first day of the week comes from the locale tag's region, so a tag with no region, like `"en"`, starts on Monday where a browser maximizes it to `en-US` and starts on Sunday; a range of dates, like the heading of two months, is written as its two dates, "October 2026 – November 2026" where the web writes "October – November 2026" (twins `week.native.ts` and `format.native.ts`, ticket 102).
 - The agent layer sees only the library's components and parts; an app's own `Pressable` is invisible to it ([What the agent layer reads and drives on native][agent]).
 - Agent marks are props, plus a wrapper for a region that isn't a part ([What the agent layer reads and drives on native][agent]).
 

@@ -18,12 +18,16 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A calendar's days are its buttons with a selected state; pass one that can
+ * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * @experimental
  */
 type NativePattern =
+  | "accordion"
   | "alertdialog"
   | "button"
+  | "calendar"
   | "checkbox"
   | "dialog"
   | "disclosure"
@@ -162,43 +166,53 @@ async function checkboxPattern(context: Context) {
 }
 
 // Content inside the button is part of its name, not what it discloses.
-function contentCount(context: Context, button: HostNode) {
+function content(context: Context, button: HostNode) {
   const own = new Set(shownNodes(button))
   return readTree(context.root, context.os).shown.filter(
     (node) => !own.has(node)
-  ).length
+  )
 }
 
+// Compares what's shown, not how much: an accordion that opens one item
+// closes another.
 async function checkContentFollows(
   context: Context,
   button: () => HostNode,
-  action: Action
+  action: Action,
+  apg: string
 ) {
   const expanded = stateOf(button()).expanded
-  const before = contentCount(context, button())
+  const before = content(context, button())
   await performWatched(button(), action, context.act)
   if (stateOf(button()).expanded === expanded) {
     context.problem(
       button(),
-      `stays ${expanded ? "expanded" : "collapsed"} after the ${action} action; it shows or hides its content (APG disclosure).`
+      `stays ${expanded ? "expanded" : "collapsed"} after the ${action} action; it shows or hides its content (${apg}).`
     )
     return false
   }
-  const after = contentCount(context, button())
-  if (expanded ? after >= before : after <= before) {
+  const after = content(context, button())
+  const [from, to] = expanded ? [after, before] : [before, after]
+  if (!to.some((node) => !from.includes(node))) {
     context.problem(
       button(),
-      `${expanded ? "hides" : "shows"} no content after the ${action} action; its content follows its expanded state (APG disclosure).`
+      `${expanded ? "hides" : "shows"} no content after the ${action} action; its content follows its expanded state (${apg}).`
     )
     return false
   }
   return true
 }
 
-// Activating a disclosure's button shows or hides its content (APG
-// disclosure). TalkBack offers expand or collapse from the expanded state
-// alone, so on Android the button handles them too.
-async function disclosurePattern(context: Context) {
+const articles = { disclosure: "a", accordion: "an" }
+
+// An accordion's open item that can't close turns disabled (APG accordion).
+// TalkBack offers expand or collapse from the expanded state alone, so on
+// Android the button handles them too.
+async function checkExpandable(
+  context: Context,
+  pattern: keyof typeof articles
+) {
+  const apg = `APG ${pattern}`
   const buttons = () =>
     context
       .withRole("button")
@@ -206,7 +220,7 @@ async function disclosurePattern(context: Context) {
   if (!buttons().length) {
     context.problem(
       context.root,
-      "has no button with an expanded state, so it isn't a disclosure (APG disclosure)."
+      `has no button with an expanded state, so it isn't ${articles[pattern]} ${pattern} (${apg}).`
     )
     return
   }
@@ -215,12 +229,13 @@ async function disclosurePattern(context: Context) {
   }
   for (const index of buttons().keys()) {
     const button = () => buttons()[index]
-    if (isDisabled(button())) {
-      continue
-    }
+    const follows = async (action: Action) =>
+      isDisabled(button()) ||
+      (await checkContentFollows(context, button, action, apg))
     if (
-      !(await checkContentFollows(context, button, "activate")) ||
-      !(await checkContentFollows(context, button, "activate")) ||
+      isDisabled(button()) ||
+      !(await follows("activate")) ||
+      !(await follows("activate")) ||
       context.os !== "android"
     ) {
       continue
@@ -229,6 +244,9 @@ async function disclosurePattern(context: Context) {
       ? ["collapse", "expand"]
       : ["expand", "collapse"]
     for (const action of actions) {
+      if (isDisabled(button())) {
+        break
+      }
       if (!actionsOf(button()).includes(action)) {
         context.problem(
           button(),
@@ -236,7 +254,7 @@ async function disclosurePattern(context: Context) {
         )
         break
       }
-      if (!(await checkContentFollows(context, button, action))) {
+      if (!(await follows(action))) {
         break
       }
     }
@@ -420,6 +438,40 @@ async function paginationPattern(context: Context) {
       context.problem(
         button,
         `leaves the current page "${nameOf(before)}" after the activate action; a page or a step that isn't disabled goes to another page.`
+      )
+    }
+  }
+}
+
+// Days are buttons with a selected state, since neither OS has a grid cell.
+// Each is found again by name, since a day of another month turns the months.
+async function calendarPattern(context: Context) {
+  const days = () =>
+    context
+      .withRole("button")
+      .filter((button) => typeof stateOf(button).selected === "boolean")
+  if (!days().length) {
+    context.problem(
+      context.root,
+      "has no button with a selected state, so it has no days."
+    )
+    return
+  }
+  for (const day of days()) {
+    requireName(context, day, "day")
+  }
+  for (const name of days().map(nameOf)) {
+    const day = () => days().find((node) => nameOf(node) === name)
+    const before = day()
+    if (!name || !before || isDisabled(before) || stateOf(before).selected) {
+      continue
+    }
+    await performWatched(before, "activate", context.act)
+    const after = day()
+    if (after && stateOf(after).selected !== true) {
+      context.problem(
+        after,
+        "isn't selected after the activate action; activating a day that isn't disabled selects it."
       )
     }
   }
@@ -827,11 +879,13 @@ async function sliderPattern(context: Context) {
 }
 
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
+  accordion: (context) => checkExpandable(context, "accordion"),
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
+  calendar: calendarPattern,
   checkbox: checkboxPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
-  disclosure: disclosurePattern,
+  disclosure: (context) => checkExpandable(context, "disclosure"),
   img: imgPattern,
   meter: (context) => barPattern(context, "meter"),
   pagination: paginationPattern,
@@ -861,9 +915,11 @@ async function checkActions(context: Context) {
       if (isDisabled(node)) {
         continue
       }
-      const index = context.elements().indexOf(node)
+      // Content shown or hidden before it can move it among the elements.
+      const peers = () => context.withRole(roleOf(node) ?? "")
+      const index = peers().indexOf(node)
       const requests = await performWatched(node, action, context.act)
-      const after = context.elements()[index]
+      const after = peers()[index]
       const outcome =
         action === "expand"
           ? stateOf(after ?? node).expanded === true
