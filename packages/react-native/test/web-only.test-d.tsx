@@ -29,6 +29,11 @@ import {
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Toggle } from "../src/toggle"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../src/hover-card"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../src/tooltip"
 import type * as TooltipEntry from "../src/tooltip"
 
@@ -287,6 +292,17 @@ const tooltips = [
 // @ts-expect-error The shortcut part is web-only.
 type TooltipShortcut = typeof TooltipEntry.TooltipShortcut
 
+const hoverCards = [
+  <HoverCard delay={300} closeDelay={100} />,
+  <HoverCardTrigger payload="hollis" onPress={() => {}} />,
+  // @ts-expect-error `container` is a DOM element.
+  <HoverCard container={null} />,
+  // @ts-expect-error `container` is a DOM element.
+  <HoverCardContent container={null} />,
+  // @ts-expect-error A native link has no `href`; its `onPress` follows it.
+  <HoverCardTrigger href="https://example.com" />,
+]
+
 export {
   codes,
   numbers,
@@ -300,6 +316,7 @@ export {
   fields,
   type FileInputHiddenInput,
   files,
+  hoverCards,
   NativeDialog,
   NativeSwitch,
   paginations,

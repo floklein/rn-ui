@@ -14,6 +14,10 @@ import {
   usePressedPart,
 } from "./use-primitive"
 
+// No bridge spans a hover popup's trigger and content on native, so a
+// pointer gets this long to cross from one to the other (WCAG 1.4.13).
+const closeDelayFloor = 100
+
 type PopupHandle = PrimitiveHandle<any> & {
   state: { mounted: boolean; modal: unknown }
 }
@@ -187,6 +191,7 @@ function popupTrigger(
 }
 
 export {
+  closeDelayFloor,
   createOutlet,
   type Outlet,
   OutletContext,

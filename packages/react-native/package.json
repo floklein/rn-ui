@@ -23,6 +23,7 @@
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./calendar": "./src/calendar.tsx",
+    "./carousel": "./src/carousel.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./color": "./src/color.ts",
@@ -34,6 +35,7 @@
     "./field": "./src/field.tsx",
     "./file-input": "./src/file-input.tsx",
     "./history": "./src/history.ts",
+    "./hover-card": "./src/hover-card.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -97,6 +99,10 @@
         "types": "./dist/calendar.d.ts",
         "default": "./dist/calendar.js"
       },
+      "./carousel": {
+        "types": "./dist/carousel.d.ts",
+        "default": "./dist/carousel.js"
+      },
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
@@ -140,6 +146,10 @@
       "./history": {
         "types": "./dist/history.d.ts",
         "default": "./dist/history.js"
+      },
+      "./hover-card": {
+        "types": "./dist/hover-card.d.ts",
+        "default": "./dist/hover-card.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",

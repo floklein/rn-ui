@@ -28,6 +28,11 @@ import {
 } from "../src/collapsible"
 import { Field, FieldLabel } from "../src/field"
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../src/hover-card"
+import {
   Dialog,
   DialogBackdrop,
   DialogClose,
@@ -2161,6 +2166,66 @@ describe("checkPattern's tooltip pattern on the native host", () => {
     await render(<Sticky />)
     await expect(checkTooltip()).rejects.toThrow(
       "leaves its tooltip open when activated again"
+    )
+  })
+})
+
+describe("checkPattern's hover card pattern on the native host", () => {
+  const checkHoverCard = () =>
+    checkPattern(screen.container, "hover-card", { os, act })
+
+  test("passes on hover cards whose links are named, closed or open", async () => {
+    await render(
+      <OverlayHost>
+        <HoverCard>
+          <HoverCardTrigger onPress={() => {}}>
+            <Text>@hollis</Text>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <Text>Design engineer on the payments team.</Text>
+          </HoverCardContent>
+        </HoverCard>
+        <HoverCard defaultOpen>
+          <HoverCardTrigger aria-label="Inès Moreau">
+            <View />
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <Text>Product designer.</Text>
+          </HoverCardContent>
+        </HoverCard>
+      </OverlayHost>
+    )
+    await expect(checkHoverCard()).resolves.toBeUndefined()
+  })
+
+  test("fails on a tree with no link, and on a link with no name", async () => {
+    await render(<Text>@hollis</Text>)
+    await expect(checkHoverCard()).rejects.toThrow(
+      "has no link for a hover card to preview"
+    )
+    await render(
+      <Pressable accessibilityRole="link">
+        <View />
+      </Pressable>
+    )
+    await expect(checkHoverCard()).rejects.toThrow("has no name")
+  })
+
+  test("fails on a link whose activation opens its card", async () => {
+    function Pressed() {
+      const [open, setOpen] = useState(false)
+      return (
+        <View>
+          <Pressable accessibilityRole="link" onPress={() => setOpen(true)}>
+            <Text>@hollis</Text>
+          </Pressable>
+          {open && <Text>Design engineer on the payments team.</Text>}
+        </View>
+      )
+    }
+    await render(<Pressed />)
+    await expect(checkHoverCard()).rejects.toThrow(
+      "opens its card when activated"
     )
   })
 })
