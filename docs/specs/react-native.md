@@ -382,7 +382,7 @@ Every difference the resolutions record, by subject.
 **Popups**
 
 - Modal popups render in `Modal`, and non-modal popups and toasts need the app wrapped in `OverlayHost` ([How native popups layer, dismiss and place themselves][popups]).
-- Tooltip's `closeDelay` is at least 100 ms, so a pointer can cross from the trigger to the content: native has no bridge spanning the two, and the content's pointer-enter keeps it open. While a screen reader runs, a toast with an action or a close button waits until it stops, since native never tells core that focus reached a toast; other toasts still close on time, and durations aren't scaled ([council batch 5][council-5]).
+- Tooltip's `closeDelay` is at least 100 ms, so a pointer can cross from the trigger to the content: native has no bridge spanning the two, and the content's pointer-enter keeps it open. While a screen reader runs, a toast with an action or a close button waits until it stops, since native never tells core that focus reached a toast; other toasts still close on time, and durations aren't scaled ([council batch 5][council-5]). A toast's root takes VoiceOver's escape gesture and a "Dismiss" accessibility action, which TalkBack offers on the Android root, so a screen reader can always dismiss a held toast ([council batch 6][council-6]).
 - Android back dismisses the topmost layer with the `"back"` reason, and a refused dismissal still consumes it ([How native popups layer, dismiss and place themselves][popups]).
 - The iOS escape gesture stands for Escape, with the `"escape-key"` reason ([How native popups layer, dismiss and place themselves][popups]).
 - `presentation="auto"` is the sheet only when the app imports the sheet entry ([How native popups layer, dismiss and place themselves][popups]).
@@ -549,3 +549,4 @@ Also left for the build, though not a device check: `pnpm test:pr` was not seen 
 [council-2]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6920083782
 [council-3]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6922314446
 [council-5]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6947711242
+[council-6]: https://github.com/floklein/rn-ui/issues/2#issuecomment-6951331230
