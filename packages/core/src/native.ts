@@ -7,19 +7,40 @@
  */
 export { accordionNative } from "./components/accordion/accordion-native"
 export { calendarNative } from "./components/calendar/calendar-native"
+export {
+  carouselNative,
+  nativeCarousel,
+  type NativeCarousel,
+} from "./components/carousel/carousel-native"
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export {
+  colorPickerNative,
+  nativeColorPicker,
+} from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export {
   datePickerNative,
   datePickerText,
 } from "./components/date-picker/date-picker-native"
+export {
+  bindReorderItem,
+  bindTransferList,
+  bindTransferItem,
+} from "./foundation/drag-and-drop/drag-and-drop-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
+export { hoverCardNative } from "./components/hover-card/hover-card-native"
+export { numberInputNative } from "./components/number-input/number-input-native"
 export { popoverNative } from "./components/popover/popover-native"
+export { tooltipNative } from "./components/tooltip/tooltip-native"
 export { radioNative } from "./components/radio/radio-native"
 export { dialogNative } from "./components/dialog/dialog-native"
 export { drawerNative } from "./components/drawer/drawer-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
+export {
+  nativeResizable,
+  resizableNative,
+} from "./components/resizable/resizable-native"
 export {
   type NativeScroller,
   type NativeScrollReport,

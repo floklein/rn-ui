@@ -14,7 +14,8 @@ import { createDraftMove } from "./draft-move"
 import { isRTL } from "../platform/env"
 import { createOrder } from "../kernel/order"
 import { createDragSession, dragThreshold } from "./pointer"
-import { labelOf } from "../text/typeahead"
+import { createPointDrags } from "./point-drag"
+import { itemLabel } from "./item-label"
 import { isSameKeys } from "../selection/listbox-range"
 
 /**
@@ -278,7 +279,7 @@ function createReorder<State extends object, Props = any>(
     count = 1
   ) {
     const el = element(key)
-    const label = options.label?.(key) ?? (el ? labelOf(el) : key)
+    const label = options.label?.(key) ?? (el ? itemLabel(el) : key)
     const message = {
       type,
       key,
@@ -502,6 +503,22 @@ function createReorder<State extends object, Props = any>(
     })
   }
 
+  const followPoints = createPointDrags(
+    context.onDestroy,
+    () => !!draft()?.pointer
+  )
+
+  function drag(key: string) {
+    if (!grab(key, true)) {
+      return undefined
+    }
+    return followPoints(
+      (x, y) => moveTo(indexAt(x, y)),
+      (canceled, event) => (canceled ? cancel() : drop("drag", event)),
+      options.createAutoScroll
+    )
+  }
+
   const reorder = {
     /** Joins a bound part to the list. Call it from the item slot's `bind` and return its cleanup. */
     bind(el: HTMLElement, part: { key: string; props: Props }) {
@@ -582,6 +599,13 @@ function createReorder<State extends object, Props = any>(
     },
     /** Starts a pointer drag of an item once the pointer moves a few pixels, so a click stays a click. */
     pointerdown,
+    /**
+     * Picks an item up for a drag that doesn't start with `pointerdown`, like
+     * a touch on the native host. Returns what follows it, `move(x, y)` and
+     * `end(canceled, event?)`, or `undefined` when the item can't be picked
+     * up. Only the latest drag's handle acts, and destroying the list ends it.
+     */
+    drag,
     /** Picks an item up, as Space does. Returns whether it did. */
     grab: (key: string) => grab(key, false),
     /** Moves the picked-up item to `index` in the draft, counting from 0. */

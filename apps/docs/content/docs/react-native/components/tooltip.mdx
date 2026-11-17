@@ -1,0 +1,296 @@
+---
+title: Tooltip
+description: Name a control or add a short hint, read by screen readers and shown under a pointer or on a press.
+---
+
+A tooltip names a control or adds a short hint. On a touch screen it stays closed: its text reaches VoiceOver and TalkBack as the trigger's name or hint, and a `toggleable` tooltip opens when its trigger is pressed. With a pointer, like a trackpad on an iPad, it opens when the pointer rests on the trigger. Keep it to a few words of plain text.
+
+<ComponentExample
+  name="tooltip/basic"
+  caption="The tooltip starts open above the button. Tap the button to close it. VoiceOver and TalkBack read Add to library as the button's name."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+The content renders in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app. Without one, it renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `Tooltip`:
+
+```text
+Tooltip
+├── TooltipTrigger
+└── TooltipContent
+    └── TooltipArrow
+```
+
+`TooltipTrigger` renders a `Pressable`, and `TooltipContent` and `TooltipArrow` a `View`. The content renders in the `OverlayHost`, so context from your own provider placed between `Tooltip` and `TooltipContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+The tooltip's text names a trigger without a name of its own, like a button with only an icon, and describes any other: one with text or an `aria-label`. Screen readers read it as the trigger's label or hint, whether the tooltip is open or not. `type="label"` or `type="description"` overrides the guess. Keep it to plain text: a tooltip never takes focus, so buttons inside it are hard to reach. For anything interactive, use a [Popover](./popover).
+
+## Usage
+
+Import the parts and put them together. Give the content a look, not a position:
+
+```tsx
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@ui-sdk/react-native/tooltip"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Tooltip toggleable>
+      <TooltipTrigger aria-label="About storage">
+        <Text>i</Text>
+      </TooltipTrigger>
+      <TooltipContent style={styles.content}>
+        <Text style={styles.text}>Files in the trash still use storage.</Text>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+const styles = StyleSheet.create({
+  content: { padding: 8, borderRadius: 6, backgroundColor: "#18181b" },
+  text: { color: "#fafafa" },
+})
+
+export { Example }
+```
+
+## Touch
+
+A tap on a plain tooltip's trigger only presses it, and the tooltip stays closed. A long press doesn't open it either, so don't hide anything a sighted user needs in a tooltip.
+
+For an info button whose only job is the tip, add `toggleable`: a press on the trigger opens and closes the tooltip, and VoiceOver or TalkBack reads its text when a press opens it. A press anywhere else, Android's back and VoiceOver's escape gesture close it too.
+
+<ComponentExample
+  name="tooltip/toggleable"
+  caption="Tap the info button to open the tip, and tap it again or anywhere else to close it."
+/>
+
+## Pointer
+
+A tooltip opens when a pointer, like a mouse or a trackpad, rests on its trigger, after `delay`, and closes when it leaves, after `closeDelay`. `closeDelay` is at least 100 ms on native, so the pointer can cross from the trigger to the tooltip, which keeps it open. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a tooltip never opens on hover. A finger's pointer events never open it.
+
+Tooltips group without a provider. Once one is open, or was a moment ago, the next opens at once, and only one is open at a time. Its state's `instant` says so, so it can skip its animation.
+
+## Side
+
+`side` picks where the tooltip opens: `"top"` by default. It flips to the other side when there isn't room, and shifts along the trigger to stay on screen. Its state's `side` says where it landed. `sideOffset` is the gap to the trigger, 4 points by default, `alignOffset` shifts it along the trigger, and `collisionPadding` keeps it from the edges of the space it may use.
+
+<ComponentExample
+  name="tooltip/side"
+  caption="With a pointer, rest on Top, Left, Right and Bottom. Each tooltip opens on that side, or flips when there isn't room."
+/>
+
+Add a `TooltipArrow` to point at the trigger. It moves to the edge facing the trigger, including after a flip.
+
+## Anchor
+
+`anchor` places the tooltip against something other than its trigger: a view, like a ref's `current`, or a point in window coordinates.
+
+<ComponentExample
+  name="tooltip/anchor"
+  caption="Tap the info button. The tooltip opens below the Webhook URL row and lines up with its start, not with the button."
+/>
+
+## Disabled Buttons
+
+A `Pressable` with `disabled` takes no presses, so a screen reader user can't learn why from its tooltip. When the tooltip explains why an action is unavailable, use `aria-disabled` instead and ignore the trigger's presses yourself. Screen readers announce it as dimmed and read the tooltip's text as its hint. Once the button works, leave the content out, as the example does, so the hint goes too.
+
+<ComponentExample
+  name="tooltip/disabled-button"
+  caption="With VoiceOver or TalkBack, reach Publish: it's dimmed and its hint says what's missing. Type a title, and Publish works and its hint goes away."
+/>
+
+## Keep Open on Press
+
+A press on the trigger closes the tooltip, so it doesn't cover what the press changed. `closeOnPress={false}` keeps it open, like for a copy button whose tooltip turns into "Copied".
+
+<ComponentExample
+  name="tooltip/copy"
+  caption="With a pointer, rest on the copy button and click it. The tooltip stays open and changes to Copied."
+/>
+
+## Truncated Text
+
+To show a tooltip only when text is cut off, cancel the open in `onOpenChange` when the text fits. Here a hidden copy of the name, measured by `onTextLayout`, gives its full width. The tooltip repeats the name, so `type="label"` keeps screen readers from hearing it twice.
+
+<ComponentExample
+  name="tooltip/truncated"
+  caption="With a pointer, rest on each file. Only names that are cut off open a tooltip."
+/>
+
+## Controlled
+
+Pass `open` and update it in `onOpenChange`. Every change carries a [reason](#reasons). Call `details.cancel()` to stop it.
+
+<ComponentExample
+  name="tooltip/controlled"
+  caption="Turn on Open. The tooltip opens above Export, and the log shows each change and its reason."
+/>
+
+## Shared
+
+A toolbar or a list can share one tooltip. Connect the triggers and the tooltip to one `createTooltipController<Payload>()`. Each trigger passes a `payload`, and the content reads it from its state. Only the trigger that opened the tooltip is described by it, so give each trigger a name of its own, like an `aria-label`.
+
+<ComponentExample
+  name="tooltip/shared"
+  caption="With a pointer, move along Bold, Italic and Underline. One tooltip follows and shows each button's label."
+/>
+
+## Animation
+
+The content leaves through `onExit`, as in [Dialog](./dialog#animation): it stays on screen until you call `done`, or two seconds pass. Its state's `transformOrigin` is the point facing the trigger. `onOpenChangeComplete` runs once the tooltip has finished opening or closing.
+
+<ComponentExample
+  name="tooltip/animation"
+  caption="Tap Archive, then tap it again. The tooltip fades in and out, and the log shows Opening, Open, Closing and Closed."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its press and its name.
+
+<ComponentExample
+  name="tooltip/custom-rendering"
+  caption="The trigger renders as a link, and screen readers read the tooltip's text as its hint."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.content, { opacity: state.instant ? 1 : undefined }]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### TooltipTrigger [#part-state-tooltiptrigger]
+
+<PartStateTable
+  component="tooltip"
+  part="trigger"
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipTriggerState"
+/>
+
+### TooltipContent [#part-state-tooltipcontent]
+
+<PartStateTable
+  component="tooltip"
+  part="content"
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation), and what placement measured, undefined until it's first placed:
+
+| Field             | Type                                     | Description                                                           |
+| ----------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| `side`            | `"top" \| "right" \| "bottom" \| "left"` | The side it opened on, after flipping.                                |
+| `align`           | `"start" \| "center" \| "end"`           | How it lines up with the trigger.                                     |
+| `anchorWidth`     | `number`                                 | The trigger's width, or the anchor's.                                 |
+| `anchorHeight`    | `number`                                 | The trigger's height, or the anchor's.                                |
+| `availableWidth`  | `number`                                 | The width it has before the edge of the space it may use.             |
+| `availableHeight` | `number`                                 | The height it has before that edge.                                   |
+| `transformOrigin` | `string`                                 | The point facing the trigger, as a `transformOrigin` style.           |
+| `arrowOffset`     | `number`                                 | Where the trigger's center falls along the edge facing it, in points. |
+
+### TooltipArrow [#part-state-tooltiparrow]
+
+<PartStateTable
+  component="tooltip"
+  part="arrow"
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipArrowState"
+/>
+
+With what placement measured:
+
+| Field          | Type                                     | Description                                                    |
+| -------------- | ---------------------------------------- | -------------------------------------------------------------- |
+| `side`         | `"top" \| "right" \| "bottom" \| "left"` | The edge of the content it sits on, facing the trigger.        |
+| `align`        | `"start" \| "center" \| "end"`           | How the content lines up with the trigger.                     |
+| `arrowClamped` | `boolean`                                | Whether it stopped at a corner, short of the trigger's center. |
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `TooltipTrigger` also takes `Pressable`'s props, and `TooltipContent` and `TooltipArrow` `View`'s.
+
+### Tooltip
+
+`shortcut` and `TooltipShortcut` don't exist on native: keyboard shortcuts are web-only. `delay` and `closeDelay` apply to a [pointer](#pointer), and `closeDelay` is at least 100.
+
+<TypeTable
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipOptions"
+  omit={["container", "shortcut"]}
+/>
+
+### TooltipTrigger
+
+A trigger outside the tooltip also takes `controller`.
+
+<TypeTable
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipTriggerProps"
+/>
+
+### TooltipContent
+
+`anchor` takes a view or a point, described under [Anchor](#anchor).
+
+<TypeTable
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why the tooltip opened or closed. `"trigger-focus"`, `"focus-out"` and `"window-blur"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createTooltipController<Payload>()` and pass it as `controller`, to the tooltip and to any triggers outside it. Its `focus()` moves the screen reader to the trigger.
+
+<ControllerTable
+  path="../../packages/core/src/components/tooltip/tooltip.ts"
+  name="TooltipController"
+/>
+
+### Events
+
+| Prop                   | On        | Receives                                                    |
+| ---------------------- | --------- | ----------------------------------------------------------- |
+| `onOpenChange`         | `Tooltip` | `(open, details)`: the new state and the [reason](#reasons) |
+| `onOpenChangeComplete` | `Tooltip` | `(open)`, as described under [Animation](#animation)        |
+| `onPayloadChange`      | `Tooltip` | `(payload, details)`: the content's new payload             |
+
+## Accessibility
+
+The trigger is a button, named or described by the tooltip's text through its `accessibilityLabel` or `accessibilityHint`, open or not. React Native has no tooltip role, so the content is a plain view whose text a screen reader can reach while it's open; the rest of the screen stays reachable. A press that opens a `toggleable` tooltip announces its text. The tooltip never moves the screen reader, except back to the trigger after VoiceOver's escape gesture on its text. The arrow is hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                              |
+| ----- | ----------------------------------------------------------------- |
+| Tab   | Moves through the controls; keyboard focus doesn't open a tooltip |
+| Space | Presses the trigger: opens or closes a `toggleable` tooltip       |
+| Enter | Does the same, on Android only                                    |

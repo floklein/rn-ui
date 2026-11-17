@@ -52,6 +52,8 @@ function host() {
     adjustable: vi.fn(),
     listen: () => () => {},
     seen: () => undefined,
+    scrollNear: vi.fn(),
+    screenReader: () => () => {},
   })
   return { focused, rendered, announced }
 }

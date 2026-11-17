@@ -28,6 +28,11 @@ import {
 } from "../src/collapsible"
 import { Field, FieldLabel } from "../src/field"
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../src/hover-card"
+import {
   Dialog,
   DialogBackdrop,
   DialogClose,
@@ -52,6 +57,13 @@ import {
   FileInputList,
   FileInputTrigger,
 } from "../src/file-input"
+import {
+  NumberInput,
+  NumberInputControl,
+  NumberInputDecrement,
+  NumberInputGroup,
+  NumberInputIncrement,
+} from "../src/number-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -116,6 +128,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from "../src/slider"
+import { Resizable, ResizableHandle, ResizablePanel } from "../src/resizable"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
@@ -137,6 +150,7 @@ import {
   ToolbarLink,
   ToolbarSeparator,
 } from "../src/toolbar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../src/tooltip"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
@@ -456,6 +470,28 @@ describe("checkPattern's textbox pattern on the native host", () => {
           <PasswordInputControl aria-label="Disabled" />
           <PasswordInputToggle aria-label="Show disabled" />
         </PasswordInput>
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+    await expect(checkButton()).resolves.toBeUndefined()
+  })
+
+  test("passes on a number input, enabled, read-only, disabled or at a bound, as a textbox and its step buttons as buttons", async () => {
+    const parts = (name: string) => (
+      <NumberInputGroup>
+        <NumberInputDecrement aria-label={`Decrease ${name}`} />
+        <NumberInputControl aria-label={name} />
+        <NumberInputIncrement aria-label={`Increase ${name}`} />
+      </NumberInputGroup>
+    )
+    await render(
+      <View>
+        <NumberInput defaultValue={3}>{parts("Amount")}</NumberInput>
+        <NumberInput readOnly>{parts("Read-only")}</NumberInput>
+        <NumberInput disabled>{parts("Disabled")}</NumberInput>
+        <NumberInput defaultValue={10} max={10}>
+          {parts("Full")}
+        </NumberInput>
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
@@ -1974,5 +2010,169 @@ describe("checkPattern's toast pattern on the native host", () => {
       })
     })
     await expect(checkToast()).rejects.toThrow("leaves its toast showing")
+  })
+})
+
+describe("checkPattern's tooltip pattern on the native host", () => {
+  const checkTooltip = () =>
+    checkPattern(screen.container, "tooltip", { os, act })
+
+  test.each([false, true])(
+    "passes on tooltips that name and describe their triggers, toggleable %s",
+    async (toggleable) => {
+      await render(
+        <OverlayHost>
+          <Tooltip toggleable={toggleable}>
+            <TooltipTrigger>
+              <View />
+            </TooltipTrigger>
+            <TooltipContent>
+              <Text>Add to library</Text>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip toggleable={toggleable} defaultOpen>
+            <TooltipTrigger>
+              <Text>Export</Text>
+            </TooltipTrigger>
+            <TooltipContent>
+              <Text>Download as CSV</Text>
+            </TooltipContent>
+          </Tooltip>
+        </OverlayHost>
+      )
+      await expect(checkTooltip()).resolves.toBeUndefined()
+    }
+  )
+
+  test("fails on a button its tooltip neither names nor describes", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Export</Text>
+      </Pressable>
+    )
+    await expect(checkTooltip()).rejects.toThrow(
+      "is neither named nor described by its tooltip"
+    )
+  })
+
+  test("fails on a tooltip that takes focus or stays open", async () => {
+    function Sticky() {
+      const [open, setOpen] = useState(false)
+      return (
+        <View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityHint="Download as CSV"
+            onPress={() => setOpen(true)}
+          >
+            <Text>Export</Text>
+          </Pressable>
+          {open && <Text>Download as CSV</Text>}
+        </View>
+      )
+    }
+    await render(<Sticky />)
+    await expect(checkTooltip()).rejects.toThrow(
+      "leaves its tooltip open when activated again"
+    )
+  })
+})
+
+describe("checkPattern's hover card pattern on the native host", () => {
+  const checkHoverCard = () =>
+    checkPattern(screen.container, "hover-card", { os, act })
+
+  test("passes on hover cards whose links are named, closed or open", async () => {
+    await render(
+      <OverlayHost>
+        <HoverCard>
+          <HoverCardTrigger onPress={() => {}}>
+            <Text>@hollis</Text>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <Text>Design engineer on the payments team.</Text>
+          </HoverCardContent>
+        </HoverCard>
+        <HoverCard defaultOpen>
+          <HoverCardTrigger aria-label="Inès Moreau">
+            <View />
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <Text>Product designer.</Text>
+          </HoverCardContent>
+        </HoverCard>
+      </OverlayHost>
+    )
+    await expect(checkHoverCard()).resolves.toBeUndefined()
+  })
+
+  test("fails on a tree with no link, and on a link with no name", async () => {
+    await render(<Text>@hollis</Text>)
+    await expect(checkHoverCard()).rejects.toThrow(
+      "has no link for a hover card to preview"
+    )
+    await render(
+      <Pressable accessibilityRole="link">
+        <View />
+      </Pressable>
+    )
+    await expect(checkHoverCard()).rejects.toThrow("has no name")
+  })
+
+  test("fails on a link whose activation opens its card", async () => {
+    function Pressed() {
+      const [open, setOpen] = useState(false)
+      return (
+        <View>
+          <Pressable accessibilityRole="link" onPress={() => setOpen(true)}>
+            <Text>@hollis</Text>
+          </Pressable>
+          {open && <Text>Design engineer on the payments team.</Text>}
+        </View>
+      )
+    }
+    await render(<Pressed />)
+    await expect(checkHoverCard()).rejects.toThrow(
+      "opens its card when activated"
+    )
+  })
+})
+
+const checkSplitter = () =>
+  checkPattern(screen.container, "window-splitter", { os, act })
+
+describe("checkPattern's window splitter pattern on the native host", () => {
+  test("passes on a group's handles, and a disabled one", async () => {
+    await render(
+      <Resizable>
+        <ResizablePanel minSize={10}>
+          <Text>Files</Text>
+        </ResizablePanel>
+        <ResizableHandle aria-label="Resize files" />
+        <ResizablePanel>
+          <Text>Code</Text>
+        </ResizablePanel>
+        <ResizableHandle aria-label="Resize code" disabled />
+        <ResizablePanel>
+          <Text>Preview</Text>
+        </ResizablePanel>
+      </Resizable>
+    )
+    await act(async () => {})
+    await expect(checkSplitter()).resolves.toBeUndefined()
+  })
+
+  test("fails on a handle with no name", async () => {
+    await render(
+      <Resizable>
+        <ResizablePanel />
+        <ResizableHandle />
+        <ResizablePanel />
+      </Resizable>
+    )
+    await act(async () => {})
+    await expect(checkSplitter()).rejects.toThrow(
+      /has no name; a window splitter needs/
+    )
   })
 })

@@ -14,6 +14,10 @@ import {
   usePressedPart,
 } from "./use-primitive"
 
+// No bridge spans a hover popup's trigger and content on native, so a
+// pointer gets this long to cross from one to the other (WCAG 1.4.13).
+const closeDelayFloor = 100
+
 type PopupHandle = PrimitiveHandle<any> & {
   state: { mounted: boolean; modal: unknown }
 }
@@ -133,8 +137,12 @@ type TriggerProps = {
 }
 
 // A popup's trigger, which a controller can connect from outside it. Until
-// the popup it names mounts, it's a plain button.
-function popupTrigger(primitive: PopupHandle["primitive"]) {
+// the popup it names mounts, it's a plain button. `Connected` renders it once
+// it has, in place of the part that presses the popup's trigger.
+function popupTrigger(
+  primitive: PopupHandle["primitive"],
+  Connected?: React.ComponentType<Omit<TriggerProps, "controller">>
+) {
   function TriggerPart({
     id,
     disabled,
@@ -176,12 +184,14 @@ function popupTrigger(primitive: PopupHandle["primitive"]) {
         { open: false, disabled: !!disabled }
       )
     }
-    const part = <TriggerPart {...props} />
+    const Part = Connected ?? TriggerPart
+    const part = <Part {...props} />
     return controller ? <HandleScope handle={handle}>{part}</HandleScope> : part
   }
 }
 
 export {
+  closeDelayFloor,
   createOutlet,
   type Outlet,
   OutletContext,

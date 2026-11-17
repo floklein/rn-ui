@@ -53,6 +53,8 @@ function host({ rtl = false } = {}) {
         drags.delete(part)
       }
     },
+    scrollNear: vi.fn(),
+    screenReader: vi.fn(),
     adjustable(part, step) {
       steps.set(part, step)
       return () => steps.delete(part)

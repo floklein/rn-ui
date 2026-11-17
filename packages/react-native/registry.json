@@ -169,10 +169,12 @@
       "file": "packages/core/src/foundation/kernel/native-element.ts",
       "mirrors": [
         "packages/core/src/foundation/focus/roving-focus.ts",
-        "packages/core/src/foundation/kernel/order.ts"
+        "packages/core/src/foundation/kernel/order.ts",
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, and the order twin sorts it. It answers only what roving-focus.ts's bind and focus and order.ts call on an element."
+      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, the order twin sorts it, and getBoundingClientRect() reads the part's box from the host. It answers only what roving-focus.ts's bind and focus, order.ts, and reorder.ts's and transfer.ts's drop places call on an element."
     },
     {
       "kind": "reroute",
@@ -587,7 +589,7 @@
         "packages/core/src/foundation/popups/popup-behavior.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
+      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger, only after focus was moved in or the escape gesture reached the content, the native stand-in for the web's check that focus was inside. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
     },
     {
       "kind": "behavior",
@@ -626,7 +628,7 @@
       "file": "packages/core/src/foundation/popups/index.ts",
       "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover, Drawer and Select import."
+      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover, Drawer, Tooltip and Select import."
     },
     {
       "kind": "behavior",
@@ -664,7 +666,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options and text-match."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options and text-match."
     },
     {
       "kind": "behavior",
@@ -711,6 +713,40 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Popover's focus on open: the title, where pressOpening's initialFocus picks the first focusable element, and the content after a touch or with initialFocus=\"content\", as the DOM host focuses the popup itself."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/tooltip/tooltip-native.ts",
+      "mirrors": [
+        "packages/core/src/components/tooltip/tooltip.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/hover-card/hover-card-native.ts",
+      "mirrors": [
+        "packages/core/src/components/hover-card/hover-card.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hover Card's content bind is a plain popup's: the layer, back, escape, outside press and the exit, which popup-native.ts restates; a hover open moves no focus, as initialFocusPlan(\"hover\") says on the DOM host."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/toast/toast-api.ts",
+      "mirrors": ["packages/core/src/components/toast/toast-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.hold holds one toast open until its release runs, so toastNative's action and close behaviors can hold a toast while a screen reader runs, where the web pauses toasts on focus."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/kernel/dev.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "checkEvent skips an event that isn't a DOM Event, like the pointer event React Native hands a tooltip's hover."
     },
     {
       "kind": "edit",
@@ -855,10 +891,50 @@
       "file": "packages/core/src/components/scroll-area/scroll-area-native.ts",
       "mirrors": [
         "packages/core/src/components/scroll-area/scroll-area-view.ts",
-        "packages/core/src/components/scroll-area/scroll-area-pointer.ts"
+        "packages/core/src/components/scroll-area/scroll-area-pointer.ts",
+        "packages/core/src/foundation/drag-and-drop/auto-scroll.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables. A drag held near the viewport's edge scrolls it a step at a time (edgeScroll), at auto-scroll.ts's speeds."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/reorder.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/reorder.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: drag(key), the decisions pointerdown's handler makes (pick up as a pointer, place by the items' boxes, drop with the drag reason or put back), followed through point-drag.ts with edge scrolling, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/transfer.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/transfer.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The pointer drag's placing moves out of pointerdown into place(key, x, y), unchanged. Additive: drag(key), as reorder.ts's, through point-drag.ts, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/item-label.native.ts",
+      "mirrors": ["packages/core/src/foundation/text/typeahead.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A moving item the app doesn't label is announced by its key, where labelOf reads the element's text, which core can't read from a native view."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/auto-scroll.native.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/auto-scroll.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Scrolls only the library's Scroll Areas under the finger, through the host's scrollNear and each viewport's edgeScroll, once per frame while it's near an edge, where the DOM module scrolls any scrollable element and the window."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/drag-and-drop/drag-and-drop-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts",
+        "packages/core/src/foundation/drag-and-drop/pointer.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What a reorderable item's and a transfer's list and item binds and pointerdown orchestrate: each joins with a stand-in, and the responder's touches pick the item up past the drag threshold, follow it with drag(key), and drop it, or put it back on a cancelled, taken or unmounted responder. A transfer's list holds the touch, since an item moved to another list is a new view."
     },
     {
       "kind": "behavior",
@@ -870,6 +946,163 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What a toast's bind and pointerdown orchestrate for a swipe: the responder's touches become a swipe along an axis with a direction past a few points (also when a button inside took the touch), the timers pause while it runs, and its release dismisses with the swipe reason or snaps back, by the web's distance and velocity rules; the offset goes to the host through nativeToast instead of CSS variables."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/resizable/resizable-dom.native.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The group's panels and handles on the native host (resizable-native.ts): the host orders the mounted parts, measures the panels with box and follows the touches that drag a handle, where the DOM side reads the document, observes its size and binds pointer events. It adds measure(), which the adapter calls from the root's onLayout."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/resizable/resizable-native.ts",
+      "mirrors": [
+        "packages/core/src/components/resizable/resizable.ts",
+        "packages/core/src/components/resizable/resizable-dom.ts",
+        "packages/core/src/components/resizable/resizable-handles.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, panels' and handles' binds orchestrate: each part joins the group as it mounts, a handle follows the responder's touches with startDrag, dragBy and endDrag (measured across the panels), puts the layout back when a scroll view or the system takes the touch, and takes a screen reader's increment and decrement through the api's adjust."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/resizable/resizable-api.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: internal.adjust(key, direction), a screen reader's increment or decrement on the native host, which moves a handle a step and commits with the step-key reason and no event, as a key that comes straight back up."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/color-picker/color-picker-native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-parts.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts",
+        "packages/core/src/foundation/direct-manipulation/area.ts",
+        "packages/core/src/components/color-picker/color-picker-channels.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind, the area's and slider's pointerdown and the thumbs' keydown orchestrate: the root reads the direction, the area and each slider follow the responder's touches, cancelling on a cancelled, taken or unmounted responder, and each thumb takes a screen reader's increment and decrement as one step. nativeColorPicker(api) restates the CSS variables the parts' attrs write (--color-picker-color, --color-area-background, --area-x/y, --color-slider-background) as colors and gradients React Native draws, and the area canvas's paint as rows of gradients."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/color-picker/color-picker-touch.native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-touch.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.dragStart, dragTo, dragEnd and dragCancel: the begin, setColor and commit the web's pointer and key handlers make, for native touches and adjustments, with a cancel that puts the color back and commits nothing. focusPicker asks the host to focus the first mounted area thumb, slider thumb or input. The web module returns no methods."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/color-picker/color-picker-api.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeTouch(...) from color-picker-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusPicker, which on the web focuses the same elements as before."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/number-input/number-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input-api.ts",
+        "packages/core/src/components/number-input/number-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, selectText, focusText, pressStep, releaseStep, activateStep, setPlatform and scrubDrag: the control's beforeinput, input and focusout, the step buttons' repeating presses and the scrub area's pointer drag restated for a native TextInput's events, a Pressable's press and the responder, where bind and on read elements. An edit the web's beforeinput would refuse is written back with its selection (foundation/text/corrected-edit.ts). The web module returns none, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/number-input/number-input-native.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input.ts",
+        "packages/core/src/components/number-input/number-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind and the scrub area's pointerdown orchestrate: the root reads the locale, and the scrub area follows the responder's touches with internal.scrubDrag."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/number-input/number-input-api.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeField(...) from number-input-field.ts, which has a native twin, into internal, and the controller's focus() calls focusPart instead of input()?.focus(). Additive: the state's selection, which a native corrected edit writes back."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/number-input/number-input.ts",
+      "mirrors": ["packages/core/src/components/number-input/number-input.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The initial state has selection: null, the selection a native corrected edit writes back."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/number/number-parts.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/number/parse.ts",
+        "packages/core/src/foundation/number/number-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes on iOS has no Intl.NumberFormat formatToParts, which the parser reads a locale's separators and affixes from; the twin works the parts out from the formatted text."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/number/parse.ts",
+      "mirrors": ["packages/core/src/foundation/number/parse.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-dom.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads the slides' layout from what their views reported through nativeCarousel's layout, which leaves out the content's translation, where the DOM side reads offsets and computed scroll padding. Views have no CSS order or scroll snap, so writing the slides' order and snap areas does nothing (a loop rewinds), and the adapter labels each slide \"1 of 5\" itself."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-motion.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The web's mouse drag through the same gesture machine, fed by the responder's touches on the viewport (followed with the host's follow, taken back from a button inside once it moves along the axis), and the same springs; the position goes to the adapter through nativeCarousel instead of the viewport's scroll position. A cancelled or taken responder springs back to the page it started on. No native scrolling, so no scroll rest or snapping."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/carousel/carousel-native.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel.ts",
+        "packages/core/src/components/carousel/carousel-api.ts",
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, viewport's, slides' and indicators' binds orchestrate: each binds with a stand-in for its view, the views' layouts reach the api through nativeCarousel, which measures again, and the content's offset goes back to the adapter."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-api.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The viewport and the slides are the ones bound (kept in an order, which the native order twin sorts by the views), instead of the parts' elements, which native never sets. The tab stop, the resize and intersection observers, the visibility listener and the interval's CSS variable run only where isBrowser is true. Additive: internal.measure(), which the native host calls once its views lay out."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-indicators.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The indicators are the ones bound, kept in an order, instead of the parts' elements, so indicators without a page take theirs from their order on native too."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/carousel/carousel-motion.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "onRelease's event is optional, since a native release has none."
     },
     {
       "kind": "edit",
@@ -1401,6 +1634,44 @@
         }
       }
     },
+    "tooltip": {
+      "entry": "packages/react-native/src/tooltip.tsx",
+      "slots": {
+        "tooltip.trigger": {
+          "covered": "packages/react-native/src/tooltip.tsx",
+          "reason": "Its asleep sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and decides whether the trigger has a name of its own, which the adapter reads from the trigger's aria-label, accessibilityLabel and text. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its keydown and focus handlers open on keyboard focus, which a native view doesn't report. Its press goes through the slot's own press, which opens a toggleable tooltip, with its text announced, and closes any other."
+        },
+        "tooltip.content": {
+          "covered": "packages/core/src/components/tooltip/tooltip-native.ts",
+          "reason": "Its bind joins the warm group and shows the popup: the layer, back and the exit, which popup-native.ts and tooltip-native.ts restate, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its asleep labels the content with its spoken text, which the adapter registers by the content's id from the content's text, so it names or describes the trigger while closed too. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave."
+        },
+        "tooltip.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "tooltip.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+        }
+      }
+    },
+    "hover-card": {
+      "entry": "packages/react-native/src/hover-card.tsx",
+      "slots": {
+        "hoverCard.trigger": {
+          "covered": "packages/react-native/src/hover-card.tsx",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its focusin, focusout and keydown open on keyboard focus and move Tab into the card, which a native view doesn't report (spec, Hardware keyboards). It has no press: the link's onPress is the app's."
+        },
+        "hoverCard.content": {
+          "covered": "packages/core/src/components/hover-card/hover-card-native.ts",
+          "reason": "Its bind shows the popup: the layer, back, escape and the exit, which popup-native.ts restates, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave; there is no bridge across the gap, so the pointer must reach the card within closeDelay. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture."
+        },
+        "hoverCard.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1542,6 +1813,138 @@
         }
       }
     },
+    "resizable": {
+      "entry": "packages/react-native/src/resizable.tsx",
+      "slots": {
+        "resizable.root": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind schedules the panels' reconcile and observes the group's size. resizable-native.ts schedules the reconcile as the root mounts, and the adapter's root measures the panels again from its onLayout, where the DOM's ResizeObserver does."
+        },
+        "resizable.panel": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the panel and watches its size props. resizable-native.ts registers each mounted panel, orders the panels by where the host renders them and measures them with the host's box. Its size is a flex basis the adapter reads from the panel's state, where the web writes a CSS variable."
+        },
+        "resizable.handle": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the handle's hit area, whose pointer press drags it; resizable-native.ts follows the responder's touches on the handle with the same startDrag, dragBy and endDrag api calls, and puts the layout back when the responder is taken. Its keys and Enter move and collapse it with a keyboard, which native doesn't deliver to views (spec, Hardware keyboards); a screen reader's increment and decrement move it a step. Its double-click collapses a panel, which a touch has no gesture for: the controller collapses it. Hover has no touch counterpart."
+        }
+      }
+    },
+    "color-picker": {
+      "entry": "packages/react-native/src/color-picker.tsx",
+      "slots": {
+        "colorPicker.root": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its bind reads the direction, which color-picker-native.ts asks the direction twin for as the root mounts, and makes the picker take part in a form, which native doesn't have."
+        },
+        "colorPicker.area": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown jumps the color under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the area with dragStart, dragTo and dragEnd (measured on the area), and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.area-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the x and y channels with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); color-picker-native.ts takes a screen reader's increment and decrement as a step of the x channel, the axis the thumb's slider role reports."
+        },
+        "colorPicker.area-canvas": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its bind paints a canvas; native has none, so ColorPickerAreaCanvas draws the area as rows of horizontal gradients from nativeColorPicker(api).areaRows, re-rendered when the channels the area doesn't show change."
+        },
+        "colorPicker.slider": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown moves the channel under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the track with the same calls, and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.slider-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the channel with arrow keys, which native doesn't deliver to views; color-picker-native.ts takes a screen reader's increment and decrement as one step."
+        },
+        "colorPicker.input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its input, Enter and focusout handlers and its bind follow an <input>; ColorPickerInput's TextInput hands its text to internal.setText and commits it with internal.commitText on submit and blur, with its value from the state. Escape has no native counterpart."
+        },
+        "colorPicker.channel-input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its change handler and bind follow a number <input>; ColorPickerChannelInput keeps the typed text while editing and sets the channel with internal.setChannelValue on submit and blur."
+        },
+        "colorPicker.eye-dropper": {
+          "needs": "nothing",
+          "reason": "The eye dropper part isn't rendered on native, which has no EyeDropper API to pick a color from the screen (spec rule 3)."
+        },
+        "colorPicker.swatch-item": {
+          "needs": "nothing",
+          "reason": "Its press is delivered by the adapter. Its keydown and bind run the swatches' roving focus and arrow keys, which native doesn't build (spec, Focus): each swatch is its own button, reached by swiping."
+        },
+        "colorPicker.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
+    "number-input": {
+      "entry": "packages/react-native/src/number-input.tsx",
+      "slots": {
+        "numberInput.root": {
+          "covered": "packages/core/src/components/number-input/number-input-native.ts",
+          "reason": "Its bind reads the page's language, which number-input-native.ts asks the locale twin for as the root mounts, and makes the field take part in a form, which native doesn't have."
+        },
+        "numberInput.control": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its beforeinput refuses an edit that can't become a number, its input event takes the text and its focusout commits; the TextInput's onChangeText, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText, selectText, focusText and commitText, and typeText writes a refused edit back with its selection. Its keys step with arrow keys, Page Up and Down, Home and End, which TextInput doesn't report (spec, Hardware keyboards). The mouse wheel, the platform read from the user agent (setPlatform takes Platform.OS) and the text written into the <input> (the value and selection props follow the state) have no other native counterpart."
+        },
+        "numberInput.increment": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its bind repeats steps while a pointer holds it and its click steps once for a screen reader; the Pressable's onPressIn, onPressOut and onPress call internal.pressStep, releaseStep and activateStep with the same timing. Shift for the large step has no native counterpart."
+        },
+        "numberInput.decrement": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its bind repeats steps while a pointer holds it and its click steps once for a screen reader; the Pressable's onPressIn, onPressOut and onPress call internal.pressStep, releaseStep and activateStep with the same timing. Shift for the large step has no native counterpart."
+        },
+        "numberInput.scrub-area": {
+          "covered": "packages/core/src/components/number-input/number-input-native.ts",
+          "reason": "Its pointerdown follows a pointer drag; number-input-native.ts follows the responder's touches with internal.scrubDrag, which steps by distance, commits on lift and focuses the field after a tap. Pointer lock, its drawn cursor, Shift and Alt for the large and small steps have no native counterpart."
+        },
+        "numberInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
+    "carousel": {
+      "entry": "packages/react-native/src/carousel.tsx",
+      "slots": {
+        "carousel.root": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind runs rotation, which carousel-native.ts starts through the same bind with a stand-in, and pauses it under a hovering mouse, for a hidden tab and off screen, and stops it when keyboard focus moves in: native has no hover over a carousel, no document visibility or intersection observer, and reports no focus (spec, Hardware keyboards). A drag pauses it, and paging stops it."
+        },
+        "carousel.viewport": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind moves the viewport and observes its size; carousel-native.ts binds it with a stand-in whose motion (carousel-motion.native.ts) follows the responder's touches and moves the content, and the adapter's onLayout measures again where the ResizeObserver does. Its tab stop and arrow keys scroll by keyboard, which native doesn't deliver to views (spec, Hardware keyboards); the Previous and Next parts and the indicators page instead."
+        },
+        "carousel.item": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the slide in order, observes its size and labels it \"1 of 5\"; carousel-native.ts joins it with a stand-in, the adapter's onLayout measures it and the adapter labels it. Its focusin keeps a focused slide shown, and native reports no focus."
+        },
+        "carousel.previous": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.next": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.play-toggle": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.indicator-group": {
+          "needs": "nothing",
+          "reason": "Its keydown moves between the indicators with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); each indicator is its own accessible element, reached by swiping."
+        },
+        "carousel.indicator": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the indicators' roving group, which orders the indicators that take their page from their order; carousel-native.ts joins it with a stand-in. Its development name check reads the DOM."
+        }
+      }
+    },
     "select": {
       "entry": "packages/react-native/src/select.tsx",
       "slots": {
@@ -1606,23 +2009,17 @@
   },
   "pending": [
     "autocomplete",
-    "carousel",
-    "color-picker",
     "combobox",
     "command",
     "date-input",
-    "hover-card",
     "image-cropper",
     "listbox",
     "menu",
     "menubar",
     "navigation-menu",
-    "number-input",
-    "resizable",
     "time-input",
     "timeline",
     "token-input",
-    "tooltip",
     "tree",
     "trigger-menu",
     "waterfall"
@@ -1983,6 +2380,24 @@
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     },
     {
+      "component": "hover-card",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tooltip",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tooltip",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
       "component": "drawer",
       "example": "rtl",
       "feature": "A direction for part of the screen",
@@ -2023,6 +2438,60 @@
       "example": "shortcut",
       "feature": "The keyboard shortcut that moves focus to the notifications",
       "reason": "Keyboard shortcuts are web-only: the native region has no shortcut option."
+    },
+    {
+      "component": "resizable",
+      "example": "keyboard",
+      "feature": "Arrow keys, Home, End and Enter on a handle",
+      "reason": "React Native delivers no key events to views (spec, Hardware keyboards); a screen reader's increment and decrement move a handle a step."
+    },
+    {
+      "component": "resizable",
+      "example": "persistence",
+      "feature": "Saving to localStorage by default",
+      "reason": "Native has no localStorage: a group saves only into the storage the app passes, which the storage example shows."
+    },
+    {
+      "component": "resizable",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "color-picker",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
+      "component": "number-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the number from change callbacks."
+    },
+    {
+      "component": "number-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "number-input",
+      "example": "wheel",
+      "feature": "Stepping with the mouse wheel",
+      "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
+    },
+    {
+      "component": "carousel",
+      "example": "progress",
+      "feature": "A progress bar timed by the --carousel-progress CSS variable",
+      "reason": "Native has no CSS variables; the controller's getProgress() reads how far the slides have moved, and onPageChangeComplete says when they rest."
+    },
+    {
+      "component": "carousel",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager; a right-to-left app pages from the right with no prop."
     },
     {
       "component": "select",

@@ -27,6 +27,8 @@ import {
  * A file input's remove buttons are the buttons inside its list.
  * A toast's buttons and links each dismiss it, as action and close parts do
  * unless told otherwise; render some toasts before the check.
+ * A tooltip's triggers are its buttons, each named or described by its text.
+ * A hover card's triggers are its links, which activating never opens.
  * @experimental
  */
 type NativePattern =
@@ -34,12 +36,14 @@ type NativePattern =
   | "alertdialog"
   | "button"
   | "calendar"
+  | "carousel"
   | "checkbox"
   | "combobox"
   | "date-picker"
   | "dialog"
   | "disclosure"
   | "file-input"
+  | "hover-card"
   | "img"
   | "listbox"
   | "meter"
@@ -54,6 +58,8 @@ type NativePattern =
   | "textbox"
   | "toast"
   | "toolbar"
+  | "tooltip"
+  | "window-splitter"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -141,6 +147,88 @@ async function buttonPattern(context: Context) {
         "togglebutton",
         index,
         (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
+// A tooltip's text names or describes its trigger. A toggleable one shows
+// on activate and hides on the next, and never takes focus.
+async function tooltipPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no button for a tooltip to name or describe."
+    )
+    return
+  }
+  const shown = () => shownNodes(context.root).length
+  for (const index of buttons().keys()) {
+    const button = () => buttons()[index]!
+    requireName(context, button(), "button")
+    const { accessibilityLabel, accessibilityHint } = button().props
+    if (!accessibilityLabel && !accessibilityHint) {
+      context.problem(
+        button(),
+        "is neither named nor described by its tooltip; the tooltip's text becomes its accessibilityLabel or accessibilityHint."
+      )
+    }
+    if (isDisabled(button())) {
+      continue
+    }
+    const before = shown()
+    const requests = await performWatched(button(), "activate", context.act)
+    if (requests.length) {
+      context.problem(
+        button(),
+        "requests accessibility focus when it's activated; a tooltip never takes focus."
+      )
+    }
+    // A press closes any tooltip; only a toggleable one opens.
+    if (shown() <= before) {
+      continue
+    }
+    await performWatched(button(), "activate", context.act)
+    if (shown() !== before) {
+      context.problem(
+        button(),
+        "leaves its tooltip open when activated again; a toggleable tooltip's trigger closes it."
+      )
+    }
+  }
+}
+
+// A hover card's trigger stays a plain link: activating it follows the link,
+// and only a pointer resting on it opens the card.
+async function hoverCardPattern(context: Context) {
+  const links = () => context.withRole("link")
+  if (!links().length) {
+    context.problem(context.root, "has no link for a hover card to preview.")
+    return
+  }
+  const shown = () => shownNodes(context.root).length
+  for (const index of links().keys()) {
+    requireName(context, links()[index]!, "link")
+    if (isDisabled(links()[index]!)) {
+      continue
+    }
+    const before = shown()
+    const requests = await performWatched(
+      links()[index]!,
+      "activate",
+      context.act
+    )
+    if (shown() > before) {
+      context.problem(
+        links()[index]!,
+        "opens its card when activated; a hover card's link only follows the link."
+      )
+    }
+    if (requests.length) {
+      context.problem(
+        links()[index]!,
+        "requests accessibility focus when it's activated; a hover card's link only follows the link."
       )
     }
   }
@@ -802,6 +890,46 @@ async function tabsPattern(context: Context) {
   }
 }
 
+// The slides read are what's in view; an indicator's activate shows its
+// page, so what's read beside the controls changes.
+async function carouselPattern(context: Context) {
+  const controls = new Set(["button", "tab", "tabbar", "tablist"])
+  const slides = () =>
+    context
+      .elements()
+      .filter((node) => !controls.has(roleOf(node) ?? ""))
+      .map((node) => nameOf(node))
+      .join("|")
+  for (const button of context.withRole("button")) {
+    requireName(context, button, "button")
+  }
+  if (!slides()) {
+    context.problem(
+      context.root,
+      "reads nothing beside its controls; the slides in view are read (APG carousel)."
+    )
+  }
+  if (!context.withRole("tab").length) {
+    return
+  }
+  await tabsPattern(context)
+  const tabs = context.withRole("tab")
+  const index = tabs.findIndex(
+    (tab) => !isDisabled(tab) && stateOf(tab).selected !== true
+  )
+  if (index < 0) {
+    return
+  }
+  const before = slides()
+  await performWatched(tabs[index], "activate", context.act)
+  if (slides() === before) {
+    context.problem(
+      context.withRole("tab")[index],
+      "shows the same slides after the activate action; an indicator shows its page (APG carousel)."
+    )
+  }
+}
+
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textFieldsIn(node: HostNode): HostNode[] {
   const inside = (node.children ?? []).flatMap((child) =>
@@ -1027,7 +1155,8 @@ const valueOf = (node: HostNode) =>
 async function checkAdjusts(
   context: Context,
   index: number,
-  action: "increment" | "decrement"
+  action: "increment" | "decrement",
+  widget: string
 ) {
   const thumb = () => context.withRole("adjustable")[index]
   const { min, max, now } = valueOf(thumb())
@@ -1041,7 +1170,7 @@ async function checkAdjusts(
   if (!moved) {
     context.problem(
       thumb(),
-      `stays at ${now} after the ${action} action; a screen reader's ${action} moves a slider a step.`
+      `stays at ${now} after the ${action} action; a screen reader's ${action} moves a ${widget} a step.`
     )
     return
   }
@@ -1052,24 +1181,25 @@ async function checkAdjusts(
   )
 }
 
-// Each thumb is one adjustable element: VoiceOver's swipes and TalkBack's
-// adjustments arrive as the increment and decrement actions.
-async function sliderPattern(context: Context) {
+// Each thumb, or a window splitter's handle, is one adjustable element:
+// VoiceOver's swipes and TalkBack's adjustments arrive as the increment and
+// decrement actions.
+const adjustablePattern = (widget: string) => async (context: Context) => {
   const thumbs = context.withRole("adjustable")
   if (!thumbs.length) {
     context.problem(
       context.root,
-      "has no accessible element with the adjustable role, so it isn't a slider."
+      `has no accessible element with the adjustable role, so it isn't a ${widget}.`
     )
     return
   }
   for (const [index, thumb] of thumbs.entries()) {
-    requireName(context, thumb, "slider")
+    requireName(context, thumb, widget)
     const { min, max, now, text } = valueOf(thumb)
     if (now === undefined || min === undefined || max === undefined) {
       context.problem(
         thumb,
-        "has no current value and range; a slider always has them."
+        `has no current value and range; a ${widget} always has them.`
       )
       continue
     }
@@ -1089,10 +1219,10 @@ async function sliderPattern(context: Context) {
       if (!actionsOf(thumb).includes(action)) {
         context.problem(
           thumb,
-          `doesn't declare the ${action} action, which a screen reader adjusts a slider with.`
+          `doesn't declare the ${action} action, which a screen reader adjusts a ${widget} with.`
         )
       } else if (!isDisabled(thumb)) {
-        await checkAdjusts(context, index, action)
+        await checkAdjusts(context, index, action, widget)
       }
     }
   }
@@ -1291,12 +1421,14 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
   calendar: calendarPattern,
+  carousel: carouselPattern,
   checkbox: checkboxPattern,
   combobox: comboboxPattern,
   "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
   "file-input": fileInputPattern,
+  "hover-card": hoverCardPattern,
   img: imgPattern,
   listbox: listboxPattern,
   meter: (context) => barPattern(context, "meter"),
@@ -1305,12 +1437,14 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   "radio-group": radioGroupPattern,
   "scroll-area": scrollAreaPattern,
   separator: separatorPattern,
-  slider: sliderPattern,
+  slider: adjustablePattern("slider"),
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
   toast: toastPattern,
   toolbar: toolbarPattern,
+  tooltip: tooltipPattern,
+  "window-splitter": adjustablePattern("window splitter"),
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's

@@ -37,6 +37,7 @@ import { FieldSet } from "../src/field"
 import "../src/file-input"
 import "../src/input"
 import "../src/rating"
+import "../src/resizable"
 import "../src/scroll-area"
 import "../src/select"
 import "../src/toast"
@@ -430,6 +431,7 @@ describe("the adapter's contexts inside the Modal", () => {
       "Outlet",
       "Placed",
       "RatingItem",
+      "ResizableSpace",
       "ScrollAreaOrientation",
       "ScrollHold",
       "TabsLayouts",

@@ -1,6 +1,7 @@
 // Reading numbers people type in their locale's format, and the `"start/end"`
 // string a range submits as one form value. Pure, so it runs on the server too.
 import { numberFormatter } from "./format"
+import { numberParts } from "./number-parts"
 import { decimalsOf, roundTo } from "./steps"
 
 const minusSigns = /[\u2212\u2012\u2013\uFE63\uFF0D]/g
@@ -35,19 +36,22 @@ function symbolsOf(
   }
   const formatter = numberFormatter(locale, options)
   const parts = [
-    ...formatter.formatToParts(-12345.6),
-    ...formatter.formatToParts(12345.6),
+    ...numberParts(formatter, -12345.6),
+    ...numberParts(formatter, 12345.6),
     // Long currency names differ between one and many.
-    ...formatter.formatToParts(1),
+    ...numberParts(formatter, 1),
   ]
   const find = (type: string) => parts.find((part) => part.type === type)?.value
   // Formats that show no decimals or no grouping, like percents, yen or
   // `useGrouping: false`, still read the locale's own separators.
   const numbering = formatter.resolvedOptions().numberingSystem
-  const separators = numberFormatter(locale, {
-    numberingSystem: numbering,
-    minimumFractionDigits: 1,
-  }).formatToParts(12345.6)
+  const separators = numberParts(
+    numberFormatter(locale, {
+      numberingSystem: numbering,
+      minimumFractionDigits: 1,
+    }),
+    12345.6
+  )
   const separator = (type: "group" | "decimal") =>
     find(type) ?? separators.find((part) => part.type === type)?.value
   const strip = parts

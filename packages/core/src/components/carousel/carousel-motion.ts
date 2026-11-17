@@ -59,7 +59,7 @@ type CarouselMotionOptions = {
   /** Snapping goes off while the carousel moves itself, and back on once it rests on a page. */
   setSnapping: (snapping: boolean) => void
   /** A drag was released, and it's heading for this page index. */
-  onRelease: (index: number, event: PointerEvent) => void
+  onRelease: (index: number, event?: PointerEvent) => void
   /** The user's own scroll came to rest. `touch` says whether a finger drove it. */
   onScrollRest: (
     position: number,

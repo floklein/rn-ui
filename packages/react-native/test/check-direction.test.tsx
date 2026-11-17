@@ -47,6 +47,14 @@ import {
   FileInputList,
   FileInputTrigger,
 } from "../src/file-input"
+import {
+  NumberInput,
+  NumberInputControl,
+  NumberInputDecrement,
+  NumberInputGroup,
+  NumberInputIncrement,
+  NumberInputScrubArea,
+} from "../src/number-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -57,6 +65,18 @@ import {
   PopoverTrigger,
 } from "../src/popover"
 import { createToaster, ToastRegion } from "../src/toast"
+import {
+  HoverCard,
+  HoverCardArrow,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../src/hover-card"
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipTrigger,
+} from "../src/tooltip"
 import {
   Pagination,
   PaginationLink,
@@ -77,6 +97,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import { Resizable, ResizableHandle, ResizablePanel } from "../src/resizable"
 import {
   ScrollArea,
   ScrollAreaContent,
@@ -88,6 +109,13 @@ import {
 } from "../src/scroll-area"
 import { Separator } from "../src/separator"
 import { Slider, SliderControl, SliderThumb } from "../src/slider"
+import {
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerAreaThumb,
+  ColorPickerSlider,
+  ColorPickerSliderThumb,
+} from "../src/color-picker"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -183,6 +211,27 @@ describe("checkDirection on the native host", () => {
                 <SliderThumb index={1} aria-label="Maximum" />
               </SliderControl>
             </Slider>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a color picker, whose thumbs step the same either way", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ColorPicker aria-label="Brand" defaultValue="#336699">
+              <ColorPickerArea>
+                <ColorPickerAreaThumb />
+              </ColorPickerArea>
+              <ColorPickerSlider channel="hue">
+                <ColorPickerSliderThumb />
+              </ColorPickerSlider>
+            </ColorPicker>
           )
           return screen.container
         },
@@ -298,6 +347,29 @@ describe("checkDirection on the native host", () => {
               </Meter>
             </View>
           )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a resizable group", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Resizable>
+              <ResizablePanel>
+                <Text>Files</Text>
+              </ResizablePanel>
+              <ResizableHandle aria-label="Resize files" />
+              <ResizablePanel>
+                <Text>Code</Text>
+              </ResizablePanel>
+            </Resizable>
+          )
+          await act(async () => {})
           return screen.container
         },
         { os, act }
@@ -568,6 +640,54 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  test("passes on a tooltip, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <Tooltip defaultOpen>
+                <TooltipTrigger aria-label="Info" />
+                <TooltipContent side="right">
+                  <TooltipArrow />
+                  <Text>Files in the trash still use storage.</Text>
+                </TooltipContent>
+              </Tooltip>
+            </OverlayHost>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a hover card, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <HoverCard defaultOpen>
+                <HoverCardTrigger>
+                  <Text>@hollis</Text>
+                </HoverCardTrigger>
+                <HoverCardContent side="right">
+                  <HoverCardArrow />
+                  <Text>Design engineer on the payments team.</Text>
+                </HoverCardContent>
+              </HoverCard>
+            </OverlayHost>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
   test("passes on a popover, placed by its arrow's side", async () => {
     await expect(
       checkDirection(
@@ -665,6 +785,29 @@ describe("checkDirection on the native host", () => {
               <Input aria-label="Search" defaultValue="Lisbon" />
               <InputClear aria-label="Clear search" />
             </InputGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a number input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <NumberInput defaultValue={5}>
+              <NumberInputScrubArea>
+                <Text>Amount</Text>
+              </NumberInputScrubArea>
+              <NumberInputGroup>
+                <NumberInputDecrement aria-label="Decrease" />
+                <NumberInputControl aria-label="Amount" />
+                <NumberInputIncrement aria-label="Increase" />
+              </NumberInputGroup>
+            </NumberInput>
           )
           return screen.container
         },

@@ -7,10 +7,13 @@ import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
+import { tooltip } from "@ui-sdk/core/tooltip"
+import { hoverCard } from "@ui-sdk/core/hover-card"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { numberInput } from "@ui-sdk/core/number-input"
 import { fileInput } from "@ui-sdk/core/file-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
@@ -20,10 +23,12 @@ import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
+import { resizable } from "@ui-sdk/core/resizable"
 import { scrollArea } from "@ui-sdk/core/scroll-area"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
 import { slider } from "@ui-sdk/core/slider"
+import { colorPicker } from "@ui-sdk/core/color-picker"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { createToaster, toastRegion } from "@ui-sdk/core/toast"
@@ -70,6 +75,38 @@ describe("checkCreation", () => {
     expect(() => checkCreation(slider, { defaultValue: 40 })).not.toThrow()
     expect(() =>
       checkCreation(slider, { defaultValue: [20, 80], locale: "de-DE" })
+    ).not.toThrow()
+  })
+
+  test("passes on a color picker, in each space", () => {
+    expect(() =>
+      checkCreation(
+        colorPicker,
+        { defaultValue: "#0ea5e9" },
+        {
+          "swatch-item": { value: "#ef4444" },
+        }
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        colorPicker,
+        {
+          space: "oklch",
+          defaultValue: "oklch(0.62 0.19 259)",
+        },
+        { "swatch-item": { value: "#ef4444" } }
+      )
+    ).not.toThrow()
+  })
+
+  test("passes on a resizable group, vertical or with a layout", () => {
+    expect(() => checkCreation(resizable, {})).not.toThrow()
+    expect(() =>
+      checkCreation(resizable, {
+        orientation: "vertical",
+        defaultLayout: [30, 70],
+      })
     ).not.toThrow()
   })
 
@@ -170,6 +207,17 @@ describe("checkCreation", () => {
     ).not.toThrow()
   })
 
+  test("passes on a number input, empty, formatted or disabled", () => {
+    expect(() => checkCreation(numberInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(numberInput, {
+        defaultValue: 0.25,
+        format: { style: "percent" },
+        disabled: true,
+      })
+    ).not.toThrow()
+  })
+
   test("passes on an otp input, empty, full or disabled", () => {
     expect(() => checkCreation(otpInput, {})).not.toThrow()
     expect(() =>
@@ -263,6 +311,18 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(popover, { defaultOpen: true, modal: true })
     ).not.toThrow()
+  })
+
+  test("passes on a tooltip, open or closed", () => {
+    expect(() => checkCreation(tooltip, {})).not.toThrow()
+    expect(() =>
+      checkCreation(tooltip, { defaultOpen: true, toggleable: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a hover card, open or closed", () => {
+    expect(() => checkCreation(hoverCard, {})).not.toThrow()
+    expect(() => checkCreation(hoverCard, { defaultOpen: true })).not.toThrow()
   })
 
   test("passes on a dialog and an alert dialog, open or closed", () => {

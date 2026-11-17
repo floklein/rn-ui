@@ -34,6 +34,8 @@ describe("focusing a part", () => {
       box: vi.fn(),
       follow: vi.fn(),
       adjustable: vi.fn(),
+      scrollNear: vi.fn(),
+      screenReader: vi.fn(),
       seen: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
@@ -60,6 +62,8 @@ describe("focusing a part", () => {
       box: vi.fn(),
       follow: vi.fn(),
       adjustable: vi.fn(),
+      scrollNear: vi.fn(),
+      screenReader: vi.fn(),
       seen: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })
@@ -87,6 +91,8 @@ describe("focusing a part", () => {
       box: vi.fn(),
       follow: vi.fn(),
       adjustable: vi.fn(),
+      scrollNear: vi.fn(),
+      screenReader: vi.fn(),
       seen: vi.fn(),
     })
     const instance = switchPrimitive({ id: "s" })

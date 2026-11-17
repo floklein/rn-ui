@@ -27,8 +27,8 @@ type NativeTouch = { x: number; y: number; target: Part | undefined }
  * @experimental
  */
 type NativeDrag = {
-  /** Whether a touch starting now takes the responder. */
-  accepts: () => boolean
+  /** Whether a touch starting now, where the host says it starts, takes the responder. */
+  accepts: (touch?: NativeTouch) => boolean
   /** Whether a touch that started inside the part, on a view that took it, takes it back now it has moved by `dx` and `dy`. */
   claims?: (dx: number, dy: number) => boolean
   start: (touch: NativeTouch) => void
@@ -37,6 +37,12 @@ type NativeDrag = {
   end: () => void
   /** The touch was cancelled or taken by another view, like a scroll view. */
   cancel: () => void
+  /**
+   * Whether touches on the view's children land on the view itself, so a
+   * drag outlives a child that unmounts under the finger, like an item
+   * moved to another list. The children take no touches of their own.
+   */
+  capture?: boolean
 }
 
 /**
@@ -109,6 +115,17 @@ type NativeHost = {
   follow: (part: Part, drag: NativeDrag) => () => void
   /** Routes a screen reader's increment and decrement on the part's view to `step`, until the cleanup it returns runs. */
   adjustable: (part: Part, step: (direction: 1 | -1) => void) => () => void
+  /**
+   * Scrolls each of the library's Scroll Areas under `point` that it's near
+   * the edge of a step, the innermost first along each axis, as a drag's
+   * edge scrolling does. Returns whether any scrolled.
+   */
+  scrollNear: (
+    point: { x: number; y: number },
+    options: { edge: number; speed: number }
+  ) => boolean
+  /** Calls `change` with whether a screen reader runs, now and each time that changes, until the cleanup it returns runs. */
+  screenReader: (change: (on: boolean) => void) => () => void
   /** Hears what dismisses a layer while one is open. Returns what stops it. */
   listen: (input: NativeInput) => () => void
   /** What an agent reads of the part, or `undefined` while it renders no view. */
