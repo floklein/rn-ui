@@ -1,0 +1,294 @@
+---
+title: Number Input
+description: Enter numbers, step through values, and format them for a locale.
+---
+
+Use a Number Input for quantities, prices and measurements. It keeps a numeric value while showing formatted text, and steps it with the step buttons or a drag across its label.
+
+<ComponentExample
+  name="number-input/basic"
+  caption="Drag the Quantity label sideways to scrub the value, or tap it to start editing. Type a number, or hold a step button. The console logs the value once each change is committed."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `NumberInput`:
+
+```text
+NumberInput
+├── NumberInputScrubArea
+└── NumberInputGroup
+    ├── NumberInputDecrement
+    ├── NumberInputControl
+    └── NumberInputIncrement
+```
+
+`NumberInput` renders a `View` holding the numeric value. `NumberInputGroup` is a `View` around the field and the optional step buttons. `NumberInputControl` renders a `TextInput`; `NumberInputDecrement` and `NumberInputIncrement` are `Pressable`s that step its value and repeat while held. `NumberInputScrubArea` is an optional `View` that changes the value as you drag across it.
+
+Typing updates the value when the text is a number within the bounds. Enter or leaving the field commits it: the text is parsed, clamped, snapped to the step, and formatted. An empty field has the value `null`.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  NumberInput,
+  NumberInputControl,
+  NumberInputDecrement,
+  NumberInputGroup,
+  NumberInputIncrement,
+} from "@ui-sdk/react-native/number-input"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <NumberInput defaultValue={1} min={0}>
+      <NumberInputGroup style={{ flexDirection: "row" }}>
+        <NumberInputDecrement aria-label="Decrease">
+          <Text>−</Text>
+        </NumberInputDecrement>
+        <NumberInputControl aria-label="Quantity" />
+        <NumberInputIncrement aria-label="Increase">
+          <Text>+</Text>
+        </NumberInputIncrement>
+      </NumberInputGroup>
+    </NumberInput>
+  )
+}
+
+export { Example }
+```
+
+<ComponentExample
+  name="number-input/buttons"
+  caption="Hold Increase or Decrease to keep stepping. The value stays at 0 or above."
+/>
+
+## Field
+
+Wrap the number input in a [Field](/docs/react-native/components/field) to give it a visible label and a description. A tap on the label starts editing the field.
+
+<ComponentExample
+  name="number-input/field"
+  caption="Tap Tickets to start editing, then type or step its value. Screen readers read the description with the field."
+/>
+
+## Min and Max
+
+Use `min` and `max` to set bounds. A step button is disabled at its bound. Typed values outside the bounds are clamped when committed.
+
+<ComponentExample
+  name="number-input/min-max"
+  caption="Change Guests between 1 and 8. Type 20 and press Return to clamp it to 8. At either bound, that direction's step button is disabled."
+/>
+
+## Step and Large Step
+
+`step` sets the increment of a button press or a scrub, and defaults to 1. Steps are measured from `min`, or from zero when no minimum is set. When they don't land on `max`, the increment button stops at the highest step below it. `largeStep` is what a controller's `increment({ large: true })` moves, ten steps by default.
+
+<ComponentExample
+  name="number-input/step"
+  caption="Step Hours by 0.25 between 0 and 24."
+/>
+
+## Format
+
+Pass `Intl.NumberFormat` options through `format`. The field displays and parses that format while keeping a numeric value. For percentages, `0.15` is displayed as `15%`, and `step` defaults to the smallest percent the format shows: `0.01` for whole percents, `0.0001` with two fraction digits.
+
+<ComponentExample
+  name="number-input/format"
+  caption="Edit Price, Discount, or Weight and leave the field to format it. Try entering 5 in Price or 25% in Discount, then use the step buttons."
+/>
+
+## Locale
+
+Set `locale` to choose separators, currency symbols, and grouping. Without it, the field follows the device's language.
+
+<ComponentExample
+  name="number-input/locale"
+  caption="Edit Preis using a comma for decimals, or step Budget to see Indian digit grouping. The displayed and accepted formats follow each field's locale."
+/>
+
+## Keyboards
+
+The field picks the keyboard the number needs: a number pad, with a decimal key when the step or the format has fractions. A field that takes negatives, which is every field without a `min` of 0 or more, needs a minus key too: on iPhone, where number pads have none, it gets the text keyboard, and on Android the numeric keyboard with its sign and decimal keys. Set `min` when negatives make no sense, and the number pad follows.
+
+## Refused Edits
+
+`TextInput` reports an edit after it shows it, so a character that can't become a number, like a letter or a second decimal separator, appears for a moment and then goes back. The text is written back with the selection it had, so the caret stays where it was and the next character lands in the right place. Deleting is always accepted. The text written back never waits for an input method that's composing, since `TextInput` doesn't report composition.
+
+## Scrub Area
+
+`NumberInputScrubArea` changes the value while you drag across it. The handle can be anything inside the number input: the label, as in the first example, or a letter inside the group, as in a design tool. Right and up increase the value. `orientation` chooses an axis, and `pixelsPerStep` sets how far the finger moves per step. A tap on it starts editing the field, and a drag that starts on a pressable label inside it scrubs once it moves.
+
+<ComponentExample
+  name="number-input/scrub"
+  caption="Drag the X, Y, W or H letter sideways to change that value. The console logs each value when the drag ends."
+/>
+
+A scrub area works inside its number input only. Inside a plain `ScrollView` that scrolls along the same axis, turn the scroll view's scrolling off while the drag runs, as [Slider shows](/docs/react-native/components/slider#inside-a-scroll-view).
+
+## Disabled and Read Only
+
+Set `disabled` on the component, or on a `FieldSet` around it, to stop focus, typing and steps. Set `disabled` on one step button to turn off only that direction.
+
+`readOnly` keeps the value from changing. React Native has no read-only field that stays enabled, so screen readers announce the field as dimmed or disabled, and Android's Tab skips it. `required` stays in the state, for your styles and labels. It isn't announced.
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. `onValueChange` reports valid changes while an interaction is in progress. `onValueCommit` runs when typing is committed, a step button is released, or a scrub ends. Use the commit for work that should happen after the interaction.
+
+<ComponentExample
+  name="number-input/controlled"
+  caption="Hold a Servings step button. The console logs each value as it changes, then one Committed line when you let go. Clear sets the value to null, and Reset to 4 restores it."
+/>
+
+## Controller
+
+Create a `createNumberInputController()` and pass it as `controller` to change or start editing the field from other controls. `increment()` and `decrement()` step the value; pass `{ large: true }` for a large step. `setValue()`, `getValue()`, and `focus()` cover direct updates and inspection.
+
+<ComponentExample
+  name="number-input/controller"
+  caption="Press Zoom In and Zoom Out to move by 100%, then Actual Size to restore 100%. Read logs the current value, and Focus starts editing the field."
+/>
+
+## Forms
+
+A native view takes part in no form, so there's no `name`, `form`, hidden input, submission or reset: read the value from `onValueChange`, `onValueCommit` or the controller. There's no mouse wheel on a touch screen, so there's no `wheel` either.
+
+## Custom Rendering
+
+Use `render` on a part to render your own element, spreading the props it receives, and pass functions of the state as children or styles. Here the decrement button adds a hint at its bound, and the increment button shows Max there.
+
+<ComponentExample
+  name="number-input/render"
+  caption="Step Temperature up to 40°C. The increment button reads Max."
+/>
+
+## Styling
+
+Style the group as the field's box, and the field and step buttons inside it, with functions of their state, like `(state) => [styles.button, state.disabled && styles.disabled]`. A step button's `disabled` is also true at its bound, and `scrubbing` is true on every part while a drag changes the value. Every part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+Every part gets the field's state; the step buttons add whether they can step and whether the value is at their bound.
+
+### NumberInput [#part-state-numberinput]
+
+<PartStateTable
+  component="number-input"
+  part="root"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputState"
+/>
+
+### NumberInputScrubArea [#part-state-numberinputscrubarea]
+
+<PartStateTable
+  component="number-input"
+  part="scrub-area"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputState"
+/>
+
+### NumberInputGroup [#part-state-numberinputgroup]
+
+<PartStateTable
+  component="number-input"
+  part="group"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputState"
+/>
+
+### NumberInputDecrement [#part-state-numberinputdecrement]
+
+<PartStateTable
+  component="number-input"
+  part="decrement"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputButtonState"
+/>
+
+### NumberInputControl [#part-state-numberinputcontrol]
+
+<PartStateTable
+  component="number-input"
+  part="control"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputState"
+/>
+
+### NumberInputIncrement [#part-state-numberinputincrement]
+
+<PartStateTable
+  component="number-input"
+  part="increment"
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputButtonState"
+/>
+
+## API Reference
+
+### NumberInput
+
+<TypeTable
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputOptions"
+  omit={["name", "form", "wheel"]}
+/>
+
+### NumberInputScrubArea
+
+<TypeTable
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputScrubAreaProps"
+  omit={["controller"]}
+/>
+
+### NumberInputIncrement and NumberInputDecrement
+
+<TypeTable
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputButtonProps"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed. On native, `step-key`, `wheel`, `reset` and `restore` don't happen.
+
+<ReasonTable
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createNumberInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/number-input/number-input.ts"
+  name="NumberInputController"
+/>
+
+## Accessibility
+
+Screen readers reach the field as a text field, named by a `FieldLabel` or an `aria-label`, and each step button as a button: name both. A step button is disabled at its bound, and activating it with VoiceOver or TalkBack steps once. The field isn't adjustable, since a text field with the adjustable trait would lose its editing on iOS; the step buttons stand in for a swipe up or down.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key          | Does                                                         |
+| ------------ | ------------------------------------------------------------ |
+| Tab          | Moves to the field, which starts editing it, and the buttons |
+| Space, Enter | On a step button, steps once                                 |
+| Enter        | In the field, commits what's typed                           |
+
+There's no arrow-key stepping, Home, End, Page Up or Page Down, since `TextInput` doesn't report those keys. The step buttons are Tab stops for that reason, where the web keeps them out of the Tab order. On Android a step button is disabled once the value reaches its bound, which takes keyboard focus off it.
