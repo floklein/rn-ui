@@ -14,7 +14,7 @@ const probe = (args: string[] = []) =>
   )
 
 describe("the no-document probe", () => {
-  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input, field or otp input", () => {
+  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input, field, otp input or number input", () => {
     const { status, stdout } = probe()
     const throws = stdout
       .split("\n")
@@ -29,6 +29,7 @@ describe("the no-document probe", () => {
     expect(stdout).not.toMatch(/^input/m)
     expect(stdout).not.toMatch(/^password-input/m)
     expect(stdout).not.toMatch(/^otp-input/m)
+    expect(stdout).not.toMatch(/^number-input/m)
     expect(stdout).not.toMatch(/^field/m)
     expect(status).toBe(0)
   })

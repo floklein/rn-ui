@@ -79,7 +79,7 @@ For an info button whose only job is the tip, add `toggleable`: a press on the t
 
 ## Pointer
 
-A tooltip opens when a pointer, like a mouse or a trackpad, rests on its trigger, after `delay`, and closes when it leaves, after `closeDelay`. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a tooltip never opens on hover. A finger's pointer events never open it.
+A tooltip opens when a pointer, like a mouse or a trackpad, rests on its trigger, after `delay`, and closes when it leaves, after `closeDelay`. `closeDelay` is at least 100 ms on native, so the pointer can cross from the trigger to the tooltip, which keeps it open. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a tooltip never opens on hover. A finger's pointer events never open it.
 
 Tooltips group without a provider. Once one is open, or was a moment ago, the next opens at once, and only one is open at a time. Its state's `instant` says so, so it can skip its animation.
 
@@ -226,7 +226,7 @@ Props and callbacks are the same as below, as React Native props. `TooltipTrigge
 
 ### Tooltip
 
-`shortcut` and `TooltipShortcut` don't exist on native: keyboard shortcuts are web-only. `delay` and `closeDelay` apply to a [pointer](#pointer).
+`shortcut` and `TooltipShortcut` don't exist on native: keyboard shortcuts are web-only. `delay` and `closeDelay` apply to a [pointer](#pointer), and `closeDelay` is at least 100.
 
 <TypeTable
   path="../../packages/core/src/components/tooltip/tooltip.ts"

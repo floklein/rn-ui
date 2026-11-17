@@ -47,6 +47,14 @@ import {
   FileInputList,
   FileInputTrigger,
 } from "../src/file-input"
+import {
+  NumberInput,
+  NumberInputControl,
+  NumberInputDecrement,
+  NumberInputGroup,
+  NumberInputIncrement,
+  NumberInputScrubArea,
+} from "../src/number-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -95,6 +103,13 @@ import {
 } from "../src/scroll-area"
 import { Separator } from "../src/separator"
 import { Slider, SliderControl, SliderThumb } from "../src/slider"
+import {
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerAreaThumb,
+  ColorPickerSlider,
+  ColorPickerSliderThumb,
+} from "../src/color-picker"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -190,6 +205,27 @@ describe("checkDirection on the native host", () => {
                 <SliderThumb index={1} aria-label="Maximum" />
               </SliderControl>
             </Slider>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a color picker, whose thumbs step the same either way", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ColorPicker aria-label="Brand" defaultValue="#336699">
+              <ColorPickerArea>
+                <ColorPickerAreaThumb />
+              </ColorPickerArea>
+              <ColorPickerSlider channel="hue">
+                <ColorPickerSliderThumb />
+              </ColorPickerSlider>
+            </ColorPicker>
           )
           return screen.container
         },
@@ -718,6 +754,29 @@ describe("checkDirection on the native host", () => {
               <Input aria-label="Search" defaultValue="Lisbon" />
               <InputClear aria-label="Clear search" />
             </InputGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a number input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <NumberInput defaultValue={5}>
+              <NumberInputScrubArea>
+                <Text>Amount</Text>
+              </NumberInputScrubArea>
+              <NumberInputGroup>
+                <NumberInputDecrement aria-label="Decrease" />
+                <NumberInputControl aria-label="Amount" />
+                <NumberInputIncrement aria-label="Increase" />
+              </NumberInputGroup>
+            </NumberInput>
           )
           return screen.container
         },

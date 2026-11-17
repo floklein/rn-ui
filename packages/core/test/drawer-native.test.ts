@@ -51,6 +51,7 @@ function host() {
     box: vi.fn(),
     follow: vi.fn(),
     scrollNear: vi.fn(),
+    screenReader: vi.fn(),
     adjustable(part, step) {
       steps.set(part, step)
       return () => steps.delete(part)

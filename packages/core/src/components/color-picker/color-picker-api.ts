@@ -48,6 +48,7 @@ import {
   type ColorChannel,
   type ColorPickerSpace,
 } from "./color-picker-channels"
+import { focusPicker, nativeTouch } from "./color-picker-touch"
 
 type State = {
   value: string
@@ -145,7 +146,7 @@ type EyeDropperWindow = Window & {
 function colorPickerApiBody(
   context: PrimitiveContext<ColorPickerOptions, State, string>
 ) {
-  const { store, element } = context
+  const { store, element, parts } = context
   const change = createChange(context)
   const commitValue = createCommit(context)
   const drags = createDragSession(context.onDestroy)
@@ -338,12 +339,9 @@ function colorPickerApiBody(
       }
       return setColor(color, { reason, event }, false)
     },
-    focus() {
-      const target =
-        element("area-thumb") ?? element("slider-thumb") ?? element("input")
-      target?.focus()
-    },
+    focus: () => focusPicker(element, parts),
     internal: {
+      ...nativeTouch({ store, begin, setColor, commit }),
       area,
       channel,
       sliderValue,
