@@ -40,6 +40,10 @@ setNativeHost({
   follow: (part, drag) => followTouches(part, drag),
   adjustable: (part, step) => routeAdjustments(part, step),
   scrollNear: (point, options) => scrollAreasUnder(point, options),
+  screenReader(change) {
+    change(screenReaderOn)
+    return onScreenReaderChange(change)
+  },
   listen(next) {
     input = next
     return () => (input = undefined)
@@ -58,6 +62,7 @@ setNativeHost({
 - `follow(part, drag)` follows the touches that start on the part's view with a `NativeDrag`, until the cleanup it returns runs. With `capture`, the view takes its children's touches too (`pointerEvents="box-only"`). `@ui-sdk/react-native` makes the view a responder: `accepts` decides whether a touch takes it, from where it starts, and `start`, `move` and `end` get each `NativeTouch`, its position and the innermost part under it. A responder cancelled, or taken by another view such as a scroll view, calls `cancel`. The view refuses to hand the responder to a scroll view around it, as `touch-action: none` does on the web; on iOS a scroll view along the same axis still scrolls during the drag unless the app turns its `scrollEnabled` off, as [Slider](/docs/react-native/components/slider#inside-a-scroll-view) shows. A [Scroll Area](/docs/react-native/components/scroll-area#drags-inside)'s viewport turns its own off while a drag inside it holds the touch.
 - `adjustable(part, step)` routes a screen reader's increment and decrement on the part's view to `step`, with `1` or `-1`, until the cleanup it returns runs, where the web hears a range input's `input` event.
 - `scrollNear(point, { edge, speed })` scrolls each [Scroll Area](/docs/react-native/components/scroll-area#drags-inside) under a dragging finger a step toward an edge it's within `edge` points of, the innermost first along each axis, and returns whether any scrolled. Core's `createAutoScroll` calls it once per frame while a reordering drag holds still near an edge, where the web scrolls any scrollable element and the window. A plain `ScrollView` never scrolls this way.
+- `screenReader(change)` calls `change` with whether a screen reader runs, at once and each time that changes, until the cleanup it returns runs. `@ui-sdk/react-native` reads `AccessibilityInfo.isScreenReaderEnabled()` and its `screenReaderChanged` event. While one runs, a toast with an action or a close button waits, from its button's native behavior: native never tells core that focus reached a toast, where the web pauses toasts on focus.
 - `listen(input)` hears what dismisses a popup while one is open, and returns what stops it. The host calls `input.back()` for Android's back, from a `Modal`'s `onRequestClose`, `input.escape(api)` for VoiceOver's escape gesture on a popup's content, and `input.outsidePress()` for a press on a modal popup's backdrop. Each goes to the topmost open popup, and returns whether one took it: a popup that refuses the dismissal still takes it, so back never falls through to navigation.
 - `seen(part)` returns what an agent reads of the part's view, a `NativeSeen`, or `undefined` while the part renders none: its accessibility label and role, the plain text inside it, whether it's disabled or hidden from accessibility, the `data-agent-*` marks around it, the instances it renders inside and its press. The agent bridge from `@ui-sdk/core/agent` reads every part through it, where the web reads elements, as [Connect an Agent](/docs/react-native/agents) shows.
 
@@ -93,7 +98,16 @@ const parts = createParts(
 )
 ```
 
-A touch picks the item up once it moves past the drag threshold, so a tap stays a tap. As on the web, where the items set `touch-action: none`, a swipe that starts on an item drags it instead of scrolling, so leave the list room to scroll beside its items. Render an item as a `View` with no press: a `Pressable` takes the touch first, and development warns. The list renders the draft as the item moves, the item's state can say it's being dragged, and lifting the finger commits it in one change with the `"drag"` reason. A responder cancelled, taken by a scroll view or unmounted puts the item back and commits nothing. The moving item doesn't follow the finger between places, since the web's `--drag-x` and `--drag-y` have no native counterpart, and an item the app doesn't `label` is announced by its key, since core can't read a native view's text. The `preview` option and the keys work on the web only. A screen reader user reorders through actions the app adds, with `reorder.move(key, index)` or `transfer.move(key, list, index)`. Near an edge of a Scroll Area the drag scrolls it; inside a plain `ScrollView` along the same axis, turn its scrolling off for the length of the drag, as [Slider](/docs/react-native/components/slider#inside-a-scroll-view) shows, from the item's responder events.
+A touch picks the item up once it moves past the drag threshold, so a tap stays a tap. As on the web, where the items set `touch-action: none`, a swipe that starts on an item drags it instead of scrolling. A list that must scroll gives each item a handle: the item's content takes its own touches, so a swipe there goes to the scroll view, and a drag starts only on the handle the content leaves free. A transfer's items have no handle, since their list takes their touches. Render an item as a `View` with no press: a `Pressable` takes the touch first, and development warns. The list renders the draft as the item moves, the item's state can say it's being dragged, and lifting the finger commits it in one change with the `"drag"` reason. A responder cancelled, taken by a scroll view or unmounted puts the item back and commits nothing. The moving item doesn't follow the finger between places, since the web's `--drag-x` and `--drag-y` have no native counterpart, and an item the app doesn't `label` is announced by its key, since core can't read a native view's text. The `preview` option and the keys work on the web only. A screen reader user reorders through actions the app adds, with `reorder.move(key, index)` or `transfer.move(key, list, index)`. Near an edge of a Scroll Area the drag scrolls it; inside a plain `ScrollView` along the same axis, turn its scrolling off for the length of the drag, as [Slider](/docs/react-native/components/slider#inside-a-scroll-view) shows, from the item's responder events.
+
+```tsx
+<Item>
+  <View onStartShouldSetResponder={() => true} style={{ flex: 1 }}>
+    <Text>{task.title}</Text>
+  </View>
+  <View style={styles.handle} />
+</Item>
+```
 
 A popup's trigger is pressed with `pressTrigger(part, source)`, where the web reads how it opened from the event: `"touch"` for a finger, `"virtual"` for a screen reader. Where focus goes on open follows from it, as on the web. A popup placed beside its anchor gets its position from `placeNative(api, measured)`: given the anchor, the popup and its arrow measured in the host's coordinates and the space it may use, it returns where the popup goes and the state fields the web writes as CSS variables and data attributes, like `side`, `availableHeight` and `arrowOffset`.
 

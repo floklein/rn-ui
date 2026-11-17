@@ -101,6 +101,10 @@ const contentId = (handle: Handle) => `${handle.instance.id}-content`
 const pointer = (event: PointerEvent) =>
   event.nativeEvent as unknown as globalThis.PointerEvent
 
+// No bridge spans the trigger and the content on native, so a pointer gets
+// this long to cross from one to the other (WCAG 1.4.13).
+const closeDelayFloor = 100
+
 /**
  * A short label or hint for its trigger. On a touch screen it stays closed,
  * unless it's `toggleable`, which a press opens; with a pointer, resting on
@@ -108,8 +112,12 @@ const pointer = (event: PointerEvent) =>
  * for screen readers.
  * @experimental
  */
-function Tooltip({ children, ...options }: TooltipProps) {
-  const handle = usePrimitive(tooltip, options, tooltipNative)
+function Tooltip({ children, closeDelay, ...options }: TooltipProps) {
+  const handle = usePrimitive(
+    tooltip,
+    { ...options, closeDelay: Math.max(closeDelay ?? 0, closeDelayFloor) },
+    tooltipNative
+  )
   useControllerEntry(options.controller, handle)
   const [outlet] = React.useState(createOutlet)
   return (

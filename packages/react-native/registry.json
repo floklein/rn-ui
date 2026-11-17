@@ -726,6 +726,13 @@
     },
     {
       "kind": "edit",
+      "file": "packages/core/src/components/toast/toast-api.ts",
+      "mirrors": ["packages/core/src/components/toast/toast-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.hold holds one toast open until its release runs, so toastNative's action and close behaviors can hold a toast while a screen reader runs, where the web pauses toasts on focus."
+    },
+    {
+      "kind": "edit",
       "file": "packages/core/src/foundation/kernel/dev.ts",
       "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",

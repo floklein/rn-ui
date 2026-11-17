@@ -226,6 +226,7 @@ async function performWatched(
     follow: (part, drag) => host?.follow(part, drag) ?? (() => {}),
     adjustable: (part, step) => host?.adjustable(part, step) ?? (() => {}),
     scrollNear: (point, options) => host?.scrollNear(point, options) ?? false,
+    screenReader: (change) => host?.screenReader(change) ?? (() => {}),
     listen: (input) => host?.listen(input) ?? (() => {}),
     seen: (part) => host?.seen(part),
   })

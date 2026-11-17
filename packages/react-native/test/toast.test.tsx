@@ -1,6 +1,12 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import type { ReactNode } from "react"
-import { AccessibilityInfo, AppState, Modal, Text } from "react-native"
+import {
+  AccessibilityInfo,
+  AppState,
+  Modal,
+  Platform,
+  Text,
+} from "react-native"
 import {
   Dialog,
   DialogClose,
@@ -252,6 +258,124 @@ describe("ToastRegion", () => {
       jest.advanceTimersByTime(1000)
     })
     expect(screen.queryByText("Saved")).toBeNull()
+  })
+
+  test("while a screen reader runs, a toast with an action or a close button waits and a plain one still times out", async () => {
+    const [, screenReader] = jest
+      .mocked(AccessibilityInfo.addEventListener)
+      .mock.calls.find(([event]) => event === "screenReaderChanged")!
+    await render(
+      <OverlayHost>
+        <Text>App</Text>
+      </OverlayHost>
+    )
+    await act(async () => {
+      screenReader(true)
+      toast({ title: "Saved", duration: 1000 })
+      toast({
+        title: "Deleted",
+        duration: 1000,
+        action: { label: "Undo", onAction: () => {} },
+      })
+      toast({
+        title: "Archived",
+        duration: 1000,
+        cancel: { label: "Dismiss" },
+      })
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(5000)
+    })
+    await settle()
+    expect(screen.queryByText("Saved")).toBeNull()
+    expect(screen.getByText("Deleted")).toBeOnTheScreen()
+    expect(screen.getByText("Archived")).toBeOnTheScreen()
+    await act(async () => {
+      screenReader(false)
+      jest.advanceTimersByTime(1000)
+    })
+    await settle()
+    expect(screen.queryByText("Deleted")).toBeNull()
+    expect(screen.queryByText("Archived")).toBeNull()
+  })
+
+  test("a screen reader dismisses a held toast that has only an action, by the escape gesture or the Dismiss action", async () => {
+    const [, screenReader] = jest
+      .mocked(AccessibilityInfo.addEventListener)
+      .mock.calls.find(([event]) => event === "screenReaderChanged")!
+    const toastAround = (text: string) => {
+      let node: ReturnType<typeof screen.getByText> | null =
+        screen.getByText(text)
+      while (node && !node.props.onAccessibilityEscape) {
+        node = node.parent
+      }
+      return node!
+    }
+    await render(
+      <OverlayHost>
+        <Text>App</Text>
+      </OverlayHost>
+    )
+    await act(async () => {
+      screenReader(true)
+      toast({
+        title: "Deleted",
+        duration: 1000,
+        action: { label: "Undo", onAction: () => {} },
+      })
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(5000)
+    })
+    await fireEvent(toastAround("Deleted"), "accessibilityEscape")
+    await settle()
+    expect(screen.queryByText("Deleted")).toBeNull()
+
+    await act(async () => {
+      toast({
+        title: "Sent",
+        duration: 1000,
+        action: { label: "Undo", onAction: () => {} },
+      })
+    })
+    const root = toastAround("Sent")
+    expect(root.props.accessibilityActions).toContainEqual({
+      name: "dismiss",
+      label: "Dismiss",
+    })
+    expect(root.props.screenReaderFocusable).toBe(Platform.OS === "android")
+    await fireEvent(root, "accessibilityAction", {
+      nativeEvent: { actionName: "dismiss" },
+    })
+    await settle()
+    expect(screen.queryByText("Sent")).toBeNull()
+    await act(async () => {
+      screenReader(false)
+    })
+  })
+
+  test("the Dismiss action takes the toast's own label", async () => {
+    const toaster = createToaster()
+    await render(
+      <OverlayHost>
+        <ToastRegion toaster={toaster}>
+          {() => (
+            <Toast
+              testID="toast"
+              accessibilityActions={[{ name: "dismiss", label: "Ignorer" }]}
+            >
+              <ToastTitle />
+            </Toast>
+          )}
+        </ToastRegion>
+      </OverlayHost>
+    )
+    await act(async () => {
+      toaster({ title: "Envoyé", duration: Infinity })
+    })
+    expect(screen.getByTestId("toast").props.accessibilityActions).toEqual([
+      { name: "dismiss", label: "Ignorer" },
+    ])
   })
 
   test("takes over its toaster, so OverlayHost renders no second region", async () => {
