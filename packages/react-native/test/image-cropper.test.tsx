@@ -246,7 +246,13 @@ describe("ImageCropper", () => {
   test("the viewport's content lays out left to right, so the crop isn't mirrored against the finger", async () => {
     await render(<Cropper />)
     expect(
-      flat(screen.getByTestId("viewport").children[0].props.style)
+      flat(
+        (
+          screen.getByTestId("viewport").children[0] as {
+            props: Record<string, unknown>
+          }
+        ).props.style
+      )
     ).toMatchObject({ direction: "ltr" })
   })
 
