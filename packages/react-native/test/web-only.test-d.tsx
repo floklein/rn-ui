@@ -16,6 +16,7 @@ import type * as DrawerEntry from "../src/drawer"
 import { Field, FieldError, FieldLabel } from "../src/field"
 import { FileInput, FileInputTrigger } from "../src/file-input"
 import type * as FileInputEntry from "../src/file-input"
+import { DateInput } from "../src/date-input"
 import { NumberInput } from "../src/number-input"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
@@ -27,6 +28,7 @@ import {
   SegmentedControlItem,
 } from "../src/segmented-control"
 import type * as SwitchEntry from "../src/switch"
+import { TimeInput } from "../src/time-input"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Toggle } from "../src/toggle"
 import {
@@ -190,6 +192,15 @@ const numbers = [
   <NumberInput wheel />,
 ]
 
+const segmented = [
+  <DateInput min="2026-01-01" granularity="minute" required />,
+  <TimeInput hourCycle={12} />,
+  // @ts-expect-error `name` has no native meaning.
+  <DateInput name="start" />,
+  // @ts-expect-error `form` has no native meaning.
+  <TimeInput form="booking" />,
+]
+
 const fields = [
   <Field disabled invalid>
     <FieldLabel>Email</FieldLabel>
@@ -306,6 +317,7 @@ const hoverCards = [
 export {
   codes,
   numbers,
+  segmented,
   ComboboxInput,
   dialogEntries,
   type DialogShortcut,

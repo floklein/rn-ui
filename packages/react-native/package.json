@@ -31,6 +31,7 @@
     "./color": "./src/color.ts",
     "./color-picker": "./src/color-picker.tsx",
     "./date": "./src/date.ts",
+    "./date-input": "./src/date-input.tsx",
     "./date-picker": "./src/date-picker.tsx",
     "./dialog": "./src/dialog.tsx",
     "./drawer": "./src/drawer.tsx",
@@ -38,6 +39,8 @@
     "./file-input": "./src/file-input.tsx",
     "./history": "./src/history.ts",
     "./hover-card": "./src/hover-card.tsx",
+    "./image": "./src/image.ts",
+    "./image-cropper": "./src/image-cropper.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -63,6 +66,7 @@
     "./testing": "./src/testing.ts",
     "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
+    "./time-input": "./src/time-input.tsx",
     "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toolbar": "./src/toolbar.tsx",
@@ -134,6 +138,10 @@
         "types": "./dist/date.d.ts",
         "default": "./dist/date.js"
       },
+      "./date-input": {
+        "types": "./dist/date-input.d.ts",
+        "default": "./dist/date-input.js"
+      },
       "./date-picker": {
         "types": "./dist/date-picker.d.ts",
         "default": "./dist/date-picker.js"
@@ -161,6 +169,14 @@
       "./hover-card": {
         "types": "./dist/hover-card.d.ts",
         "default": "./dist/hover-card.js"
+      },
+      "./image": {
+        "types": "./dist/image.d.ts",
+        "default": "./dist/image.js"
+      },
+      "./image-cropper": {
+        "types": "./dist/image-cropper.d.ts",
+        "default": "./dist/image-cropper.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",
@@ -262,6 +278,10 @@
       "./textarea": {
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
+      },
+      "./time-input": {
+        "types": "./dist/time-input.d.ts",
+        "default": "./dist/time-input.js"
       },
       "./toast": {
         "types": "./dist/toast.d.ts",

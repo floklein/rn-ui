@@ -55,6 +55,8 @@ import {
   NumberInputIncrement,
   NumberInputScrubArea,
 } from "../src/number-input"
+import { DateInput } from "../src/date-input"
+import { TimeInput } from "../src/time-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -116,6 +118,14 @@ import {
   ColorPickerSlider,
   ColorPickerSliderThumb,
 } from "../src/color-picker"
+import {
+  ImageCropper,
+  ImageCropperHandle,
+  ImageCropperImage,
+  ImageCropperSelection,
+  ImageCropperViewport,
+  ImageCropperZoom,
+} from "../src/image-cropper"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
@@ -232,6 +242,32 @@ describe("checkDirection on the native host", () => {
                 <ColorPickerSliderThumb />
               </ColorPickerSlider>
             </ColorPicker>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an image cropper, whose selection and zoom step the same either way", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ImageCropper
+              aria-label="Photo"
+              src="https://example.com/photo.png"
+              defaultCrop={{ x: 10, y: 10, width: 100, height: 80 }}
+            >
+              <ImageCropperViewport>
+                <ImageCropperImage alt="Mountains" />
+                <ImageCropperSelection>
+                  <ImageCropperHandle position="se" />
+                </ImageCropperSelection>
+              </ImageCropperViewport>
+              <ImageCropperZoom />
+            </ImageCropper>
           )
           return screen.container
         },
@@ -808,6 +844,23 @@ describe("checkDirection on the native host", () => {
                 <NumberInputIncrement aria-label="Increase" />
               </NumberInputGroup>
             </NumberInput>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a date input and a time input", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <View>
+              <DateInput locale="en-US" defaultValue="2026-11-04" />
+              <TimeInput locale="en-US" defaultValue="14:30" />
+            </View>
           )
           return screen.container
         },

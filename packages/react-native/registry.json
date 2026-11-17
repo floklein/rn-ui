@@ -1032,6 +1032,35 @@
       "why": "The api spreads nativeTouch(...) from color-picker-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusPicker, which on the web focuses the same elements as before."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-parts.ts",
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the viewport's, selection's and handles' pointerdown, the zoom input's input and change, and the viewport's and image's binds orchestrate: in a box the selection and each handle follow the responder's touches from the first move, in a frame the viewport pans with one finger and pinches with two from every finger the responder reports, the zoom track follows touches, and the selection, handles and zoom take a screen reader's increment and decrement as one step. A cancelled, taken or unmounted responder puts the crop back and commits nothing. nativeImageCropper(api) reports the image's load and the viewport's laid-out content box, and restates the inline styles the image and selection attrs write, and --image-cropper-aspect-ratio, as numbers and transforms."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/image-cropper/image-cropper-touch.native.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-touch.ts",
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.setBox, dragStart, dragTo, dragEnd and dragCancel: the box the viewport's bind measures and the startFrom, setCrop and commit the web's pointer handlers make, for native touches, with a cancel that puts the crop back and commits nothing and a disable that ends a drag where it is. focusSelection asks the host to focus the mounted selection. The web module returns no methods."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/image-cropper/image-cropper-api.ts",
+      "mirrors": [
+        "packages/core/src/components/image-cropper/image-cropper-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeTouch(...) from image-cropper-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusSelection, which on the web focuses the selection's element as before."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/components/number-input/number-input-field.native.ts",
       "mirrors": [
@@ -1172,6 +1201,34 @@
       "mirrors": ["packages/core/src/foundation/text/match.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Listens for languagechange only where window has addEventListener: React Native's window is the global object, with no events, so filtering threw on native."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/date-input/date-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-input/date-input-api.ts",
+        "packages/core/src/components/date-input/date-input-parts.ts",
+        "packages/core/src/components/date-input/date-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, pressKey, selectText, leaveText, adjust and mountSegment: a segment's beforeinput, input, keydown (Backspace, the arrow keys) and focusout restated for a native TextInput's onChangeText, onKeyPress, onSelectionChange and onBlur and a screen reader's increment and decrement, where bind and the on handlers read the <input>. An edit that puts in nothing the segment takes is written back with its selection (foundation/text/corrected-edit.ts). segmentElements lists the mounted segments as native element stand-ins in render order, where the DOM module reads the bound elements. The web module returns no methods, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/date-input/date-input-native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-input/date-input-parts.ts",
+        "packages/core/src/components/date-input/date-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's and the segments' bind orchestrate: the root reads the locale through bindRoot, and each segment you type in is listed while mounted (internal.mountSegment), so typing moves on and the controller focuses it, and a screen reader's increment and decrement step it."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/date-input/date-input-api.ts",
+      "mirrors": ["packages/core/src/components/date-input/date-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The segments come from segmentElements in date-input-field.ts, which has a native twin, instead of elements(context, \"segment\"), and internal spreads nativeField(...) from the same module. paste's body is pasteText(text, event), which the native field calls with pasted text; step, insert and remove take an optional event. Additive: the state's selection, which a native corrected edit writes back."
     }
   ],
   "components": {
@@ -1960,6 +2017,31 @@
         }
       }
     },
+    "image-cropper": {
+      "entry": "packages/react-native/src/image-cropper.tsx",
+      "slots": {
+        "imageCropper.viewport": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown pans and pinches a frame, which image-cropper-native.ts does from the responder's touches. Its bind measures the content box, which the adapter reads from an inner view's onLayout and hands nativeImageCropper(api).measure. Its wheel zooms under a mouse, which native has none of."
+        },
+        "imageCropper.image": {
+          "covered": "packages/react-native/src/image-cropper.tsx",
+          "reason": "Its bind hears the <img> load and fail, which ImageCropperImage hears from the Image's onLoad and onError and reports through nativeImageCropper(api)."
+        },
+        "imageCropper.selection": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown drags the crop in a box, which image-cropper-native.ts does from the responder's touches. Its keydown moves, zooms and turns it with keys, which native doesn't build (spec, Hardware keyboards): a screen reader's increment and decrement move it."
+        },
+        "imageCropper.handle": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its pointerdown resizes the crop in a box, which image-cropper-native.ts does from the responder's touches. Its keydown moves its edges with arrow keys, which native doesn't build: a screen reader's increment grows the crop from it."
+        },
+        "imageCropper.zoom": {
+          "covered": "packages/core/src/components/image-cropper/image-cropper-native.ts",
+          "reason": "Its input and change follow a range <input>, and its bind writes its value, where image-cropper-native.ts follows touches on the track and a screen reader's increment and decrement, and ImageCropperZoom gives the value."
+        }
+      }
+    },
     "number-input": {
       "entry": "packages/react-native/src/number-input.tsx",
       "slots": {
@@ -2086,18 +2168,49 @@
           "reason": "The hidden input a form submits, resets and autofills: native has no forms, so it isn't rendered, and name, form and autoComplete are left out of the native types."
         }
       }
+    },
+    "date-input": {
+      "entry": "packages/react-native/src/date-input.tsx",
+      "slots": {
+        "dateInput.root": {
+          "covered": "packages/core/src/components/date-input/date-input-native.ts",
+          "reason": "Its bind reads the page's language, which date-input-native.ts reads through bindRoot as the root mounts, watches fieldsets (a disabled FieldSet hands its state down through context) and makes the input take part in a form, which native doesn't have. Its mousedown and click focus the nearest segment; the root View's responder release calls internal.nearestSegment with the touch's pageX."
+        },
+        "dateInput.segment": {
+          "covered": "packages/core/src/components/date-input/date-input-field.native.ts",
+          "reason": "Its bind writes the segment's text and selects it, adopts digits typed before the page ran, and listens to beforeinput and input; its keydown handles the arrow keys, Page Up and Down, Home, End, Backspace, Delete and Enter, its paste sets the value and its focusout keeps the digits typed. The TextInput's onChangeText, onKeyPress, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText (pasted text included), pressKey, selectText, leaveText and blur, and the value and selection props follow the state. A screen reader's increment and decrement step it (date-input-native.ts). The arrow keys, Page Up and Down, Home, End and Delete, which TextInput doesn't report, and text typed before the app runs have no native counterpart."
+        },
+        "dateInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
+    "time-input": {
+      "entry": "packages/react-native/src/time-input.tsx",
+      "slots": {
+        "timeInput.root": {
+          "covered": "packages/core/src/components/date-input/date-input-native.ts",
+          "reason": "Its bind reads the page's language, which date-input-native.ts reads through bindRoot as the root mounts, watches fieldsets (a disabled FieldSet hands its state down through context) and makes the input take part in a form, which native doesn't have. Its mousedown and click focus the nearest segment; the root View's responder release calls internal.nearestSegment with the touch's pageX."
+        },
+        "timeInput.segment": {
+          "covered": "packages/core/src/components/date-input/date-input-field.native.ts",
+          "reason": "Its bind writes the segment's text and selects it, adopts digits typed before the page ran, and listens to beforeinput and input; its keydown handles the arrow keys, Page Up and Down, Home, End, Backspace, Delete and Enter, its paste sets the value and its focusout keeps the digits typed. The TextInput's onChangeText, onKeyPress, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText (pasted text included), pressKey, selectText, leaveText and blur, and the value and selection props follow the state. A screen reader's increment and decrement step it (date-input-native.ts). The arrow keys, Page Up and Down, Home, End and Delete, which TextInput doesn't report, and text typed before the app runs have no native counterpart."
+        },
+        "timeInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
     }
   },
   "pending": [
     "combobox",
     "command",
-    "date-input",
-    "image-cropper",
     "listbox",
     "menu",
     "menubar",
     "navigation-menu",
-    "time-input",
     "timeline",
     "token-input",
     "tree",
@@ -2626,6 +2739,12 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "date-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
     }
   ]
 }

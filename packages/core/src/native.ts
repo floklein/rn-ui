@@ -24,6 +24,7 @@ export {
   nativeColorPicker,
 } from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
+export { dateInputNative } from "./components/date-input/date-input-native"
 export {
   datePickerNative,
   datePickerText,
@@ -33,6 +34,10 @@ export {
   bindTransferList,
   bindTransferItem,
 } from "./foundation/drag-and-drop/drag-and-drop-native"
+export {
+  imageCropperNative,
+  nativeImageCropper,
+} from "./components/image-cropper/image-cropper-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { hoverCardNative } from "./components/hover-card/hover-card-native"
 export { numberInputNative } from "./components/number-input/number-input-native"
