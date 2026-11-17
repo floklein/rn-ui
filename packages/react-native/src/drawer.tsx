@@ -70,8 +70,6 @@ const vertical = (side: Side) => side === "bottom" || side === "top"
 const towardEdge = (side: Side) =>
   side === "bottom" || side === "right" ? 1 : -1
 
-// The drawer's extent from its edge, which the sheet drives and the content,
-// backdrop and outlets follow, and the sizes it's laid out at.
 function createMotion() {
   const extent = new Animated.Value(0)
   let layout: Layout = {
@@ -143,8 +141,7 @@ function createMotion() {
   }
 }
 
-// A timed animation on the native driver whose easing is the shared spring,
-// sampled before it starts, overshoot included.
+// The native driver samples the easing before it starts, overshoot included.
 function playOnNativeDriver(
   extent: Animated.Value,
   { from, to, duration, extentAt }: NativeSheetSpring,
@@ -187,8 +184,6 @@ function useLayout(motion: Motion) {
   return React.useSyncExternalStore(motion.subscribe, motion.get)
 }
 
-// The innermost scroll view under a point that scrolls along the drawer's
-// axis, read through the views' DOM interface.
 function scrollAreaAt(
   root: HostInstance | null,
   x: number,
@@ -244,8 +239,6 @@ function scrollAreaAt(
   }
 }
 
-// One finger on the content, into the sheet: it claims the touch from the
-// views under it once the sheet drags or scrolls, and lets it go otherwise.
 function useSheetGesture(
   api: object,
   root: React.RefObject<HostInstance | null>,
@@ -329,8 +322,7 @@ type RootProps = Omit<
  */
 type DrawerProps = RootProps
 
-// A modal drawer renders in a `Modal`, which hides the screen from screen
-// readers and takes every press; one the page stays usable beside renders in place.
+// A `Modal` takes every press, so a drawer the page stays usable beside renders in place.
 const inModal = (options: RootProps) =>
   options.modal !== false && options.modalAbove === undefined
 
@@ -498,8 +490,8 @@ function DrawerContent({
   return useOutlet("content", viewport, motion.modal)
 }
 
-// The screen-sized view the content sits in at its edge. The content's
-// gesture lives here, inside the `Modal`, with the detector it attaches to.
+// The gesture lives inside the `Modal`, beside its detector: in the
+// content's own render, attaching it re-rendered the outlet without end.
 function Viewport({
   api,
   motion,
@@ -604,13 +596,16 @@ const outputOf = (values: (string | number)[]) =>
     ? values.map((value) => parseFloat(String(value)))
     : values.map(String)
 
-function keyframeStyle(motion: Motion, keyframes: DrawerKeyframes) {
-  const [lower, upper] = motion.get().ranges.expand
+function keyframeStyle(
+  extent: Animated.Value,
+  [lower, upper]: [number, number],
+  keyframes: DrawerKeyframes
+) {
   const style: Record<string, unknown> = {}
   const transform: Record<string, unknown>[] = []
   for (const [name, values] of Object.entries(keyframes)) {
     const span = Math.max(upper - lower, 1)
-    const value = motion.extent.interpolate({
+    const value = extent.interpolate({
       inputRange: values.map(
         (_, index) => lower + (span * index) / Math.max(values.length - 1, 1)
       ),
@@ -649,8 +644,10 @@ function OutletPart({
 }: Omit<OutletProps, "controller">) {
   const handle = useHandle(drawer)
   const motion = motions.get(handle.api)!
-  useLayout(motion)
-  const follow = keyframes ? keyframeStyle(motion, keyframes) : undefined
+  const { expand } = useLayout(motion).ranges
+  const follow = keyframes
+    ? keyframeStyle(motion.extent, expand, keyframes)
+    : undefined
   return usePart(
     drawer,
     "outlet",

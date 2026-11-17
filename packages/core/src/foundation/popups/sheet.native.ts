@@ -101,7 +101,6 @@ function attachSheet(el: HTMLElement, input: SheetOptions) {
   let closing: "swipe" | "close" | null = null
   let targetId: string | null = null
   let destroyed = false
-  // An open waits for the first layout, which sizes the snap points.
   let pendingOpen: boolean | null = null
   let settles = 0
   let touch: { area: NativeScrollArea | null; scroll: number } | null = null
