@@ -30,6 +30,7 @@
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
     "./otp-input": "./src/otp-input.tsx",
+    "./overlays": "./src/overlays.tsx",
     "./pagination": "./src/pagination.tsx",
     "./password-input": "./src/password-input.tsx",
     "./primitive": "./src/primitive.ts",
@@ -108,7 +109,10 @@
         "types": "./dist/otp-input.d.ts",
         "default": "./dist/otp-input.js"
       },
-      "./package.json": "./package.json",
+      "./overlays": {
+        "types": "./dist/overlays.d.ts",
+        "default": "./dist/overlays.js"
+      },
       "./pagination": {
         "types": "./dist/pagination.d.ts",
         "default": "./dist/pagination.js"
@@ -168,7 +172,8 @@
       "./toolbar": {
         "types": "./dist/toolbar.d.ts",
         "default": "./dist/toolbar.js"
-      }
+      },
+      "./package.json": "./package.json"
     }
   },
   "scripts": {

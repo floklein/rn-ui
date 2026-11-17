@@ -503,6 +503,8 @@ describe("the adapter's contexts inside the Modal", () => {
     const carriedMade = sources.match(
       /carry\([^,]+,\s*React\.createContext[<(]/g
     )!
-    expect(carriedMade.length).toBe(made)
+    // Where a popup renders: a Modal's host replaces it inside the Modal.
+    const hosts = sources.match(/const HostContext = React\.createContext/g)!
+    expect(carriedMade.length + hosts.length).toBe(made)
   })
 })
