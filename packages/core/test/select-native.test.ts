@@ -51,6 +51,7 @@ function host() {
     follow: vi.fn(),
     adjustable: vi.fn(),
     listen: () => () => {},
+    seen: () => undefined,
   })
   return { focused, rendered, announced }
 }
