@@ -48,7 +48,6 @@ function mount(options: CalendarOptions, rendered: Part[]) {
   keep(instance)
   const mounted = new Map<string, () => void>()
   const days = new Map<string, Part>()
-  // Renders the days of the month shown, as a grid at offset 0 does.
   function render() {
     const grid = instance.part("grid", { offset: 0 }, true)
     const { weeks } = partState(grid, { offset: 0 }) as {

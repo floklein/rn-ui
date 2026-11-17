@@ -206,7 +206,6 @@ function CalendarGrid({
   children = defaultGrid,
   ...props
 }: PartProps<typeof View, CalendarGridState> & { offset?: number }) {
-  // Grids are told apart by their offset. The parts inside read the grid's state.
   const content = (state: CalendarGridState, interaction: Interaction) => (
     <GridScope offset={offset} state={state}>
       {typeof children === "function" ? children(state, interaction) : children}
@@ -309,7 +308,6 @@ function CalendarWeeks({
 }: Omit<React.ComponentProps<typeof View>, "children"> & {
   children?: (cell: CalendarGridCell) => React.ReactNode
 }) {
-  useCalendar("CalendarWeeks")
   const { offset, state } = useGrid("CalendarWeeks")
   return (
     <View {...props}>
