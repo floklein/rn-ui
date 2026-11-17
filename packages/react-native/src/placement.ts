@@ -102,11 +102,19 @@ const slowCheck = 500
 // React Native reports no scroll a popup isn't part of, so while open it
 // measures again as the web does: every frame while anything moves, and at a
 // slow pace otherwise.
-function usePlacement(api: PopupApi, host: Host | null, style: unknown) {
+function usePlacement(
+  api: PopupApi,
+  host: Host | null,
+  style: unknown,
+  open: boolean
+) {
   const placement = placementOf(api)
   const border = borderOf(style)
   const borderKey = Object.values(border).join()
   React.useLayoutEffect(() => {
+    if (!open) {
+      return
+    }
     let last = ""
     function check() {
       const origin = host?.view.current
@@ -195,7 +203,7 @@ function usePlacement(api: PopupApi, host: Host | null, style: unknown) {
       placement.wake = () => {}
       placement.placed = undefined
     }
-  }, [api, host, placement, borderKey])
+  }, [api, host, placement, borderKey, open])
   React.useLayoutEffect(() => placement.wake())
   return placement
 }
@@ -212,10 +220,10 @@ function usePlaced(placement: Placement) {
   )
 }
 
-// `left` and `right` mean start and end right to left, where React Native
-// swaps them, and measurements are physical.
+// Measurements are physical. Right to left, `end` is the left edge whether or
+// not the app has React Native swap `left` and `right`.
 const fromLeft = (offset: number) =>
-  I18nManager.isRTL ? { right: offset } : { left: offset }
+  I18nManager.isRTL ? { end: offset } : { left: offset }
 
 export {
   fromLeft,

@@ -1,6 +1,12 @@
 import { act, cleanup, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import { type HostInstance, Keyboard, Text, View } from "react-native"
+import {
+  type HostInstance,
+  I18nManager,
+  Keyboard,
+  Text,
+  View,
+} from "react-native"
 import { OverlayHost } from "../src/overlays"
 import {
   Popover,
@@ -143,6 +149,31 @@ test("follows the anchor while open, writing only what changed", async () => {
     boxes.set("trigger", [100, 60, 80, 40])
     await act(() => jest.advanceTimersByTime(1000))
     expect(flat("content")).toMatchObject({ top: 104 })
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
+test("right to left, the content is placed from the left edge with end", async () => {
+  const rtl = jest.replaceProperty(I18nManager, "isRTL", true)
+  try {
+    await render(<Example defaultOpen />)
+    const style = flat("content")
+    expect(style).toMatchObject({ end: 40, top: 144 })
+    expect(style.left).toBeUndefined()
+    cleanup()
+  } finally {
+    rtl.restore()
+  }
+})
+
+test("a closed popover measures nothing", async () => {
+  jest.useFakeTimers()
+  try {
+    await render(<Example />)
+    measureInWindow!.mockClear()
+    await act(() => jest.advanceTimersByTime(2000))
+    expect(measureInWindow).not.toHaveBeenCalled()
   } finally {
     jest.useRealTimers()
   }

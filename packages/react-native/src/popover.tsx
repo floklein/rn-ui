@@ -190,7 +190,11 @@ function Placed({
   ...props
 }: ContentPartProps) {
   const handle = useHandle(popover)
-  const placement = usePlacement(handle.api, useHost(), props.style)
+  const mounted = React.useSyncExternalStore(
+    handle.instance.subscribe,
+    () => handle.state.mounted
+  )
+  const placement = usePlacement(handle.api, useHost(), props.style, mounted)
   const placed = usePlaced(placement)
   return usePart(
     popover,
@@ -213,6 +217,7 @@ function Placed({
         style: {
           position: "absolute",
           top: placed?.y,
+          opacity: placed ? undefined : 0,
           ...(placed && fromLeft(placed.x)),
         },
         // The Modal's host isolates it, popups beside it included.
