@@ -152,6 +152,13 @@ import {
   ToolbarLink,
   ToolbarSeparator,
 } from "../src/toolbar"
+import {
+  Timeline,
+  TimelineItem,
+  TimelineMarker,
+  TimelineTime,
+  TimelineTitle,
+} from "../src/timeline"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../src/tooltip"
 
 const os = Platform.OS === "android" ? "android" : "ios"
@@ -178,6 +185,8 @@ const checkProgress = () =>
 const checkMeter = () => checkPattern(screen.container, "meter", { os, act })
 const checkToolbar = () =>
   checkPattern(screen.container, "toolbar", { os, act })
+const checkTimeline = () =>
+  checkPattern(screen.container, "timeline", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
 const checkAccordion = () =>
@@ -1940,6 +1949,89 @@ describe("checkPattern's toolbar pattern on the native host", () => {
     )
     await expect(checkToolbar()).rejects.toThrow(
       "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
+    )
+  })
+})
+
+describe("checkPattern's timeline pattern on the native host", () => {
+  test("passes on a timeline whose events read their texts, one read as one element and one holding a control", async () => {
+    await render(
+      <Timeline aria-label="Changelog">
+        <TimelineItem accessible>
+          <TimelineMarker />
+          <TimelineTitle>Version 2.4</TimelineTitle>
+          <TimelineTime>October 28</TimelineTime>
+        </TimelineItem>
+        <TimelineItem>
+          <TimelineTitle>Version 2.3</TimelineTitle>
+          <Collapsible>
+            <CollapsibleTrigger>
+              <Text>What Changed</Text>
+            </CollapsibleTrigger>
+            <CollapsiblePanel>
+              <Text>Shared links.</Text>
+            </CollapsiblePanel>
+          </Collapsible>
+        </TimelineItem>
+      </Timeline>
+    )
+    await expect(checkTimeline()).resolves.toBeUndefined()
+  })
+
+  test("fails with no list role", async () => {
+    await render(
+      <View>
+        <Text>Deployed</Text>
+      </View>
+    )
+    await expect(checkTimeline()).rejects.toThrow(
+      "has no view with the list role"
+    )
+  })
+
+  test("fails on a timeline read as one element, which hides its events", async () => {
+    await render(
+      <Timeline aria-label="Activity" accessible>
+        <TimelineItem>
+          <TimelineTitle>Deployed</TimelineTitle>
+        </TimelineItem>
+      </Timeline>
+    )
+    await expect(checkTimeline()).rejects.toThrow(
+      "is one accessible element; each event in a timeline is read on its own"
+    )
+  })
+
+  test("fails on a timeline with no event, and on an event read as one element with no name", async () => {
+    await render(<Timeline aria-label="Activity" />)
+    await expect(checkTimeline()).rejects.toThrow("holds no event")
+    await render(
+      <Timeline aria-label="Activity">
+        <TimelineItem accessible>
+          <TimelineMarker />
+        </TimelineItem>
+      </Timeline>
+    )
+    await expect(checkTimeline()).rejects.toThrow("an element needs")
+  })
+
+  test("fails on two timelines when one has no name", async () => {
+    await render(
+      <View>
+        <Timeline aria-label="Activity">
+          <TimelineItem>
+            <TimelineTitle>Deployed</TimelineTitle>
+          </TimelineItem>
+        </Timeline>
+        <Timeline>
+          <TimelineItem>
+            <TimelineTitle>Merged</TimelineTitle>
+          </TimelineItem>
+        </Timeline>
+      </View>
+    )
+    await expect(checkTimeline()).rejects.toThrow(
+      "has no name; a screen has more than one timeline, so each needs an accessibilityLabel"
     )
   })
 })

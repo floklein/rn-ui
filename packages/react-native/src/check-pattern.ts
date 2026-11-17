@@ -56,6 +56,7 @@ type NativePattern =
   | "switch"
   | "tabs"
   | "textbox"
+  | "timeline"
   | "toast"
   | "toolbar"
   | "tooltip"
@@ -1076,6 +1077,46 @@ async function toolbarPattern(context: Context) {
   }
 }
 
+// Native has no list item or feed article roles, so only the list is found.
+async function timelinePattern(context: Context) {
+  const lists = shownNodes(context.root).filter(
+    (node) => roleOf(node) === "list"
+  )
+  if (!lists.length) {
+    context.problem(
+      context.root,
+      "has no view with the list role, so it isn't a timeline."
+    )
+    return
+  }
+  const elements = context.elements()
+  for (const list of lists) {
+    if (elements.includes(list)) {
+      context.problem(
+        list,
+        "is one accessible element; each event in a timeline is read on its own."
+      )
+      continue
+    }
+    if (lists.length > 1 && !list.props.accessibilityLabel) {
+      context.problem(
+        list,
+        "has no name; a screen has more than one timeline, so each needs an accessibilityLabel."
+      )
+    }
+    const inside = shownNodes(list).filter((node) => elements.includes(node))
+    if (!inside.length) {
+      context.problem(list, "holds no event a screen reader can read.")
+    }
+    for (const node of inside) {
+      requireName(context, node, roleOf(node) ?? "element")
+    }
+  }
+  if (context.withRole("button").length) {
+    await buttonPattern(context)
+  }
+}
+
 // Without value text, VoiceOver reads the value as a share of max minus min.
 async function barPattern(context: Context, pattern: "progressbar" | "meter") {
   const bars = shownNodes(context.root).filter(
@@ -1441,6 +1482,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
+  timeline: timelinePattern,
   toast: toastPattern,
   toolbar: toolbarPattern,
   tooltip: tooltipPattern,

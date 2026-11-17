@@ -130,6 +130,13 @@ import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { checkDirection } from "../src/testing"
 import { Toggle, ToggleGroup } from "../src/toggle"
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineItem,
+  TimelineMarker,
+  TimelineTitle,
+} from "../src/timeline"
 import { Toolbar, ToolbarButton, ToolbarSeparator } from "../src/toolbar"
 
 const os = Platform.OS === "android" ? "android" : "ios"
@@ -546,6 +553,28 @@ describe("checkDirection on the native host", () => {
               <Toggle value="bold" aria-label="Bold" />
               <Toggle value="italic" aria-label="Italic" />
             </ToggleGroup>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a horizontal timeline", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Timeline orientation="horizontal" aria-label="Roadmap">
+              {["Kickoff", "Beta", "Launch"].map((title) => (
+                <TimelineItem key={title}>
+                  <TimelineMarker />
+                  <TimelineConnector />
+                  <TimelineTitle>{title}</TimelineTitle>
+                </TimelineItem>
+              ))}
+            </Timeline>
           )
           return screen.container
         },

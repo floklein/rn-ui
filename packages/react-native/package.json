@@ -66,6 +66,7 @@
     "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
     "./time-input": "./src/time-input.tsx",
+    "./timeline": "./src/timeline.tsx",
     "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toolbar": "./src/toolbar.tsx",
@@ -277,6 +278,10 @@
       "./time-input": {
         "types": "./dist/time-input.d.ts",
         "default": "./dist/time-input.js"
+      },
+      "./timeline": {
+        "types": "./dist/timeline.d.ts",
+        "default": "./dist/timeline.js"
       },
       "./toast": {
         "types": "./dist/toast.d.ts",

@@ -1201,6 +1201,30 @@
       "mirrors": ["packages/core/src/components/date-input/date-input-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The segments come from segmentElements in date-input-field.ts, which has a native twin, instead of elements(context, \"segment\"), and internal spreads nativeField(...) from the same module. paste's body is pasteText(text, event), which the native field calls with pasted text; step, insert and remove take an optional event. Additive: the state's selection, which a native corrected edit writes back."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/timeline/timeline-order.native.ts",
+      "mirrors": [
+        "packages/core/src/components/timeline/timeline.ts",
+        "packages/core/src/components/timeline/timeline-order.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Native has no CSS variables or markup order, so every event gets its position and the timeline its size in state, where the DOM module writes --timeline-count and --timeline-index and leaves a list's positions to its markup."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/timeline/timeline-native.ts",
+      "mirrors": ["packages/core/src/components/timeline/timeline.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the item, time, title and description slots' binds orchestrate: an event joins the roving group while it's mounted, so the timeline knows its events in render order, measures them and its controller focuses one, and a time, title or description adds its event's key to times, titles or descriptions while mounted, which names and describes the event."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/timeline/timeline.ts",
+      "mirrors": ["packages/core/src/components/timeline/timeline.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "measure() writes the count and indexes through timeline-order.ts (orderEvents), which has a native twin, instead of setting the CSS variables itself, and writes positions and size when it returns true."
     }
   ],
   "components": {
@@ -2121,6 +2145,31 @@
           "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
+    },
+    "timeline": {
+      "entry": "packages/react-native/src/timeline.tsx",
+      "slots": {
+        "timeline.root": {
+          "needs": "nothing",
+          "reason": "Its bind checks a feed's name in development, measures the events and watches the DOM for events moved without binding again. On native each event joins the roving group as it mounts (timeline-native.ts), whose item change measures them, the order twin sorts by the views on each read, and the adapter's root (packages/react-native/src/timeline.tsx) measures again after each render, which catches events moved without joining or leaving."
+        },
+        "timeline.item": {
+          "covered": "packages/core/src/components/timeline/timeline-native.ts",
+          "reason": "Its bind joins the roving group, which timeline-native.ts does while the event is mounted, and removes --timeline-index, which native never writes. Its keydown moves between events with arrow keys, Home, End, Page Down and Page Up, which native doesn't build: each event is reached by swiping."
+        },
+        "timeline.time": {
+          "covered": "packages/core/src/components/timeline/timeline-native.ts",
+          "reason": "Its bind adds its event's key to times while mounted, which timeline-native.ts does."
+        },
+        "timeline.title": {
+          "covered": "packages/core/src/components/timeline/timeline-native.ts",
+          "reason": "Its bind adds its event's key to titles while mounted, which timeline-native.ts does."
+        },
+        "timeline.description": {
+          "covered": "packages/core/src/components/timeline/timeline-native.ts",
+          "reason": "Its bind adds its event's key to descriptions while mounted, which timeline-native.ts does."
+        }
+      }
     }
   },
   "pending": [
@@ -2131,7 +2180,6 @@
     "menu",
     "menubar",
     "navigation-menu",
-    "timeline",
     "token-input",
     "tree",
     "trigger-menu",

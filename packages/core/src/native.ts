@@ -66,6 +66,7 @@ export {
   type NativeToastSwipe,
   toastNative,
 } from "./components/toast/toast-native"
+export { timelineNative } from "./components/timeline/timeline-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export { toolbarNative } from "./components/toolbar/toolbar-native"
 export {

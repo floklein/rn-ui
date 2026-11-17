@@ -36,6 +36,7 @@ import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { createToaster, toastRegion } from "@ui-sdk/core/toast"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
+import { timeline } from "@ui-sdk/core/timeline"
 import { toolbar } from "@ui-sdk/core/toolbar"
 import { checkCreation } from "../src/testing"
 
@@ -55,6 +56,18 @@ describe("checkCreation", () => {
     expect(() => checkCreation(toolbar, {})).not.toThrow()
     expect(() =>
       checkCreation(toolbar, { orientation: "vertical", disabled: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a timeline, a list or a busy horizontal feed", () => {
+    expect(() => checkCreation(timeline, {})).not.toThrow()
+    expect(() =>
+      checkCreation(timeline, {
+        orientation: "horizontal",
+        feed: true,
+        busy: true,
+        loop: false,
+      })
     ).not.toThrow()
   })
 
