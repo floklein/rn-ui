@@ -687,6 +687,28 @@ function resizableApiBody(
         keys = undefined
         complete(start, "step-key", event ?? last)
       },
+      // A screen reader's increment or decrement on the native host: a step
+      // that commits at once, as a key that comes straight back up.
+      adjust(key: string, direction: 1 | -1) {
+        const handle = handleIndex(key)
+        if (handle === null || handleDisabled(key) || keys) {
+          return
+        }
+        refresh()
+        const start = current().slice()
+        const { constraints, step } = store.get()
+        const moved = resizeAt(
+          start,
+          constraints,
+          handle,
+          direction * step,
+          1,
+          locked()
+        )
+        if (request(moved, "step-key")) {
+          complete(start, "step-key")
+        }
+      },
       // A double-click.
       toggle(key: string, event?: KeyboardEvent | MouseEvent) {
         const handle = handleIndex(key)

@@ -55,6 +55,7 @@ type NativePattern =
   | "toast"
   | "toolbar"
   | "tooltip"
+  | "window-splitter"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -1115,7 +1116,8 @@ const valueOf = (node: HostNode) =>
 async function checkAdjusts(
   context: Context,
   index: number,
-  action: "increment" | "decrement"
+  action: "increment" | "decrement",
+  widget: string
 ) {
   const thumb = () => context.withRole("adjustable")[index]
   const { min, max, now } = valueOf(thumb())
@@ -1129,7 +1131,7 @@ async function checkAdjusts(
   if (!moved) {
     context.problem(
       thumb(),
-      `stays at ${now} after the ${action} action; a screen reader's ${action} moves a slider a step.`
+      `stays at ${now} after the ${action} action; a screen reader's ${action} moves a ${widget} a step.`
     )
     return
   }
@@ -1140,24 +1142,25 @@ async function checkAdjusts(
   )
 }
 
-// Each thumb is one adjustable element: VoiceOver's swipes and TalkBack's
-// adjustments arrive as the increment and decrement actions.
-async function sliderPattern(context: Context) {
+// Each thumb, or a window splitter's handle, is one adjustable element:
+// VoiceOver's swipes and TalkBack's adjustments arrive as the increment and
+// decrement actions.
+const adjustablePattern = (widget: string) => async (context: Context) => {
   const thumbs = context.withRole("adjustable")
   if (!thumbs.length) {
     context.problem(
       context.root,
-      "has no accessible element with the adjustable role, so it isn't a slider."
+      `has no accessible element with the adjustable role, so it isn't a ${widget}.`
     )
     return
   }
   for (const [index, thumb] of thumbs.entries()) {
-    requireName(context, thumb, "slider")
+    requireName(context, thumb, widget)
     const { min, max, now, text } = valueOf(thumb)
     if (now === undefined || min === undefined || max === undefined) {
       context.problem(
         thumb,
-        "has no current value and range; a slider always has them."
+        `has no current value and range; a ${widget} always has them.`
       )
       continue
     }
@@ -1177,10 +1180,10 @@ async function sliderPattern(context: Context) {
       if (!actionsOf(thumb).includes(action)) {
         context.problem(
           thumb,
-          `doesn't declare the ${action} action, which a screen reader adjusts a slider with.`
+          `doesn't declare the ${action} action, which a screen reader adjusts a ${widget} with.`
         )
       } else if (!isDisabled(thumb)) {
-        await checkAdjusts(context, index, action)
+        await checkAdjusts(context, index, action, widget)
       }
     }
   }
@@ -1204,13 +1207,14 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   "radio-group": radioGroupPattern,
   "scroll-area": scrollAreaPattern,
   separator: separatorPattern,
-  slider: sliderPattern,
+  slider: adjustablePattern("slider"),
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
   toast: toastPattern,
   toolbar: toolbarPattern,
   tooltip: tooltipPattern,
+  "window-splitter": adjustablePattern("window splitter"),
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's
