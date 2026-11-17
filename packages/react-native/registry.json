@@ -1055,6 +1055,54 @@
       "mirrors": ["packages/core/src/foundation/number/parse.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-dom.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads the slides' layout from what their views reported through nativeCarousel's layout, which leaves out the content's translation, where the DOM side reads offsets and computed scroll padding. Views have no CSS order or scroll snap, so writing the slides' order and snap areas does nothing (a loop rewinds), and the adapter labels each slide \"1 of 5\" itself."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-motion.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The web's mouse drag through the same gesture machine, fed by the responder's touches on the viewport (followed with the host's follow, taken back from a button inside once it moves along the axis), and the same springs; the position goes to the adapter through nativeCarousel instead of the viewport's scroll position. A cancelled or taken responder springs back to the page it started on. No native scrolling, so no scroll rest or snapping."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/carousel/carousel-native.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel.ts",
+        "packages/core/src/components/carousel/carousel-api.ts",
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, viewport's, slides' and indicators' binds orchestrate: each binds with a stand-in for its view, the views' layouts reach the api through nativeCarousel, which measures again, and the content's offset goes back to the adapter."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-api.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The viewport and the slides are the ones bound (kept in an order, which the native order twin sorts by the views), instead of the parts' elements, which native never sets. The tab stop, the resize and intersection observers, the visibility listener and the interval's CSS variable run only where isBrowser is true. Additive: internal.measure(), which the native host calls once its views lay out."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-indicators.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The indicators are the ones bound, kept in an order, instead of the parts' elements, so indicators without a page take theirs from their order on native too."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/carousel/carousel-motion.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "onRelease's event is optional, since a native release has none."
     }
   ],
   "components": {
@@ -1818,11 +1866,47 @@
           "reason": "The hidden input part isn't rendered on native, which has no forms."
         }
       }
+    },
+    "carousel": {
+      "entry": "packages/react-native/src/carousel.tsx",
+      "slots": {
+        "carousel.root": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind runs rotation, which carousel-native.ts starts through the same bind with a stand-in, and pauses it under a hovering mouse, for a hidden tab and off screen, and stops it when keyboard focus moves in: native has no hover over a carousel, no document visibility or intersection observer, and reports no focus (spec, Hardware keyboards). A drag pauses it, and paging stops it."
+        },
+        "carousel.viewport": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind moves the viewport and observes its size; carousel-native.ts binds it with a stand-in whose motion (carousel-motion.native.ts) follows the responder's touches and moves the content, and the adapter's onLayout measures again where the ResizeObserver does. Its tab stop and arrow keys scroll by keyboard, which native doesn't deliver to views (spec, Hardware keyboards); the Previous and Next parts and the indicators page instead."
+        },
+        "carousel.item": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the slide in order, observes its size and labels it \"1 of 5\"; carousel-native.ts joins it with a stand-in, the adapter's onLayout measures it and the adapter labels it. Its focusin keeps a focused slide shown, and native reports no focus."
+        },
+        "carousel.previous": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.next": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.play-toggle": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.indicator-group": {
+          "needs": "nothing",
+          "reason": "Its keydown moves between the indicators with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); each indicator is its own accessible element, reached by swiping."
+        },
+        "carousel.indicator": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the indicators' roving group, which orders the indicators that take their page from their order; carousel-native.ts joins it with a stand-in. Its development name check reads the DOM."
+        }
+      }
     }
   },
   "pending": [
     "autocomplete",
-    "carousel",
     "combobox",
     "command",
     "date-input",
@@ -2313,6 +2397,18 @@
       "example": "wheel",
       "feature": "Stepping with the mouse wheel",
       "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
+    },
+    {
+      "component": "carousel",
+      "example": "progress",
+      "feature": "A progress bar timed by the --carousel-progress CSS variable",
+      "reason": "Native has no CSS variables; the controller's getProgress() reads how far the slides have moved, and onPageChangeComplete says when they rest."
+    },
+    {
+      "component": "carousel",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager; a right-to-left app pages from the right with no prop."
     }
   ]
 }

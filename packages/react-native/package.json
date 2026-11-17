@@ -23,6 +23,7 @@
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./calendar": "./src/calendar.tsx",
+    "./carousel": "./src/carousel.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./color": "./src/color.ts",
@@ -96,6 +97,10 @@
       "./calendar": {
         "types": "./dist/calendar.d.ts",
         "default": "./dist/calendar.js"
+      },
+      "./carousel": {
+        "types": "./dist/carousel.d.ts",
+        "default": "./dist/carousel.js"
       },
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
