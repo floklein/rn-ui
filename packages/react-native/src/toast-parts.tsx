@@ -289,9 +289,10 @@ function Toast(props: PartProps<typeof View, ToastState>) {
         {
           ...responder(part, null),
           ...(dismissible && {
-            // TalkBack offers actions only on the element it focuses; on
-            // iOS an accessible root would hide the toast's buttons.
-            accessible: Platform.OS === "android",
+            // TalkBack offers actions only on the element it focuses (Android
+            // 9 and up); `accessible` would merge the buttons on iOS and add
+            // a Tab stop on Android.
+            screenReaderFocusable: Platform.OS === "android",
             onAccessibilityEscape: dismiss,
             onAccessibilityAction: (event: AccessibilityActionEvent) => {
               if (event.nativeEvent.actionName === "dismiss") {

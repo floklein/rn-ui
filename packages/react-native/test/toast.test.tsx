@@ -343,7 +343,7 @@ describe("ToastRegion", () => {
       name: "dismiss",
       label: "Dismiss",
     })
-    expect(root.props.accessible).toBe(Platform.OS === "android")
+    expect(root.props.screenReaderFocusable).toBe(Platform.OS === "android")
     await fireEvent(root, "accessibilityAction", {
       nativeEvent: { actionName: "dismiss" },
     })
