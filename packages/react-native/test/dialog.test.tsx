@@ -39,6 +39,7 @@ import "../src/input"
 import "../src/rating"
 import "../src/resizable"
 import "../src/scroll-area"
+import "../src/select"
 import "../src/toast"
 import { Switch } from "../src/switch"
 import "../src/tabs"
@@ -428,6 +429,7 @@ describe("the adapter's contexts inside the Modal", () => {
       "FileInputFile",
       "InputGroup",
       "Outlet",
+      "Placed",
       "RatingItem",
       "ResizableSpace",
       "ScrollAreaOrientation",
