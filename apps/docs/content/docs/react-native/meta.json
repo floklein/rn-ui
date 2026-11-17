@@ -1,4 +1,11 @@
 {
   "title": "React Native",
-  "pages": ["---Get Started---", "index", "installation", "components"]
+  "pages": [
+    "---Get Started---",
+    "index",
+    "installation",
+    "components",
+    "---Guides---",
+    "agents"
+  ]
 }

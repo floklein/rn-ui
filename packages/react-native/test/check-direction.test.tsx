@@ -23,6 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../src/dialog"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../src/drawer"
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Label } from "../src/label"
 import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
@@ -33,6 +40,13 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import {
+  FileInput,
+  FileInputItem,
+  FileInputItemRemove,
+  FileInputList,
+  FileInputTrigger,
+} from "../src/file-input"
 import {
   NumberInput,
   NumberInputControl,
@@ -57,6 +71,7 @@ import {
   PaginationPrevious,
 } from "../src/pagination"
 import { Calendar } from "../src/calendar"
+import { DatePicker } from "../src/date-picker"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -69,6 +84,15 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import {
+  ScrollArea,
+  ScrollAreaContent,
+  ScrollAreaCorner,
+  ScrollAreaScrollbar,
+  ScrollAreaScrollToEnd,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+} from "../src/scroll-area"
 import { Separator } from "../src/separator"
 import { Slider, SliderControl, SliderThumb } from "../src/slider"
 import { Switch, SwitchThumb } from "../src/switch"
@@ -186,6 +210,61 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   }, 30_000)
 
+  test("passes on a date picker, open", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <DatePicker
+                defaultOpen
+                defaultValue="2026-02-16"
+                locale="en-US"
+              />
+            </OverlayHost>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  }, 30_000)
+
+  test("passes on a file input", async () => {
+    const file = {
+      name: "photo.png",
+      size: 2_000,
+      type: "image/png",
+      uri: "file:///photo.png",
+    }
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <FileInput defaultValue={[file]}>
+              <FileInputTrigger>
+                <Text>Choose a file</Text>
+              </FileInputTrigger>
+              <FileInputList>
+                <FileInputItem>
+                  {({ file: shown }) => (
+                    <>
+                      <Text>{shown.name}</Text>
+                      <FileInputItemRemove />
+                    </>
+                  )}
+                </FileInputItem>
+              </FileInputList>
+            </FileInput>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
   test("passes on a pagination", async () => {
     await expect(
       checkDirection(
@@ -225,6 +304,36 @@ describe("checkDirection on the native host", () => {
                 </MeterTrack>
               </Meter>
             </View>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a scroll area", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ScrollArea>
+              <ScrollAreaViewport>
+                <ScrollAreaContent>
+                  <Text>Release notes</Text>
+                </ScrollAreaContent>
+              </ScrollAreaViewport>
+              <ScrollAreaScrollbar>
+                <ScrollAreaThumb />
+              </ScrollAreaScrollbar>
+              <ScrollAreaScrollbar orientation="horizontal">
+                <ScrollAreaThumb />
+              </ScrollAreaScrollbar>
+              <ScrollAreaCorner />
+              <ScrollAreaScrollToEnd>
+                <Text>Latest</Text>
+              </ScrollAreaScrollToEnd>
+            </ScrollArea>
           )
           return screen.container
         },
@@ -408,6 +517,31 @@ describe("checkDirection on the native host", () => {
                 </DialogClose>
               </DialogContent>
             </Dialog>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a drawer", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <Drawer side="start">
+              <DrawerTrigger>
+                <Text>Menu</Text>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerTitle>Menu</DrawerTitle>
+                <DrawerClose>
+                  <Text>Close</Text>
+                </DrawerClose>
+              </DrawerContent>
+            </Drawer>
           )
           return screen.container
         },

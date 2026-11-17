@@ -397,6 +397,11 @@ Every difference the resolutions record, by subject.
 - An exit ends when the app calls `done` from `onExit`, or at a timeout; nothing reads an animation ([How presence and exit animation work on native][presence]).
 - Entering settles at once, so `onOpenChangeComplete(true)` doesn't wait for an enter animation ([How presence and exit animation work on native][presence]).
 - A panel's size is a state field ([How presence and exit animation work on native][presence]).
+- Drawer's content leaves with its own close settle, so it takes no `onExit` (ticket 72).
+- A scroll view inside a drawer, scrolled away from its start while the drawer rests at its largest snap point, keeps the whole touch: reaching its start doesn't hand the rest of that touch to the drawer, as the web does. At its start the drawer takes the touch and scrolls the content itself, as the web's pointer driver does (ticket 72).
+- A drawer with `modalAbove` renders in the `OverlayHost`, like a non-modal dialog, since a `Modal` takes every press and the page behind must stay usable (ticket 72).
+- Drawer's `themeColor`, `preventEdgeSwipe` and the scroll-snap `driver` are absent; the handle's arrow keys, Home and End are a screen reader's increment and decrement (ticket 72).
+- A drawer opened from another scales the one below back by 4% per drawer above it, as it rises: native has no `--drawer-stack` variable for a style to read. A field inside a drawer taller than the room above the keyboard isn't scrolled into view; a `ScrollView` around it does that (ticket 132).
 
 **Input and text entry**
 
@@ -411,6 +416,7 @@ Every difference the resolutions record, by subject.
 - A multiline field has no modifier-plus-Enter submit, and Number Input has no arrow-key stepping ([How text entry components work on TextInput][text-entry]).
 - Edge scrolling during a drag works only inside the library's Scroll Area ([How drags and canvas components work on native][drags]).
 - A drag inside a plain `ScrollView` that scrolls along the same axis needs the app to pass `scrollEnabled={!dragging}`, with `dragging` set from the drag part's responder grant, release and termination. On iOS the scroll view otherwise pans along with the drag, since Fabric only stops it for a responder above it, not inside it. A perpendicular scroll view needs nothing, and the library's Scroll Area stops its own scrolling ([council batch 3][council-3]).
+- Scroll Area scrolls one axis, as a `ScrollView` does: vertical, or horizontal with the viewport's `horizontal` prop. Android has no `ScrollView` that scrolls both, so both axes need a horizontal `ScrollView` inside the viewport. Its edges reach styles as the `atStart` and `atEnd` state, not as the web's overflow and progress variables; touch never hovers, so `type="hover"` shows the scrollbars while scrolling; a touch on the scrollbar beside the thumb pages once, and the wheel, Alt and Escape behaviors of a mouse are absent ([Scroll area](https://github.com/floklein/rn-ui/issues/110)).
 - `cropImage` is absent ([How drags and canvas components work on native][drags]).
 - File Input takes a `pick` function, and its files carry a `uri` ([What parity means for every component][parity]).
 - Calendar has no month or year select, since native has no select element; an app controls `month` from its own picker. No focus is observed, so its `focused` state moves only when the months turn to show a day, and a press on a day of the month shown reports no `onFocusedChange` (ticket 102).

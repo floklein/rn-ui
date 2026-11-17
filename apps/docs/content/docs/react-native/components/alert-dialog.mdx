@@ -83,6 +83,15 @@ A Close part's `action` runs before the alert dialog closes. A Promise it return
   caption="Tap Review Two Projects. Answer Acme's question, then Globex's, and the log shows both answers."
 />
 
+## Confirm From Anywhere
+
+The shared `confirm()` asks a question with no alert dialog of your own. The [`OverlayHost`](../installation#wrap-your-app) that wraps your app shows each question as an alert dialog, a card on a dimmed screen, one at a time, and `confirm()` resolves `true` when someone agrees. Asked while a modal dialog is open, the question shows inside that dialog's `Modal`, above it. Over your own `Modal` or a modal screen, it shows only if that screen has an `OverlayHost` of its own, as [Wrap Your App](../installation#wrap-your-app) says. Without an `OverlayHost`, nothing shows it, and development builds warn you. [Confirm Options](#confirm-options) lists what you can pass. To style the question, use your own alert dialog with `createConfirm()`, as in [Confirm](#confirm).
+
+<ComponentExample
+  name="alert-dialog/confirm-anywhere"
+  caption="Tap Archive Project, then Archive or Cancel. The log shows the answer."
+/>
+
 ## Nested
 
 An alert dialog opened inside another renders inside its `Modal`, such as a second confirmation before something can't be undone. Android's back button closes the topmost one and returns focus to its trigger. To close both once the last question is answered, control the outer alert dialog and close it when the inner one closes with `returnValue` `"confirm"`.
@@ -188,6 +197,15 @@ Props and callbacks are the same as below, as React Native props.
 <ReasonTable
   path="../../packages/core/src/components/dialog/dialog.ts"
   name="AlertDialogOpenChangeReason"
+/>
+
+### Confirm Options
+
+What the shared `confirm()` shows when the `OverlayHost` renders the question. With your own alert dialog, `createConfirm<Payload>()` takes the payload you choose instead.
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="ConfirmOptions"
 />
 
 ### Controller

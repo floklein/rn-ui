@@ -18,9 +18,12 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A scroll area's content is what its ScrollView holds; beside it, only a
+ * named button (scroll-to-end) may reach a screen reader.
  * A calendar's days are its buttons with a selected state; pass one that can
  * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
+ * A file input's remove buttons are the buttons inside its list.
  * @experimental
  */
 type NativePattern =
@@ -29,13 +32,16 @@ type NativePattern =
   | "button"
   | "calendar"
   | "checkbox"
+  | "date-picker"
   | "dialog"
   | "disclosure"
+  | "file-input"
   | "img"
   | "meter"
   | "pagination"
   | "progressbar"
   | "radio-group"
+  | "scroll-area"
   | "separator"
   | "slider"
   | "switch"
@@ -129,6 +135,54 @@ async function buttonPattern(context: Context) {
         "togglebutton",
         index,
         (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
+// There's no WAI-ARIA pattern for a file input; its buttons are found again
+// by name, since each removal takes one away.
+async function fileInputPattern(context: Context) {
+  const buttons = context.withRole("button")
+  if (!buttons.length) {
+    context.problem(
+      context.root,
+      "has no element with the button role, so nothing opens the picker."
+    )
+    return
+  }
+  for (const button of buttons) {
+    requireName(context, button, "button")
+  }
+  const removers = () => {
+    const list = shownNodes(context.root).find(
+      (node) => node.props.accessibilityRole === "list"
+    )
+    return list
+      ? readTree(list, context.os).elements.filter(
+          (node) => roleOf(node) === "button"
+        )
+      : []
+  }
+  const count = (name: string) =>
+    removers().filter((node) => nameOf(node) === name).length
+  const names = () => [...new Set(removers().map(nameOf))]
+  for (const name of names()) {
+    const button = removers().find(
+      (node) => nameOf(node) === name && !isDisabled(node)
+    )
+    if (!button) {
+      continue
+    }
+    const before = new Map(names().map((other) => [other, count(other)]))
+    await performWatched(button, "activate", context.act)
+    const changed = [...before].filter(
+      ([other, was]) => count(other) !== (other === name ? was - 1 : was)
+    )
+    if (changed.length) {
+      context.problem(
+        button,
+        "doesn't remove only its own file after the activate action; a remove button in the list takes its item away."
       )
     }
   }
@@ -477,6 +531,92 @@ async function calendarPattern(context: Context) {
   }
 }
 
+// A date picker's trigger opens its calendar in a popup that takes the escape
+// gesture and moves the screen reader in. Activating a day picks it: once the
+// popup closes, focus goes back to the trigger, and the day reads selected.
+async function datePickerPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  const popup = () =>
+    shownNodes(context.root).find(
+      (node) => typeof node.props.onAccessibilityEscape === "function"
+    )
+  const days = () => {
+    const shown = popup()
+    return shown
+      ? shownNodes(shown).filter(
+          (node) =>
+            roleOf(node) === "button" &&
+            typeof stateOf(node).selected === "boolean"
+        )
+      : []
+  }
+  const trigger = buttons().findIndex(
+    (button) =>
+      !isDisabled(button) && typeof stateOf(button).expanded === "boolean"
+  )
+  const open = async () => {
+    const requests = await performWatched(
+      buttons()[trigger]!,
+      "activate",
+      context.act
+    )
+    return popup() ? requests : undefined
+  }
+  const requests = trigger < 0 ? undefined : await open()
+  if (!requests) {
+    context.problem(
+      context.root,
+      "has no button that opens its calendar in a view that takes the escape gesture."
+    )
+    return
+  }
+  if (!requests.length) {
+    context.problem(
+      buttons()[trigger]!,
+      "requests no accessibility focus when it opens the calendar; the screen reader moves into it."
+    )
+  }
+  requireName(context, popup()!, "popup")
+  for (const day of days()) {
+    requireName(context, day, "day")
+  }
+  const name = days()
+    .filter((day) => !isDisabled(day) && !stateOf(day).selected)
+    .map(nameOf)
+    .find(Boolean)
+  if (!name) {
+    context.problem(
+      popup()!,
+      "shows no day that can be picked, so picking one can't be checked."
+    )
+    return
+  }
+  const picked = () => days().find((day) => nameOf(day) === name)
+  const closing = await performWatched(picked()!, "activate", context.act)
+  if (!popup()) {
+    if (!closing.length) {
+      context.problem(
+        context.root,
+        "requests no accessibility focus after a day closes the calendar; focus returns to the trigger."
+      )
+    }
+    await open()
+  }
+  const after = picked()
+  if (!after || stateOf(after).selected !== true) {
+    context.problem(
+      after ?? context.root,
+      "isn't selected after the activate action; activating a day that isn't disabled picks it."
+    )
+  }
+  if (context.os === "android") {
+    await checkExpandFocus(context, trigger)
+  }
+}
+
 // Activating a radio checks it and unchecks the one checked before.
 async function radioGroupPattern(context: Context) {
   const radios = context.withRole("radio")
@@ -675,6 +815,45 @@ async function separatorPattern(context: Context) {
       context.problem(
         node,
         "is a keyboard stop; a separator is never focusable."
+      )
+    }
+  }
+}
+
+// Screen readers scroll a ScrollView themselves, item by item, so drawn
+// scrollbars stay hidden and the content must not be one element.
+async function scrollAreaPattern(context: Context) {
+  const scrollViews = shownNodes(context.root).filter((node) =>
+    /ScrollView$/.test(node.type)
+  )
+  if (!scrollViews.length) {
+    context.problem(
+      context.root,
+      "has no ScrollView, so a screen reader can't scroll it."
+    )
+  }
+  const elements = context.elements()
+  const inside = new Set(
+    scrollViews.flatMap((node) => readTree(node, context.os).elements)
+  )
+  for (const node of scrollViews) {
+    if (elements.includes(node)) {
+      context.problem(
+        node,
+        "is one accessible element, so a screen reader can't read its content item by item."
+      )
+    }
+  }
+  for (const node of elements) {
+    if (inside.has(node) || scrollViews.includes(node)) {
+      continue
+    }
+    if (roleOf(node) === "button") {
+      requireName(context, node, "button")
+    } else {
+      context.problem(
+        node,
+        "is read beside the ScrollView; a scroll area's scrollbars, thumbs and corner are hidden from screen readers."
       )
     }
   }
@@ -884,13 +1063,16 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   calendar: calendarPattern,
   checkbox: checkboxPattern,
+  "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
+  "file-input": fileInputPattern,
   img: imgPattern,
   meter: (context) => barPattern(context, "meter"),
   pagination: paginationPattern,
   progressbar: (context) => barPattern(context, "progressbar"),
   "radio-group": radioGroupPattern,
+  "scroll-area": scrollAreaPattern,
   separator: separatorPattern,
   slider: sliderPattern,
   switch: switchPattern,

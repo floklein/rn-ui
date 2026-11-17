@@ -38,13 +38,33 @@ describe("@ui-sdk/react-native", () => {
     }
   })
 
-  test("its peers are react and react-native, beside @ui-sdk/core, and it has no dependencies", () => {
+  test("its required peers are react and react-native, beside @ui-sdk/core, and it has no dependencies", () => {
+    const optional = Object.keys(manifest.peerDependenciesMeta ?? {}).filter(
+      (name) => manifest.peerDependenciesMeta[name].optional
+    )
     expect(
       Object.keys(manifest.peerDependencies).filter(
-        (name) => !name.startsWith("@ui-sdk/")
+        (name) => !name.startsWith("@ui-sdk/") && !optional.includes(name)
       )
     ).toEqual(["react", "react-native"])
+    expect(optional).toEqual(["react-native-gesture-handler"])
     expect(manifest.dependencies).toBeUndefined()
+  })
+
+  test("Gesture Handler is imported by Drawer's entry alone, which no other module imports", () => {
+    const sourceDir = path.join(packageDir, "src")
+    const importers = readdirSync(sourceDir).filter((file) =>
+      readFileSync(path.join(sourceDir, file), "utf8").includes(
+        'from "react-native-gesture-handler"'
+      )
+    )
+    expect(importers).toEqual(["drawer.tsx"])
+    const drawerImporters = readdirSync(sourceDir).filter((file) =>
+      readFileSync(path.join(sourceDir, file), "utf8").includes(
+        'from "./drawer"'
+      )
+    )
+    expect(drawerImporters).toEqual([])
   })
 
   test("every module is exported or used by another module", () => {

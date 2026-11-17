@@ -9,7 +9,7 @@ import type {
   DialogTriggerProps,
   DialogTriggerState,
 } from "@ui-sdk/core/dialog"
-import { dialogNative } from "@ui-sdk/core/native"
+import { dialogNative, type NativeBehavior } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Pressable, Text, View } from "react-native"
@@ -58,19 +58,22 @@ type DialogParts = Parts<
   { title: typeof Text; description: typeof Text; close: typeof Pressable }
 >
 
-// Dialog and AlertDialog render the same parts over their own primitive.
-function dialogParts(primitive: typeof dialogPrimitive) {
+// Dialog, AlertDialog and Drawer render the same parts over their own primitive.
+function dialogParts(
+  primitive: typeof dialogPrimitive,
+  behavior: NativeBehavior = dialogNative
+) {
   const Trigger = popupTrigger(primitive) as (
     props: TriggerPartProps
   ) => React.ReactElement | null
   const parts: DialogParts = createParts(
     primitive,
     { title: Text, description: Text, close: Pressable },
-    dialogNative
+    behavior
   )
 
   function Root({ children, ...options }: RootProps) {
-    const handle = usePrimitive(primitive, options, dialogNative)
+    const handle = usePrimitive(primitive, options, behavior)
     useControllerEntry(options.controller, handle)
     const [outlet] = React.useState(createOutlet)
     return (

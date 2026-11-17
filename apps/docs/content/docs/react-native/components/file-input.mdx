@@ -1,0 +1,382 @@
+---
+title: File Input
+description: Choose files with your app's own picker, validate them, and list them with remove buttons.
+---
+
+A file input holds the files someone chooses, checks them against your rules, and lists them so each can be removed. React Native has no file picker of its own, so you pass a `pick` function that opens the document or photo picker your app already uses. Uploading the files is up to your app.
+
+<ComponentExample
+  name="file-input/basic"
+  caption="Press Browse Files to add a sample file, then remove one with its button."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+The component wraps no picker, so it adds no native module. Install the picker you want, like `expo-document-picker` or `expo-image-picker`, and follow its own setup.
+
+## Composition
+
+Use the following composition to build a `FileInput`:
+
+```text
+FileInput
+├── FileInputTrigger
+├── FileInputDropzone
+└── FileInputList
+    └── FileInputItem
+        └── FileInputItemRemove
+```
+
+`FileInput` renders a `View` that holds the files. `FileInputTrigger` is a `Pressable` that calls `pick`. `FileInputList` renders its item once for each file, and an item's state has its `file` and `index`. `FileInputItemRemove` is a `Pressable` that removes its item's file.
+
+`FileInputDropzone` is a plain `View` for the trigger and the text around it. React Native delivers no file drops or pastes to a view, so its `dragging` state stays false; it's there so a layout written for the web keeps its parts.
+
+## Usage
+
+Pass `pick` to the root. It receives `accept` and `multiple`, opens your picker, and returns the chosen files, each with a `name`, a `size` in bytes, a MIME `type` and a `uri`. Return nothing, or an empty list, when the picker is canceled. This one uses `expo-document-picker`:
+
+```tsx
+import * as DocumentPicker from "expo-document-picker"
+import {
+  FileInput,
+  FileInputItem,
+  FileInputItemRemove,
+  FileInputList,
+  FileInputTrigger,
+  formatFileSize,
+  type FileInputPickOptions,
+} from "@ui-sdk/react-native/file-input"
+import { Text } from "react-native"
+
+async function pick({ accept, multiple }: FileInputPickOptions) {
+  const types = accept.filter((token) => token.includes("/"))
+  const result = await DocumentPicker.getDocumentAsync({
+    type: types.length ? types : "*/*",
+    multiple,
+  })
+  if (result.canceled) {
+    return null
+  }
+  return result.assets.map((asset) => ({
+    name: asset.name,
+    size: asset.size ?? 0,
+    type: asset.mimeType ?? "",
+    uri: asset.uri,
+  }))
+}
+
+function Example() {
+  return (
+    <FileInput multiple pick={pick}>
+      <FileInputTrigger>
+        <Text>Browse Files</Text>
+      </FileInputTrigger>
+      <FileInputList aria-label="Files">
+        <FileInputItem>
+          {({ file }) => (
+            <>
+              <Text>{file.name}</Text>
+              <Text>{formatFileSize(file.size)}</Text>
+              <FileInputItemRemove>
+                <Text aria-hidden>✕</Text>
+              </FileInputItemRemove>
+            </>
+          )}
+        </FileInputItem>
+      </FileInputList>
+    </FileInput>
+  )
+}
+
+export { Example }
+```
+
+The files you return go through the same checks as on the web, and only the ones that pass join the value. A press while `pick` is still pending opens nothing, since pickers refuse a second call, and a `pick` that throws adds no files and logs a development warning. Pass the picker only MIME types: document pickers take no extensions, and an extension in `accept` is still checked against each file's name.
+
+## Photos
+
+A photo picker works the same way. With `expo-image-picker`, map each asset to a file:
+
+```tsx
+import * as ImagePicker from "expo-image-picker"
+
+async function pick({ multiple }: FileInputPickOptions) {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    allowsMultipleSelection: multiple,
+  })
+  if (result.canceled) {
+    return null
+  }
+  return result.assets.map((asset) => ({
+    name: asset.fileName ?? asset.uri.split("/").pop() ?? "photo",
+    size: asset.fileSize ?? 0,
+    type: asset.mimeType ?? "image/jpeg",
+    uri: asset.uri,
+  }))
+}
+
+<FileInput accept="image/*" pick={pick}>
+```
+
+To take a photo instead, call the picker's camera function, like `ImagePicker.launchCameraAsync`, from `pick`. The web's `capture` and `directory` options aren't on native: which picker opens is your `pick`'s choice.
+
+## Accepted Types
+
+`accept` takes MIME types, wildcards, and extensions, such as `image/*` and `.pdf`. An extension matches the file name, even when the picker reports another MIME type or none.
+
+A rejected file never joins the value. `onReject` receives each one with its `reasons`, such as `file-type`, so you can say why it was left out.
+
+```tsx
+<FileInput multiple accept={["image/*", ".pdf"]} pick={pick} onReject={(rejected) => setRejected(rejected)}>
+```
+
+## Limits
+
+Use `maxFiles` to limit the total count, and `minSize` or `maxSize` for bytes per file. When too many files arrive, the component accepts the first ones that pass the other checks until the list is full, and rejects the rest with `too-many-files`. A picker that reports no size gives 0, which fails `minSize`.
+
+```tsx
+<FileInput multiple maxFiles={3} maxSize={5_000_000} pick={pick}>
+```
+
+## One File
+
+Without `multiple`, a new file replaces the current one, and a rejected file leaves the current value unchanged. `pick` receives `multiple: false`, so the picker can allow one file.
+
+```tsx
+<FileInput accept=".pdf" pick={pick}>
+  {({ value: [file] }) => (
+    <FileInputTrigger>
+      <Text>{file ? "Replace PDF" : "Choose a PDF"}</Text>
+    </FileInputTrigger>
+  )}
+</FileInput>
+```
+
+## Validation
+
+Add `validate` for checks of your own. Return a reason string to reject a file, or `null` to accept it. It runs after the built-in type and size checks, and its reason reaches `onReject` like theirs. Validate uploads on your server too.
+
+```tsx
+const [files] = useState(createFileInputController)
+
+<FileInput
+  multiple
+  pick={pick}
+  controller={files}
+  validate={(file) => (files.getValue().some((other) => other.name === file.name) ? "duplicate" : null)}
+  onReject={(rejected) => setRejected(rejected)}
+>
+```
+
+## File List
+
+Each remove button is named "Remove" and its file's name, and is a stop for screen readers and Android's Tab. After a removal, focus moves to the next file's remove button, else the one before, else the trigger. The web's arrow keys and Delete on an item aren't on native, since React Native reports no keys to a view.
+
+Show an image preview from the file's `uri`:
+
+```tsx
+<FileInputItem>
+  {({ file }) => (
+    <>
+      {file.type.startsWith("image/") && (
+        <Image source={{ uri: file.uri }} style={styles.preview} />
+      )}
+      <Text>{file.name}</Text>
+      <FileInputItemRemove>
+        <Text aria-hidden>✕</Text>
+      </FileInputItemRemove>
+    </>
+  )}
+</FileInputItem>
+```
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. `details` has the `reason` and the `added`, `removed`, and `rejected` files. Call `details.cancel()` to keep the current value. `onReject` reports rejected files even when none were accepted.
+
+```tsx
+const [files, setFiles] = useState<PickedFile[]>([])
+
+<FileInput multiple pick={pick} value={files} onValueChange={(value) => setFiles(value)}>
+```
+
+## Opening from Anywhere
+
+Create a controller with `createFileInputController()` and pass it to `FileInput`. Use it to call `pick`, add or remove files, clear the value, or read the files. `addFiles` runs files through the checks, like a pick. A `FileInputTrigger` outside the file input connects through the same `controller` prop.
+
+```tsx
+const [attachments] = useState(createFileInputController)
+
+<Pressable onPress={() => attachments.open()}><Text>Choose Files</Text></Pressable>
+<Pressable onPress={() => attachments.clear()}><Text>Clear</Text></Pressable>
+<FileInput multiple pick={pick} controller={attachments} />
+```
+
+## Announcements
+
+The component announces accepted, removed, and rejected files to VoiceOver and TalkBack. Use `announcement` to change the message, or return `null` to skip it.
+
+```tsx
+<FileInput
+  multiple
+  pick={pick}
+  announcement={({ added }) => (added.length ? `Added ${added.map((file) => file.name).join(", ")}.` : null)}
+>
+```
+
+## Fields and Forms
+
+Wrap the file input in a [Field](/docs/react-native/components/field) to connect its label and description. The trigger is the field's control: it's named by the label and its own text, like "Proof of address Choose a File", and pressing the label calls `pick`. A disabled Field or FieldSet disables the trigger and the remove buttons.
+
+A native view takes part in no form, so there's no `name`, `form`, submission or reset: read the files from `onValueChange` or the controller, and upload them from their `uri`. `required` stays in the state, for your styles and labels. It isn't announced.
+
+## Custom Rendering
+
+Every part takes `render`, to render your own element, spreading the props it receives. The root, the drop zone, and an item also take a function as children, which receives the part's state:
+
+```tsx
+<FileInputItem>
+  {(state) => <Text>{`${state.index + 1}. ${state.file.name}`}</Text>}
+</FileInputItem>
+```
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.trigger, state.disabled && styles.disabled]`. Every part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+The root, the trigger and the list get the file input's state; the drop zone, items and remove buttons get their own.
+
+### FileInput [#part-state-fileinput]
+
+<PartStateTable
+  component="file-input"
+  part="root"
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputState"
+/>
+
+### FileInputTrigger [#part-state-fileinputtrigger]
+
+<PartStateTable
+  component="file-input"
+  part="trigger"
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputState"
+/>
+
+### FileInputDropzone [#part-state-fileinputdropzone]
+
+<PartStateTable
+  component="file-input"
+  part="dropzone"
+  path="../../packages/core/src/components/file-input/file-input.ts"
+  name="FileInputDropzoneState"
+/>
+
+### FileInputList [#part-state-fileinputlist]
+
+<PartStateTable
+  component="file-input"
+  part="list"
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputState"
+/>
+
+### FileInputItem [#part-state-fileinputitem]
+
+<PartStateTable
+  component="file-input"
+  part="item"
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputItemState"
+/>
+
+### FileInputItemRemove [#part-state-fileinputitemremove]
+
+<PartStateTable
+  component="file-input"
+  part="item-remove"
+  path="../../packages/core/src/components/file-input/file-input.ts"
+  name="FileInputItemRemoveState"
+/>
+
+## API Reference
+
+### FileInput
+
+<TypeTable
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputOptions"
+/>
+
+### FileInputTrigger
+
+<TypeTable
+  path="../../packages/core/src/components/file-input/file-input.ts"
+  name="FileInputTriggerProps"
+/>
+
+### FileInputItem
+
+<TypeTable
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputItemProps"
+/>
+
+`FileInputItemRemove` takes the same `file`, for a remove button outside a list.
+
+### Picked Files
+
+What `pick` returns, and what the value holds, a `PickedFile`:
+
+| Field  | Type     | Description                                                               |
+| ------ | -------- | ------------------------------------------------------------------------- |
+| `name` | `string` | The file name, with its extension.                                        |
+| `type` | `string` | The MIME type, like `"image/png"`. Empty when the picker doesn't know it. |
+| `size` | `number` | The size in bytes.                                                        |
+| `uri`  | `string` | Where the file is, like a `file://` or `content://` URI from the picker.  |
+
+What `pick` receives:
+
+<TypeTable
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputPickOptions"
+/>
+
+### Reasons
+
+`details.reason` says why the files changed. On native, `drop`, `paste` and `reset` never happen.
+
+<ReasonTable
+  path="../../packages/core/src/components/file-input/file-input.ts"
+  name="FileInputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createFileInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/react-native/src/file-input.tsx"
+  name="FileInputController"
+/>
+
+## Accessibility
+
+There's no WAI-ARIA pattern for a file input. Screen readers reach the trigger as a button, then each file's text and its remove button. iOS has no list trait, so VoiceOver doesn't announce the list as one; its `aria-label` names the container only. Name the trigger with its text, or with a `FieldLabel` in a Field.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key         | Does                                             |
+| ----------- | ------------------------------------------------ |
+| Tab         | Moves to the trigger, then to each remove button |
+| Enter/Space | Calls `pick` on the trigger, or removes a file   |

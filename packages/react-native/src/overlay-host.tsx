@@ -7,14 +7,18 @@ import {
   View,
 } from "react-native"
 import { layerInput } from "./native-host"
+import {
+  HostContext,
+  hostCount,
+  openHost,
+  subscribeHosts,
+  topmostHost,
+  useHost,
+} from "./open-hosts"
 
 type Insets = { top: number; right: number; bottom: number; left: number }
 
-/**
- * Props for `OverlayHost`.
- * @experimental
- */
-type OverlayHostProps = {
+type RootHostProps = {
   /** The app. */
   children?: React.ReactNode
   /**
@@ -27,6 +31,9 @@ type OverlayHostProps = {
 
 type Host = {
   inModal: boolean
+  // A root host inside another, like in the app's own Modal: a modal popup
+  // opened under it renders in it, as in a ModalHost.
+  nested: boolean
   insets: () => Insets
   view: { current: HostInstance | null }
   entries: () => ReadonlyMap<string, React.ReactNode>
@@ -35,7 +42,7 @@ type Host = {
   subscribe: (listener: () => void) => () => void
 }
 
-function createHost(inModal: boolean, insets: () => Insets) {
+function createHost(inModal: boolean, nested: boolean, insets: () => Insets) {
   let entries: ReadonlyMap<string, React.ReactNode> = new Map()
   const listeners = new Set<() => void>()
   const update = (next: Map<string, React.ReactNode>) => {
@@ -44,6 +51,7 @@ function createHost(inModal: boolean, insets: () => Insets) {
   }
   const host: Host = {
     inModal,
+    nested,
     insets,
     view: { current: null },
     entries: () => entries,
@@ -69,29 +77,6 @@ function createHost(inModal: boolean, insets: () => Insets) {
   return host
 }
 
-// The open hosts, in the order they mounted: the root host, then each open
-// Modal's. A popup opened while a Modal is up renders in it, never as a
-// sibling Modal, which iOS doesn't show over an open one.
-let hosts: readonly Host[] = []
-const hostListeners = new Set<() => void>()
-const topmostHost = () => hosts.at(-1)
-
-function subscribeHosts(listener: () => void) {
-  hostListeners.add(listener)
-  return () => {
-    hostListeners.delete(listener)
-  }
-}
-
-function openHost(host: Host) {
-  hosts = [...hosts, host]
-  hostListeners.forEach((listener) => listener())
-  return () => {
-    hosts = hosts.filter((open) => open !== host)
-    hostListeners.forEach((listener) => listener())
-  }
-}
-
 // A press is observed by the hosts it bubbles through, and let through. The
 // parts it lands in on the way name their popup, so it dismisses only the
 // layers above the first it landed in. The innermost host takes it.
@@ -113,7 +98,7 @@ function onTouch(listener: () => void) {
 const touched = () => touchListeners.forEach((listener) => listener())
 
 const landIn = (api: object) => () => {
-  if (hosts.length) {
+  if (hostCount()) {
     landed.add(api)
   }
 }
@@ -146,9 +131,6 @@ function touchEnd({ nativeEvent }: GestureResponderEvent) {
     layerInput()?.press(press.within)
   }
 }
-
-// Not carried into a Modal, whose own host it names inside it.
-const HostContext = React.createContext<Host | null>(null)
 
 function HostView({
   host,
@@ -185,17 +167,15 @@ function HostView({
 
 const zero: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
 
-/**
- * Where non-modal popups render, above the app it wraps. Wrap the app in one,
- * near the root. Modal popups need none: each `Modal` carries its own host.
- * @experimental
- */
-function OverlayHost({ children, insets }: OverlayHostProps) {
+function RootHost({ children, insets }: RootHostProps) {
   const current = React.useRef(zero)
   React.useLayoutEffect(() => {
     current.current = { ...zero, ...insets }
   })
-  const [host] = React.useState(() => createHost(false, () => current.current))
+  const around = React.useContext(HostContext)
+  const [host] = React.useState(() =>
+    createHost(false, !!around, () => current.current)
+  )
   return <HostView host={host}>{children}</HostView>
 }
 
@@ -203,7 +183,7 @@ function OverlayHost({ children, insets }: OverlayHostProps) {
 function ModalHost({ children }: { children?: React.ReactNode }) {
   const around = React.useContext(HostContext)
   const [host] = React.useState(() =>
-    createHost(true, () => around?.insets() ?? zero)
+    createHost(true, false, () => around?.insets() ?? zero)
   )
   return <HostView host={host}>{children}</HostView>
 }
@@ -223,7 +203,8 @@ function useHosted(
   const nearest = React.useContext(HostContext)
   const topmost = React.useSyncExternalStore(subscribeHosts, topmostHost)
   const target =
-    !popup.modal || (topmost?.inModal && topmost !== nearest)
+    !popup.modal ||
+    ((topmost?.inModal || topmost?.nested) && topmost !== nearest)
       ? topmost
       : undefined
   const [chosen, setChosen] = React.useState<{ host?: Host }>()
@@ -254,8 +235,6 @@ function useHosted(
   return host ? null : element
 }
 
-const useHost = () => React.useContext(HostContext)
-
 const styles = StyleSheet.create({ host: { flex: 1 } })
 
 export {
@@ -263,8 +242,8 @@ export {
   landIn,
   ModalHost,
   onTouch,
-  OverlayHost,
-  type OverlayHostProps,
+  RootHost,
+  type RootHostProps,
   useHost,
   useHosted,
 }

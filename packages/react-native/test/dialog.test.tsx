@@ -34,8 +34,10 @@ import "../src/calendar"
 import { carried, carry } from "../src/carried-context"
 import "../src/checkbox"
 import { FieldSet } from "../src/field"
+import "../src/file-input"
 import "../src/input"
 import "../src/rating"
+import "../src/scroll-area"
 import { Switch } from "../src/switch"
 import "../src/tabs"
 import "../src/toggle"
@@ -414,15 +416,19 @@ describe("the adapter's contexts inside the Modal", () => {
       .filter((name) => !name?.endsWith("Scope"))
       .sort()
     expect(own).toEqual([
+      "Agent",
       "Calendar",
       "CalendarGrid",
       "CheckboxGroup",
       "Described",
       "Disabled",
       "Field",
+      "FileInputFile",
       "InputGroup",
       "Outlet",
       "RatingItem",
+      "ScrollAreaOrientation",
+      "ScrollHold",
       "TabsLayouts",
       "ToggleGroup",
       "Toolbar",
@@ -434,7 +440,11 @@ describe("the adapter's contexts inside the Modal", () => {
     expect(scopes.length).toBeGreaterThan(1)
 
     const dialogScope = `${dialog.name}Scope`
-    const replaced = [...carried].filter(
+    // Each part adds its instance to the agent's context.
+    const passed = [...carried].filter(
+      (context) => context.displayName !== "Agent"
+    )
+    const replaced = passed.filter(
       (context) =>
         context.displayName !== "Outlet" && context.displayName !== dialogScope
     )
@@ -465,7 +475,7 @@ describe("the adapter's contexts inside the Modal", () => {
 
     const outside = read.get("between")!
     const inside = read.get("inside")!
-    for (const context of carried) {
+    for (const context of passed) {
       expect([context.displayName, inside.get(context)]).toEqual([
         context.displayName,
         outside.get(context),
