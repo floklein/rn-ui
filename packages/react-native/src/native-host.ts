@@ -40,11 +40,22 @@ const scrollAreas: Set<{
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
 let screenReader = false
-AccessibilityInfo.isScreenReaderEnabled().then((enabled) => {
-  screenReader = enabled
+const screenReaderChanges: Set<(on: boolean) => void> = new Set()
+const setScreenReader = (on: boolean) => {
+  if (on !== screenReader) {
+    screenReader = on
+    screenReaderChanges.forEach((change) => change(on))
+  }
+}
+let screenReaderChanged = false
+AccessibilityInfo.isScreenReaderEnabled().then((on) => {
+  if (!screenReaderChanged) {
+    setScreenReader(on)
+  }
 })
-AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
-  screenReader = enabled
+AccessibilityInfo.addEventListener("screenReaderChanged", (on) => {
+  screenReaderChanged = true
+  setScreenReader(on)
 })
 const pressSource = () => nativePressSource(screenReader ? "virtual" : "touch")
 
@@ -154,6 +165,13 @@ setNativeHost({
       scrolled ||= moved.length > 0
     }
     return scrolled
+  },
+  screenReader(change) {
+    screenReaderChanges.add(change)
+    change(screenReader)
+    return () => {
+      screenReaderChanges.delete(change)
+    }
   },
   seen: (part) => seen.get(part)?.(),
   // A Modal hears Android's back itself, through `onRequestClose`.

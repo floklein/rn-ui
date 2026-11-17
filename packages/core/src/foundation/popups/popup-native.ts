@@ -108,6 +108,11 @@ function popupNative<Api extends PopupParts>({
       const dismiss = (reason: PopupCloseReason, source: ChangeSource) =>
         withSource(source, () => internal.popup.requestClose(reason))
 
+      // The web returns focus only from inside the popup. Native can't see
+      // the screen reader, so it counts as inside once it was moved in or
+      // its escape gesture reached the content.
+      let entered = false
+
       function focusIn() {
         const opener = internal.popup.opener()
         const plan =
@@ -122,12 +127,17 @@ function popupNative<Api extends PopupParts>({
           return
         }
         nativeHost()?.focus(focus?.(api, plan) ?? part)
+        entered = true
       }
 
       // The chain starts at the trigger: what had focus before can't be known.
       function focusBack(order: number) {
         const mode = internal.popup.closeFocus()
-        if (!mode || internal.contentProps().finalFocus === "none") {
+        if (
+          !entered ||
+          !mode ||
+          internal.contentProps().finalFocus === "none"
+        ) {
           return
         }
         const trigger = () =>
@@ -163,12 +173,14 @@ function popupNative<Api extends PopupParts>({
           id: part.id,
           contains: () => false,
           onBack: () => dismiss("back", "touch"),
-          onEscapeGesture: (within) =>
+          onEscapeGesture: (within) => {
+            entered ||= within === api
             withSource("virtual", () =>
               escape
                 ? escape(api, within === api)
                 : internal.popup.requestClose("escape-key")
-            ),
+            )
+          },
           api,
           onPressOutside: () => dismiss("outside-press", "touch"),
         }
@@ -202,6 +214,7 @@ function popupNative<Api extends PopupParts>({
         open = store.get().open
         if (open) {
           returning = undefined
+          entered = false
           return show()
         }
         returning = layerCount()

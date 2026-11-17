@@ -25,6 +25,8 @@
     "./calendar": "./src/calendar.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./color": "./src/color.ts",
+    "./color-picker": "./src/color-picker.tsx",
     "./date": "./src/date.ts",
     "./date-input": "./src/date-input.tsx",
     "./date-picker": "./src/date-picker.tsx",
@@ -33,6 +35,7 @@
     "./field": "./src/field.tsx",
     "./file-input": "./src/file-input.tsx",
     "./history": "./src/history.ts",
+    "./hover-card": "./src/hover-card.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -104,6 +107,14 @@
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
       },
+      "./color": {
+        "types": "./dist/color.d.ts",
+        "default": "./dist/color.js"
+      },
+      "./color-picker": {
+        "types": "./dist/color-picker.d.ts",
+        "default": "./dist/color-picker.js"
+      },
       "./date": {
         "types": "./dist/date.d.ts",
         "default": "./dist/date.js"
@@ -135,6 +146,10 @@
       "./history": {
         "types": "./dist/history.d.ts",
         "default": "./dist/history.js"
+      },
+      "./hover-card": {
+        "types": "./dist/hover-card.d.ts",
+        "default": "./dist/hover-card.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",

@@ -34,6 +34,7 @@ import type {
   PopoverPlacementState,
 } from "./popover"
 import {
+  closeDelayFloor,
   createOutlet,
   OutletContext,
   PopupLayer,
@@ -108,8 +109,12 @@ const pointer = (event: PointerEvent) =>
  * for screen readers.
  * @experimental
  */
-function Tooltip({ children, ...options }: TooltipProps) {
-  const handle = usePrimitive(tooltip, options, tooltipNative)
+function Tooltip({ children, closeDelay, ...options }: TooltipProps) {
+  const handle = usePrimitive(
+    tooltip,
+    { ...options, closeDelay: Math.max(closeDelay ?? 0, closeDelayFloor) },
+    tooltipNative
+  )
   useControllerEntry(options.controller, handle)
   const [outlet] = React.useState(createOutlet)
   return (

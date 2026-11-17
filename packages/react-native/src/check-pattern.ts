@@ -28,6 +28,7 @@ import {
  * A toast's buttons and links each dismiss it, as action and close parts do
  * unless told otherwise; render some toasts before the check.
  * A tooltip's triggers are its buttons, each named or described by its text.
+ * A hover card's triggers are its links, which activating never opens.
  * @experimental
  */
 type NativePattern =
@@ -40,6 +41,7 @@ type NativePattern =
   | "dialog"
   | "disclosure"
   | "file-input"
+  | "hover-card"
   | "img"
   | "meter"
   | "pagination"
@@ -189,6 +191,41 @@ async function tooltipPattern(context: Context) {
       context.problem(
         button(),
         "leaves its tooltip open when activated again; a toggleable tooltip's trigger closes it."
+      )
+    }
+  }
+}
+
+// A hover card's trigger stays a plain link: activating it follows the link,
+// and only a pointer resting on it opens the card.
+async function hoverCardPattern(context: Context) {
+  const links = () => context.withRole("link")
+  if (!links().length) {
+    context.problem(context.root, "has no link for a hover card to preview.")
+    return
+  }
+  const shown = () => shownNodes(context.root).length
+  for (const index of links().keys()) {
+    requireName(context, links()[index]!, "link")
+    if (isDisabled(links()[index]!)) {
+      continue
+    }
+    const before = shown()
+    const requests = await performWatched(
+      links()[index]!,
+      "activate",
+      context.act
+    )
+    if (shown() > before) {
+      context.problem(
+        links()[index]!,
+        "opens its card when activated; a hover card's link only follows the link."
+      )
+    }
+    if (requests.length) {
+      context.problem(
+        links()[index]!,
+        "requests accessibility focus when it's activated; a hover card's link only follows the link."
       )
     }
   }
@@ -1158,6 +1195,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
   "file-input": fileInputPattern,
+  "hover-card": hoverCardPattern,
   img: imgPattern,
   meter: (context) => barPattern(context, "meter"),
   pagination: paginationPattern,

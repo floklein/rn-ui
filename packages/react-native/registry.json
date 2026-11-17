@@ -589,7 +589,7 @@
         "packages/core/src/foundation/popups/popup-behavior.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
+      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger, only after focus was moved in or the escape gesture reached the content, the native stand-in for the web's check that focus was inside. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
     },
     {
       "kind": "behavior",
@@ -666,7 +666,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays and toast."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays and toast."
     },
     {
       "kind": "behavior",
@@ -723,6 +723,23 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/hover-card/hover-card-native.ts",
+      "mirrors": [
+        "packages/core/src/components/hover-card/hover-card.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hover Card's content bind is a plain popup's: the layer, back, escape, outside press and the exit, which popup-native.ts restates; a hover open moves no focus, as initialFocusPlan(\"hover\") says on the DOM host."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/toast/toast-api.ts",
+      "mirrors": ["packages/core/src/components/toast/toast-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.hold holds one toast open until its release runs, so toastNative's action and close behaviors can hold a toast while a screen reader runs, where the web pauses toasts on focus."
     },
     {
       "kind": "edit",
@@ -954,6 +971,37 @@
       "mirrors": ["packages/core/src/components/resizable/resizable-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Additive: internal.adjust(key, direction), a screen reader's increment or decrement on the native host, which moves a handle a step and commits with the step-key reason and no event, as a key that comes straight back up."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/color-picker/color-picker-native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-parts.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts",
+        "packages/core/src/foundation/direct-manipulation/area.ts",
+        "packages/core/src/components/color-picker/color-picker-channels.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind, the area's and slider's pointerdown and the thumbs' keydown orchestrate: the root reads the direction, the area and each slider follow the responder's touches, cancelling on a cancelled, taken or unmounted responder, and each thumb takes a screen reader's increment and decrement as one step. nativeColorPicker(api) restates the CSS variables the parts' attrs write (--color-picker-color, --color-area-background, --area-x/y, --color-slider-background) as colors and gradients React Native draws, and the area canvas's paint as rows of gradients."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/color-picker/color-picker-touch.native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-touch.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.dragStart, dragTo, dragEnd and dragCancel: the begin, setColor and commit the web's pointer and key handlers make, for native touches and adjustments, with a cancel that puts the color back and commits nothing. focusPicker asks the host to focus the first mounted area thumb, slider thumb or input. The web module returns no methods."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/color-picker/color-picker-api.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeTouch(...) from color-picker-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusPicker, which on the web focuses the same elements as before."
     },
     {
       "kind": "twin",
@@ -1546,6 +1594,23 @@
         }
       }
     },
+    "hover-card": {
+      "entry": "packages/react-native/src/hover-card.tsx",
+      "slots": {
+        "hoverCard.trigger": {
+          "covered": "packages/react-native/src/hover-card.tsx",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its focusin, focusout and keydown open on keyboard focus and move Tab into the card, which a native view doesn't report (spec, Hardware keyboards). It has no press: the link's onPress is the app's."
+        },
+        "hoverCard.content": {
+          "covered": "packages/core/src/components/hover-card/hover-card-native.ts",
+          "reason": "Its bind shows the popup: the layer, back, escape and the exit, which popup-native.ts restates, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave; there is no bridge across the gap, so the pointer must reach the card within closeDelay. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture."
+        },
+        "hoverCard.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1704,6 +1769,55 @@
         }
       }
     },
+    "color-picker": {
+      "entry": "packages/react-native/src/color-picker.tsx",
+      "slots": {
+        "colorPicker.root": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its bind reads the direction, which color-picker-native.ts asks the direction twin for as the root mounts, and makes the picker take part in a form, which native doesn't have."
+        },
+        "colorPicker.area": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown jumps the color under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the area with dragStart, dragTo and dragEnd (measured on the area), and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.area-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the x and y channels with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); color-picker-native.ts takes a screen reader's increment and decrement as a step of the x channel, the axis the thumb's slider role reports."
+        },
+        "colorPicker.area-canvas": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its bind paints a canvas; native has none, so ColorPickerAreaCanvas draws the area as rows of horizontal gradients from nativeColorPicker(api).areaRows, re-rendered when the channels the area doesn't show change."
+        },
+        "colorPicker.slider": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown moves the channel under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the track with the same calls, and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.slider-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the channel with arrow keys, which native doesn't deliver to views; color-picker-native.ts takes a screen reader's increment and decrement as one step."
+        },
+        "colorPicker.input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its input, Enter and focusout handlers and its bind follow an <input>; ColorPickerInput's TextInput hands its text to internal.setText and commits it with internal.commitText on submit and blur, with its value from the state. Escape has no native counterpart."
+        },
+        "colorPicker.channel-input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its change handler and bind follow a number <input>; ColorPickerChannelInput keeps the typed text while editing and sets the channel with internal.setChannelValue on submit and blur."
+        },
+        "colorPicker.eye-dropper": {
+          "needs": "nothing",
+          "reason": "The eye dropper part isn't rendered on native, which has no EyeDropper API to pick a color from the screen (spec rule 3)."
+        },
+        "colorPicker.swatch-item": {
+          "needs": "nothing",
+          "reason": "Its press is delivered by the adapter. Its keydown and bind run the swatches' roving focus and arrow keys, which native doesn't build (spec, Focus): each swatch is its own button, reached by swiping."
+        },
+        "colorPicker.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
+    },
     "number-input": {
       "entry": "packages/react-native/src/number-input.tsx",
       "slots": {
@@ -1771,10 +1885,8 @@
   "pending": [
     "autocomplete",
     "carousel",
-    "color-picker",
     "combobox",
     "command",
-    "hover-card",
     "image-cropper",
     "listbox",
     "menu",
@@ -2161,6 +2273,12 @@
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     },
     {
+      "component": "hover-card",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
       "component": "tooltip",
       "example": "rtl",
       "feature": "A direction for part of the screen",
@@ -2231,6 +2349,12 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "color-picker",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
     },
     {
       "component": "number-input",

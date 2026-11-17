@@ -170,12 +170,35 @@ function follow(part: ToastPart) {
   }
 }
 
+// Native never sees focus reach a toast, so a screen reader user couldn't
+// pause one on its way to a button.
+function holdForScreenReader(part: ToastPart) {
+  let release: (() => void) | undefined
+  const stop = nativeHost()?.screenReader((on) => {
+    if (on) {
+      release ??= part.api.internal.hold(part.props.toast)
+    } else {
+      release?.()
+      release = undefined
+    }
+  })
+  return () => {
+    stop?.()
+    release?.()
+  }
+}
+
 /**
  * Toast's behavior on the native host, as a toast's `bind` does on the DOM
  * host: each toast follows the responder's touches and is dismissed by a
- * swipe toward its region's side, or its aligned side.
+ * swipe toward its region's side, or its aligned side. While a screen reader
+ * runs, a toast with an action or a close button waits.
  * @experimental
  */
-const toastNative: NativeBehavior<ToastRegionApi> = { root: follow }
+const toastNative: NativeBehavior<ToastRegionApi> = {
+  root: follow,
+  action: holdForScreenReader,
+  close: holdForScreenReader,
+}
 
 export { nativeToast, type NativeToast, type NativeToastSwipe, toastNative }

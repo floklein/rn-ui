@@ -8,6 +8,10 @@
 export { accordionNative } from "./components/accordion/accordion-native"
 export { calendarNative } from "./components/calendar/calendar-native"
 export { checkboxNative } from "./components/checkbox/checkbox-native"
+export {
+  colorPickerNative,
+  nativeColorPicker,
+} from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
 export { dateInputNative } from "./components/date-input/date-input-native"
 export {
@@ -20,6 +24,7 @@ export {
   bindTransferItem,
 } from "./foundation/drag-and-drop/drag-and-drop-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
+export { hoverCardNative } from "./components/hover-card/hover-card-native"
 export { numberInputNative } from "./components/number-input/number-input-native"
 export { popoverNative } from "./components/popover/popover-native"
 export { tooltipNative } from "./components/tooltip/tooltip-native"
