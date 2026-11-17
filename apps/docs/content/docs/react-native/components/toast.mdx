@@ -1,0 +1,328 @@
+---
+title: Toast
+description: Show notifications with actions, timed dismissal, swipe to dismiss and screen reader announcements.
+---
+
+A toast tells someone that something happened, like a saved change or a sent message, and goes away on its own. It can offer an action such as Undo, and VoiceOver and TalkBack announce it without moving to it.
+
+<ComponentExample
+  name="toast/demo"
+  caption="Tap Create Event. Tap Undo, swipe the toast away, or wait for it to close. Undo logs Event removed."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+Toasts render in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app. Without one, a region renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `ToastRegion`:
+
+```text
+ToastRegion
+├── Toast
+│   ├── ToastTitle
+│   ├── ToastDescription
+│   ├── ToastAction
+│   └── ToastClose
+└── Toast
+    ├── ToastTitle
+    └── ToastDescription
+```
+
+`ToastRegion` and `Toast` render a `View`, `ToastTitle` and `ToastDescription` a `Text`, and `ToastAction` and `ToastClose` a `Pressable`. The region renders one `Toast` for each toast in its queue, newest first, through its children function. Empty title, description and action parts show the text from the toast's data.
+
+The region renders in the topmost open host, so a toast shows above a modal dialog that is open, and moves back when the dialog closes. Context from your own provider placed between `ToastRegion` and the screen doesn't reach the toasts: put it above your app's `OverlayHost` or inside each toast. The library's own context does reach them.
+
+## Usage
+
+Import the parts and put them together, then call `toast()` when an action finishes:
+
+```tsx
+import {
+  Toast,
+  ToastDescription,
+  ToastRegion,
+  ToastTitle,
+  toast,
+} from "@ui-sdk/react-native/toast"
+import { Pressable, StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <>
+      <Pressable
+        role="button"
+        onPress={() =>
+          toast("Event created", { description: "Friday at 10:00 AM" })
+        }
+      >
+        <Text>Create Event</Text>
+      </Pressable>
+      <ToastRegion>
+        {() => (
+          <Toast style={styles.toast}>
+            <ToastTitle />
+            <ToastDescription />
+          </Toast>
+        )}
+      </ToastRegion>
+    </>
+  )
+}
+
+const styles = StyleSheet.create({
+  toast: { margin: 16, padding: 16, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+`toast()` works from anywhere, not only from components, and returns the toast's id. Place the region once, or let `OverlayHost` render it. Without children, it renders each toast's title, description, action and cancel button as a plain white card.
+
+The examples below each call `createToaster()` for a queue of their own and pass it to their region as `toaster`, so their toasts don't mix.
+
+## Types
+
+`toast.success`, `.info`, `.warning`, `.error` and `.loading` set the toast's type, which the toast's state holds as `type` for an icon or a color. Errors are announced right away and other types wait for what the screen reader is saying; set `priority` to change that. A loading toast stays until it's updated or dismissed.
+
+<ComponentExample
+  name="toast/types"
+  caption="Tap a type. Each toast shows its type's color, and Loading turns into Photos uploaded when it finishes."
+/>
+
+## Position
+
+Set the region's `side` to `top` or `bottom`, and `align` to `start`, `center` or `end`. Start and end follow the app's direction. The region keeps clear of the `insets` you pass to `OverlayHost`, and a bottom region sits above the on-screen keyboard. A toast can be swiped toward the side and, unless it's centered, toward the end it's aligned to.
+
+<ComponentExample
+  name="toast/position"
+  caption="Pick a side and an alignment, then tap Create Event and look for the toast at that edge of the screen."
+/>
+
+## Swipe to Dismiss
+
+A toast follows a finger that moves it a few points toward a direction it can be swiped to, also when the finger started on its action or close button. Far enough, or fast enough, dismisses it with the `"swipe"` reason; otherwise it goes back. A toast with `dismissible: false` can't be swiped.
+
+The toast's state holds where the swipe has moved it, `swipeX` and `swipeY`, so move it with a transform. Its timer waits while it's swiped.
+
+```tsx
+<Toast
+  style={(state) => [
+    styles.toast,
+    {
+      transform: [{ translateX: state.swipeX }, { translateY: state.swipeY }],
+    },
+  ]}
+>
+```
+
+## Action and Cancel
+
+Add an `action`, like Undo, and a `cancel` button that dismisses the toast. Their callbacks can update your app. `onDismiss` tells you why the toast is closing, and `details.cancel()` keeps it open; a canceled timeout starts the countdown again.
+
+<ComponentExample
+  name="toast/action"
+  caption="Tap Archive Message, then Undo or Dismiss, swipe the toast away, or let it time out. The log shows why it closed."
+/>
+
+## Link
+
+Give an action an `href` and `ToastAction` opens it with `Linking`, and screen readers hear a link.
+
+<ComponentExample name="toast/link" caption="Tap Send Invoice, then View." />
+
+## Promise
+
+`toast.promise()` shows a loading toast, then updates the same toast when the promise resolves or rejects. Each message can be a string, options with a description or an action, or a function of the result. A toast dismissed while loading stays closed.
+
+<ComponentExample
+  name="toast/promise"
+  caption="Tap Save Changes to see Saving changes become Changes saved. Tap it again for the error, then Retry."
+/>
+
+## Stacking
+
+`maxVisible` limits how many toasts show at once, three by default; the rest wait in the queue, and their timers start when they show. Touch has no hover, so the stack is expanded only when you set `expanded`. Each toast's state has its `index`, 0 for the newest, to lay out a collapsed stack.
+
+<ComponentExample
+  name="toast/stacking"
+  caption="Tap Add Toast a few times. Past four toasts, the rest wait their turn. Check Always expanded to spread the stack."
+/>
+
+## Duration
+
+Set `duration` in milliseconds, on the toaster or on one toast, or `Infinity` for a toast that stays until it's dismissed. The default is five seconds. Timers pause while a toast is swiped and while the app is in the background.
+
+<ComponentExample
+  name="toast/duration"
+  caption="Tap each button. The session toast stays until you tap Got It."
+/>
+
+## Update and Dismiss
+
+Keep the id `toast()` returns to update or dismiss that toast, or pass your own `id`. `toast.update()` returns whether the toast was still there, and `toast.dismiss()` without an id closes every toast.
+
+<ComponentExample
+  name="toast/update"
+  caption="Tap Upload Report and watch one toast count up to Report uploaded. Cancel Upload closes it early, and Dismiss All clears every toast."
+/>
+
+## Async Action
+
+Return a promise from an action to keep the toast open while it runs. The action's state has `pending` while it runs and `error` if it fails, so the button can say Restoring… or offer a retry, and presses are ignored until it settles.
+
+<ComponentExample
+  name="toast/async-action"
+  caption="Tap Delete File, then Undo. The button shows Restoring… until the restore finishes, then the toast closes."
+/>
+
+## Overlay Host and Confirm
+
+`OverlayHost` renders the toaster's region when you haven't placed one, with the `toast` props you give it, like `style` and `children`, and `confirm()` questions as alert dialogs. A region you place yourself takes over from the host for its toaster. [Alert Dialog](./alert-dialog) covers `createConfirm()`.
+
+<ComponentExample
+  name="toast/overlay-host"
+  caption="Tap Delete on a project and confirm. The row goes away and a toast says so. Reset Projects brings them back."
+/>
+
+## Custom Rendering
+
+Pass anything else your toast needs in `data`, and read it from the toast the region's children function receives. Every part also takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`.
+
+<ComponentExample
+  name="toast/custom"
+  caption="Tap New Message to show a toast with Hollis Grant's initials. Tap Reply or close it."
+/>
+
+## Styling
+
+Style each part with a function of its state, like the swipe under [Swipe to Dismiss](#swipe-to-dismiss). The region is placed for you, absolutely, at its side and alignment; a style you pass is applied after that. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### ToastRegion [#part-state-toastregion]
+
+<PartStateTable
+  component="toast"
+  part="region"
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastRegionState"
+/>
+
+### Toast [#part-state-toast]
+
+<PartStateTable
+  component="toast"
+  part="root"
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastState"
+/>
+
+With where a swipe has moved it:
+
+| Field            | Type                                  | Description                                              |
+| ---------------- | ------------------------------------- | -------------------------------------------------------- |
+| `swiping`        | `boolean`                             | Whether a finger is swiping it.                          |
+| `swipeX`         | `number`                              | How far the swipe moved it across, in points.            |
+| `swipeY`         | `number`                              | How far the swipe moved it down, in points.              |
+| `swipeDirection` | `"up" \| "down" \| "left" \| "right"` | The direction a swipe dismissed it toward, as it leaves. |
+
+### ToastAction [#part-state-toastaction]
+
+<PartStateTable
+  component="toast"
+  part="action"
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastButtonState"
+/>
+
+### ToastClose [#part-state-toastclose]
+
+<PartStateTable
+  component="toast"
+  part="close"
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastButtonState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `ToastRegion` and `Toast` also take `View`'s props, `ToastTitle` and `ToastDescription` `Text`'s, and `ToastAction` and `ToastClose` `Pressable`'s.
+
+### Toast
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toaster.ts"
+  name="ToastOptions"
+  events={false}
+/>
+
+`toast(message, options)` and `toast(options)` return the toast's id. `toast.success`, `.info`, `.warning`, `.error` and `.loading` set the type. `toast.promise(promise, { loading, success, error })` returns the id too, and `toast.update(id, options)` returns whether the toast was still there. `toast.dismiss(id)` closes one, and `toast.dismiss()` every one.
+
+### Actions
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toaster.ts"
+  name="ToastAction"
+  events={false}
+/>
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toaster.ts"
+  name="ToastCancel"
+  events={false}
+/>
+
+### ToastRegion
+
+`shortcut` doesn't exist on native: there's no key to move to the toasts.
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastRegionOptions"
+  omit={["shortcut"]}
+/>
+
+### ToastAction
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastActionProps"
+/>
+
+### ToastClose
+
+<TypeTable
+  path="../../packages/core/src/components/toast/toast.ts"
+  name="ToastCloseProps"
+/>
+
+### Reasons
+
+`details.reason` in `onDismiss` says why the toast is closing. `"escape-key"` never happens on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/toast/toaster.ts"
+  name="ToastDismissReason"
+/>
+
+## Accessibility
+
+VoiceOver and TalkBack announce each toast once, from its title and description, without moving to it: politely by default, so it waits for what the screen reader is saying, and right away for errors. Only text is read: a title or description that isn't a string isn't announced. Keep messages short, and use `duration: Infinity` for one that has to stay available. The action and close buttons are buttons, and an action with an `href` is a link.
+
+On native a toast leaves at once: it has no exit animation. A focused toast can't be dismissed with a key, and the iOS escape gesture doesn't dismiss it: give a toast that stays a close button.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                               |
+| ----- | ---------------------------------- |
+| Tab   | Moves through the toasts' buttons  |
+| Space | Presses the action or close button |
+| Enter | Does the same, on Android only     |

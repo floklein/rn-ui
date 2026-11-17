@@ -314,12 +314,13 @@ function useDevice(name: string) {
       const element = driver.$(named(label))
       return { ...(await element.getLocation()), ...(await element.getSize()) }
     },
-    /** A finger pressed at `from`, held `hold` ms, moved to `to` in steps, then lifted. */
+    /** A finger pressed at `from`, held `hold` ms, moved to `to` in steps, rested `rest` ms, then lifted. */
     async drag(
       from: { x: number; y: number },
       to: { x: number; y: number },
       duration = 600,
-      hold = 100
+      hold = 100,
+      rest = 0
     ) {
       const steps = 6
       const finger = driver
@@ -333,6 +334,9 @@ function useDevice(name: string) {
           x: Math.round(from.x + ((to.x - from.x) * step) / steps),
           y: Math.round(from.y + ((to.y - from.y) * step) / steps),
         })
+      }
+      if (rest) {
+        finger.pause(rest)
       }
       await finger.up().perform()
     },
@@ -401,6 +405,13 @@ function useDevice(name: string) {
       await writeFile(
         path.join(output, `${platform}-${name}-${state}.xml`),
         await driver.getPageSource()
+      )
+    },
+    /** Saves a screenshot beside the saved trees, for a check a person reads. */
+    async screenshot(state: string) {
+      await mkdir(output, { recursive: true })
+      await driver.saveScreenshot(
+        path.join(output, `${platform}-${name}-${state}.png`)
       )
     },
     /** Apple's accessibility audit of the screen; an empty list on Android, which has none. */

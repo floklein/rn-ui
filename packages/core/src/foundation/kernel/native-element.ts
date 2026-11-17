@@ -13,7 +13,8 @@ const ownerDocument: { activeElement: object | null; body: null } = {
 /**
  * What a native behavior file hands shared code in place of a part's
  * element, like a toggle joining its group. Focusing it asks the host to
- * focus the part, and the order twin sorts it by where the host renders it.
+ * focus the part, the order twin sorts it by where the host renders it, and
+ * its box is the part's view's on screen.
  */
 function nativeElement(part: Part) {
   const el = {
@@ -21,6 +22,24 @@ function nativeElement(part: Part) {
       ownerDocument.activeElement = el
       queueMicrotask(() => (ownerDocument.activeElement = null))
       nativeHost()?.focus(part)
+    },
+    getBoundingClientRect() {
+      const {
+        left = 0,
+        top = 0,
+        width = 0,
+        height = 0,
+      } = nativeHost()?.box(part) ?? {}
+      return {
+        left,
+        top,
+        width,
+        height,
+        x: left,
+        y: top,
+        right: left + width,
+        bottom: top + height,
+      }
     },
     // Shared code hears focus on an item's element, which the native host never reports.
     addEventListener() {},

@@ -25,6 +25,7 @@ import {
   View,
 } from "react-native"
 import { carry } from "./carried-context"
+import { scrollAreas } from "./native-host"
 import { mergeProps } from "./render-element"
 import {
   createParts,
@@ -72,7 +73,8 @@ const ScrollArea: ScrollAreaParts["Root"] = parts.Root
 /**
  * The scroller, a `ScrollView`, which touch and screen readers scroll. Pass
  * `horizontal` for a scroll area that scrolls along the inline axis. It
- * stops scrolling while a drag inside it, like a slider's, holds the touch.
+ * stops scrolling while a drag inside it, like a slider's, holds the touch,
+ * and scrolls toward an edge a reordering drag nears.
  * @experimental
  */
 function ScrollAreaViewport({
@@ -110,6 +112,16 @@ function ScrollAreaViewport({
       }),
     [view]
   )
+  React.useLayoutEffect(() => {
+    const area = {
+      box: () => scroll.current?.getBoundingClientRect(),
+      edgeScroll: view.edgeScroll,
+    }
+    scrollAreas.add(area)
+    return () => {
+      scrollAreas.delete(area)
+    }
+  }, [view])
   const report = ({
     contentOffset,
     layoutMeasurement,
