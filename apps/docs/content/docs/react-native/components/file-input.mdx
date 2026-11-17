@@ -53,8 +53,9 @@ import {
 import { Text } from "react-native"
 
 async function pick({ accept, multiple }: FileInputPickOptions) {
+  const types = accept.filter((token) => token.includes("/"))
   const result = await DocumentPicker.getDocumentAsync({
-    type: accept.filter((token) => token.includes("/")),
+    type: types.length ? types : "*/*",
     multiple,
   })
   if (result.canceled) {
@@ -94,7 +95,7 @@ function Example() {
 export { Example }
 ```
 
-The files you return go through the same checks as on the web, and only the ones that pass join the value. Pass the picker only MIME types: document pickers take no extensions, and an extension in `accept` is still checked against each file's name.
+The files you return go through the same checks as on the web, and only the ones that pass join the value. A press while `pick` is still pending opens nothing, since pickers refuse a second call, and a `pick` that throws adds no files and logs a development warning. Pass the picker only MIME types: document pickers take no extensions, and an extension in `accept` is still checked against each file's name.
 
 ## Photos
 

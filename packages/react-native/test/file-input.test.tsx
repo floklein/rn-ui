@@ -233,4 +233,27 @@ describe("FileInput", () => {
     expect(warn.mock.lastCall?.[0]).toMatch(/has no `pick`/)
     warn.mockRestore()
   })
+
+  test("a second press while pick is pending opens nothing, and a failed pick warns", async () => {
+    let finish: (files: PickedFile[]) => void = () => {}
+    const pick = jest.fn(
+      () => new Promise<PickedFile[]>((resolve) => (finish = resolve))
+    )
+    await render(<Files pick={pick} multiple />)
+    await fireEvent.press(screen.getByTestId("trigger"))
+    await fireEvent.press(screen.getByTestId("trigger"))
+    expect(pick).toHaveBeenCalledTimes(1)
+    await act(async () => finish([photo]))
+    expect(screen.getByText("photo.png")).toBeOnTheScreen()
+
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {})
+    pick.mockRejectedValueOnce(new Error("picker busy"))
+    await fireEvent.press(screen.getByTestId("trigger"))
+    await act(async () => {})
+    expect(pick).toHaveBeenCalledTimes(2)
+    expect(warn.mock.lastCall?.[0]).toMatch(/pick/)
+    warn.mockRestore()
+    await fireEvent.press(screen.getByTestId("trigger"))
+    expect(pick).toHaveBeenCalledTimes(3)
+  })
 })

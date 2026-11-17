@@ -1240,6 +1240,23 @@ describe("checkPattern's file-input pattern on the native host", () => {
     expect(screen.queryByText("c.png")).toBeNull()
   })
 
+  test("passes on two files with the same name", async () => {
+    const twins = files
+      .slice(0, 2)
+      .map((file) => ({ ...file, name: "IMG_0001.jpg" }))
+    await render(
+      <FileInput multiple defaultValue={twins}>
+        <FileInputTrigger>
+          <Text>Choose files</Text>
+        </FileInputTrigger>
+        <FileInputList>
+          <FileInputItem>{() => <FileInputItemRemove />}</FileInputItem>
+        </FileInputList>
+      </FileInput>
+    )
+    await expect(checkFiles()).resolves.toBeUndefined()
+  })
+
   test("passes on a disabled file input, leaving its files", async () => {
     await render(<Files disabled />)
     await expect(checkFiles()).resolves.toBeUndefined()

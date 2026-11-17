@@ -161,18 +161,22 @@ async function fileInputPattern(context: Context) {
         )
       : []
   }
-  const names = () => removers().map(nameOf)
-  for (const name of removers()
-    .filter((node) => !isDisabled(node))
-    .map(nameOf)) {
-    const button = removers().find((node) => nameOf(node) === name)
+  const count = (name: string) =>
+    removers().filter((node) => nameOf(node) === name).length
+  const names = () => [...new Set(removers().map(nameOf))]
+  for (const name of names()) {
+    const button = removers().find(
+      (node) => nameOf(node) === name && !isDisabled(node)
+    )
     if (!button) {
       continue
     }
-    const others = names().filter((other) => other !== name)
+    const before = new Map(names().map((other) => [other, count(other)]))
     await performWatched(button, "activate", context.act)
-    const left = names()
-    if (left.includes(name) || others.some((other) => !left.includes(other))) {
+    const changed = [...before].filter(
+      ([other, was]) => count(other) !== (other === name ? was - 1 : was)
+    )
+    if (changed.length) {
       context.problem(
         button,
         "doesn't remove only its own file after the activate action; a remove button in the list takes its item away."
