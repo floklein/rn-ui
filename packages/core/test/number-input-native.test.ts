@@ -50,6 +50,7 @@ function host() {
     },
     adjustable: vi.fn(),
     listen: vi.fn(),
+    seen: vi.fn(),
   })
   return { drags, focus }
 }
