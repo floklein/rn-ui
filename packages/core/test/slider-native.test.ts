@@ -58,6 +58,7 @@ function host({ rtl = false } = {}) {
       return () => steps.delete(part)
     },
     listen: vi.fn(),
+    seen: vi.fn(),
   })
   return { drags, steps, followed, focus }
 }

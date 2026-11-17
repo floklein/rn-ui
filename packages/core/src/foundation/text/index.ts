@@ -10,8 +10,9 @@ export {
 export { textDiff, textFieldAdapter } from "./caret"
 export { fuzzyFilter } from "./fuzzy"
 export { createInputHistory, type InputHistoryOptions } from "./input-history"
-export { bindPageLocale, localeOf, pageLocale } from "./locale"
+export { bindPageLocale, localeOf, pageLocale, userLocale } from "./locale"
 export {
+  createFolder,
   foldText,
   leadingSpaces,
   matchRanges,

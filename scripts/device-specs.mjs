@@ -92,6 +92,7 @@ function resolve(base, file, specifier, coreExports) {
   } else if (specifier.startsWith("@ui-sdk/core")) {
     const key = `.${specifier.slice("@ui-sdk/core".length)}`
     const target =
+      coreExports[key]?.["react-native"] ??
       coreExports[key] ??
       (key.startsWith("./internal/") &&
         `./src/${key.slice("./internal/".length)}.ts`)

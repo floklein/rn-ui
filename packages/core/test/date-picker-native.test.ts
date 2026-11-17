@@ -50,6 +50,7 @@ function host() {
     box: vi.fn(),
     follow: vi.fn(),
     adjustable: vi.fn(),
+    seen: vi.fn(),
     listen: () => () => {},
   })
   return { focused, rendered }
