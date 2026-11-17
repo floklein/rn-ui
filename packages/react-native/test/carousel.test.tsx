@@ -1,7 +1,13 @@
 import * as React from "react"
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { carousel } from "@ui-sdk/core/carousel"
-import { Platform, Pressable, Text, View } from "react-native"
+import {
+  AccessibilityInfo,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native"
 import {
   Carousel,
   CarouselContent,
@@ -213,6 +219,38 @@ describe("Carousel", () => {
     ).toBeTruthy()
   })
 
+  test("on iOS, a slide coming into view is announced unless it rotates", async () => {
+    jest.useFakeTimers({ doNotFake: ["queueMicrotask"] })
+    const announce = jest
+      .spyOn(AccessibilityInfo, "announceForAccessibilityWithOptions")
+      .mockImplementation(() => {})
+    await render(<Photos />)
+    await layOut()
+    await settle()
+    expect(announce).not.toHaveBeenCalledWith("1 of 3, Lake", expect.anything())
+    announce.mockClear()
+    await fireEvent.press(screen.getByLabelText("Desert"))
+    await settle()
+    await settle()
+    expect(announce.mock.calls).toEqual(
+      os === "ios" ? [["3 of 3, Desert", { queue: true }]] : []
+    )
+    announce.mockRestore()
+    jest.useRealTimers()
+  })
+
+  test("a slide's label follows a reorder", async () => {
+    const { rerender } = await render(<Photos />)
+    await layOut()
+    slides.reverse()
+    await rerender(<Photos />)
+    await layOut()
+    slides.reverse()
+    expect(screen.getByTestId("Desert", hidden).props.accessibilityLabel).toBe(
+      "1 of 3"
+    )
+  })
+
   test("an indicator goes to its page and is selected there", async () => {
     const onPageChange = jest.fn()
     await render(<Photos onPageChange={onPageChange} />)
@@ -267,7 +305,14 @@ describe("Carousel", () => {
       jest.useRealTimers()
     })
 
-    test("passes in both directions", async () => {
+    test("passes in both directions once each spring settles", async () => {
+      jest.useFakeTimers({ doNotFake: ["queueMicrotask"] })
+      const settled = async (action: () => unknown) => {
+        await act(async () => {
+          await action()
+        })
+        await settle()
+      }
       await expect(
         checkDirection(
           async () => {
@@ -275,9 +320,10 @@ describe("Carousel", () => {
             await layOut()
             return screen.container
           },
-          { os, act }
+          { os, act: settled }
         )
       ).resolves.toBeUndefined()
+      jest.useRealTimers()
     })
 
     test("is created and destroyed with no host api", () => {

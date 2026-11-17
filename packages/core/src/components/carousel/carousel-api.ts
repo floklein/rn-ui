@@ -144,7 +144,7 @@ function carouselApiBody(
   // The bound viewport and slides, which the native host binds with stand-ins.
   let viewportEl: HTMLElement | undefined
   const slideOrder = createOrder<{ key: string; el: HTMLElement }>()
-  const slides = () => [...slideOrder.list()]
+  const slides = () => slideOrder.list().filter(({ el }) => el.isConnected)
   // Watches the viewport and every slide while the viewport is bound.
   let resizeObserver: ResizeObserver | undefined
   // Direction comes from computed style, so it's read when measuring and on

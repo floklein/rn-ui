@@ -369,8 +369,8 @@ Callbacks get the new value first, then the details.
 
 The carousel follows the [WAI-ARIA carousel pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/), translated to React Native's accessibility props. Previous, Next and the play toggle are buttons, read as disabled where there's no page that way. The indicators are a tab list whose tabs each say whether they're selected; React Native gives iOS no tab role, so VoiceOver reads an indicator by its name. Each is its own accessible element, reached by swiping, and a double-tap shows its page.
 
-Each slide is labelled by its position, like "1 of 5", unless it has an `aria-label` of its own, which is also how you translate it. Slides less than half in view are hidden from screen readers, so a swipe only reaches what shows. The slides announce what comes into view, except while rotating.
+Each slide is labelled by its position, like "1 of 5", unless it has an `aria-label` of its own, which is also how you translate it. Slides less than half in view are hidden from screen readers, so a swipe only reaches what shows. A slide that comes into view is announced, except while rotating: VoiceOver hears its label and text once the slides come to rest, and TalkBack reads the content as a polite live region.
 
 ### Keyboard
 
-With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through Previous, Next, the play toggle, each indicator and the controls in the slides in view, and Space presses them. React Native delivers no arrow keys, Home or End to views, so the viewport's arrow keys and the indicators' single tab stop aren't built.
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through Previous, Next, the play toggle, each indicator and the controls in the slides, and Space presses them. On Android, Tab also reaches controls in slides out of view. React Native delivers no arrow keys, Home or End to views, so the viewport's arrow keys and the indicators' single tab stop aren't built.

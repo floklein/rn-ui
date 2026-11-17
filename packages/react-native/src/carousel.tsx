@@ -15,13 +15,16 @@ import {
 import { carouselNative, nativeCarousel } from "@ui-sdk/core/native"
 import * as React from "react"
 import {
+  AccessibilityInfo,
   Animated,
   I18nManager,
   type LayoutChangeEvent,
+  Platform,
   Pressable,
   View,
 } from "react-native"
 import { useControllerEntry, useControllerTarget } from "./controller-target"
+import { plainText } from "./names"
 import { mergeProps, renderElement } from "./render-element"
 import {
   HandleScope,
@@ -83,6 +86,9 @@ function Carousel({
   useControllerEntry(controller, handle)
   return usePart(handle, "root", {}, props as Record<string, unknown>, View)
 }
+
+// Long enough for a spring to carry on past a slide it only crosses.
+const settling = 300
 
 const reportLayout =
   (
@@ -175,6 +181,39 @@ function CarouselItem({
   )
   const index = instance.get().order.indexOf(key)
   const named = props["aria-label"] ?? props["aria-labelledby"]
+  const label =
+    named === undefined && index >= 0 ? `${index + 1} of ${count}` : undefined
+  const shown = React.useSyncExternalStore(instance.subscribe, () => {
+    const state = instance.get()
+    return state.pageCount === null ? null : state.inView.includes(key)
+  })
+  const before = React.useRef(shown)
+  const text = [props["aria-label"] ?? label, plainText(props.children, true)]
+    .filter(Boolean)
+    .join(", ")
+  // iOS has no live region: a slide that comes into view and stays announces
+  // itself, as the web's polite region reads it, except while rotating.
+  React.useEffect(() => {
+    const was = before.current
+    before.current = shown
+    if (
+      Platform.OS !== "ios" ||
+      was !== false ||
+      !shown ||
+      instance.get().playing ||
+      !text
+    ) {
+      return
+    }
+    const timer = setTimeout(
+      () =>
+        AccessibilityInfo.announceForAccessibilityWithOptions(text, {
+          queue: true,
+        }),
+      settling
+    )
+    return () => clearTimeout(timer)
+  }, [instance, shown, text])
   return usePart(
     carousel,
     "item",
@@ -183,10 +222,7 @@ function CarouselItem({
       {
         style: styles.item,
         onLayout: reportLayout(handle, "item", key),
-        "aria-label":
-          named === undefined && index >= 0
-            ? `${index + 1} of ${count}`
-            : undefined,
+        "aria-label": label,
       },
       props
     ),
