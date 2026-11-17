@@ -1491,12 +1491,6 @@
       "reason": "Menu has no native entry yet (ticket 57); the example comes with it."
     },
     {
-      "component": "toolbar",
-      "example": "select",
-      "feature": "A select opened from a toolbar button",
-      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
-    },
-    {
       "component": "collapsible",
       "example": "find-in-page",
       "feature": "Find in page revealing a hidden panel",
@@ -1689,18 +1683,6 @@
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     },
     {
-      "component": "calendar",
-      "example": "month-year-select",
-      "feature": "Native selects of the months and years",
-      "reason": "Native has no select element, so the month and year select parts aren't rendered."
-    },
-    {
-      "component": "calendar",
-      "example": "custom-select",
-      "feature": "A styled Select for the month and year",
-      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
-    },
-    {
       "component": "accordion",
       "example": "deep-link",
       "feature": "A link to text inside a closed panel",
@@ -1714,6 +1696,42 @@
     },
     {
       "component": "accordion",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "select",
+      "example": "align-item",
+      "feature": "The selected item lined up over the trigger",
+      "reason": "alignItemWithTrigger falls back to opening below for touch, and native is all touch, so it's left out of the native content props."
+    },
+    {
+      "component": "select",
+      "example": "container",
+      "feature": "A portal container for the list",
+      "reason": "Native has no portals: a non-modal list renders in the app's OverlayHost, a modal one in a Modal."
+    },
+    {
+      "component": "select",
+      "example": "form",
+      "feature": "Form submission, reset and autofill",
+      "reason": "Native has no forms: name, form and autoComplete are left out of the native types, and the app reads the value from onValueChange."
+    },
+    {
+      "component": "select",
+      "example": "invalid",
+      "feature": "Validity from a required select on submit, with a field's error",
+      "reason": "Native has no forms and computes no validity."
+    },
+    {
+      "component": "select",
+      "example": "presentation",
+      "feature": "Presenting as a sheet",
+      "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a select presents as a popover."
+    },
+    {
+      "component": "select",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
