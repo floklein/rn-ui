@@ -11,7 +11,7 @@ import { bindDragPreview, type DragPreview } from "./drag-preview"
 import { createDraftMove } from "./draft-move"
 import { isRTL } from "../platform/env"
 import { createDragSession, dragThreshold } from "./pointer"
-import { followPoints } from "./point-drag"
+import { createPointDrags } from "./point-drag"
 import { itemLabel } from "./item-label"
 import { dropIndex } from "./reorder"
 
@@ -321,13 +321,18 @@ function createTransfer<State extends object>(
     moveTo(list, dropIndex(middles, y))
   }
 
+  const followPoints = createPointDrags(
+    context.onDestroy,
+    () => !!draft()?.pointer
+  )
+
   function drag(key: string) {
     if (!grab(key, true)) {
       return undefined
     }
     return followPoints(
       (x, y) => place(key, x, y),
-      (canceled) => (canceled ? cancel() : drop("drag")),
+      (canceled, event) => (canceled ? cancel() : drop("drag", event)),
       options.createAutoScroll
     )
   }
@@ -508,7 +513,8 @@ function createTransfer<State extends object>(
     /**
      * Picks an item up for a drag that doesn't start with `pointerdown`, like
      * a touch on the native host. Returns what follows it, `move(x, y)` and
-     * `end(canceled)`, or `undefined` when the item can't be picked up.
+     * `end(canceled, event?)`, or `undefined` when the item can't be picked
+     * up. Only the latest drag's handle acts, and destroying the list ends it.
      */
     drag,
     /** Picks an item up, as Space does. Returns whether it did. */

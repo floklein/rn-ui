@@ -635,6 +635,16 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       : press(part, slotProps)
     : undefined
   const host = Host ?? (activate ? Pressable : View)
+  const pressedFirst =
+    shown && (!!activate || host === Pressable) && isFollowed(part)
+  React.useEffect(() => {
+    if (pressedFirst) {
+      warn(
+        `The ${slot} part follows touch drags, but it's pressable, so the press takes the touch and the drag never starts. Render it as a \`View\` with no press.`,
+        { component: primitive.name, id: owner.instance.id }
+      )
+    }
+  }, [pressedFirst, slot, primitive.name, owner.instance.id])
   const single = shown && isSingleElement(host, rest, merged.role)
   const labelledBy = single ? idsOf(merged["aria-labelledby"]) : []
   useReferences([

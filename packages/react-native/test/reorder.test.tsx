@@ -8,7 +8,7 @@ import {
 } from "@ui-sdk/core"
 import { bindReorderItem } from "@ui-sdk/core/native"
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { ScrollView, Text, View } from "react-native"
+import { Pressable, ScrollView, Text, View } from "react-native"
 import { createParts } from "../src/primitive"
 import { ScrollArea, ScrollAreaViewport } from "../src/scroll-area"
 
@@ -228,5 +228,24 @@ describe("Reordering by touch", () => {
     await drag("Spring", 20, 40, 50)
     await act(() => new Promise((resolve) => setTimeout(resolve, 100)))
     expect(scrolled).not.toHaveBeenCalled()
+  })
+
+  test("a pressable item, which never gets the drag, warns in development", async () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {})
+    const pressable = createParts(
+      ranking,
+      { root: View, item: Pressable },
+      { item: (part) => bindReorderItem(part.api.reorder, part) }
+    )
+    await render(
+      <pressable.Root defaultValue={seasons}>
+        <pressable.Item value="Spring">
+          <Text>Spring</Text>
+        </pressable.Item>
+      </pressable.Root>
+    )
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("follows touch drags, but it's pressable")
+    )
   })
 })
