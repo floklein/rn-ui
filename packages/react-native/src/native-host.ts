@@ -27,6 +27,15 @@ const drags: WeakMap<Part, NativeDrag> = new WeakMap()
 const steps: WeakMap<Part, (direction: 1 | -1) => void> = new WeakMap()
 const seen: WeakMap<Part, () => NativeSeen> = new WeakMap()
 const holds: WeakMap<Part, () => void> = new WeakMap()
+const scrollAreas: Set<{
+  box: () =>
+    { left: number; top: number; width: number; height: number } | undefined
+  edgeScroll: (
+    point: { x: number; y: number },
+    options: { edge: number; speed: number },
+    along: readonly ("x" | "y")[]
+  ) => ("x" | "y")[]
+}> = new Set()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -120,6 +129,32 @@ setNativeHost({
   box: (part) => views.get(part)?.getBoundingClientRect(),
   follow: (part, drag) => register(drags, part, drag),
   adjustable: (part, step) => register(steps, part, step),
+  scrollNear(point, options) {
+    const under = [...scrollAreas]
+      .flatMap((area) => {
+        const box = area.box()
+        return box &&
+          point.x >= box.left &&
+          point.x <= box.left + box.width &&
+          point.y >= box.top &&
+          point.y <= box.top + box.height
+          ? [{ area, box }]
+          : []
+      })
+      .sort((a, b) => a.box.width * a.box.height - b.box.width * b.box.height)
+    let along: ("x" | "y")[] = ["x", "y"]
+    let scrolled = false
+    for (const { area, box } of under) {
+      const moved = area.edgeScroll(
+        { x: point.x - box.left, y: point.y - box.top },
+        options,
+        along
+      )
+      along = along.filter((axis) => !moved.includes(axis))
+      scrolled ||= moved.length > 0
+    }
+    return scrolled
+  },
   seen: (part) => seen.get(part)?.(),
   // A Modal hears Android's back itself, through `onRequestClose`.
   listen(next) {
@@ -134,6 +169,10 @@ setNativeHost({
   },
 })
 
+const isFollowed = (part: Part) => drags.has(part)
+
+const captures = (part: Part) => !!drags.get(part)?.capture
+
 // A part unmounted mid-drag hears no release, so its unmount lets go too.
 function letGo(part: Part) {
   holds.get(part)?.()
@@ -145,7 +184,15 @@ function letGo(part: Part) {
 // the app turns its scrollEnabled off (#71), and a Scroll Area its own.
 function responder(part: Part, hold: (() => () => void) | null) {
   return {
-    onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
+    // Testing Library asks without an event.
+    onStartShouldSetResponder: (event?: GestureResponderEvent) =>
+      drags.get(part)?.accepts(
+        event && {
+          x: event.nativeEvent.pageX,
+          y: event.nativeEvent.pageY,
+          target: partUnder(event.target),
+        }
+      ) ?? false,
     onStartShouldSetResponderCapture({ nativeEvent }: GestureResponderEvent) {
       if ((nativeEvent.touches?.length ?? 1) <= 1) {
         downs.set(part, { x: nativeEvent.pageX, y: nativeEvent.pageY })
@@ -202,15 +249,18 @@ function responder(part: Part, hold: (() => () => void) | null) {
 }
 
 export {
+  captures,
   controls,
   controlsById,
   fields,
+  isFollowed,
   layerInput,
   letGo,
   parts,
   pressSource,
   renders,
   responder,
+  scrollAreas,
   seen,
   steps,
   textInputs,
