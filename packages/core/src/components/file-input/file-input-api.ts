@@ -11,6 +11,7 @@ import {
   type FileLike,
   type FileRejection,
 } from "../../foundation/forms/files"
+import { focusPart } from "../../foundation/focus/focus-part"
 import { writingFromScript } from "../../foundation/forms/value"
 import {
   associate,
@@ -19,6 +20,7 @@ import {
   isDisabled,
   valueMissingMessage,
 } from "../../foundation/forms/form"
+import { openPicker } from "./file-input-picker"
 import type {
   FileInputDropzoneProps,
   FileInputChangeOptions,
@@ -151,7 +153,7 @@ function fileInputApiBody(
     "root" | "input" | "trigger" | "dropzone" | "item"
   >
 ) {
-  const { id, store, options, element } = context
+  const { id, store, options, element, parts } = context
   const change = createChange(context)
 
   // The rules for the next files. With `multiple`, `maxFiles` counts the files
@@ -406,14 +408,14 @@ function fileInputApiBody(
       if (isDisabled(state)) {
         return false
       }
-      const el = input()
-      if (!el) {
-        return false
-      }
-      el.click()
-      return true
+      return openPicker(input(), {
+        id,
+        options,
+        state: store.get,
+        receive,
+      })
     },
-    focus: () => element("trigger")?.focus(),
+    focus: () => focusPart(() => element("trigger"), parts, "trigger"),
     isDragging: () => Object.keys(store.get().drags).length > 0,
     internal: {
       receive,

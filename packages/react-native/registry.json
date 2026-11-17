@@ -774,6 +774,23 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "internal spreads the popup kit's internals under Calendar's, so popupNative and placeNative read the preset, parts, rules and trigger slot as they do on Popover; focusInput calls focusPart with the start input, so Clear and a Field's label focus the native input through the focus twin."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/file-input/file-input-picker.native.ts",
+      "mirrors": [
+        "packages/core/src/components/file-input/file-input-api.ts",
+        "packages/core/src/components/file-input/file-input-picker.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "open() calls the pick function the app passes to the root, and hands the files it returns to the checks with the picker reason, where the web clicks the hidden <input type=\"file\"> and its change event hands them over. A canceled pick reports nothing, as a canceled picker doesn't on the web."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/file-input/file-input-api.ts",
+      "mirrors": ["packages/core/src/components/file-input/file-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "open() calls openPicker from file-input-picker.ts, which has a native twin, instead of clicking input() itself, and the controller's focus() calls focusPart instead of element(\"trigger\")?.focus()."
     }
   ],
   "components": {
@@ -1341,6 +1358,27 @@
           "reason": "Its bind joins the roving group, which date-picker-native.ts does while the day is mounted, so the controller's focus() and opening the popup move the screen reader to a day. Its focus listener, keydown, pointerdown, mousedown and pointerenter follow keyboard focus, arrow keys and a hovering pointer, which native doesn't report to views (spec, Hardware keyboards)."
         }
       }
+    },
+    "file-input": {
+      "entry": "packages/react-native/src/file-input.tsx",
+      "slots": {
+        "fileInput.root": {
+          "needs": "nothing",
+          "reason": "Its bind submits the files through a custom element's ElementInternals, which only the web components adapter has; native has no forms."
+        },
+        "fileInput.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms. Its change event is where the web receives the picker's files: open() hands pick's files to the same checks (file-input-picker.native.ts)."
+        },
+        "fileInput.dropzone": {
+          "needs": "nothing",
+          "reason": "Its bind takes dropped and pasted files, which React Native doesn't deliver to a view, so the zone is a plain View whose dragging state stays false."
+        },
+        "fileInput.item": {
+          "covered": "packages/react-native/src/file-input.tsx",
+          "reason": "Its keydown and focusin move between items with the arrow keys, remove the focused one with Backspace or Delete and remember the list's tab stop, which native doesn't report to views (spec, Hardware keyboards); the remove buttons stay reachable instead. Where focus goes after a removal, the next file's remove button, else the one before, else the trigger, is restated in the adapter's FileInputItemRemove."
+        }
+      }
     }
   },
   "pending": [
@@ -1350,7 +1388,6 @@
     "combobox",
     "command",
     "date-input",
-    "file-input",
     "hover-card",
     "image-cropper",
     "listbox",
@@ -1760,6 +1797,12 @@
       "example": "form",
       "feature": "Form submission and the valueMissing error",
       "reason": "Native has no forms: the app reads the date from onValueChange, and a Field shows an error it sets itself."
+    },
+    {
+      "component": "file-input",
+      "example": "page",
+      "feature": "A drop zone over the whole page",
+      "reason": "React Native delivers no file drops or pastes to a view, so a page-wide drop target has nothing to take."
     }
   ]
 }

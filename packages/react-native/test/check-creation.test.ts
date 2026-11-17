@@ -11,6 +11,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { fileInput } from "@ui-sdk/core/file-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
 import { calendar } from "@ui-sdk/core/calendar"
@@ -134,6 +135,30 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a file input, empty, holding a picked file or disabled", () => {
+    const file = {
+      name: "photo.png",
+      size: 2_000,
+      type: "image/png",
+      uri: "file:///photo.png",
+    } as unknown as File
+    const props = {
+      item: { file, value: "photo" },
+      "item-remove": { file, value: "photo" },
+    }
+    expect(() => checkCreation(fileInput, {}, props)).not.toThrow()
+    expect(() =>
+      checkCreation(
+        fileInput,
+        { defaultValue: [file], multiple: true, accept: "image/*" },
+        props
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(fileInput, { disabled: true }, props)
+    ).not.toThrow()
   })
 
   test("passes on an otp input, empty, full or disabled", () => {
