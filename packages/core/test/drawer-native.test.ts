@@ -61,7 +61,7 @@ function host() {
 
 // A view on a 800px tall screen whose content is 600px tall. Settles land
 // when `land` runs.
-function view(api: object) {
+function view(api: object, reducedMotion = false) {
   const moves: number[] = []
   const settles: NativeSheetSpring[] = []
   let pending: (() => void) | undefined
@@ -70,6 +70,7 @@ function view(api: object) {
     measure: () => (laidOut ? { container: 800, content: 600 } : undefined),
     move: (extent) => moves.push(extent),
     ranges: vi.fn(),
+    reducedMotion: () => reducedMotion,
     settle(spring, done) {
       settles.push(spring)
       pending = done
@@ -90,11 +91,11 @@ function view(api: object) {
   }
 }
 
-function mount(options: DrawerOptions = {}) {
+function mount(options: DrawerOptions = {}, reducedMotion = false) {
   const steps = host()
   const instance = drawer({ id: "d", ...options })
   keep(instance)
-  const motion = view(instance.api)
+  const motion = view(instance.api, reducedMotion)
   let unmount: (() => void) | void
   let content: Part | undefined
   const render = () => {
@@ -239,4 +240,21 @@ test("a touch the scroll view keeps stops the content coasting from the last one
   const calls = area.scrollTo.mock.calls.length
   await new Promise((done) => setTimeout(done, 50))
   expect(area.scrollTo.mock.calls.length).toBe(calls)
+})
+
+test("with reduced motion an open and a close fade, and a snap eases without overshoot", () => {
+  const { instance, motion } = mount({ snapPoints: [0.25, 0.5] }, true)
+  instance.api.open()
+  motion.layout()
+  expect(motion.settles[0]).toMatchObject({ from: 0, to: 200, fade: "in" })
+  motion.land()
+  instance.api.setSnapPoint(0.5)
+  const snap = motion.settles[1]
+  expect(snap).toMatchObject({ from: 200, to: 400, fade: undefined })
+  for (let elapsed = 0; elapsed <= snap.duration; elapsed += 10) {
+    expect(snap.extentAt(elapsed)).toBeLessThanOrEqual(400)
+  }
+  motion.land()
+  instance.api.close()
+  expect(motion.settles[2]).toMatchObject({ from: 400, to: 0, fade: "out" })
 })
