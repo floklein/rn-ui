@@ -450,6 +450,6 @@
   "@ui-sdk/react-native/testing": 6306,
   "@ui-sdk/react-native/textarea": 12897,
   "@ui-sdk/react-native/toggle": 16335,
-  "@ui-sdk/react-native/slider": 19453,
+  "@ui-sdk/react-native/slider": 19510,
   "@ui-sdk/react-native/toolbar": 14424
 }
