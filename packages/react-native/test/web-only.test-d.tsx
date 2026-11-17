@@ -11,6 +11,8 @@ import { AlertDialog } from "../src/alert-dialog"
 import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Dialog, DialogContent, DialogTrigger } from "../src/dialog"
 import type * as DialogEntry from "../src/dialog"
+import { Drawer, DrawerContent, DrawerTrigger } from "../src/drawer"
+import type * as DrawerEntry from "../src/drawer"
 import { Field, FieldError, FieldLabel } from "../src/field"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
@@ -203,6 +205,27 @@ const dialogEntries = [
 // @ts-expect-error The shortcut part is web-only.
 type DialogShortcut = typeof DialogEntry.DialogShortcut
 
+const drawers = [
+  <Drawer modal={false} snapPoints={[0.5, 1]} modalAbove={0.5} />,
+  // @ts-expect-error `modal="trap-focus"` keeps Tab inside, which the Modal's isolation replaces.
+  <Drawer modal="trap-focus" />,
+  // @ts-expect-error `container` is a DOM element.
+  <Drawer container={null} />,
+  // @ts-expect-error The scroll-snap driver is the browser's scrolling.
+  <Drawer driver="scroll-snap" />,
+  // @ts-expect-error The theme color is a web page's.
+  <Drawer themeColor />,
+  // @ts-expect-error The edge swipe is iOS Safari's.
+  <Drawer preventEdgeSwipe />,
+  // @ts-expect-error `container` is a DOM element.
+  <DrawerContent container={null} />,
+  // @ts-expect-error Keyboard shortcuts are web-only.
+  <DrawerTrigger shortcut="mod+k" />,
+]
+
+// @ts-expect-error The shortcut part is web-only.
+type DrawerShortcut = typeof DrawerEntry.DrawerShortcut
+
 const paginations = [
   <Pagination pageCount={10} onPageChange={() => {}} />,
   // @ts-expect-error Pages are buttons on native, with no URL to link to.
@@ -215,6 +238,8 @@ export {
   dialogEntries,
   type DialogShortcut,
   dialogs,
+  drawers,
+  type DrawerShortcut,
   exits,
   fields,
   NativeDialog,

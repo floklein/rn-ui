@@ -23,6 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../src/dialog"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../src/drawer"
 import { Input, InputClear, InputGroup } from "../src/input"
 import { Label } from "../src/label"
 import { Meter, MeterIndicator, MeterLabel, MeterTrack } from "../src/meter"
@@ -422,6 +429,31 @@ describe("checkDirection on the native host", () => {
                 </DialogClose>
               </DialogContent>
             </Dialog>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a drawer", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <Drawer side="start">
+              <DrawerTrigger>
+                <Text>Menu</Text>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerTitle>Menu</DrawerTitle>
+                <DrawerClose>
+                  <Text>Close</Text>
+                </DrawerClose>
+              </DrawerContent>
+            </Drawer>
           )
           return screen.container
         },

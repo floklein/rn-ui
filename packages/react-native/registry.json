@@ -301,7 +301,7 @@
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement and Twin."
+      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement, partOf and Twin."
     },
     {
       "kind": "edit",
@@ -725,6 +725,36 @@
       "mirrors": ["packages/core/src/foundation/platform/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports anchorRect, arrowOffset, computeArrow, computePlacement and transformOrigin, which popups/placement-native.ts imports."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/popups/sheet.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/popups/sheet.ts",
+        "packages/core/src/foundation/popups/sheet-pointer.ts",
+        "packages/core/src/foundation/popups/sheet-driver.ts",
+        "packages/core/src/foundation/popups/sheet-effects.ts",
+        "packages/core/src/foundation/popups/sheet-axis.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The sheet on the native host: the shared machine, snap points and physics driven by one finger the host feeds it and moving a view the host owns (nativeSheet's bridge), where the DOM module measures elements, listens to pointers, writes translate and plays WAAPI animations. At a scroll view's start it takes the touch and scrolls the content itself, as the pointer driver does. Keyboard avoidance, stacked sheets pushing back, theme color and the scroll-snap driver are left out."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/drawer/drawer-native.ts",
+      "mirrors": [
+        "packages/core/src/components/drawer/drawer.ts",
+        "packages/core/src/components/drawer/drawer-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind orchestrates: the sheet attached before the popup layer shows, and Dialog's focus and Escape rules; the handle's arrow keys as a screen reader's increment and decrement."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/popups/native-sheet.ts",
+      "mirrors": ["packages/core/src/foundation/popups/sheet-driver.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Where the native sheet and the host meet: the host's view (sizes, moves and the spring) and the finger it feeds the sheet, the native counterpart of the DOM driver boundary."
     },
     {
       "kind": "behavior",
@@ -1234,6 +1264,43 @@
         }
       }
     },
+    "drawer": {
+      "entry": "packages/react-native/src/drawer.tsx",
+      "slots": {
+        "drawer.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "drawer.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "drawer.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "drawer.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        },
+        "drawer.backdrop": {
+          "covered": "packages/react-native/src/drawer.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content and lets presses through while the page is usable, which the adapter does by rendering it first in the drawer's Modal (or in place) with pointerEvents from the interactive state; a press on it is the host input's outside press. Its opacity follows the drawer's extent through an Animated interpolation of the dim range the native sheet reports."
+        },
+        "drawer.content": {
+          "covered": "packages/core/src/components/drawer/drawer-native.ts",
+          "reason": "Its bind attaches the sheet and shows the popup, which drawer-native.ts does with the sheet's native twin (popups/sheet.native.ts) and popup-native.ts; the adapter feeds the sheet one finger through Gesture Handler and moves the content with Animated. Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form, which native has none of."
+        },
+        "drawer.handle": {
+          "covered": "packages/core/src/components/drawer/drawer-native.ts",
+          "reason": "Its keydown steps the snap points with arrow keys, Home and End, which drawer-native.ts restates as a screen reader's increment and decrement on the handle; its press cycles them as on the web. Its bind sets touch-action, which the drag through Gesture Handler on the content makes moot, and checks its name, which checkPattern does."
+        },
+        "drawer.outlet": {
+          "covered": "packages/react-native/src/drawer.tsx",
+          "reason": "Its bind registers the outlet for the sheet's effects, which write CSS variables and play keyframes; the adapter's DrawerOutlet plays its keyframes as Animated interpolations of the drawer's extent over the expand range the native sheet reports."
+        }
+      }
+    },
     "date-picker": {
       "entry": "packages/react-native/src/date-picker.tsx",
       "slots": {
@@ -1283,7 +1350,6 @@
     "combobox",
     "command",
     "date-input",
-    "drawer",
     "file-input",
     "hover-card",
     "image-cropper",
@@ -1682,6 +1748,12 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "drawer",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "date-picker",

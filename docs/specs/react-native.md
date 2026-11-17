@@ -397,6 +397,10 @@ Every difference the resolutions record, by subject.
 - An exit ends when the app calls `done` from `onExit`, or at a timeout; nothing reads an animation ([How presence and exit animation work on native][presence]).
 - Entering settles at once, so `onOpenChangeComplete(true)` doesn't wait for an enter animation ([How presence and exit animation work on native][presence]).
 - A panel's size is a state field ([How presence and exit animation work on native][presence]).
+- Drawer's content leaves with its own close settle, so it takes no `onExit`. Under reduced motion it still slides; the web fades it (ticket 72).
+- A scroll view inside a drawer, scrolled away from its start while the drawer rests at its largest snap point, keeps the whole touch: reaching its start doesn't hand the rest of that touch to the drawer, as the web does. At its start the drawer takes the touch and scrolls the content itself, as the web's pointer driver does (ticket 72).
+- A drawer with `modalAbove` renders in the `OverlayHost`, like a non-modal dialog, since a `Modal` takes every press and the page behind must stay usable (ticket 72).
+- Drawer's keyboard avoidance, the stacked drawer stepping back, `themeColor`, `preventEdgeSwipe` and the scroll-snap `driver` are absent; the handle's arrow keys, Home and End are a screen reader's increment and decrement (ticket 72).
 
 **Input and text entry**
 

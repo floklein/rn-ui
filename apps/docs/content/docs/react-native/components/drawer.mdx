@@ -1,0 +1,313 @@
+---
+title: Drawer
+description: A dialog presented as a sheet that slides in from an edge and follows your finger.
+---
+
+Use a drawer for a task that keeps the screen in view, like a quick form, a list of actions or the details of a place on a map.
+
+<ComponentExample
+  name="drawer/basic"
+  caption="Tap Open Drawer. The drawer rises from the bottom. Drag it down, tap the backdrop or tap Cancel to close it."
+/>
+
+## Installation
+
+Drawer's entry imports `react-native-gesture-handler`, an optional peer that no other entry needs. Install it, and render its root view at your app's root, as Gesture Handler asks of every app:
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core react-native-gesture-handler
+```
+
+```tsx
+import { GestureHandlerRootView } from "react-native-gesture-handler"
+
+function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Screens />
+    </GestureHandlerRootView>
+  )
+}
+```
+
+The drawer renders the one inside its own `Modal`.
+
+## Composition
+
+Use the following composition to build a `Drawer`:
+
+```text
+Drawer
+├── DrawerTrigger
+├── DrawerBackdrop
+├── DrawerOutlet
+└── DrawerContent
+    ├── DrawerHandle
+    ├── DrawerTitle
+    ├── DrawerDescription
+    └── DrawerClose
+```
+
+`DrawerTrigger`, `DrawerHandle` and `DrawerClose` render a `Pressable`, `DrawerBackdrop` an animated `Pressable`, `DrawerContent` and `DrawerOutlet` an `Animated.View`, and `DrawerTitle` and `DrawerDescription` a `Text`. A modal drawer renders its backdrop and content in one React Native `Modal`, so the rest of the screen is hidden from screen readers. Context from your own provider placed between `Drawer` and `DrawerContent` doesn't reach the content: put it above `Drawer` or inside the content.
+
+## Usage
+
+Import the parts and put them together. Style the backdrop to cover the screen, and give the content a background. The drawer places the content at its edge:
+
+```tsx
+import {
+  Drawer,
+  DrawerBackdrop,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@ui-sdk/react-native/drawer"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Drawer>
+      <DrawerTrigger>
+        <Text>Share</Text>
+      </DrawerTrigger>
+      <DrawerBackdrop style={styles.backdrop} />
+      <DrawerContent style={styles.content}>
+        <DrawerTitle>Share</DrawerTitle>
+        <DrawerClose>
+          <Text>Done</Text>
+        </DrawerClose>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+const styles = StyleSheet.create({
+  backdrop: { position: "absolute", inset: 0, backgroundColor: "#00000033" },
+  content: { padding: 20, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+## Dragging
+
+The drawer follows your finger with the same physics as the web's drawer, fitted to iOS sheets: while you drag, it moves with the finger, and when you lift it, the shared physics pick the snap point to settle on from where it is and how fast it moves, and play the spring there on the native driver. A fling toward the edge closes it with the `"swipe"` reason. A drag across the drawer's axis is left to the views under it.
+
+## Scroll Views Inside
+
+A `ScrollView` inside the content shares the touch with the drawer:
+
+- While the scroll view is at its start, the drawer takes the touch. Pulling toward the edge moves the drawer, and pushing the other way scrolls the content, after growing the drawer to its largest snap point.
+- While it's scrolled away from its start and the drawer rests at its largest snap point, the scroll view takes the whole touch and scrolls on its own. Reaching its start doesn't hand the rest of that touch to the drawer, as it does on the web: lift your finger and pull again.
+
+The drawer turns a scroll view's scrolling off for the touches it takes, and back on after them, so a scroll view inside it keeps `scrollEnabled` on.
+
+<ComponentExample
+  name="drawer/scrollable"
+  caption="Tap Scrollable Content and push the notes up to scroll them. Scroll back to the top, then pull down to close the drawer."
+/>
+
+## Snap Points
+
+`snapPoints` lists where the drawer can rest, from the edge it comes from: a fraction of the screen up to 1, pixels above 1, `"…px"`, `"…%"`, or `"content"` for its own size, the default. None can be larger than the content, which you size with its style. `defaultSnapPoint` is where it opens, the first by default, and `snapPoint` with `onSnapPointChange` controls it.
+
+<ComponentExample
+  name="drawer/snap-points"
+  caption="Tap Find a Place. The drawer opens halfway. Drag it up or down, or tap the handle to step through the snap points."
+/>
+
+## Handle
+
+`DrawerHandle` is a grabber. A press moves to the next larger snap point and wraps to the smallest, and VoiceOver and TalkBack adjust it like a slider: swiping up or down steps one snap point. Name it, like `aria-label="Resize"`.
+
+## Sides
+
+`side` is the edge the drawer comes from: `"bottom"`, the default, `"top"`, `"left"`, `"right"`, or `"start"` and `"end"`, which follow the app's direction.
+
+<ComponentExample
+  name="drawer/sides"
+  caption="Tap each side. The drawer slides in from that edge and drags back toward it."
+/>
+
+## Page Behind
+
+`modalAbove` keeps the screen usable while the drawer rests at or below that snap point, like a map under a sheet of results. A drawer with `modalAbove`, or with `modal={false}`, renders above your screens in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app, not in a `Modal`. At or below `modalAbove` the backdrop lets presses through and doesn't dim.
+
+<ComponentExample
+  name="drawer/non-modal"
+  caption="Tap Get Directions, then drag the drawer down. The places behind it become usable."
+/>
+
+## Outlet
+
+`DrawerOutlet` follows the drawer: it plays its `keyframes` as the drawer expands, the first while collapsed and the last at the largest snap point. Keyframes run on the native driver, so use transforms, `opacity`, `borderRadius` and the other styles it animates, with numbers or pixel lengths. Outside the drawer, pass the drawer's `controller`.
+
+<ComponentExample
+  name="drawer/outlet"
+  caption="Tap Compose. The inbox behind shrinks and rounds its corners as the drawer rises."
+/>
+
+## Closing
+
+A press on a Close part closes the drawer with the `"close-press"` reason, and its `value` becomes the close's `returnValue`. The drawer also closes when it's swiped toward its edge, with `"swipe"`; when the backdrop is pressed, with `"outside-press"`; when Android's back is used, with `"back"`, after it steps down through the snap points; and when VoiceOver's escape gesture is made on it, with `"escape-key"`. Set `dismissible={false}` to refuse those: a refused swipe springs back, and `onDismissAttempt` hears it.
+
+<ComponentExample
+  name="drawer/action-sheet"
+  caption="Tap Photo Options and choose an action. The log shows what was chosen."
+/>
+
+## Nested Drawers
+
+A drawer opened from inside another opens over it, in its own `Modal`.
+
+<ComponentExample
+  name="drawer/nested"
+  caption="Tap Account, then Change Password. The second drawer opens over the first."
+/>
+
+## Focus
+
+When the drawer opens, it asks VoiceOver or TalkBack to move to its title, which names it. `initialFocus="content"` moves to the content instead, and `"none"` leaves the screen reader where it is. When it closes, it asks to move back to the trigger that opened it, unless `finalFocus` is `"none"`.
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.content, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state). The drawer writes its own position and the backdrop's opacity: don't set `transform` on the content or `opacity` on the backdrop.
+
+## Part State
+
+### DrawerTrigger [#part-state-drawertrigger]
+
+<PartStateTable
+  component="drawer"
+  part="trigger"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogTriggerState"
+/>
+
+### DrawerBackdrop [#part-state-drawerbackdrop]
+
+<PartStateTable
+  component="drawer"
+  part="backdrop"
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerBackdropState"
+/>
+
+### DrawerContent [#part-state-drawercontent]
+
+<PartStateTable
+  component="drawer"
+  part="content"
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerContentState"
+/>
+
+### DrawerHandle [#part-state-drawerhandle]
+
+<PartStateTable
+  component="drawer"
+  part="handle"
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerHandleState"
+/>
+
+### DrawerOutlet [#part-state-draweroutlet]
+
+<PartStateTable
+  component="drawer"
+  part="outlet"
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerOutletState"
+/>
+
+### DrawerClose [#part-state-drawerclose]
+
+<PartStateTable
+  component="drawer"
+  part="close"
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogCloseState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `DrawerTrigger`, `DrawerBackdrop`, `DrawerHandle` and `DrawerClose` also take `Pressable`'s props, `DrawerContent` and `DrawerOutlet` `View`'s, and `DrawerTitle` and `DrawerDescription` `Text`'s.
+
+### Drawer
+
+`modal` is `true` or `false`. `driver`, `themeColor` and `preventEdgeSwipe` are web-only and absent.
+
+<TypeTable
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerOptions"
+  omit={[
+    "container",
+    "persistentElements",
+    "driver",
+    "themeColor",
+    "preventEdgeSwipe",
+  ]}
+/>
+
+### DrawerContent
+
+<TypeTable
+  path="../../packages/core/src/components/dialog/dialog.ts"
+  name="DialogContentProps"
+  omit={["container"]}
+/>
+
+### DrawerOutlet
+
+<TypeTable
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerOutletProps"
+/>
+
+### Reasons
+
+`details.reason` says why the drawer opened or closed, or moved to another snap point. `"shortcut"` never happens on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerOpenChangeReason"
+/>
+
+<ReasonTable
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerSnapPointChangeReason"
+/>
+
+### Controller
+
+Create one with `createDrawerController<Payload, Result>()` and pass it as `controller`. Its `open()` resolves once the drawer closes, with why and the `returnValue`.
+
+<ControllerTable
+  path="../../packages/core/src/components/drawer/drawer.ts"
+  name="DrawerController"
+/>
+
+### Events
+
+| Prop                   | On       | Receives                                                                       |
+| ---------------------- | -------- | ------------------------------------------------------------------------------ |
+| `onOpenChange`         | `Drawer` | `(open, details)`: the new state, the [reason](#reasons) and any `returnValue` |
+| `onOpenChangeComplete` | `Drawer` | `(open)`: `false` once the drawer has settled closed                           |
+| `onSnapPointChange`    | `Drawer` | `(snapPoint, details)`: the snap point it moves to and why                     |
+| `onPayloadChange`      | `Drawer` | `(payload, details)`: the content's new payload                                |
+| `onDismissAttempt`     | `Drawer` | `({ reason })`, when a dismissal was refused                                   |
+
+## Accessibility
+
+The drawer follows the [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/), translated to React Native: the trigger is a button, the `Modal` hides the rest of the screen from VoiceOver and TalkBack, and the title has the header role and names the drawer. The handle is adjustable, so a screen reader steps through the snap points without dragging.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                           |
+| ----- | -------------------------------------------------------------- |
+| Tab   | Moves through the controls, inside the `Modal` while it's open |
+| Space | Opens the drawer from the trigger, or presses a Close part     |
+| Enter | Does the same, on Android only                                 |

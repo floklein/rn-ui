@@ -152,8 +152,15 @@ const adapters = [
     name: "react-native",
     // Core is bundled with each module's `.native.ts` twin in its place, as
     // Metro resolves it. Only the entries written so far are measured.
+    // Gesture Handler, Drawer's optional peer, is the app's, like React Native.
     options: {
-      external: ["react", "react/*", "react-native", "react-native/*"],
+      external: [
+        "react",
+        "react/*",
+        "react-native",
+        "react-native/*",
+        "react-native-gesture-handler",
+      ],
       resolveExtensions: [".native.tsx", ".native.ts", ".tsx", ".ts", ".js"],
       conditions: ["react-native"],
       jsx: "automatic",
