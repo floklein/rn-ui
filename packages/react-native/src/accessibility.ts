@@ -121,7 +121,13 @@ function toNativeProps(
     attrs.role === undefined || (pressable && roles[attrs.role] === "none")
       ? undefined
       : roles[attrs.role]
-  const role = given ?? (attrs.type === "button" ? "button" : undefined)
+  // A separator with a value is a window splitter, which screen readers
+  // adjust as a slider; its value is a panel's share of the group.
+  const splitter =
+    attrs.role === "separator" && attrs["aria-valuenow"] !== undefined
+  const role = splitter
+    ? "adjustable"
+    : (given ?? (attrs.type === "button" ? "button" : undefined))
   // Only `tabbar` gives iOS's tab bar trait.
   if (role) {
     props.accessibilityRole =
@@ -220,6 +226,12 @@ function toNativeProps(
   // from a value that has one, so a bar turning indeterminate sends it empty.
   if (os === "android" && role === "progressbar" && "aria-valuetext" in attrs) {
     value.text ??= ""
+  }
+  if (splitter) {
+    props.accessible = true
+    value.text ??= new Intl.NumberFormat(undefined, {
+      style: "percent",
+    }).format((value.now ?? 0) / 100)
   }
   // A range input's bounds and value are its own attributes.
   if (attrs.type === "range") {

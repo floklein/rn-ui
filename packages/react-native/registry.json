@@ -932,6 +932,31 @@
     },
     {
       "kind": "twin",
+      "file": "packages/core/src/components/resizable/resizable-dom.native.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The group's panels and handles on the native host (resizable-native.ts): the host orders the mounted parts, measures the panels with box and follows the touches that drag a handle, where the DOM side reads the document, observes its size and binds pointer events. It adds measure(), which the adapter calls from the root's onLayout."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/resizable/resizable-native.ts",
+      "mirrors": [
+        "packages/core/src/components/resizable/resizable.ts",
+        "packages/core/src/components/resizable/resizable-dom.ts",
+        "packages/core/src/components/resizable/resizable-handles.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, panels' and handles' binds orchestrate: each part joins the group as it mounts, a handle follows the responder's touches with startDrag, dragBy and endDrag (measured across the panels), puts the layout back when a scroll view or the system takes the touch, and takes a screen reader's increment and decrement through the api's adjust."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/resizable/resizable-api.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: internal.adjust(key, direction), a screen reader's increment or decrement on the native host, which moves a handle a step and commits with the step-key reason and no event, as a key that comes straight back up."
+    },
+    {
+      "kind": "twin",
       "file": "packages/core/src/components/number-input/number-input-field.native.ts",
       "mirrors": [
         "packages/core/src/components/number-input/number-input-api.ts",
@@ -1634,6 +1659,23 @@
         }
       }
     },
+    "resizable": {
+      "entry": "packages/react-native/src/resizable.tsx",
+      "slots": {
+        "resizable.root": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind schedules the panels' reconcile and observes the group's size. resizable-native.ts schedules the reconcile as the root mounts, and the adapter's root measures the panels again from its onLayout, where the DOM's ResizeObserver does."
+        },
+        "resizable.panel": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the panel and watches its size props. resizable-native.ts registers each mounted panel, orders the panels by where the host renders them and measures them with the host's box. Its size is a flex basis the adapter reads from the panel's state, where the web writes a CSS variable."
+        },
+        "resizable.handle": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the handle's hit area, whose pointer press drags it; resizable-native.ts follows the responder's touches on the handle with the same startDrag, dragBy and endDrag api calls, and puts the layout back when the responder is taken. Its keys and Enter move and collapse it with a keyboard, which native doesn't deliver to views (spec, Hardware keyboards); a screen reader's increment and decrement move it a step. Its double-click collapses a panel, which a touch has no gesture for: the controller collapses it. Hover has no touch counterpart."
+        }
+      }
+    },
     "number-input": {
       "entry": "packages/react-native/src/number-input.tsx",
       "slots": {
@@ -1677,7 +1719,6 @@
     "menu",
     "menubar",
     "navigation-menu",
-    "resizable",
     "select",
     "time-input",
     "timeline",
@@ -2112,6 +2153,24 @@
       "example": "shortcut",
       "feature": "The keyboard shortcut that moves focus to the notifications",
       "reason": "Keyboard shortcuts are web-only: the native region has no shortcut option."
+    },
+    {
+      "component": "resizable",
+      "example": "keyboard",
+      "feature": "Arrow keys, Home, End and Enter on a handle",
+      "reason": "React Native delivers no key events to views (spec, Hardware keyboards); a screen reader's increment and decrement move a handle a step."
+    },
+    {
+      "component": "resizable",
+      "example": "persistence",
+      "feature": "Saving to localStorage by default",
+      "reason": "Native has no localStorage: a group saves only into the storage the app passes, which the storage example shows."
+    },
+    {
+      "component": "resizable",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "number-input",

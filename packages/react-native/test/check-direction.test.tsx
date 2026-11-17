@@ -91,6 +91,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import { Resizable, ResizableHandle, ResizablePanel } from "../src/resizable"
 import {
   ScrollArea,
   ScrollAreaContent,
@@ -312,6 +313,29 @@ describe("checkDirection on the native host", () => {
               </Meter>
             </View>
           )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a resizable group", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Resizable>
+              <ResizablePanel>
+                <Text>Files</Text>
+              </ResizablePanel>
+              <ResizableHandle aria-label="Resize files" />
+              <ResizablePanel>
+                <Text>Code</Text>
+              </ResizablePanel>
+            </Resizable>
+          )
+          await act(async () => {})
           return screen.container
         },
         { os, act }

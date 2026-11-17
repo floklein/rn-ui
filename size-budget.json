@@ -456,6 +456,7 @@
   "@ui-sdk/react-native/progress": 12284,
   "@ui-sdk/react-native/radio": 17875,
   "@ui-sdk/react-native/rating": 17666,
+  "@ui-sdk/react-native/resizable": 19971,
   "@ui-sdk/react-native/segmented-control": 18834,
   "@ui-sdk/react-native/scroll-area": 16960,
   "@ui-sdk/react-native/separator": 11022,
