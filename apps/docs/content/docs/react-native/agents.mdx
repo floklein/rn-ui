@@ -57,7 +57,9 @@ function Project() {
 ]
 ```
 
-A component's label and text come from what its parts render: the accessibility label a screen reader reads, and the plain text inside each part. A part counts as shown while its slot is present, not because it's mounted, so the fields in a closed collapsible with `keepMounted` aren't listed. A part hidden from accessibility isn't listed either, and neither is anything behind an open modal, like the screen under a Dialog.
+A component's label and text come from what its parts render: the accessibility label a screen reader reads, and the plain text inside each part. A part counts as shown while its slot is present, not because it's mounted, so the fields in a closed collapsible with `keepMounted` aren't listed. A part hidden from accessibility by its own props or by a part around it isn't listed either, and neither is anything behind an open ui-sdk modal, like the screen under a Dialog.
+
+The bridge can't see what hides a view outside ui-sdk: a `View` of your own with `aria-hidden`, your own `Modal`, or a navigator's screen that stays mounted under the one on top. Mark those with `AgentRegion`, like `data-agent-hidden={!isFocused}` around each screen, with `useIsFocused` from your navigator.
 
 The bridge sees only ui-sdk components and their parts. A `Pressable` of your own isn't a part, so it isn't listed; a ui-sdk [Button](./components/button) is.
 

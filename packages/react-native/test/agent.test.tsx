@@ -153,8 +153,10 @@ test("a mark on the wrapper covers everything inside it", async () => {
   expect(onPress).not.toHaveBeenCalled()
 })
 
-test("a press runs the part's press as the agent", async () => {
-  const onPress = jest.fn()
+test("a press runs the part's press as the agent, with a press event", async () => {
+  const onPress = jest.fn((event: { nativeEvent: { timestamp: number } }) =>
+    expect(typeof event.nativeEvent.timestamp).toBe("number")
+  )
   await render(
     <Button onPress={onPress}>
       <Text>Save</Text>
@@ -165,7 +167,7 @@ test("a press runs the part's press as the agent", async () => {
   )
   expect(result).toEqual(expect.objectContaining({ ok: true }))
   expect(onPress).toHaveBeenCalledWith(
-    undefined,
+    expect.objectContaining({ nativeEvent: expect.any(Object) }),
     expect.objectContaining({ source: "agent" })
   )
 })
@@ -207,4 +209,18 @@ test("a one-time-code field's value reads redacted", async () => {
   expect(onScreen()).toEqual([
     expect.objectContaining({ label: "Code", value: "[redacted]" }),
   ])
+})
+
+test("a part hidden from accessibility by its own props isn't listed", async () => {
+  await render(
+    <>
+      <Switch aria-label="Shown" />
+      <Switch
+        aria-label="Hidden"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      />
+    </>
+  )
+  expect(labels()).toEqual(["Shown"])
 })

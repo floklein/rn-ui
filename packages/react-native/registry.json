@@ -748,6 +748,13 @@
       "why": "Exports userLocale and createFolder, which the native agent bridge folds labels with."
     },
     {
+      "kind": "edit",
+      "file": "apps/docs/lib/core-exports.ts",
+      "mirrors": ["apps/docs/lib/core-exports.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads a core source export that is a condition object, like ./agent's, by its default target."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/foundation/popups/sheet.native.ts",
       "mirrors": [

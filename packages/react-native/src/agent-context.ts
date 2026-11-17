@@ -83,6 +83,47 @@ function withoutMarks<T extends AgentMarks>(props: T) {
   ] as const
 }
 
+const isHiddenFromAccessibility = (props: {
+  accessibilityElementsHidden?: unknown
+  importantForAccessibility?: unknown
+}) =>
+  props.accessibilityElementsHidden === true ||
+  props.importantForAccessibility === "no-hide-descendants"
+
+// A press with no touch behind it, shaped as `onPress` expects, as the web's
+// agent clicks with a real event.
+function agentPressEvent() {
+  const timestamp = Date.now()
+  const nativeEvent = {
+    timestamp,
+    identifier: 0,
+    locationX: 0,
+    locationY: 0,
+    pageX: 0,
+    pageY: 0,
+    target: 0,
+    touches: [],
+    changedTouches: [],
+  }
+  return {
+    nativeEvent,
+    target: 0,
+    currentTarget: 0,
+    type: "press",
+    timeStamp: timestamp,
+    bubbles: false,
+    cancelable: false,
+    defaultPrevented: false,
+    eventPhase: 0,
+    isTrusted: false,
+    preventDefault() {},
+    isDefaultPrevented: () => false,
+    stopPropagation() {},
+    isPropagationStopped: () => false,
+    persist() {},
+  }
+}
+
 const isSecretField = (props: {
   secureTextEntry?: unknown
   autoComplete?: unknown
@@ -112,6 +153,8 @@ function useSeen(part: Part, layer: Host | null, now: NativeSeen | undefined) {
 export {
   AgentContext,
   type AgentMarks,
+  agentPressEvent,
+  isHiddenFromAccessibility,
   isSecretField,
   useMarks,
   useSeen,

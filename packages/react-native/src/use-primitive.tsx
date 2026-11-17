@@ -51,6 +51,8 @@ import {
 } from "react-native"
 import {
   AgentContext,
+  agentPressEvent,
+  isHiddenFromAccessibility,
   isSecretField,
   useMarks,
   useSeen,
@@ -658,8 +660,8 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
     marks,
     !presentNow ||
       presence.exiting ||
-      translated.accessibilityElementsHidden === true ||
-      translated.importantForAccessibility === "no-hide-descendants",
+      isHiddenFromAccessibility(translated) ||
+      isHiddenFromAccessibility(rest),
     owner.instance.id
   )
   const layer = useHost()
@@ -756,8 +758,9 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
     )
   }
   // The press of the element it rendered, which a `render` may have set.
-  const onPress = (element?.props as { onPress?: () => void } | undefined)
-    ?.onPress
+  const onPress = (
+    element?.props as { onPress?: (event: object) => void } | undefined
+  )?.onPress
   useSeen(
     part,
     layer,
@@ -772,7 +775,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
           secret: marked.secret || isSecretField({ ...translated, ...rest }),
           confirm: marked.confirm,
           within: marked.within,
-          press: onPress && (() => onPress()),
+          press: onPress && (() => onPress(agentPressEvent())),
         }
       : undefined
   )
