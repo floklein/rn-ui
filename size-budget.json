@@ -448,6 +448,8 @@
   "@ui-sdk/react-native/file-input": 18678,
   "@ui-sdk/react-native/history": 3108,
   "@ui-sdk/react-native/hover-card": 32289,
+  "@ui-sdk/react-native/image": 21,
+  "@ui-sdk/react-native/image-cropper": 23004,
   "@ui-sdk/react-native/input": 14691,
   "@ui-sdk/react-native/label": 11654,
   "@ui-sdk/react-native/meter": 12288,

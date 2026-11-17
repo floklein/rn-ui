@@ -9,6 +9,7 @@ import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
 import { tooltip } from "@ui-sdk/core/tooltip"
 import { hoverCard } from "@ui-sdk/core/hover-card"
+import { imageCropper } from "@ui-sdk/core/image-cropper"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
@@ -98,6 +99,23 @@ describe("checkCreation", () => {
           defaultValue: "oklch(0.62 0.19 259)",
         },
         { "swatch-item": { value: "#ef4444" } }
+      )
+    ).not.toThrow()
+  })
+
+  test("passes on an image cropper, in a box or a frame", () => {
+    expect(() =>
+      checkCreation(
+        imageCropper,
+        { src: "photo.png" },
+        { handle: { position: "se" } }
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        imageCropper,
+        { src: "photo.png", mode: "frame", aspectRatio: 1 },
+        { handle: { position: "n" } }
       )
     ).not.toThrow()
   })

@@ -55,6 +55,8 @@ Last checked: 2026-11-17, against `packages/react-native` and `node_modules/reac
 - Same rules of React as the web: pure render, effects only sync with the outside, StrictMode double-invokes initializers and effects. There is no server rendering and no `document`.
 - Metro resolves `.native.ts` over `.ts`, and the `react-native` export condition. Expo's resolver dedupes `react` and `react-native` to the app's copy.
 
+- **`Image`'s `onLoad` size is the decoded bitmap.** iOS shrinks it to the view's pixel size (`RCTDecodeImageWithData`), Android to the view's size for local URIs under `resizeMethod="auto"`. `Image.getSize` returns the file's pixels, with EXIF orientation applied on iOS.
+
 ## 2. How `@ui-sdk/react-native` is built
 
 - **The seam** (ADR 0001): a part reads its slot's declarative fields (`attrs`, `state`, `present`, `focus`) and delivers `press`. It never runs `bind`, `asleep`, `connect` or the `on` handlers. Native behavior lives in core's twins (`*.native.ts`, with a compile-time `Twin<>` check) and native behavior files, never in the adapter. Core never imports `react-native`.

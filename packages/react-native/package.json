@@ -38,6 +38,8 @@
     "./file-input": "./src/file-input.tsx",
     "./history": "./src/history.ts",
     "./hover-card": "./src/hover-card.tsx",
+    "./image": "./src/image.ts",
+    "./image-cropper": "./src/image-cropper.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -162,6 +164,14 @@
       "./hover-card": {
         "types": "./dist/hover-card.d.ts",
         "default": "./dist/hover-card.js"
+      },
+      "./image": {
+        "types": "./dist/image.d.ts",
+        "default": "./dist/image.js"
+      },
+      "./image-cropper": {
+        "types": "./dist/image-cropper.d.ts",
+        "default": "./dist/image-cropper.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",
