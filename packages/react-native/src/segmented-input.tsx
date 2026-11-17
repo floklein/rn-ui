@@ -93,7 +93,7 @@ function useSegmentedRoot(
             target: null,
           } as unknown as MouseEvent)
           ?.focus(),
-    }) as RootProps,
+    }) as Record<string, unknown>,
     View
   )
   return <NamesContext value={names}>{part}</NamesContext>
@@ -106,13 +106,18 @@ function useSegment(
   const handle = useHandle(primitive)
   const names = React.useContext(NamesContext)
   const own = { segment, id: segment.key }
+  // Slot state leaves out the selection a refused edit writes back.
+  const selection = React.useSyncExternalStore(
+    handle.instance.subscribe,
+    () => handle.instance.get().selection
+  )
   if (!segment.editable) {
     return usePart(
       handle,
       "segment",
       own,
       {
-        ...(props as PartProps<typeof Text, DateInputSegmentState>),
+        ...(props as Record<string, unknown>),
         render,
         children: children ?? segment.text,
       },
@@ -122,11 +127,6 @@ function useSegment(
   const type = segment.type as EditableType
   const { internal } = handle.api
   const { disabled, formDisabled, readOnly } = handle.state
-  // Slot state leaves out the selection a refused edit writes back.
-  const selection = React.useSyncExternalStore(
-    handle.instance.subscribe,
-    () => handle.instance.get().selection
-  )
   const editable = !disabled && !formDisabled && !readOnly
   return usePart(
     handle,

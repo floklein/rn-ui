@@ -6,6 +6,9 @@ import { useDevice } from "./device.ts"
 
 const device = useDevice("date-input")
 
+// iOS reads a segment's accessibility value, which names an empty one.
+const empty = device.platform === "ios" ? "Empty" : ""
+
 // The Android keyboard pushes the fixture's readouts off the screen, where
 // UiAutomator can't read them.
 async function closeKeyboard() {
@@ -64,7 +67,7 @@ test("Backspace empties a segment, then goes back from an empty one", async () =
   await typeKeys("3")
   await device.type("")
   await device.expectTree((tree) =>
-    assert.equal(tree.get("start-day")?.value, "")
+    assert.equal(tree.get("start-day")?.value, empty)
   )
   await device.type("")
   await expectFocus("start-month")
@@ -80,7 +83,7 @@ test("a letter in a number segment is written back at once", async () => {
   await month.addValue("x")
   await closeKeyboard()
   await device.expectTree((tree) => {
-    assert.equal(tree.get("start-month")?.value, "")
+    assert.equal(tree.get("start-month")?.value, empty)
     assert.equal(tree.get("changes")?.text, "none")
   })
 })
