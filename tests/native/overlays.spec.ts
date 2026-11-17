@@ -15,10 +15,19 @@ async function open(name: string) {
   await expectShown(`${name}-content`, true)
 }
 
+// The alert dialog confirm() opens takes no test IDs: find its parts by text.
+const byText = (text: string, type: "StaticText" | "Button") =>
+  device.platform === "ios"
+    ? `-ios predicate string:type == "XCUIElementType${type}" AND label == "${text}" AND accessible == 1`
+    : `android=new UiSelector().text("${text}")`
+
 beforeEach(() => device.open("fixture-overlays"))
 
 // A Modal left open would cover the screen list the next test opens from.
 afterEach(async () => {
+  if ((await device.tree()).has("sheet")) {
+    await device.press("sheet-close")
+  }
   for (const name of [
     "confirm",
     "sibling",
@@ -79,6 +88,37 @@ test("a dialog opened from code while a modal dialog is open shows inside its Mo
   await device.press("sibling-close")
   await expectShown("sibling-content", false)
   await expectShown("profile-content", true)
+})
+
+test("confirm() asked over a modal dialog shows above it and resolves with the answer", async () => {
+  for (const [choice, answer] of [
+    ["Cancel", "false"],
+    ["Discard", "true"],
+  ]) {
+    await open("profile")
+    await device.press("ask")
+    const title = device.driver.$(byText("Discard changes?", "StaticText"))
+    await title.waitForDisplayed({ timeout: 5000 })
+    await device.driver.$(byText(choice, "Button")).click()
+    await title.waitForDisplayed({ reverse: true, timeout: 5000 })
+    await expectShown("profile-content", true)
+    await device.press("profile-close")
+    await expectShown("profile-content", false)
+    await expectText("answer", answer)
+  }
+})
+
+test("confirm() asked over the app's own Modal with an OverlayHost shows above it", async () => {
+  await device.press("open-sheet")
+  await expectShown("sheet", true)
+  await device.press("sheet-ask")
+  const title = device.driver.$(byText("Discard changes?", "StaticText"))
+  await title.waitForDisplayed({ timeout: 5000 })
+  await device.driver.$(byText("Discard", "Button")).click()
+  await title.waitForDisplayed({ reverse: true, timeout: 5000 })
+  await device.press("sheet-close")
+  await expectShown("sheet", false)
+  await expectText("answer", "true")
 })
 
 test("Android's back closes the topmost layer in the root host first", async (t) => {
