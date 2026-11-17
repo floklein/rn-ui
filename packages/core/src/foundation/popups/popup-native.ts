@@ -59,6 +59,12 @@ function pressTrigger(part: Part<any, PopupApi>, source: ChangeSource) {
   )
 }
 
+// A component whose api keeps its own internals, like Select, holds the
+// popup's under `popupCore`.
+const popupCoreOf = (api: PopupParts) =>
+  (api.internal as { popupCore?: PopupParts["internal"] }).popupCore ??
+  api.internal
+
 function partIn(internal: PopupParts["internal"], slot: string, key?: string) {
   let first: Part | undefined
   for (const part of internal.parts()) {
@@ -95,7 +101,7 @@ function popupNative<Api extends PopupParts>({
       flagWhileBound(part.store, "described", { now: true }),
     content(part) {
       const { api, store } = part
-      const { internal } = api
+      const internal = popupCoreOf(api)
       const rules = resolveBehavior(internal.preset.behavior, {})
       settleFlag(store, "titled")
       const release = holdExit(store)

@@ -21,10 +21,10 @@ import type { SelectApi } from "./select-api"
 // The highlight opening sets isn't announced: focus moving says it.
 let opening = false
 
-// `any`: Select's own `internal.hover` clashes with the popup's hover feature.
+// `any`: Select's api keeps its own internals, the popup's under `popupCore`.
 const popup: NativeBehavior<SelectApi> = popupNative<any>({
   focus(api: SelectApi, plan: string) {
-    const internal = api.internal as unknown as Parameters<typeof partIn>[0]
+    const internal = api.internal.popupCore
     const content = partIn(internal, "content")
     if (plan === "popup") {
       return content

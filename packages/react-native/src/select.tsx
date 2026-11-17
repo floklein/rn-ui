@@ -216,6 +216,17 @@ function SelectLayer({
   )
 }
 
+// Placement reads the popup's internals, which Select's api keeps under
+// `popupCore`; one object per select, since placement is kept by api.
+const popupApis = new WeakMap<object, { internal: unknown }>()
+function popupApiOf(api: PrimitiveHandle<SelectPrimitive>["api"]) {
+  let popupApi = popupApis.get(api)
+  if (!popupApi) {
+    popupApis.set(api, (popupApi = { internal: api.internal.popupCore }))
+  }
+  return popupApi as never
+}
+
 /**
  * A visible label for the select, a `Text` that names the trigger. Pressing
  * it moves the screen reader's focus to the trigger.
@@ -420,7 +431,7 @@ function PlacedContent({
     () => handle.state.mounted
   )
   const placement = usePlacement(
-    handle.api as never,
+    popupApiOf(handle.api),
     useHost(),
     props.style,
     mounted
@@ -766,7 +777,7 @@ function SelectArrow(
   props: PartProps<typeof View, SelectArrowState & SelectArrowPlacementState>
 ) {
   const handle = useHandle(select)
-  const placement = placementOf(handle.api as never)
+  const placement = placementOf(popupApiOf(handle.api))
   const arrow = usePlaced(placement)?.arrow
   const vertical = arrow?.side === "top" || arrow?.side === "bottom"
   return usePart(

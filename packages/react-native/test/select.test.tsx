@@ -268,3 +268,31 @@ test("passes the listbox pattern on its open list", async () => {
     checkPattern(screen.container, "listbox", { os, act })
   ).resolves.toBeUndefined()
 })
+
+test("the list is placed below its trigger, lined up with its start", async () => {
+  const states: Record<string, unknown>[] = []
+  await render(
+    <OverlayHost>
+      <Select defaultOpen>
+        <SelectTrigger testID="trigger" aria-label="Fruit" />
+        <SelectContent
+          testID="content"
+          style={(state) => {
+            states.push(state)
+            return {}
+          }}
+        >
+          <SelectItem value="apple">
+            <Text>Apple</Text>
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </OverlayHost>
+  )
+  expect(states.at(-1)).toMatchObject({
+    side: "bottom",
+    align: "start",
+    anchorWidth: 200,
+    anchorHeight: 40,
+  })
+})

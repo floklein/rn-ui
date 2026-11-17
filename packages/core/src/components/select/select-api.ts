@@ -545,10 +545,10 @@ function selectApiBody(
       }: SelectChangeOptions<SelectQueryChangeReason> = {}
     ) => setQuery(query, reason, event),
     focus: () => focusPart(triggerElement, context.parts, "trigger"),
-    // Internal. Used by slots and adapters. The popup's own, which the
-    // native host reads, under the select's.
+    // Internal. Used by slots and adapters.
     internal: {
-      ...kit.internal,
+      // The popup's own internals, which the native host reads.
+      popupCore: kit.internal,
       focusTrigger,
       options,
       listbox,
