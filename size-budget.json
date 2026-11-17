@@ -445,7 +445,7 @@
   "@ui-sdk/react-native/input": 14573,
   "@ui-sdk/react-native/label": 11526,
   "@ui-sdk/react-native/meter": 12173,
-  "@ui-sdk/react-native/number-input": 22661,
+  "@ui-sdk/react-native/number-input": 23153,
   "@ui-sdk/react-native/observe": 1534,
   "@ui-sdk/react-native/otp-input": 17829,
   "@ui-sdk/react-native/overlays": 42932,
