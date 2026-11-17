@@ -658,6 +658,13 @@
       "mirrors": ["packages/core/src/foundation/date/format.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/test/slot-role-messages.test.ts",
+      "mirrors": ["packages/core/test/slot-role-messages.test.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A 30 second timeout: the type program it builds took about 6 seconds after Calendar (#102) merged, over Vitest's 5 second default."
     }
   ],
   "components": {
