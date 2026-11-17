@@ -40,6 +40,13 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import {
+  FileInput,
+  FileInputItem,
+  FileInputItemRemove,
+  FileInputList,
+  FileInputTrigger,
+} from "../src/file-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -206,6 +213,40 @@ describe("checkDirection on the native host", () => {
       )
     ).resolves.toBeUndefined()
   }, 30_000)
+
+  test("passes on a file input", async () => {
+    const file = {
+      name: "photo.png",
+      size: 2_000,
+      type: "image/png",
+      uri: "file:///photo.png",
+    }
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <FileInput defaultValue={[file]}>
+              <FileInputTrigger>
+                <Text>Choose a file</Text>
+              </FileInputTrigger>
+              <FileInputList>
+                <FileInputItem>
+                  {({ file: shown }) => (
+                    <>
+                      <Text>{shown.name}</Text>
+                      <FileInputItemRemove />
+                    </>
+                  )}
+                </FileInputItem>
+              </FileInputList>
+            </FileInput>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
 
   test("passes on a pagination", async () => {
     await expect(

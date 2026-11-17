@@ -21,6 +21,7 @@ import {
  * A calendar's days are its buttons with a selected state; pass one that can
  * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
+ * A file input's remove buttons are the buttons inside its list.
  * @experimental
  */
 type NativePattern =
@@ -32,6 +33,7 @@ type NativePattern =
   | "date-picker"
   | "dialog"
   | "disclosure"
+  | "file-input"
   | "img"
   | "meter"
   | "pagination"
@@ -130,6 +132,54 @@ async function buttonPattern(context: Context) {
         "togglebutton",
         index,
         (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
+// There's no WAI-ARIA pattern for a file input; its buttons are found again
+// by name, since each removal takes one away.
+async function fileInputPattern(context: Context) {
+  const buttons = context.withRole("button")
+  if (!buttons.length) {
+    context.problem(
+      context.root,
+      "has no element with the button role, so nothing opens the picker."
+    )
+    return
+  }
+  for (const button of buttons) {
+    requireName(context, button, "button")
+  }
+  const removers = () => {
+    const list = shownNodes(context.root).find(
+      (node) => node.props.accessibilityRole === "list"
+    )
+    return list
+      ? readTree(list, context.os).elements.filter(
+          (node) => roleOf(node) === "button"
+        )
+      : []
+  }
+  const count = (name: string) =>
+    removers().filter((node) => nameOf(node) === name).length
+  const names = () => [...new Set(removers().map(nameOf))]
+  for (const name of names()) {
+    const button = removers().find(
+      (node) => nameOf(node) === name && !isDisabled(node)
+    )
+    if (!button) {
+      continue
+    }
+    const before = new Map(names().map((other) => [other, count(other)]))
+    await performWatched(button, "activate", context.act)
+    const changed = [...before].filter(
+      ([other, was]) => count(other) !== (other === name ? was - 1 : was)
+    )
+    if (changed.length) {
+      context.problem(
+        button,
+        "doesn't remove only its own file after the activate action; a remove button in the list takes its item away."
       )
     }
   }
@@ -974,6 +1024,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
+  "file-input": fileInputPattern,
   img: imgPattern,
   meter: (context) => barPattern(context, "meter"),
   pagination: paginationPattern,

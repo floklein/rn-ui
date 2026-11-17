@@ -29,6 +29,7 @@
     "./dialog": "./src/dialog.tsx",
     "./drawer": "./src/drawer.tsx",
     "./field": "./src/field.tsx",
+    "./file-input": "./src/file-input.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -109,6 +110,10 @@
         "types": "./dist/field.d.ts",
         "default": "./dist/field.js"
       },
+      "./file-input": {
+        "types": "./dist/file-input.d.ts",
+        "default": "./dist/file-input.js"
+      },
       "./input": {
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
@@ -129,6 +134,7 @@
         "types": "./dist/overlays.d.ts",
         "default": "./dist/overlays.js"
       },
+      "./package.json": "./package.json",
       "./pagination": {
         "types": "./dist/pagination.d.ts",
         "default": "./dist/pagination.js"
@@ -192,8 +198,7 @@
       "./toolbar": {
         "types": "./dist/toolbar.d.ts",
         "default": "./dist/toolbar.js"
-      },
-      "./package.json": "./package.json"
+      }
     }
   },
   "scripts": {
