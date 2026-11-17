@@ -5,18 +5,22 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
+import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { fileInput } from "@ui-sdk/core/file-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
 import { calendar } from "@ui-sdk/core/calendar"
+import { datePicker } from "@ui-sdk/core/date-picker"
 import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
+import { scrollArea } from "@ui-sdk/core/scroll-area"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
 import { slider } from "@ui-sdk/core/slider"
@@ -68,6 +72,13 @@ describe("checkCreation", () => {
     ).not.toThrow()
   })
 
+  test("passes on a scroll area, sticking to the end or not", () => {
+    expect(() => checkCreation(scrollArea, {})).not.toThrow()
+    expect(() =>
+      checkCreation(scrollArea, { stickToEnd: true, type: "always" })
+    ).not.toThrow()
+  })
+
   test("passes on a separator, decorative or vertical", () => {
     expect(() => checkCreation(separator, {})).not.toThrow()
     expect(() =>
@@ -97,6 +108,28 @@ describe("checkCreation", () => {
     ).not.toThrow()
   })
 
+  test("passes on a date picker, one date or a range, open or closed", () => {
+    const props = {
+      day: { value: "2026-10-16" },
+      weekday: { index: 0 },
+      preset: { value: "2026-10-31" },
+    }
+    expect(() =>
+      checkCreation(datePicker, { defaultValue: "2026-10-16" }, props)
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        datePicker,
+        {
+          mode: "range",
+          defaultValue: ["2026-10-12", "2026-10-14"],
+          defaultOpen: true,
+        },
+        { ...props, preset: { value: ["2026-10-01", "2026-10-07"] } }
+      )
+    ).not.toThrow()
+  })
+
   test("passes on a pagination, by page count or by total", () => {
     expect(() =>
       checkCreation(pagination, { pageCount: 10, defaultPage: 4 })
@@ -110,6 +143,30 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a file input, empty, holding a picked file or disabled", () => {
+    const file = {
+      name: "photo.png",
+      size: 2_000,
+      type: "image/png",
+      uri: "file:///photo.png",
+    } as unknown as File
+    const props = {
+      item: { file, value: "photo" },
+      "item-remove": { file, value: "photo" },
+    }
+    expect(() => checkCreation(fileInput, {}, props)).not.toThrow()
+    expect(() =>
+      checkCreation(
+        fileInput,
+        { defaultValue: [file], multiple: true, accept: "image/*" },
+        props
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(fileInput, { disabled: true }, props)
+    ).not.toThrow()
   })
 
   test("passes on an otp input, empty, full or disabled", () => {
@@ -193,6 +250,11 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(collapsible, { open: true, disabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on a drawer, open or closed", () => {
+    expect(() => checkCreation(drawer, {})).not.toThrow()
+    expect(() => checkCreation(drawer, { open: true })).not.toThrow()
   })
 
   test("passes on a popover, open or closed, modal or not", () => {

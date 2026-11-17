@@ -50,7 +50,7 @@ export {
   trackInput,
   trackModality,
 } from "./modality"
-export { nativeElement } from "./native-element"
+export { nativeElement, partOf } from "./native-element"
 export {
   type NativeBehavior,
   type NativeDrag,

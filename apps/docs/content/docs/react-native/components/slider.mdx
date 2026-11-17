@@ -112,6 +112,8 @@ return (
 
 The grant runs only when the control takes the touch, so a disabled slider leaves the scroll view alone. A scroll view across the slider's axis, like a vertical `ScrollView` around a horizontal slider, needs nothing. Every other drag works the same way: pass the three handlers to the part you drag.
 
+A [Scroll Area](./scroll-area#drags-inside) does this for you: its viewport stops scrolling while a drag inside it holds the touch.
+
 ## Range
 
 Pass an array for a range, then render one thumb per number. Give each thumb its `index`, from 0, and its own name, like "Minimum price". The indicator fills the space between the first and the last thumb.

@@ -11,7 +11,12 @@ type Rect = { x: number; y: number; width: number; height: number }
 type Size = { width: number; height: number }
 type Edges = { left: number; top: number; right: number; bottom: number }
 
-type PopupApi = { internal: ReturnType<typeof createPopup>["internal"] }
+type PopupApi = {
+  internal: Pick<
+    ReturnType<typeof createPopup>["internal"],
+    "preset" | "contentProps"
+  >
+}
 
 /**
  * What `position` writes on the DOM host, for the native host, which

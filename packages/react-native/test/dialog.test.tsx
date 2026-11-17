@@ -34,8 +34,10 @@ import "../src/calendar"
 import { carried, carry } from "../src/carried-context"
 import "../src/checkbox"
 import { FieldSet } from "../src/field"
+import "../src/file-input"
 import "../src/input"
 import "../src/rating"
+import "../src/scroll-area"
 import "../src/select"
 import { Switch } from "../src/switch"
 import "../src/tabs"
@@ -421,10 +423,13 @@ describe("the adapter's contexts inside the Modal", () => {
       "Described",
       "Disabled",
       "Field",
+      "FileInputFile",
       "InputGroup",
       "Outlet",
       "Placed",
       "RatingItem",
+      "ScrollAreaOrientation",
+      "ScrollHold",
       "TabsLayouts",
       "ToggleGroup",
       "Toolbar",

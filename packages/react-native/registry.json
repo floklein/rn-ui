@@ -301,7 +301,7 @@
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement and Twin."
+      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement, partOf and Twin."
     },
     {
       "kind": "edit",
@@ -601,6 +601,90 @@
       "why": "Dialog's focus on open (the title, or an alert dialog's first Close part when preferredFocus's auto applies), restated since preferredFocus reads elements, and its Escape rule: a non-modal dialog closes on the escape gesture only when it reached its content, where onEscape asks whether focus is inside the element."
     },
     {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/popup-features.ts",
+      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/popups/create-popup.ts",
+      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/popups/index.ts",
+      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover, Drawer and Select import."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/calendar/calendar-native.ts",
+      "mirrors": [
+        "packages/core/src/components/calendar/calendar.ts",
+        "packages/core/src/components/calendar/calendar-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's and the day's bind orchestrate: the root reads the locale and today through bindRoot, and each day joins the roving group with a native element the order twin sorts and the host focuses."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/week.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/week.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl has no Intl.Locale, so the first day of the week comes from the tag's region and CLDR's table, where the DOM module asks Intl.Locale's week info and maximizes the tag."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/format.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/format.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/test/slot-role-messages.test.ts",
+      "mirrors": ["packages/core/test/slot-role-messages.test.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A 30 second timeout: the type program it builds took about 6 seconds after Calendar (#102) merged, over Vitest's 5 second default."
+    },
+    {
+      "kind": "edit",
+      "file": "size-budget.json",
+      "mirrors": ["size-budget.json"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, select, async-options and text-match."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/accordion/accordion-native.ts",
+      "mirrors": [
+        "packages/core/src/components/accordion/accordion.ts",
+        "packages/core/src/foundation/disclosure/disclosure.ts",
+        "packages/core/src/foundation/motion/panel.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the item and panel slots' bind orchestrate: an item registers with a stand-in from nativeElement, so the items' order comes from the order twin; a panel settles (api.internal.settled(key, open)) when the adapter's presence does, through presence-native.ts's onSettled, as collapsible-native.ts does. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting list stays the adapter's presence."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/accordion/accordion.ts",
+      "mirrors": ["packages/core/src/components/accordion/accordion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The items' order sorts the registered items with inDocumentOrder instead of reading elements(context, \"item\"), so the order twin sorts native stand-ins; the controller's focus() calls focusPart, with the first item's key when no value is given."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/style.native.ts",
       "mirrors": ["packages/core/src/foundation/platform/style.ts"],
@@ -630,41 +714,6 @@
     },
     {
       "kind": "edit",
-      "file": "packages/core/src/foundation/popups/popup.ts",
-      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/popups/popup-features.ts",
-      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
-    },
-    {
-      "kind": "reroute",
-      "file": "packages/core/src/foundation/popups/create-popup.ts",
-      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/popups/index.ts",
-      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover and Select import."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/src/foundation/lists/index.ts",
-      "mirrors": ["packages/core/src/foundation/lists/index.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports announceHighlight and nativeItem from listbox-native.ts, which Select's native behavior imports, and Combobox's, Autocomplete's and Command's will."
-    },
-    {
-      "kind": "edit",
       "file": "packages/core/src/foundation/platform/position.ts",
       "mirrors": ["packages/core/src/foundation/platform/position.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
@@ -678,14 +727,96 @@
       "why": "Exports anchorRect, arrowOffset, computeArrow, computePlacement and transformOrigin, which popups/placement-native.ts imports."
     },
     {
-      "kind": "behavior",
-      "file": "packages/core/src/components/calendar/calendar-native.ts",
+      "kind": "twin",
+      "file": "packages/core/src/foundation/popups/sheet.native.ts",
       "mirrors": [
-        "packages/core/src/components/calendar/calendar.ts",
-        "packages/core/src/components/calendar/calendar-api.ts"
+        "packages/core/src/foundation/popups/sheet.ts",
+        "packages/core/src/foundation/popups/sheet-pointer.ts",
+        "packages/core/src/foundation/popups/sheet-driver.ts",
+        "packages/core/src/foundation/popups/sheet-effects.ts",
+        "packages/core/src/foundation/popups/sheet-axis.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What the root's and the day's bind orchestrate: the root reads the locale and today through bindRoot, and each day joins the roving group with a native element the order twin sorts and the host focuses."
+      "why": "The sheet on the native host: the shared machine, snap points and physics driven by one finger the host feeds it and moving a view the host owns (nativeSheet's bridge), where the DOM module measures elements, listens to pointers, writes translate and plays WAAPI animations. At a scroll view's start it takes the touch and scrolls the content itself, as the pointer driver does. Under reduced motion an open or close fades and a snap eases, as the pointer driver does; the host avoids the keyboard and steps stacked sheets back. Theme color and the scroll-snap driver are left out."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/drawer/drawer-native.ts",
+      "mirrors": [
+        "packages/core/src/components/drawer/drawer.ts",
+        "packages/core/src/components/drawer/drawer-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind orchestrates: the sheet attached before the popup layer shows, and Dialog's focus and Escape rules; the handle's arrow keys as a screen reader's increment and decrement."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/popups/native-sheet.ts",
+      "mirrors": ["packages/core/src/foundation/popups/sheet-driver.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Where the native sheet and the host meet: the host's view (sizes, moves, the spring or the reduced-motion fade, and whether motion is reduced) and the finger it feeds the sheet, the native counterpart of the DOM driver boundary."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/date-picker/date-picker-native.ts",
+      "mirrors": [
+        "packages/core/src/components/date-picker/date-picker-parts.ts",
+        "packages/core/src/components/date-picker/date-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's, the root's and the days' bind orchestrate: the popup's layer, focus in and back and exit through popupNative, with focus on open going to the day with the calendar's tab stop, as initialFocus picks it on the DOM host; the root reads the locale and today through bindRoot, and each day joins the roving group. datePickerText gives the native input the text the input's bind writes into the element."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/date-picker/date-picker-api.ts",
+      "mirrors": [
+        "packages/core/src/components/date-picker/date-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal spreads the popup kit's internals under Calendar's, so popupNative and placeNative read the preset, parts, rules and trigger slot as they do on Popover; focusInput calls focusPart with the start input, so Clear and a Field's label focus the native input through the focus twin."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/file-input/file-input-picker.native.ts",
+      "mirrors": [
+        "packages/core/src/components/file-input/file-input-api.ts",
+        "packages/core/src/components/file-input/file-input-picker.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "open() calls the pick function the app passes to the root, and hands the files it returns to the checks with the picker reason, where the web clicks the hidden <input type=\"file\"> and its change event hands them over. A canceled pick reports nothing, as a canceled picker doesn't on the web."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/file-input/file-input-api.ts",
+      "mirrors": ["packages/core/src/components/file-input/file-input-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "open() calls openPicker from file-input-picker.ts, which has a native twin, instead of clicking input() itself, and the controller's focus() calls focusPart instead of element(\"trigger\")?.focus()."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/scroll-area/scroll-area-view.native.ts",
+      "mirrors": [
+        "packages/core/src/components/scroll-area/scroll-area-view.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The scroll area's engine on the native host (scroll-area-native.ts): the host reports the ScrollView's scroll events and layouts and scrolls it, where the DOM view measures the viewport, observes its size and writes CSS variables. Its DOM binds do nothing."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/scroll-area/scroll-area-native.ts",
+      "mirrors": [
+        "packages/core/src/components/scroll-area/scroll-area-view.ts",
+        "packages/core/src/components/scroll-area/scroll-area-pointer.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/lists/index.ts",
+      "mirrors": ["packages/core/src/foundation/lists/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports announceHighlight and nativeItem from listbox-native.ts, which Select's native behavior imports, and Combobox's, Autocomplete's and Command's will."
     },
     {
       "kind": "behavior",
@@ -720,52 +851,6 @@
       "mirrors": ["packages/core/src/foundation/text/match.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Listens for languagechange only where window has addEventListener: React Native's window is the global object, with no events, so filtering threw on native."
-    },
-    {
-      "kind": "twin",
-      "file": "packages/core/src/foundation/date/week.native.ts",
-      "mirrors": ["packages/core/src/foundation/date/week.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Hermes's Intl has no Intl.Locale, so the first day of the week comes from the tag's region and CLDR's table, where the DOM module asks Intl.Locale's week info and maximizes the tag."
-    },
-    {
-      "kind": "twin",
-      "file": "packages/core/src/foundation/date/format.native.ts",
-      "mirrors": ["packages/core/src/foundation/date/format.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
-    },
-    {
-      "kind": "edit",
-      "file": "packages/core/test/slot-role-messages.test.ts",
-      "mirrors": ["packages/core/test/slot-role-messages.test.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "A 30 second timeout: the type program it builds took about 6 seconds after Calendar (#102) merged, over Vitest's 5 second default."
-    },
-    {
-      "kind": "edit",
-      "file": "size-budget.json",
-      "mirrors": ["size-budget.json"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, select, async-options and text-match."
-    },
-    {
-      "kind": "behavior",
-      "file": "packages/core/src/components/accordion/accordion-native.ts",
-      "mirrors": [
-        "packages/core/src/components/accordion/accordion.ts",
-        "packages/core/src/foundation/disclosure/disclosure.ts",
-        "packages/core/src/foundation/motion/panel.ts"
-      ],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What the item and panel slots' bind orchestrate: an item registers with a stand-in from nativeElement, so the items' order comes from the order twin; a panel settles (api.internal.settled(key, open)) when the adapter's presence does, through presence-native.ts's onSettled, as collapsible-native.ts does. The size variables become the panel's measured size in the adapter's state (src/disclosure-panel.tsx), and the exiting list stays the adapter's presence."
-    },
-    {
-      "kind": "reroute",
-      "file": "packages/core/src/components/accordion/accordion.ts",
-      "mirrors": ["packages/core/src/components/accordion/accordion.ts"],
-      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The items' order sorts the registered items with inDocumentOrder instead of reading elements(context, \"item\"), so the order twin sorts native stand-ins; the controller's focus() calls focusPart, with the first item's key when no value is given."
     }
   ],
   "components": {
@@ -1185,35 +1270,6 @@
         }
       }
     },
-    "popover": {
-      "entry": "packages/react-native/src/popover.tsx",
-      "slots": {
-        "popover.trigger": {
-          "covered": "packages/core/src/foundation/popups/popup-native.ts",
-          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for. Its pointerenter, pointerleave, focusin and focusout open on hover and focus, which the native popover doesn't take (openOnHover is left out of its types)."
-        },
-        "popover.content": {
-          "covered": "packages/core/src/foundation/popups/placement-native.ts",
-          "reason": "Its bind shows the popup: the layer, focus in and back and the exit, which popup-native.ts and popover-native.ts restate, and its placement beside the anchor, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures in the host the content renders in, every frame while anything moves and every 500 ms otherwise. A modal popover's Modal isolates the rest of the screen and a press outside lands on a backdrop the adapter draws; a non-modal one's outside press comes through OverlayHost. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture. Its pointerenter and pointerleave serve hover, which the native popover doesn't take. Its connect registers the element for Escape's ownership, which native has no element for."
-        },
-        "popover.title": {
-          "covered": "packages/core/src/foundation/popups/popup-native.ts",
-          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
-        },
-        "popover.description": {
-          "covered": "packages/core/src/foundation/popups/popup-native.ts",
-          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
-        },
-        "popover.arrow": {
-          "covered": "packages/core/src/foundation/popups/placement-native.ts",
-          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
-        },
-        "popover.shortcut": {
-          "needs": "nothing",
-          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
-        }
-      }
-    },
     "calendar": {
       "entry": "packages/react-native/src/calendar.tsx",
       "slots": {
@@ -1253,6 +1309,155 @@
         "accordion.panel": {
           "covered": "packages/core/src/components/accordion/accordion-native.ts",
           "reason": "Its bind settles the panel after its animations, which accordion-native.ts does when the adapter's presence settles; writes the size variables, which AccordionPanel measures into its state (src/disclosure-panel.tsx); registers it for the trigger's aria-controls, which has no native counterpart; keeps it findable, which native has no find in page for; and moves focus out of a panel closing around it, which native never observes."
+        }
+      }
+    },
+    "popover": {
+      "entry": "packages/react-native/src/popover.tsx",
+      "slots": {
+        "popover.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for. Its pointerenter, pointerleave, focusin and focusout open on hover and focus, which the native popover doesn't take (openOnHover is left out of its types)."
+        },
+        "popover.content": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in and back and the exit, which popup-native.ts and popover-native.ts restate, and its placement beside the anchor, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures in the host the content renders in, every frame while anything moves and every 500 ms otherwise. A modal popover's Modal isolates the rest of the screen and a press outside lands on a backdrop the adapter draws; a non-modal one's outside press comes through OverlayHost. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture. Its pointerenter and pointerleave serve hover, which the native popover doesn't take. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "popover.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "popover.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "popover.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "popover.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        }
+      }
+    },
+    "drawer": {
+      "entry": "packages/react-native/src/drawer.tsx",
+      "slots": {
+        "drawer.trigger": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and registers its shortcut, which native has none of. Its keydown and the on handlers wire Enter, Space and Tab into the popup, which a Pressable and the OS do. Its press goes through pressTrigger, which passes the opener a touch or a screen reader stands for."
+        },
+        "drawer.title": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog titled while it's mounted, which popup-native.ts does."
+        },
+        "drawer.description": {
+          "covered": "packages/core/src/foundation/popups/popup-native.ts",
+          "reason": "Its bind marks the dialog described while it's mounted, which popup-native.ts does."
+        },
+        "drawer.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut part."
+        },
+        "drawer.backdrop": {
+          "covered": "packages/react-native/src/drawer.tsx",
+          "reason": "Its bind puts the backdrop in the top layer below the content and lets presses through while the page is usable, which the adapter does by rendering it first in the drawer's Modal (or in place) with pointerEvents from the interactive state; a press on it is the host input's outside press. Its opacity follows the drawer's extent through an Animated interpolation of the dim range the native sheet reports."
+        },
+        "drawer.content": {
+          "covered": "packages/core/src/components/drawer/drawer-native.ts",
+          "reason": "Its bind attaches the sheet and shows the popup, which drawer-native.ts does with the sheet's native twin (popups/sheet.native.ts) and popup-native.ts; the adapter feeds the sheet one finger through Gesture Handler and moves the content with Animated. Its keydown traps Tab, which native leaves to the OS. Its connect registers the element for Escape's ownership, which native has no element for. It warns about a surrounding form, which native has none of."
+        },
+        "drawer.handle": {
+          "covered": "packages/core/src/components/drawer/drawer-native.ts",
+          "reason": "Its keydown steps the snap points with arrow keys, Home and End, which drawer-native.ts restates as a screen reader's increment and decrement on the handle; its press cycles them as on the web. Its bind sets touch-action, which the drag through Gesture Handler on the content makes moot, and checks its name, which checkPattern does."
+        },
+        "drawer.outlet": {
+          "covered": "packages/react-native/src/drawer.tsx",
+          "reason": "Its bind registers the outlet for the sheet's effects, which write CSS variables and play keyframes; the adapter's DrawerOutlet plays its keyframes as Animated interpolations of the drawer's extent over the expand range the native sheet reports."
+        }
+      }
+    },
+    "date-picker": {
+      "entry": "packages/react-native/src/date-picker.tsx",
+      "slots": {
+        "datePicker.root": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind reads the locale and today through bindRoot, which date-picker-native.ts does as the root mounts, and joins a form through bindInternals, which native has none of (no form participation, spec rule on forms); a disabled Field or FieldSet reaches it through the adapter's disabled context."
+        },
+        "datePicker.input": {
+          "covered": "packages/react-native/src/date-picker.tsx",
+          "reason": "Its input listener sets the draft, which the adapter's onChangeText does through setText; its focusout and Enter commit the text, which onBlur and onSubmitEditing do through commit; its bind writes the text into the element, which the TextInput takes as its value from datePickerText, and sets the form validity, which native has none of. Alt+ArrowDown opens the popup from a key event a TextInput never reports."
+        },
+        "datePicker.hidden-input": {
+          "needs": "nothing",
+          "reason": "Native has no forms: the hidden input part isn't rendered, and the app reads the value from onValueChange."
+        },
+        "datePicker.trigger": {
+          "needs": "nothing",
+          "reason": "Its keydown wires Enter, Space and Escape into the popup, which a Pressable and the OS do; its press opens and closes the popup with the trigger-press reason, on the Pressable's onPress."
+        },
+        "datePicker.content": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind shows the popup: the layer, focus in on the day with the tab stop, focus back and the exit, which popupNative in date-picker-native.ts restates, and its placement against the start input, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures; the adapter defaults align to start as the bind's placementOptions does. Its outside press comes through OverlayHost. Its keydown handles Tab and Escape, which native leaves to the OS and the escape gesture. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "datePicker.hint": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind marks the date picker hinted while it's mounted, which date-picker-native.ts does, so the inputs are described by its text."
+        },
+        "datePicker.month-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the month select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "datePicker.year-select": {
+          "needs": "nothing",
+          "reason": "Native has no select element, so the year select part isn't rendered: its change event and the bind that writes the selected option have nothing to run on."
+        },
+        "datePicker.day": {
+          "covered": "packages/core/src/components/date-picker/date-picker-native.ts",
+          "reason": "Its bind joins the roving group, which date-picker-native.ts does while the day is mounted, so the controller's focus() and opening the popup move the screen reader to a day. Its focus listener, keydown, pointerdown, mousedown and pointerenter follow keyboard focus, arrow keys and a hovering pointer, which native doesn't report to views (spec, Hardware keyboards)."
+        }
+      }
+    },
+    "file-input": {
+      "entry": "packages/react-native/src/file-input.tsx",
+      "slots": {
+        "fileInput.root": {
+          "needs": "nothing",
+          "reason": "Its bind submits the files through a custom element's ElementInternals, which only the web components adapter has; native has no forms."
+        },
+        "fileInput.input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms. Its change event is where the web receives the picker's files: open() hands pick's files to the same checks (file-input-picker.native.ts)."
+        },
+        "fileInput.dropzone": {
+          "needs": "nothing",
+          "reason": "Its bind takes dropped and pasted files, which React Native doesn't deliver to a view, so the zone is a plain View whose dragging state stays false."
+        },
+        "fileInput.item": {
+          "covered": "packages/react-native/src/file-input.tsx",
+          "reason": "Its keydown and focusin move between items with the arrow keys, remove the focused one with Backspace or Delete and remember the list's tab stop, which native doesn't report to views (spec, Hardware keyboards); the remove buttons stay reachable instead. Where focus goes after a removal, the next file's remove button, else the one before, else the trigger, is restated in the adapter's FileInputItemRemove."
+        }
+      }
+    },
+    "scroll-area": {
+      "entry": "packages/react-native/src/scroll-area.tsx",
+      "slots": {
+        "scrollArea.root": {
+          "needs": "nothing",
+          "reason": "Its bind registers the root's uninherited CSS variables and tracks a hovering mouse or pen. Native has no CSS variables (the root's state carries the edges), and touch doesn't hover, so `hovering` stays false and `type=\"hover\"` shows the scrollbars while scrolling, as \"scroll\" does."
+        },
+        "scrollArea.viewport": {
+          "covered": "packages/core/src/components/scroll-area/scroll-area-native.ts",
+          "reason": "Its bind measures the scroller, observes its size and children, listens to scroll, wheel, keys and touches, and makes it a tab stop. The adapter's ScrollView reports its scroll events, layout and content size to scroll-area-native.ts, and its drag begin and end stand for the touches; the ScrollView scrolls by itself for screen readers and keyboards."
+        },
+        "scrollArea.scrollbar": {
+          "covered": "packages/core/src/components/scroll-area/scroll-area-native.ts",
+          "reason": "Its bind counts the scrollbar, measures its track and takes pointer presses that drag or page. The adapter's scrollbar registers with scroll-area-native.ts while mounted, reports its length from onLayout, and feeds its responder's touches to press, move and lift."
+        },
+        "scrollArea.thumb": {
+          "covered": "packages/core/src/components/scroll-area/scroll-area-native.ts",
+          "reason": "Its bind starts a drag on the thumb. On native a touch on the scrollbar that lands on the thumb starts it (scroll-area-native.ts), and the adapter places the thumb from the geometry the engine hands out instead of CSS variables."
         }
       }
     },
@@ -1325,9 +1530,6 @@
     "combobox",
     "command",
     "date-input",
-    "date-picker",
-    "drawer",
-    "file-input",
     "hover-card",
     "image-cropper",
     "listbox",
@@ -1336,7 +1538,6 @@
     "navigation-menu",
     "number-input",
     "resizable",
-    "scroll-area",
     "time-input",
     "timeline",
     "toast",
@@ -1654,6 +1855,30 @@
       "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
     },
     {
+      "component": "calendar",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "accordion",
+      "example": "deep-link",
+      "feature": "A link to text inside a closed panel",
+      "reason": "Native has no links into a screen's text and no find in page, so hiddenUntilFound has nothing to reveal."
+    },
+    {
+      "component": "accordion",
+      "example": "find-in-page",
+      "feature": "Find in page revealing a hidden panel",
+      "reason": "Native has no find in page, so a hidden panel has no text to match."
+    },
+    {
+      "component": "accordion",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
       "component": "popover",
       "example": "form",
       "feature": "A form with method=\"dialog\" that closes it",
@@ -1678,31 +1903,37 @@
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
-      "component": "calendar",
-      "example": "rtl",
-      "feature": "A direction for part of the screen",
-      "reason": "React Native has one direction for the whole app, from I18nManager."
-    },
-    {
       "component": "popover",
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     },
     {
-      "component": "accordion",
-      "example": "deep-link",
-      "feature": "A link to text inside a closed panel",
-      "reason": "Native has no links into a screen's text and no find in page, so hiddenUntilFound has nothing to reveal."
+      "component": "drawer",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
-      "component": "accordion",
-      "example": "find-in-page",
-      "feature": "Find in page revealing a hidden panel",
-      "reason": "Native has no find in page, so a hidden panel has no text to match."
+      "component": "date-picker",
+      "example": "form",
+      "feature": "Form submission and the valueMissing error",
+      "reason": "Native has no forms: the app reads the date from onValueChange, and a Field shows an error it sets itself."
     },
     {
-      "component": "accordion",
+      "component": "file-input",
+      "example": "page",
+      "feature": "A drop zone over the whole page",
+      "reason": "React Native delivers no file drops or pastes to a view, so a page-wide drop target has nothing to take."
+    },
+    {
+      "component": "scroll-area",
+      "example": "both-axes",
+      "feature": "Scrolling both axes in one viewport",
+      "reason": "A React Native ScrollView scrolls one axis: vertical, or horizontal with `horizontal`. Android has no ScrollView that scrolls both, so the viewport takes one and a ScrollView nested inside it scrolls the other."
+    },
+    {
+      "component": "scroll-area",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

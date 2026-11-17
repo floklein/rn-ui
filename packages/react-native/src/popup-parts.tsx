@@ -68,10 +68,14 @@ function PopupLayer({
   handle,
   outlet,
   pressOutside,
+  modal = handle.state.modal !== false,
+  Root = React.Fragment,
 }: {
   handle: PopupHandle
   outlet: Outlet
   pressOutside?: boolean
+  modal?: boolean
+  Root?: React.ComponentType<{ children: React.ReactNode }>
 }) {
   const { backdrop, content } = React.useSyncExternalStore(
     outlet.subscribe,
@@ -81,7 +85,6 @@ function PopupLayer({
     handle.instance.subscribe,
     () => handle.state.mounted
   )
-  const modal = handle.state.modal !== false
   const layer = modal ? (
     <Modal
       visible={mounted && !!content}
@@ -93,17 +96,19 @@ function PopupLayer({
         layerInput()?.back()
       }}
     >
-      <ModalHost>
-        {pressOutside && (
-          <Pressable
-            accessible={false}
-            style={StyleSheet.absoluteFill}
-            onPress={() => layerInput()?.outsidePress()}
-          />
-        )}
-        {backdrop}
-        {content}
-      </ModalHost>
+      <Root>
+        <ModalHost>
+          {pressOutside && (
+            <Pressable
+              accessible={false}
+              style={StyleSheet.absoluteFill}
+              onPress={() => layerInput()?.outsidePress()}
+            />
+          )}
+          {backdrop}
+          {content}
+        </ModalHost>
+      </Root>
     </Modal>
   ) : (
     <>

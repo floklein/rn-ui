@@ -22,6 +22,20 @@ import { bindTrigger } from "./popup-slots"
 
 type PopupApi = { internal: ReturnType<typeof createPopup>["internal"] }
 
+// What the behavior reads, which Date Picker's api has beside Calendar's.
+type PopupParts = {
+  internal: Pick<
+    PopupApi["internal"],
+    | "label"
+    | "parts"
+    | "popup"
+    | "contentProps"
+    | "preset"
+    | "rules"
+    | "triggerSlot"
+  >
+}
+
 type FocusPlan = ReturnType<typeof initialFocusPlan>
 
 const openerBySource: Partial<Record<ChangeSource, PopupOpener>> = {
@@ -45,7 +59,7 @@ function pressTrigger(part: Part<any, PopupApi>, source: ChangeSource) {
   )
 }
 
-function partIn(internal: PopupApi["internal"], slot: string, key?: string) {
+function partIn(internal: PopupParts["internal"], slot: string, key?: string) {
   let first: Part | undefined
   for (const part of internal.parts()) {
     if (part.slot !== slot) {
@@ -67,7 +81,7 @@ function partIn(internal: PopupApi["internal"], slot: string, key?: string) {
  * part focus goes to on open; `escape` restates a popup's own Escape rule,
  * with whether the gesture reached its content.
  */
-function popupNative<Api extends PopupApi>({
+function popupNative<Api extends PopupParts>({
   focus,
   escape,
 }: {
