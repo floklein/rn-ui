@@ -163,7 +163,6 @@ function Autocomplete({ children, ...options }: AutocompleteProps) {
   )
   useControllerEntry(options.controller, handle)
   const [outlet] = React.useState(createOutlet)
-  // A data autocomplete renders its list, unless the app placed an AutocompleteContent.
   const found = hasChild(children, AutocompleteContent)
   const [placed, place] = usePlacedContent(!!options.items && !found)
   return (
@@ -207,18 +206,17 @@ type Selection = { start: number; end: number }
  * return key chooses it, or submits the text through `onSubmit`.
  * @experimental
  */
-function AutocompleteInput({
-  disabled: _disabled,
-  ...props
-}: Omit<
-  PartProps<typeof TextInput, AutocompleteInputState>,
-  "value" | "defaultValue" | "children" | "readOnly" | "editable"
-> & { disabled?: never }) {
+function AutocompleteInput(
+  props: Omit<
+    PartProps<typeof TextInput, AutocompleteInputState>,
+    "value" | "defaultValue" | "children" | "readOnly" | "editable"
+  > & { disabled?: never }
+) {
   const handle = useHandle(autocomplete)
   const { value, disabled, readOnly, formDisabled } =
     React.useSyncExternalStore(handle.instance.subscribe, () => handle.state)
   const editable = !disabled && !formDisabled && !readOnly
-  // The completed rest of an inline completion, selected until the caret next moves.
+  // Set only until the caret next moves, so it never fights the keyboard.
   const [selection, setSelection] = React.useState<Selection>()
   const caret = React.useRef<Selection | undefined>(undefined)
   const user = useFieldControl(props as Record<string, unknown>, () =>
@@ -247,7 +245,6 @@ function AutocompleteInput({
           setSelection(undefined)
         },
         onSubmitEditing: () => submitAutocomplete(handle.api),
-        // TalkBack's expand and collapse open and close the suggestions.
         onAccessibilityAction(event: AccessibilityActionEvent) {
           const { actionName } = event.nativeEvent
           withSource("virtual", () => {
