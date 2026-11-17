@@ -666,7 +666,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays and toast."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays and toast."
     },
     {
       "kind": "behavior",
@@ -954,6 +954,37 @@
       "mirrors": ["packages/core/src/components/resizable/resizable-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Additive: internal.adjust(key, direction), a screen reader's increment or decrement on the native host, which moves a handle a step and commits with the step-key reason and no event, as a key that comes straight back up."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/color-picker/color-picker-native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-parts.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts",
+        "packages/core/src/foundation/direct-manipulation/area.ts",
+        "packages/core/src/components/color-picker/color-picker-channels.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind, the area's and slider's pointerdown and the thumbs' keydown orchestrate: the root reads the direction, the area and each slider follow the responder's touches, cancelling on a cancelled, taken or unmounted responder, and each thumb takes a screen reader's increment and decrement as one step. nativeColorPicker(api) restates the CSS variables the parts' attrs write (--color-picker-color, --color-area-background, --area-x/y, --color-slider-background) as colors and gradients React Native draws, and the area canvas's paint as rows of gradients."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/color-picker/color-picker-touch.native.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-touch.ts",
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.dragStart, dragTo, dragEnd and dragCancel: the begin, setColor and commit the web's pointer and key handlers make, for native touches and adjustments, with a cancel that puts the color back and commits nothing. focusPicker asks the host to focus the first mounted area thumb, slider thumb or input. The web module returns no methods."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/color-picker/color-picker-api.ts",
+      "mirrors": [
+        "packages/core/src/components/color-picker/color-picker-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeTouch(...) from color-picker-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusPicker, which on the web focuses the same elements as before."
     }
   ],
   "components": {
@@ -1622,12 +1653,60 @@
           "reason": "Its bind registers the handle's hit area, whose pointer press drags it; resizable-native.ts follows the responder's touches on the handle with the same startDrag, dragBy and endDrag api calls, and puts the layout back when the responder is taken. Its keys and Enter move and collapse it with a keyboard, which native doesn't deliver to views (spec, Hardware keyboards); a screen reader's increment and decrement move it a step. Its double-click collapses a panel, which a touch has no gesture for: the controller collapses it. Hover has no touch counterpart."
         }
       }
+    },
+    "color-picker": {
+      "entry": "packages/react-native/src/color-picker.tsx",
+      "slots": {
+        "colorPicker.root": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its bind reads the direction, which color-picker-native.ts asks the direction twin for as the root mounts, and makes the picker take part in a form, which native doesn't have."
+        },
+        "colorPicker.area": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown jumps the color under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the area with dragStart, dragTo and dragEnd (measured on the area), and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.area-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the x and y channels with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); color-picker-native.ts takes a screen reader's increment and decrement as a step of the x channel, the axis the thumb's slider role reports."
+        },
+        "colorPicker.area-canvas": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its bind paints a canvas; native has none, so ColorPickerAreaCanvas draws the area as rows of horizontal gradients from nativeColorPicker(api).areaRows, re-rendered when the channels the area doesn't show change."
+        },
+        "colorPicker.slider": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its pointerdown moves the channel under the pointer and follows the drag; color-picker-native.ts follows the responder's touches on the track with the same calls, and cancels on a cancelled, taken or unmounted responder."
+        },
+        "colorPicker.slider-thumb": {
+          "covered": "packages/core/src/components/color-picker/color-picker-native.ts",
+          "reason": "Its keys step the channel with arrow keys, which native doesn't deliver to views; color-picker-native.ts takes a screen reader's increment and decrement as one step."
+        },
+        "colorPicker.input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its input, Enter and focusout handlers and its bind follow an <input>; ColorPickerInput's TextInput hands its text to internal.setText and commits it with internal.commitText on submit and blur, with its value from the state. Escape has no native counterpart."
+        },
+        "colorPicker.channel-input": {
+          "covered": "packages/react-native/src/color-picker.tsx",
+          "reason": "Its change handler and bind follow a number <input>; ColorPickerChannelInput keeps the typed text while editing and sets the channel with internal.setChannelValue on submit and blur."
+        },
+        "colorPicker.eye-dropper": {
+          "needs": "nothing",
+          "reason": "The eye dropper part isn't rendered on native, which has no EyeDropper API to pick a color from the screen (spec rule 3)."
+        },
+        "colorPicker.swatch-item": {
+          "needs": "nothing",
+          "reason": "Its press is delivered by the adapter. Its keydown and bind run the swatches' roving focus and arrow keys, which native doesn't build (spec, Focus): each swatch is its own button, reached by swiping."
+        },
+        "colorPicker.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
     }
   },
   "pending": [
     "autocomplete",
     "carousel",
-    "color-picker",
     "combobox",
     "command",
     "date-input",
@@ -2090,6 +2169,12 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "color-picker",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads values from change callbacks."
     }
   ]
 }
