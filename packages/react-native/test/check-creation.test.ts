@@ -26,6 +26,7 @@ import { separator } from "@ui-sdk/core/separator"
 import { slider } from "@ui-sdk/core/slider"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
+import { createToaster, toastRegion } from "@ui-sdk/core/toast"
 import { toggle, toggleGroup } from "@ui-sdk/core/toggle"
 import { toolbar } from "@ui-sdk/core/toolbar"
 import { checkCreation } from "../src/testing"
@@ -270,6 +271,19 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(alertDialog, { defaultOpen: true })
     ).not.toThrow()
+  })
+
+  test("passes on a toast region, with its toaster's toasts or none", () => {
+    // Core warns a second after a toaster opens with no host.
+    jest.useFakeTimers()
+    expect(() => checkCreation(toastRegion, {})).not.toThrow()
+    const toaster = createToaster()
+    toaster({ title: "Saved", action: { label: "Undo" } })
+    expect(() =>
+      checkCreation(toastRegion, { toaster, side: "top", align: "center" })
+    ).not.toThrow()
+    toaster.dismiss()
+    jest.useRealTimers()
   })
 
   test("fails on a primitive that reads the document as it's created", () => {

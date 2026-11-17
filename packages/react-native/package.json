@@ -56,6 +56,7 @@
     "./testing": "./src/testing.ts",
     "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
+    "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toolbar": "./src/toolbar.tsx"
   },
@@ -225,6 +226,10 @@
       "./textarea": {
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
+      },
+      "./toast": {
+        "types": "./dist/toast.d.ts",
+        "default": "./dist/toast.js"
       },
       "./toggle": {
         "types": "./dist/toggle.d.ts",

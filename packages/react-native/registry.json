@@ -664,7 +664,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, select, async-options and text-match."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options and text-match."
     },
     {
       "kind": "behavior",
@@ -859,6 +859,17 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/toast/toast-native.ts",
+      "mirrors": [
+        "packages/core/src/components/toast/toast-api.ts",
+        "packages/core/src/components/toast/swipe.ts",
+        "packages/core/src/components/toast/toast-dom.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What a toast's bind and pointerdown orchestrate for a swipe: the responder's touches become a swipe along an axis with a direction past a few points (also when a button inside took the touch), the timers pause while it runs, and its release dismisses with the swipe reason or snaps back, by the web's distance and velocity rules; the offset goes to the host through nativeToast instead of CSS variables."
     },
     {
       "kind": "edit",
@@ -1510,6 +1521,27 @@
         }
       }
     },
+    "toast": {
+      "entry": "packages/react-native/src/toast.tsx",
+      "slots": {
+        "toastRegion.region": {
+          "covered": "packages/react-native/src/toast-parts.tsx",
+          "reason": "Its bind connects the region to its toaster while it's on the page, which the adapter's Region does from mount to unmount through internal.connect(); shows it in the top layer, which the adapter does by rendering it in the topmost open host, following each host that becomes topmost; adds default styles, which the adapter's placement style restates with the host's insets and the keyboard; registers the F6 shortcut and tracks the keyboard, which native has none of; and pauses timers on hover, focus and a hidden page, which touch has no hover for and React Native reports no focus or visibility to (recorded difference). Its keydown returns focus after the shortcut, which native has no shortcut for."
+        },
+        "toastRegion.root": {
+          "covered": "packages/core/src/components/toast/toast-native.ts",
+          "reason": "Its bind animates it in, measures its height for the stack's CSS variables and follows pointerdown into a swipe; toast-native.ts follows the responder's touches into the same swipe and hands the offset to the host through nativeToast, which the adapter adds to the toast's state (swipeX, swipeY, swiping, swipeDirection) instead of CSS variables. The stack's heights are left to the app's layout (recorded difference). Its keydown closes it on Escape, which native has no keyboard focus on a toast for."
+        },
+        "toastRegion.title": {
+          "needs": "nothing",
+          "reason": "Its bind links the toast to its title with aria-labelledby, which native has no use for: the toast isn't one accessible element, so its title is read as itself, and the announcement reads the toast's title text."
+        },
+        "toastRegion.description": {
+          "needs": "nothing",
+          "reason": "Its bind links the toast to its description with aria-describedby, which native has no use for: the toast isn't one accessible element, so its description is read as itself, and the announcement reads the toast's description text."
+        }
+      }
+    },
     "select": {
       "entry": "packages/react-native/src/select.tsx",
       "slots": {
@@ -1589,7 +1621,6 @@
     "resizable",
     "time-input",
     "timeline",
-    "toast",
     "token-input",
     "tooltip",
     "tree",
@@ -1980,6 +2011,18 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toast",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toast",
+      "example": "shortcut",
+      "feature": "The keyboard shortcut that moves focus to the notifications",
+      "reason": "Keyboard shortcuts are web-only: the native region has no shortcut option."
     },
     {
       "component": "select",
