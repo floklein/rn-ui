@@ -222,7 +222,7 @@ Create one with `createHoverCardController<Payload>()` and pass it as `controlle
 
 ## Accessibility
 
-The trigger stays a plain link, named by its text. React Native has no role for the card, so it's a plain view whose text a screen reader can reach while it's open; the rest of the screen stays reachable. Opening it never moves the screen reader. The arrow is hidden from screen readers.
+The trigger stays a plain link, named by its text. React Native has no role for the card, so it's a plain view whose text a screen reader can reach while it's open; the rest of the screen stays reachable. Opening or closing it never moves the screen reader, except back to the link after VoiceOver's escape gesture on the card. The arrow is hidden from screen readers.
 
 ### Keyboard
 

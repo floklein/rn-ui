@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import { type HostInstance, Text, View } from "react-native"
+import { AccessibilityInfo, type HostInstance, Text, View } from "react-native"
 import {
   createHoverCardController,
   HoverCard,
@@ -178,6 +178,26 @@ test("a press outside closes it, and a press on its link doesn't count as outsid
   expect(screen.getByText(bio)).toBeOnTheScreen()
   await touch("screen")
   expect(screen.queryByText(bio)).toBeNull()
+})
+
+test("closing a card the screen reader never entered leaves its focus alone", async () => {
+  const focus = jest.mocked(AccessibilityInfo.sendAccessibilityEvent)
+  await render(<Example defaultOpen />)
+  focus.mockClear()
+  await touch("screen")
+  expect(screen.queryByText(bio)).toBeNull()
+  expect(focus).not.toHaveBeenCalled()
+})
+
+test("the escape gesture on the card takes the screen reader back to its link", async () => {
+  const focus = jest.mocked(AccessibilityInfo.sendAccessibilityEvent)
+  await render(<Example defaultOpen />)
+  focus.mockClear()
+  await act(() => screen.getByTestId("content").props.onAccessibilityEscape())
+  expect(
+    (focus.mock.lastCall?.[0] as unknown as { props: { testID: string } })
+      ?.props.testID
+  ).toBe("trigger")
 })
 
 test("opens below its trigger, centered, by default", async () => {

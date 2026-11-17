@@ -589,7 +589,7 @@
         "packages/core/src/foundation/popups/popup-behavior.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
+      "why": "What popup.bind's attach orchestrates: pushing and popping the layer and running the onShow rule while the popup is open, back, escape and outside press through the host's input as requestClose, the focus request on open by the opener's plan and on close by the close's focus mode, starting at the trigger, only after focus was moved in or the escape gesture reached the content, the native stand-in for the web's check that focus was inside. The trigger, title and description slots set the trigger key and the titled and described flags their bind sets. The content holds the popup mounted until its exit ends. pressTrigger passes the opener a native press stands for."
     },
     {
       "kind": "behavior",
