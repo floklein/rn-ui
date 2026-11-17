@@ -20,7 +20,7 @@ type DialogProps = RootProps
  * A window over the screen that asks for the user's attention. Put its
  * trigger, backdrop and content inside. A modal dialog renders its backdrop
  * and content in one `Modal`, which hides the rest of the screen from screen
- * readers; a non-modal one renders them where they are.
+ * readers; a non-modal one renders them in the app's `OverlayHost`.
  * @experimental
  */
 const Dialog: (props: DialogProps) => React.ReactElement = parts.Root

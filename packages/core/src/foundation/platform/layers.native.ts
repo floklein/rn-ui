@@ -10,7 +10,9 @@ type Layer = Mirrored.Layer & {
   onBack?: () => void
   // `within` is the api of the popup whose content the gesture reached.
   onEscapeGesture?: (within?: object) => void
-  onBackdropPress?: () => void
+  // The api of the popup it belongs to, which a press names when it lands in it.
+  api?: object
+  onPressOutside?: () => void
 }
 
 const stack: Layer[] = []
@@ -104,7 +106,26 @@ function outsidePress() {
     }
   }
   for (const layer of dismissed) {
-    layer.onBackdropPress?.()
+    layer.onPressOutside?.()
+  }
+  return dismissed.length > 0
+}
+
+// A press the host lets through dismisses the non-modal layers above the
+// first one it landed in. A modal layer's backdrop hears it instead.
+function press(within: readonly object[]) {
+  const dismissed: Layer[] = []
+  for (const layer of active().reverse()) {
+    if (layer.modal !== false || within.some((api) => api === layer.api)) {
+      break
+    }
+    dismissed.push(layer)
+    if (layer.shield) {
+      break
+    }
+  }
+  for (const layer of dismissed) {
+    layer.onPressOutside?.()
   }
   return dismissed.length > 0
 }
@@ -119,6 +140,7 @@ const input: NativeInput = {
       layer.onEscapeGesture?.(within)
     }),
   outsidePress,
+  press,
 }
 
 function pushLayer(layer: Layer) {
