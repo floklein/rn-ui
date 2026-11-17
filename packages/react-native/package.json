@@ -30,6 +30,7 @@
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
+    "./number-input": "./src/number-input.tsx",
     "./otp-input": "./src/otp-input.tsx",
     "./overlays": "./src/overlays.tsx",
     "./pagination": "./src/pagination.tsx",
@@ -110,6 +111,10 @@
       "./meter": {
         "types": "./dist/meter.d.ts",
         "default": "./dist/meter.js"
+      },
+      "./number-input": {
+        "types": "./dist/number-input.d.ts",
+        "default": "./dist/number-input.js"
       },
       "./otp-input": {
         "types": "./dist/otp-input.d.ts",

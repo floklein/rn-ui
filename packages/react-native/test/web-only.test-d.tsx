@@ -12,6 +12,7 @@ import { Checkbox, CheckboxGroup, CheckboxIndicator } from "../src/checkbox"
 import { Dialog, DialogContent, DialogTrigger } from "../src/dialog"
 import type * as DialogEntry from "../src/dialog"
 import { Field, FieldError, FieldLabel } from "../src/field"
+import { NumberInput } from "../src/number-input"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
@@ -168,6 +169,16 @@ const codes = [
   <OTPInput form="verify" />,
 ]
 
+const numbers = [
+  <NumberInput min={0} max={10} step={0.5} required />,
+  // @ts-expect-error `name` has no native meaning.
+  <NumberInput name="amount" />,
+  // @ts-expect-error `form` has no native meaning.
+  <NumberInput form="order" />,
+  // @ts-expect-error there's no mouse wheel to step with.
+  <NumberInput wheel />,
+]
+
 const fields = [
   <Field disabled invalid>
     <FieldLabel>Email</FieldLabel>
@@ -211,6 +222,7 @@ const paginations = [
 
 export {
   codes,
+  numbers,
   ComboboxInput,
   dialogEntries,
   type DialogShortcut,

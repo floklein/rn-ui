@@ -10,6 +10,7 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { numberInput } from "@ui-sdk/core/number-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
 import { calendar } from "@ui-sdk/core/calendar"
@@ -110,6 +111,17 @@ describe("checkCreation", () => {
     expect(() => checkCreation(input, { defaultValue: "Lisbon" })).not.toThrow()
     expect(() => checkCreation(textarea, { autoResize: true })).not.toThrow()
     expect(() => checkCreation(inputGroup, {})).not.toThrow()
+  })
+
+  test("passes on a number input, empty, formatted or disabled", () => {
+    expect(() => checkCreation(numberInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(numberInput, {
+        defaultValue: 0.25,
+        format: { style: "percent" },
+        disabled: true,
+      })
+    ).not.toThrow()
   })
 
   test("passes on an otp input, empty, full or disabled", () => {

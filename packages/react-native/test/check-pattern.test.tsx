@@ -45,6 +45,13 @@ import {
   ProgressTrack,
   ProgressValue,
 } from "../src/progress"
+import {
+  NumberInput,
+  NumberInputControl,
+  NumberInputDecrement,
+  NumberInputGroup,
+  NumberInputIncrement,
+} from "../src/number-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
 import { OverlayHost } from "../src/overlays"
 import {
@@ -414,6 +421,28 @@ describe("checkPattern's textbox pattern on the native host", () => {
           <PasswordInputControl aria-label="Disabled" />
           <PasswordInputToggle aria-label="Show disabled" />
         </PasswordInput>
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
+    await expect(checkButton()).resolves.toBeUndefined()
+  })
+
+  test("passes on a number input, enabled, read-only, disabled or at a bound, as a textbox and its step buttons as buttons", async () => {
+    const parts = (name: string) => (
+      <NumberInputGroup>
+        <NumberInputDecrement aria-label={`Decrease ${name}`} />
+        <NumberInputControl aria-label={name} />
+        <NumberInputIncrement aria-label={`Increase ${name}`} />
+      </NumberInputGroup>
+    )
+    await render(
+      <View>
+        <NumberInput defaultValue={3}>{parts("Amount")}</NumberInput>
+        <NumberInput readOnly>{parts("Read-only")}</NumberInput>
+        <NumberInput disabled>{parts("Disabled")}</NumberInput>
+        <NumberInput defaultValue={10} max={10}>
+          {parts("Full")}
+        </NumberInput>
       </View>
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
