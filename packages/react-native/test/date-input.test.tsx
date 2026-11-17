@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { Text, TextInput } from "react-native"
+import { Platform, Text, TextInput } from "react-native"
 import { Field, FieldDescription, FieldLabel, FieldSet } from "../src/field"
 import { createDateInputController, DateInput } from "../src/date-input"
 import { TimeInput } from "../src/time-input"
@@ -146,7 +146,41 @@ describe("DateInput", () => {
     ).toBe(true)
   })
 
-  test("a screen reader's increment and decrement step a segment", async () => {
+  test("pasting a date over a filled segment sets the whole date", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <DateInput
+        locale="en-US"
+        defaultValue="2025-01-04"
+        onValueChange={onValueChange}
+      />
+    )
+    await fireEvent(segment("day"), "selectionChange", {
+      nativeEvent: { selection: { start: 0, end: 2 } },
+    })
+    await fireEvent.changeText(segment("day"), "2026-11-04")
+    expect(onValueChange).toHaveBeenCalledTimes(1)
+    expect(onValueChange).toHaveBeenCalledWith(
+      "2026-11-04",
+      expect.objectContaining({ reason: "paste" })
+    )
+  })
+
+  test("a deletion with no Backspace reported doesn't hold back the next segment's Backspace", async () => {
+    await render(<DateInput locale="en-US" defaultValue="2026-11-04" />)
+    await fireEvent.changeText(segment("day"), "")
+    await fireEvent(segment("day"), "blur")
+    await fireEvent(segment("year"), "keyPress", {
+      nativeEvent: { key: "Backspace" },
+    })
+    await fireEvent.changeText(segment("year"), "")
+    await fireEvent(segment("year"), "keyPress", {
+      nativeEvent: { key: "Backspace" },
+    })
+    expect(focused()).toEqual(["day"])
+  })
+
+  test("a screen reader's increment and decrement step a segment, on Android only", async () => {
     const onValueChange = jest.fn()
     await render(
       <DateInput
@@ -155,6 +189,10 @@ describe("DateInput", () => {
         onValueChange={onValueChange}
       />
     )
+    if (Platform.OS === "ios") {
+      expect(segment("day").props.accessibilityActions).toBeUndefined()
+      return
+    }
     await fireEvent(segment("day"), "accessibilityAction", {
       nativeEvent: { actionName: "increment" },
     })
@@ -208,7 +246,7 @@ describe("DateInput", () => {
     expect(segment("year").props.editable).toBe(false)
   })
 
-  test("a Field's label and description follow each segment's name, and a press on the label starts editing", async () => {
+  test("a Field's label names each segment before its unit, its description is the hint, and a press on the label starts editing", async () => {
     await render(
       <Field>
         <FieldLabel>Birthday</FieldLabel>
@@ -216,16 +254,23 @@ describe("DateInput", () => {
         <FieldDescription>Day and month will do.</FieldDescription>
       </Field>
     )
-    expect(segment("month").props.accessibilityHint).toBe(
-      "Birthday Day and month will do."
+    expect(segment("Birthday, month").props.accessibilityHint).toBe(
+      "Day and month will do."
     )
     await fireEvent.press(screen.getByText("Birthday"))
-    expect(focused()).toEqual(["month"])
+    expect(focused()).toEqual(["Birthday, month"])
   })
 
-  test("an aria-label on the root follows each segment's name", async () => {
-    await render(<DateInput locale="en-US" aria-label="Start date" />)
-    expect(segment("day").props.accessibilityHint).toBe("Start date")
+  test("an aria-label on the root names each segment before its unit, beside a Field's description", async () => {
+    await render(
+      <Field>
+        <DateInput locale="en-US" aria-label="Start date" />
+        <FieldDescription>Day and month will do.</FieldDescription>
+      </Field>
+    )
+    expect(segment("Start date, day").props.accessibilityHint).toBe(
+      "Day and month will do."
+    )
   })
 
   test("its children can render the segments from its state", async () => {

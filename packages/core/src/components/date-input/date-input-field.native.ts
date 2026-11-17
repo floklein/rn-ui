@@ -77,8 +77,12 @@ function nativeField({
       const selection = editsOf(type).edit(previous, text, (next) => {
         typed = true
         const before = store.get()
+        // Pasted over the whole segment, a date can end as the segment did.
         const inserted = insertedText(previous, next)
-        if (inserted.length < 2 || !pasteText(inserted.trim())) {
+        const pasted =
+          inserted.length > 1 &&
+          (pasteText(next.trim()) || pasteText(inserted.trim()))
+        if (!pasted) {
           insert(type, el, inserted)
         }
         return store.get() !== before
@@ -118,6 +122,7 @@ function nativeField({
       }
     },
     leaveText(type: EditableType) {
+      keyFirst = deletionFirst = false
       if (store.get().selection?.type === type) {
         store.set({ selection: null })
       }

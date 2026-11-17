@@ -10,12 +10,12 @@ test("the platform tree at first", async () => {
   await device.saveTree("first")
   const tree = await device.tree()
   for (const [id, label] of [
-    ["start-month", "month"],
-    ["start-day", "day"],
-    ["start-year", "year"],
-    ["time-hour", "hour"],
-    ["time-minute", "minute"],
-    ["time-dayPeriod", "AM/PM"],
+    ["start-month", "Start date, month"],
+    ["start-day", "Start date, day"],
+    ["start-year", "Start date, year"],
+    ["time-hour", "Meeting time, hour"],
+    ["time-minute", "Meeting time, minute"],
+    ["time-dayPeriod", "Meeting time, AM/PM"],
   ]) {
     assert.equal(tree.get(id)?.label, label, id)
     assert.equal(tree.get(id)?.enabled, true, id)

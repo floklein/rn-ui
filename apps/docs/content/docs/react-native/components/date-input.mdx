@@ -65,7 +65,7 @@ Type digits and each segment fills, then focus moves to the next one. A month th
 
 ## Field
 
-The Field's label and description follow each segment's own name for screen readers, and a tap on the label starts editing the first segment.
+Screen readers say the Field's label before each segment's own name, like "Birthday, month", and read its description as each segment's hint. A tap on the label starts editing the first segment.
 
 <ComponentExample
   name="date-input/field"
@@ -222,7 +222,7 @@ Create one with `createDateInputController()` and pass it as `controller`.
 
 ## Accessibility
 
-Each segment is a text field with the spinbutton role, named by its unit, like "month", with its value, range and text, followed by the Field's label and description or the root's `aria-label`. An empty segment reads as "Empty". Swiping up or down with VoiceOver, or TalkBack's adjust actions, step a segment by one, as the arrow keys do on the web. The text between segments is hidden from screen readers.
+Each segment is a text field with the spinbutton role, named by the input's name and its unit, like "Birthday, month": the name comes from a Field's label, `aria-labelledby` or `aria-label` on the root, since React Native gives a container's name to no screen reader. A Field's description is each segment's hint. A segment reads its value, range and text, and an empty one reads as "Empty". On Android, TalkBack's adjust actions step a segment by one, as the arrow keys do on the web; VoiceOver can't adjust a text field, so on iOS you type the digits. The text between segments is hidden from screen readers.
 
 ### Keyboard
 

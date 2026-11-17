@@ -9,6 +9,7 @@ import { withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import {
   type GestureResponderEvent,
+  Platform,
   Text,
   TextInput,
   type TextInputKeyPressEvent,
@@ -17,6 +18,7 @@ import {
 } from "react-native"
 import { carry } from "./carried-context"
 import { useFieldControl } from "./field-context"
+import { idsOf, resolveIds, useReferences } from "./names"
 import { type Interaction, mergeProps, renderElement } from "./render-element"
 import {
   type PartProps,
@@ -41,10 +43,15 @@ type SegmentProps = Omit<
 type Segmented = typeof dateInput
 type EditableType = Exclude<DateInputSegmentType, "literal">
 
-// A container's label reaches no screen reader, so each segment says it.
+// A container's name reaches no screen reader, so each segment says the
+// group's before its own, and takes the group's description as its hint.
 const NamesContext = carry(
   "SegmentedInput",
-  React.createContext<{ describedBy?: string; hint?: string }>({})
+  React.createContext<{
+    labelledBy?: string
+    label?: string
+    describedBy?: string
+  }>({})
 )
 
 function useSegmentedRoot(
@@ -59,16 +66,12 @@ function useSegmentedRoot(
       handle.api.focus()
     }
   })
-  const ids = [named["aria-labelledby"], named["aria-describedby"]]
-    .filter(Boolean)
-    .join(" ")
-  const ariaLabel = named["aria-label"] as string | undefined
+  const labelledBy = named["aria-labelledby"] as string | undefined
+  const label = named["aria-label"] as string | undefined
+  const describedBy = named["aria-describedby"] as string | undefined
   const names = React.useMemo(
-    () => ({
-      describedBy: ids || undefined,
-      hint: ids ? undefined : ariaLabel,
-    }),
-    [ids, ariaLabel]
+    () => ({ labelledBy, label, describedBy }),
+    [labelledBy, label, describedBy]
   )
   const content =
     children === undefined
@@ -102,7 +105,9 @@ function useSegment(
   { segment, render, children, ...props }: SegmentProps
 ) {
   const handle = useHandle(primitive)
-  const names = React.useContext(NamesContext)
+  const { labelledBy, label, describedBy } = React.useContext(NamesContext)
+  useReferences(idsOf(labelledBy))
+  const group = resolveIds(idsOf(labelledBy)) ?? label
   const own = { segment, id: segment.key }
   // Slot state leaves out the selection a refused edit writes back.
   const selection = React.useSyncExternalStore(
@@ -133,8 +138,8 @@ function useSegment(
     mergeProps(
       {
         placeholder: type === "year" ? "––––" : "––",
-        "aria-describedby": names.describedBy,
-        accessibilityHint: names.hint,
+        "aria-label": group ? `${group}, ${segment.label}` : undefined,
+        "aria-describedby": describedBy,
       },
       props,
       {
@@ -153,9 +158,12 @@ function useSegment(
           internal.selectText(type, nativeEvent.selection),
         onBlur: () => withSource("keyboard", () => internal.leaveText(type)),
         onSubmitEditing: () => withSource("keyboard", internal.blur),
-        accessibilityActions: editable
-          ? [{ name: "increment" }, { name: "decrement" }]
-          : undefined,
+        // An iOS TextInput's accessibility element is its UITextField, which
+        // VoiceOver's adjust never reaches.
+        accessibilityActions:
+          editable && Platform.OS === "android"
+            ? [{ name: "increment" }, { name: "decrement" }]
+            : undefined,
         // Android enables a read-only TextInput, which then takes typing,
         // when its disabled state is false.
         accessibilityState: {
