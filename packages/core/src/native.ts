@@ -38,6 +38,8 @@ export {
   type NativeHost,
   nativeHost,
   type NativeInput,
+  nativePressSource,
+  type NativeSeen,
   type NativeTextField,
   type NativeTouch,
   setNativeHost,

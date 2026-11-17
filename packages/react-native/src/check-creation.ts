@@ -71,6 +71,10 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
       report("listens to the native host's input")
       return () => {}
     },
+    seen: () => {
+      report("asks the native host what a part shows")
+      return undefined
+    },
   })
   try {
     return read()

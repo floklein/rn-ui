@@ -240,6 +240,7 @@ function resolve(file, specifier, coreExports) {
   } else if (specifier.startsWith("@ui-sdk/core")) {
     const key = `.${specifier.slice("@ui-sdk/core".length)}`
     const target =
+      coreExports[key]?.default ??
       coreExports[key] ??
       (key.startsWith("./internal/") &&
         `./src/${key.slice("./internal/".length)}.ts`)
