@@ -273,7 +273,7 @@
       "file": "packages/core/package.json",
       "mirrors": ["packages/core/package.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The ./native export, in exports and publishConfig; a react-native condition on every publishConfig export and around the #dev and #name-check pairs; --native in the build script."
+      "why": "The ./native export, in exports and publishConfig; a react-native condition on every publishConfig export and around the #dev and #name-check pairs; --native in the build script; a react-native condition on the ./agent source export, so Metro and Jest load its twin."
     },
     {
       "kind": "edit",
@@ -301,7 +301,7 @@
       "file": "packages/core/src/foundation/kernel/index.ts",
       "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement, partOf and Twin."
+      "why": "Exports nativeHost, NativeHost, NativeInput, NativeSeen, NativeBehavior, NativeDrag, NativeTouch, nativeElement, partOf and Twin."
     },
     {
       "kind": "edit",
@@ -727,6 +727,34 @@
       "why": "Exports anchorRect, arrowOffset, computeArrow, computePlacement and transformOrigin, which popups/placement-native.ts imports."
     },
     {
+      "kind": "edit",
+      "file": "packages/core/test/input-tracking.test.ts",
+      "mirrors": ["packages/core/test/input-tracking.test.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads a core source export that is a condition object, like ./agent's, by its default target."
+    },
+    {
+      "kind": "edit",
+      "file": "scripts/affected-specs.mjs",
+      "mirrors": ["scripts/affected-specs.mjs"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Resolves a core source export that is a condition object, like ./agent's, by its default target."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/text/index.ts",
+      "mirrors": ["packages/core/src/foundation/text/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports userLocale and createFolder, which the native agent bridge folds labels with."
+    },
+    {
+      "kind": "edit",
+      "file": "apps/docs/lib/core-exports.ts",
+      "mirrors": ["apps/docs/lib/core-exports.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads a core source export that is a condition object, like ./agent's, by its default target."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/foundation/popups/sheet.native.ts",
       "mirrors": [
@@ -784,6 +812,27 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "open() calls the pick function the app passes to the root, and hands the files it returns to the checks with the picker reason, where the web clicks the hidden <input type=\"file\"> and its change event hands them over. A canceled pick reports nothing, as a canceled picker doesn't on the web."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/page/agent/agent.native.ts",
+      "mirrors": ["packages/core/src/page/agent/agent.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The agent bridge reads each part from what the adapter rendered, through the native host's seen, and presses its view's press, where the DOM module reads and clicks elements. registerTools does nothing: there is no browser agent."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/page/observe/registry.native.ts",
+      "mirrors": ["packages/core/src/page/observe/registry.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The registry installs without a document and names a component from what its parts' views read, through the native host's seen, where the DOM module reads elements, their type and autocomplete. Native views have no rows."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/kernel/watchers.native.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/watchers.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Keeps the instances made before a watcher without checking for a document, which the DOM module does to leave a server's instances alone."
     },
     {
       "kind": "reroute",
@@ -1769,12 +1818,6 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
-    },
-    {
-      "component": "alert-dialog",
-      "example": "confirm-anywhere",
-      "feature": "confirm() with no alert dialog of your own",
-      "reason": "The overlay host that renders confirm()'s own alert dialog comes with overlays opened from code (ticket 62); with your own AlertDialog and confirm.controller it works, as the confirm example shows."
     },
     {
       "component": "alert-dialog",

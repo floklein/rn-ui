@@ -417,6 +417,7 @@ describe("the adapter's contexts inside the Modal", () => {
       .filter((name) => !name?.endsWith("Scope"))
       .sort()
     expect(own).toEqual([
+      "Agent",
       "Calendar",
       "CalendarGrid",
       "CheckboxGroup",
@@ -441,7 +442,11 @@ describe("the adapter's contexts inside the Modal", () => {
     expect(scopes.length).toBeGreaterThan(1)
 
     const dialogScope = `${dialog.name}Scope`
-    const replaced = [...carried].filter(
+    // Each part adds its instance to the agent's context.
+    const passed = [...carried].filter(
+      (context) => context.displayName !== "Agent"
+    )
+    const replaced = passed.filter(
       (context) =>
         context.displayName !== "Outlet" && context.displayName !== dialogScope
     )
@@ -472,7 +477,7 @@ describe("the adapter's contexts inside the Modal", () => {
 
     const outside = read.get("between")!
     const inside = read.get("inside")!
-    for (const context of carried) {
+    for (const context of passed) {
       expect([context.displayName, inside.get(context)]).toEqual([
         context.displayName,
         outside.get(context),

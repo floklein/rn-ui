@@ -201,7 +201,7 @@ function coreEntries() {
   const { exports } = JSON.parse(
     readFileSync(path.join(core, "package.json"), "utf8")
   ) as {
-    exports: Record<string, string>
+    exports: Record<string, string | { default: string }>
   }
   return Object.keys(exports)
     .filter((key) => key !== "./internal/*" && key !== "./renderer")
@@ -217,10 +217,13 @@ function coreEntries() {
         entry: `@ui-sdk/core${name ? `/${name}` : ""}`,
         page,
         href: page && sharedHref(page.slugs),
-        names: page ? [] : valueExports(exports[key]),
+        names: page ? [] : valueExports(sourceOf(exports[key])),
       }
     })
 }
+
+const sourceOf = (target: string | { default: string }) =>
+  typeof target === "string" ? target : target.default
 
 // The values an entry exports, for entries no page documents.
 function valueExports(file: string) {

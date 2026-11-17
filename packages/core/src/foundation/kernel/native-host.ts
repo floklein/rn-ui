@@ -1,3 +1,4 @@
+import { type ChangeSource, resolveSource } from "./details"
 import type { Part } from "./primitive-types"
 
 /**
@@ -53,6 +54,34 @@ type NativeInput = {
 }
 
 /**
+ * What an agent reads of a rendered part: what a screen reader reads of its
+ * view, the marks around it and its press.
+ * @experimental
+ */
+type NativeSeen = {
+  /** Its accessibility label. */
+  label?: string
+  /** The plain text inside it, as a screen reader reads it. */
+  text?: string
+  /** Its accessibility role, like `"button"`. */
+  role?: string
+  /** Whether it reads as disabled. */
+  disabled: boolean
+  /** Hidden from accessibility, by itself, a part around it or an open modal it isn't in. */
+  hidden: boolean
+  /** Inside `data-agent-hidden`. */
+  offLimits: boolean
+  /** Inside `data-agent-secret`, or a password, card or one-time-code field. */
+  secret: boolean
+  /** The `data-agent-confirm` text around it. */
+  confirm?: string
+  /** The ids of the instances whose parts it renders inside, outermost first. */
+  within: readonly string[]
+  /** Presses it as its view's press does, when it takes one. */
+  press?: () => void
+}
+
+/**
  * What core asks of the native host, which `@ui-sdk/react-native`
  * implements with `react-native` views and registers as it loads.
  * @experimental
@@ -80,6 +109,8 @@ type NativeHost = {
   adjustable: (part: Part, step: (direction: 1 | -1) => void) => () => void
   /** Hears what dismisses a layer while one is open. Returns what stops it. */
   listen: (input: NativeInput) => () => void
+  /** What an agent reads of the part, or `undefined` while it renders no view. */
+  seen: (part: Part) => NativeSeen | undefined
 }
 
 /**
@@ -110,12 +141,23 @@ function setNativeHost(next: NativeHost | undefined) {
  */
 const nativeHost = () => host
 
+/**
+ * The source of a press the native host delivers, from how the person
+ * pressed: `"agent"` instead while the agent bridge presses, so the changes it
+ * causes report the agent.
+ * @experimental
+ */
+const nativePressSource = (source: ChangeSource) =>
+  resolveSource("press", () => source)
+
 export {
   type NativeBehavior,
   type NativeDrag,
   type NativeHost,
   nativeHost,
   type NativeInput,
+  nativePressSource,
+  type NativeSeen,
   type NativeTextField,
   type NativeTouch,
   setNativeHost,
