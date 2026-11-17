@@ -20,6 +20,7 @@ import {
 } from "@ui-sdk/core/toast"
 import * as React from "react"
 import {
+  type AccessibilityActionEvent,
   AppState,
   I18nManager,
   Keyboard,
@@ -274,12 +275,42 @@ function Toast(props: PartProps<typeof View, ToastState>) {
     swipes.swipe(toast.id)
   )
   const part = region.instance.part("root", { id: toast.id }, true)
+  const dismissible = toast.dismissible !== false
+  const dismiss = () => {
+    region.api.internal.close(toast.id, "escape-key")
+  }
+  const ownActions = props.accessibilityActions ?? []
   return usePart(
     region,
     "root",
     { id: toast.id },
     {
-      ...mergeProps(responder(part, null), props as Record<string, unknown>),
+      ...mergeProps(
+        {
+          ...responder(part, null),
+          ...(dismissible && {
+            // TalkBack offers actions only on the element it focuses (Android
+            // 9 and up); `accessible` would merge the buttons on iOS and add
+            // a Tab stop on Android.
+            screenReaderFocusable: Platform.OS === "android",
+            onAccessibilityEscape: dismiss,
+            onAccessibilityAction: (event: AccessibilityActionEvent) => {
+              if (event.nativeEvent.actionName === "dismiss") {
+                dismiss()
+              }
+            },
+          }),
+        },
+        props as Record<string, unknown>
+      ),
+      ...(dismissible && {
+        accessibilityActions: [
+          ...(ownActions.some((action) => action.name === "dismiss")
+            ? []
+            : [{ name: "dismiss", label: "Dismiss" }]),
+          ...ownActions,
+        ],
+      }),
       ...withState<CoreToastState, Omit<ToastState, keyof CoreToastState>>(
         props,
         () => ({

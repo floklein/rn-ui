@@ -129,6 +129,8 @@ type NativeHost = {
     point: { x: number; y: number },
     options: { edge: number; speed: number }
   ) => boolean
+  /** Calls `change` with whether a screen reader runs, now and each time that changes, until the cleanup it returns runs. */
+  screenReader: (change: (on: boolean) => void) => () => void
   /** Hears what dismisses a layer while one is open. Returns what stops it. */
   listen: (input: NativeInput) => () => void
   /** What an agent reads of the part, or `undefined` while it renders no view. */

@@ -7,6 +7,11 @@
  */
 export { accordionNative } from "./components/accordion/accordion-native"
 export { calendarNative } from "./components/calendar/calendar-native"
+export {
+  carouselNative,
+  nativeCarousel,
+  type NativeCarousel,
+} from "./components/carousel/carousel-native"
 export { checkboxNative } from "./components/checkbox/checkbox-native"
 export {
   colorPickerNative,
@@ -27,6 +32,7 @@ export {
   nativeImageCropper,
 } from "./components/image-cropper/image-cropper-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
+export { hoverCardNative } from "./components/hover-card/hover-card-native"
 export { numberInputNative } from "./components/number-input/number-input-native"
 export { popoverNative } from "./components/popover/popover-native"
 export { tooltipNative } from "./components/tooltip/tooltip-native"

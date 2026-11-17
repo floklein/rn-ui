@@ -11,13 +11,15 @@ import { opensElsewhere } from "../../foundation/platform/button"
 import { createRovingFocus } from "../../foundation/focus/roving-focus"
 import { moveIndex, radioStep } from "../../foundation/focus/collection"
 import type { PrimitiveContext } from "../../foundation/kernel/primitive-types"
-import { elements } from "../../foundation/kernel/elements"
+import { createOrder } from "../../foundation/kernel/order"
 
 function carouselIndicators(
   context: PrimitiveContext<object, State, string>,
   go: (page: number, reason: CarouselPageChangeReason, event?: Event) => boolean
 ) {
   const { id, store, element } = context
+  // The bound indicators, which the native host binds with stand-ins.
+  const order = createOrder<{ key: string; el: HTMLElement }>()
 
   // The page an indicator stands for: its `page`, or its place among the indicators.
   function indicatorPage(
@@ -66,7 +68,7 @@ function carouselIndicators(
       // Indicators without a `page` take theirs from their order.
       onItemsChange() {
         store.set({
-          indicators: elements(context, "indicator").map((entry) => entry.key),
+          indicators: order.list().map((entry) => entry.key),
         })
         roving.check()
       },
@@ -87,7 +89,12 @@ function carouselIndicators(
             checkName(el, "CarouselIndicator", { component: "carousel", id })
         )
       }
-      return roving.bind(el, part)
+      const leave = order.add({ key: part.key, el })
+      const unbind = roving.bind(el, part)
+      return () => {
+        unbind()
+        leave()
+      }
     },
     pressIndicator(
       el: HTMLElement | undefined,

@@ -66,6 +66,12 @@ import {
 } from "../src/popover"
 import { createToaster, ToastRegion } from "../src/toast"
 import {
+  HoverCard,
+  HoverCardArrow,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../src/hover-card"
+import {
   Tooltip,
   TooltipArrow,
   TooltipContent,
@@ -682,6 +688,31 @@ describe("checkDirection on the native host", () => {
                   <Text>Files in the trash still use storage.</Text>
                 </TooltipContent>
               </Tooltip>
+            </OverlayHost>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a hover card, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <HoverCard defaultOpen>
+                <HoverCardTrigger>
+                  <Text>@hollis</Text>
+                </HoverCardTrigger>
+                <HoverCardContent side="right">
+                  <HoverCardArrow />
+                  <Text>Design engineer on the payments team.</Text>
+                </HoverCardContent>
+              </HoverCard>
             </OverlayHost>
           )
           return screen.container

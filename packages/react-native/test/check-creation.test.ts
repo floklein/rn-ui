@@ -8,6 +8,7 @@ import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
 import { tooltip } from "@ui-sdk/core/tooltip"
+import { hoverCard } from "@ui-sdk/core/hover-card"
 import { imageCropper } from "@ui-sdk/core/image-cropper"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
@@ -335,6 +336,11 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(tooltip, { defaultOpen: true, toggleable: true })
     ).not.toThrow()
+  })
+
+  test("passes on a hover card, open or closed", () => {
+    expect(() => checkCreation(hoverCard, {})).not.toThrow()
+    expect(() => checkCreation(hoverCard, { defaultOpen: true })).not.toThrow()
   })
 
   test("passes on a dialog and an alert dialog, open or closed", () => {
