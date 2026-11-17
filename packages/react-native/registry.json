@@ -664,7 +664,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover and file-input."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays and toast."
     },
     {
       "kind": "behavior",
@@ -711,6 +711,23 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Popover's focus on open: the title, where pressOpening's initialFocus picks the first focusable element, and the content after a touch or with initialFocus=\"content\", as the DOM host focuses the popup itself."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/tooltip/tooltip-native.ts",
+      "mirrors": [
+        "packages/core/src/components/tooltip/tooltip.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/kernel/dev.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "checkEvent skips an event that isn't a DOM Event, like the pointer event React Native hands a tooltip's hover."
     },
     {
       "kind": "edit",
@@ -859,6 +876,17 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/toast/toast-native.ts",
+      "mirrors": [
+        "packages/core/src/components/toast/toast-api.ts",
+        "packages/core/src/components/toast/swipe.ts",
+        "packages/core/src/components/toast/toast-dom.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What a toast's bind and pointerdown orchestrate for a swipe: the responder's touches become a swipe along an axis with a direction past a few points (also when a button inside took the touch), the timers pause while it runs, and its release dismisses with the swipe reason or snaps back, by the web's distance and velocity rules; the offset goes to the host through nativeToast instead of CSS variables."
     },
     {
       "kind": "twin",
@@ -1374,6 +1402,27 @@
         }
       }
     },
+    "tooltip": {
+      "entry": "packages/react-native/src/tooltip.tsx",
+      "slots": {
+        "tooltip.trigger": {
+          "covered": "packages/react-native/src/tooltip.tsx",
+          "reason": "Its asleep sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and decides whether the trigger has a name of its own, which the adapter reads from the trigger's aria-label, accessibilityLabel and text. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its keydown and focus handlers open on keyboard focus, which a native view doesn't report. Its press goes through the slot's own press, which opens a toggleable tooltip, with its text announced, and closes any other."
+        },
+        "tooltip.content": {
+          "covered": "packages/core/src/components/tooltip/tooltip-native.ts",
+          "reason": "Its bind joins the warm group and shows the popup: the layer, back and the exit, which popup-native.ts and tooltip-native.ts restate, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its asleep labels the content with its spoken text, which the adapter registers by the content's id from the content's text, so it names or describes the trigger while closed too. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave."
+        },
+        "tooltip.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "tooltip.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1494,6 +1543,27 @@
         }
       }
     },
+    "toast": {
+      "entry": "packages/react-native/src/toast.tsx",
+      "slots": {
+        "toastRegion.region": {
+          "covered": "packages/react-native/src/toast-parts.tsx",
+          "reason": "Its bind connects the region to its toaster while it's on the page, which the adapter's Region does from mount to unmount through internal.connect(); shows it in the top layer, which the adapter does by rendering it in the topmost open host, following each host that becomes topmost; adds default styles, which the adapter's placement style restates with the host's insets and the keyboard; registers the F6 shortcut and tracks the keyboard, which native has none of; and pauses timers on hover, focus and a hidden page, which touch has no hover for and React Native reports no focus or visibility to (recorded difference). Its keydown returns focus after the shortcut, which native has no shortcut for."
+        },
+        "toastRegion.root": {
+          "covered": "packages/core/src/components/toast/toast-native.ts",
+          "reason": "Its bind animates it in, measures its height for the stack's CSS variables and follows pointerdown into a swipe; toast-native.ts follows the responder's touches into the same swipe and hands the offset to the host through nativeToast, which the adapter adds to the toast's state (swipeX, swipeY, swiping, swipeDirection) instead of CSS variables. The stack's heights are left to the app's layout (recorded difference). Its keydown closes it on Escape, which native has no keyboard focus on a toast for."
+        },
+        "toastRegion.title": {
+          "needs": "nothing",
+          "reason": "Its bind links the toast to its title with aria-labelledby, which native has no use for: the toast isn't one accessible element, so its title is read as itself, and the announcement reads the toast's title text."
+        },
+        "toastRegion.description": {
+          "needs": "nothing",
+          "reason": "Its bind links the toast to its description with aria-describedby, which native has no use for: the toast isn't one accessible element, so its description is read as itself, and the announcement reads the toast's description text."
+        }
+      }
+    },
     "resizable": {
       "entry": "packages/react-native/src/resizable.tsx",
       "slots": {
@@ -1529,9 +1599,7 @@
     "select",
     "time-input",
     "timeline",
-    "toast",
     "token-input",
-    "tooltip",
     "tree",
     "trigger-menu",
     "waterfall"
@@ -1910,6 +1978,18 @@
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
     },
     {
+      "component": "tooltip",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tooltip",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
       "component": "drawer",
       "example": "rtl",
       "feature": "A direction for part of the screen",
@@ -1938,6 +2018,18 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toast",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "toast",
+      "example": "shortcut",
+      "feature": "The keyboard shortcut that moves focus to the notifications",
+      "reason": "Keyboard shortcuts are web-only: the native region has no shortcut option."
     },
     {
       "component": "resizable",

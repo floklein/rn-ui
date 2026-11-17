@@ -10,6 +10,7 @@ import {
   roleOf,
   shownNodes,
   stateOf,
+  textOf,
 } from "./host-tree"
 
 /**
@@ -24,6 +25,9 @@ import {
  * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * A file input's remove buttons are the buttons inside its list.
+ * A toast's buttons and links each dismiss it, as action and close parts do
+ * unless told otherwise; render some toasts before the check.
+ * A tooltip's triggers are its buttons, each named or described by its text.
  * @experimental
  */
 type NativePattern =
@@ -47,7 +51,9 @@ type NativePattern =
   | "switch"
   | "tabs"
   | "textbox"
+  | "toast"
   | "toolbar"
+  | "tooltip"
   | "window-splitter"
 
 function createContext(root: HostNode, options: CheckOptions) {
@@ -141,6 +147,53 @@ async function buttonPattern(context: Context) {
   }
 }
 
+// A tooltip's text names or describes its trigger. A toggleable one shows
+// on activate and hides on the next, and never takes focus.
+async function tooltipPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no button for a tooltip to name or describe."
+    )
+    return
+  }
+  const shown = () => shownNodes(context.root).length
+  for (const index of buttons().keys()) {
+    const button = () => buttons()[index]!
+    requireName(context, button(), "button")
+    const { accessibilityLabel, accessibilityHint } = button().props
+    if (!accessibilityLabel && !accessibilityHint) {
+      context.problem(
+        button(),
+        "is neither named nor described by its tooltip; the tooltip's text becomes its accessibilityLabel or accessibilityHint."
+      )
+    }
+    if (isDisabled(button())) {
+      continue
+    }
+    const before = shown()
+    const requests = await performWatched(button(), "activate", context.act)
+    if (requests.length) {
+      context.problem(
+        button(),
+        "requests accessibility focus when it's activated; a tooltip never takes focus."
+      )
+    }
+    // A press closes any tooltip; only a toggleable one opens.
+    if (shown() <= before) {
+      continue
+    }
+    await performWatched(button(), "activate", context.act)
+    if (shown() !== before) {
+      context.problem(
+        button(),
+        "leaves its tooltip open when activated again; a toggleable tooltip's trigger closes it."
+      )
+    }
+  }
+}
+
 // There's no WAI-ARIA pattern for a file input; its buttons are found again
 // by name, since each removal takes one away.
 async function fileInputPattern(context: Context) {
@@ -184,6 +237,41 @@ async function fileInputPattern(context: Context) {
       context.problem(
         button,
         "doesn't remove only its own file after the activate action; a remove button in the list takes its item away."
+      )
+    }
+  }
+}
+
+async function toastPattern(context: Context) {
+  if (!readTree(context.root, context.os).shown.some((node) => textOf(node))) {
+    context.problem(
+      context.root,
+      "shows no toast with text, so a screen reader has nothing to hear."
+    )
+    return
+  }
+  const controls = () => [
+    ...context.withRole("button"),
+    ...context.withRole("link"),
+  ]
+  for (const control of controls()) {
+    requireName(context, control, roleOf(control) ?? "button")
+  }
+  const count = (name: string) =>
+    controls().filter((node) => nameOf(node) === name).length
+  for (const name of new Set(controls().map(nameOf))) {
+    const control = controls().find(
+      (node) => nameOf(node) === name && !isDisabled(node)
+    )
+    if (!name || !control) {
+      continue
+    }
+    const before = count(name)
+    await performWatched(control, "activate", context.act)
+    if (count(name) >= before) {
+      context.problem(
+        control,
+        "leaves its toast showing after the activate action; a toast's action and close buttons dismiss it."
       )
     }
   }
@@ -1081,7 +1169,9 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
+  toast: toastPattern,
   toolbar: toolbarPattern,
+  tooltip: tooltipPattern,
   "window-splitter": adjustablePattern("window splitter"),
 }
 

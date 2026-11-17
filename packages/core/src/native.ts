@@ -15,6 +15,7 @@ export {
 } from "./components/date-picker/date-picker-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { popoverNative } from "./components/popover/popover-native"
+export { tooltipNative } from "./components/tooltip/tooltip-native"
 export { radioNative } from "./components/radio/radio-native"
 export { dialogNative } from "./components/dialog/dialog-native"
 export { drawerNative } from "./components/drawer/drawer-native"
@@ -34,6 +35,12 @@ export {
 export { segmentedControlNative } from "./components/segmented-control/segmented-control-native"
 export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"
+export {
+  nativeToast,
+  type NativeToast,
+  type NativeToastSwipe,
+  toastNative,
+} from "./components/toast/toast-native"
 export { toggleNative } from "./components/toggle/toggle-native"
 export { toolbarNative } from "./components/toolbar/toolbar-native"
 export {

@@ -56,6 +56,13 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "../src/popover"
+import { createToaster, ToastRegion } from "../src/toast"
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipTrigger,
+} from "../src/tooltip"
 import {
   Pagination,
   PaginationLink,
@@ -591,6 +598,29 @@ describe("checkDirection on the native host", () => {
     ).resolves.toBeUndefined()
   })
 
+  test("passes on a tooltip, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <Tooltip defaultOpen>
+                <TooltipTrigger aria-label="Info" />
+                <TooltipContent side="right">
+                  <TooltipArrow />
+                  <Text>Files in the trash still use storage.</Text>
+                </TooltipContent>
+              </Tooltip>
+            </OverlayHost>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
   test("passes on a popover, placed by its arrow's side", async () => {
     await expect(
       checkDirection(
@@ -609,6 +639,32 @@ describe("checkDirection on the native host", () => {
               </Popover>
             </OverlayHost>
           )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a toast", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          const toaster = createToaster()
+          await render(
+            <OverlayHost>
+              <ToastRegion toaster={toaster} />
+            </OverlayHost>
+          )
+          await act(async () => {
+            toaster({
+              title: "Deleted",
+              duration: Infinity,
+              action: { label: "Undo", onAction: () => {} },
+              cancel: { label: "Dismiss" },
+            })
+          })
           return screen.container
         },
         { os, act }

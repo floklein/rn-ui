@@ -54,8 +54,10 @@
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
     "./textarea": "./src/textarea.tsx",
+    "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
-    "./toolbar": "./src/toolbar.tsx"
+    "./toolbar": "./src/toolbar.tsx",
+    "./tooltip": "./src/tooltip.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -216,6 +218,10 @@
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
       },
+      "./toast": {
+        "types": "./dist/toast.d.ts",
+        "default": "./dist/toast.js"
+      },
       "./toggle": {
         "types": "./dist/toggle.d.ts",
         "default": "./dist/toggle.js"
@@ -223,6 +229,10 @@
       "./toolbar": {
         "types": "./dist/toolbar.d.ts",
         "default": "./dist/toolbar.js"
+      },
+      "./tooltip": {
+        "types": "./dist/tooltip.d.ts",
+        "default": "./dist/tooltip.js"
       }
     }
   },
