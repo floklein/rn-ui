@@ -17,6 +17,11 @@ export {
   datePickerNative,
   datePickerText,
 } from "./components/date-picker/date-picker-native"
+export {
+  bindReorderItem,
+  bindTransferList,
+  bindTransferItem,
+} from "./foundation/drag-and-drop/drag-and-drop-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { popoverNative } from "./components/popover/popover-native"
 export { tooltipNative } from "./components/tooltip/tooltip-native"
@@ -25,6 +30,10 @@ export { dialogNative } from "./components/dialog/dialog-native"
 export { drawerNative } from "./components/drawer/drawer-native"
 export { fieldNative } from "./components/field/field-native"
 export { ratingNative } from "./components/rating/rating-native"
+export {
+  nativeResizable,
+  resizableNative,
+} from "./components/resizable/resizable-native"
 export {
   type NativeScroller,
   type NativeScrollReport,

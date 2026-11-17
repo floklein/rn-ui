@@ -169,10 +169,12 @@
       "file": "packages/core/src/foundation/kernel/native-element.ts",
       "mirrors": [
         "packages/core/src/foundation/focus/roving-focus.ts",
-        "packages/core/src/foundation/kernel/order.ts"
+        "packages/core/src/foundation/kernel/order.ts",
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, and the order twin sorts it. It answers only what roving-focus.ts's bind and focus and order.ts call on an element."
+      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, the order twin sorts it, and getBoundingClientRect() reads the part's box from the host. It answers only what roving-focus.ts's bind and focus, order.ts, and reorder.ts's and transfer.ts's drop places call on an element."
     },
     {
       "kind": "reroute",
@@ -872,10 +874,50 @@
       "file": "packages/core/src/components/scroll-area/scroll-area-native.ts",
       "mirrors": [
         "packages/core/src/components/scroll-area/scroll-area-view.ts",
-        "packages/core/src/components/scroll-area/scroll-area-pointer.ts"
+        "packages/core/src/components/scroll-area/scroll-area-pointer.ts",
+        "packages/core/src/foundation/drag-and-drop/auto-scroll.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables. A drag held near the viewport's edge scrolls it a step at a time (edgeScroll), at auto-scroll.ts's speeds."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/reorder.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/reorder.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: drag(key), the decisions pointerdown's handler makes (pick up as a pointer, place by the items' boxes, drop with the drag reason or put back), followed through point-drag.ts with edge scrolling, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/transfer.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/transfer.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The pointer drag's placing moves out of pointerdown into place(key, x, y), unchanged. Additive: drag(key), as reorder.ts's, through point-drag.ts, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/item-label.native.ts",
+      "mirrors": ["packages/core/src/foundation/text/typeahead.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A moving item the app doesn't label is announced by its key, where labelOf reads the element's text, which core can't read from a native view."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/auto-scroll.native.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/auto-scroll.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Scrolls only the library's Scroll Areas under the finger, through the host's scrollNear and each viewport's edgeScroll, once per frame while it's near an edge, where the DOM module scrolls any scrollable element and the window."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/drag-and-drop/drag-and-drop-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts",
+        "packages/core/src/foundation/drag-and-drop/pointer.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What a reorderable item's and a transfer's list and item binds and pointerdown orchestrate: each joins with a stand-in, and the responder's touches pick the item up past the drag threshold, follow it with drag(key), and drop it, or put it back on a cancelled, taken or unmounted responder. A transfer's list holds the touch, since an item moved to another list is a new view."
     },
     {
       "kind": "behavior",
@@ -887,6 +929,31 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What a toast's bind and pointerdown orchestrate for a swipe: the responder's touches become a swipe along an axis with a direction past a few points (also when a button inside took the touch), the timers pause while it runs, and its release dismisses with the swipe reason or snaps back, by the web's distance and velocity rules; the offset goes to the host through nativeToast instead of CSS variables."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/resizable/resizable-dom.native.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The group's panels and handles on the native host (resizable-native.ts): the host orders the mounted parts, measures the panels with box and follows the touches that drag a handle, where the DOM side reads the document, observes its size and binds pointer events. It adds measure(), which the adapter calls from the root's onLayout."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/resizable/resizable-native.ts",
+      "mirrors": [
+        "packages/core/src/components/resizable/resizable.ts",
+        "packages/core/src/components/resizable/resizable-dom.ts",
+        "packages/core/src/components/resizable/resizable-handles.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, panels' and handles' binds orchestrate: each part joins the group as it mounts, a handle follows the responder's touches with startDrag, dragBy and endDrag (measured across the panels), puts the layout back when a scroll view or the system takes the touch, and takes a screen reader's increment and decrement through the api's adjust."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/resizable/resizable-api.ts",
+      "mirrors": ["packages/core/src/components/resizable/resizable-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: internal.adjust(key, direction), a screen reader's increment or decrement on the native host, which moves a handle a step and commits with the step-key reason and no event, as a key that comes straight back up."
     },
     {
       "kind": "behavior",
@@ -1570,6 +1637,23 @@
         }
       }
     },
+    "resizable": {
+      "entry": "packages/react-native/src/resizable.tsx",
+      "slots": {
+        "resizable.root": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind schedules the panels' reconcile and observes the group's size. resizable-native.ts schedules the reconcile as the root mounts, and the adapter's root measures the panels again from its onLayout, where the DOM's ResizeObserver does."
+        },
+        "resizable.panel": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the panel and watches its size props. resizable-native.ts registers each mounted panel, orders the panels by where the host renders them and measures them with the host's box. Its size is a flex basis the adapter reads from the panel's state, where the web writes a CSS variable."
+        },
+        "resizable.handle": {
+          "covered": "packages/core/src/components/resizable/resizable-native.ts",
+          "reason": "Its bind registers the handle's hit area, whose pointer press drags it; resizable-native.ts follows the responder's touches on the handle with the same startDrag, dragBy and endDrag api calls, and puts the layout back when the responder is taken. Its keys and Enter move and collapse it with a keyboard, which native doesn't deliver to views (spec, Hardware keyboards); a screen reader's increment and decrement move it a step. Its double-click collapses a panel, which a touch has no gesture for: the controller collapses it. Hover has no touch counterpart."
+        }
+      }
+    },
     "color-picker": {
       "entry": "packages/react-native/src/color-picker.tsx",
       "slots": {
@@ -1633,7 +1717,6 @@
     "menubar",
     "navigation-menu",
     "number-input",
-    "resizable",
     "select",
     "time-input",
     "timeline",
@@ -2068,6 +2151,24 @@
       "example": "shortcut",
       "feature": "The keyboard shortcut that moves focus to the notifications",
       "reason": "Keyboard shortcuts are web-only: the native region has no shortcut option."
+    },
+    {
+      "component": "resizable",
+      "example": "keyboard",
+      "feature": "Arrow keys, Home, End and Enter on a handle",
+      "reason": "React Native delivers no key events to views (spec, Hardware keyboards); a screen reader's increment and decrement move a handle a step."
+    },
+    {
+      "component": "resizable",
+      "example": "persistence",
+      "feature": "Saving to localStorage by default",
+      "reason": "Native has no localStorage: a group saves only into the storage the app passes, which the storage example shows."
+    },
+    {
+      "component": "resizable",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "color-picker",

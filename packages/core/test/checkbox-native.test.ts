@@ -36,6 +36,7 @@ function host() {
     box: vi.fn(),
     follow: vi.fn(),
     adjustable: vi.fn(),
+    scrollNear: vi.fn(),
     seen: vi.fn(),
   })
   return { rendered, focus }

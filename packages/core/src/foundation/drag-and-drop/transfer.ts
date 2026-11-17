@@ -11,7 +11,8 @@ import { bindDragPreview, type DragPreview } from "./drag-preview"
 import { createDraftMove } from "./draft-move"
 import { isRTL } from "../platform/env"
 import { createDragSession, dragThreshold } from "./pointer"
-import { labelOf } from "../text/typeahead"
+import { createPointDrags } from "./point-drag"
+import { itemLabel } from "./item-label"
 import { dropIndex } from "./reorder"
 
 /**
@@ -244,7 +245,7 @@ function createTransfer<State extends object>(
     const message = {
       type,
       key,
-      label: options.label?.(key) ?? (el ? labelOf(el) : key),
+      label: options.label?.(key) ?? (el ? itemLabel(el) : key),
       list: options.listLabel?.(list) ?? list,
       position: (current[list]?.indexOf(key) ?? 0) + 1,
       total: current[list]?.length ?? 0,
@@ -305,6 +306,37 @@ function createTransfer<State extends object>(
     return best?.list
   }
 
+  // Moves the item to its place among the items of the list under a point.
+  function place(key: string, x: number, y: number) {
+    const current = draft()
+    const list = listAt(x, y)
+    if (!current || list === undefined) {
+      return
+    }
+    const others = (current.lists[list] ?? []).filter((k) => k !== key)
+    const middles = others.map((k) => {
+      const rect = items.get(k)?.getBoundingClientRect()
+      return rect ? rect.top + rect.height / 2 : 0
+    })
+    moveTo(list, dropIndex(middles, y))
+  }
+
+  const followPoints = createPointDrags(
+    context.onDestroy,
+    () => !!draft()?.pointer
+  )
+
+  function drag(key: string) {
+    if (!grab(key, true)) {
+      return undefined
+    }
+    return followPoints(
+      (x, y) => place(key, x, y),
+      (canceled, event) => (canceled ? cancel() : drop("drag", event)),
+      options.createAutoScroll
+    )
+  }
+
   const drags = createDragSession(context.onDestroy)
 
   function pointerdown(event: PointerEvent, key: string) {
@@ -318,19 +350,7 @@ function createTransfer<State extends object>(
     let focused = false
     let lastMove: PointerEvent | undefined
     let preview: DragPreview | undefined
-    const track = () => {
-      const current = draft()
-      const list = listAt(pointer.x, pointer.y)
-      if (!current || list === undefined) {
-        return
-      }
-      const others = (current.lists[list] ?? []).filter((k) => k !== key)
-      const middles = others.map((k) => {
-        const rect = items.get(k)?.getBoundingClientRect()
-        return rect ? rect.top + rect.height / 2 : 0
-      })
-      moveTo(list, dropIndex(middles, pointer.y))
-    }
+    const track = () => place(key, pointer.x, pointer.y)
     const scroller =
       options.createAutoScroll === false
         ? undefined
@@ -490,6 +510,13 @@ function createTransfer<State extends object>(
     },
     /** Starts a pointer drag of an item once the pointer moves a few pixels, so a click stays a click. */
     pointerdown,
+    /**
+     * Picks an item up for a drag that doesn't start with `pointerdown`, like
+     * a touch on the native host. Returns what follows it, `move(x, y)` and
+     * `end(canceled, event?)`, or `undefined` when the item can't be picked
+     * up. Only the latest drag's handle acts, and destroying the list ends it.
+     */
+    drag,
     /** Picks an item up, as Space does. Returns whether it did. */
     grab: (key: string) => grab(key, false),
     /** Moves the picked-up item to `index` in `list`, in the draft. Returns whether it moved. */
