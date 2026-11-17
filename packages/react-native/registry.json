@@ -1398,12 +1398,6 @@
       "example": "wrap",
       "feature": "A label wrapping its control",
       "reason": "VoiceOver reads a Text as one element, so a control inside a Label can't be reached: a native control holds its own text, or a Label beside it names it with htmlFor."
-    },
-    {
-      "component": "label",
-      "example": "slider",
-      "feature": "A label for a Slider",
-      "reason": "Slider isn't on native yet; the example comes with it (#71)."
     }
   ]
 }
