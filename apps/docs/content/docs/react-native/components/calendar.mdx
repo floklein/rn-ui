@@ -232,7 +232,7 @@ A range cannot include an unavailable date unless `allowUnavailable` is set. Tha
 
 The root's state has `anchor`, the start while an end is being picked. `onAnchorChange` reports it before it changes, to show the range being picked outside the calendar, and canceling keeps things as they were.
 
-The root's `focused` is the day with the keyboard's Tab stop on the web. React Native never reports which day a screen reader or a keyboard is on, so `focused` stays on the day the calendar prefers: the selection when it shows, else today, else the first available day. `onFocusedChange` doesn't run for a press.
+The root's `focused` is the day with the keyboard's Tab stop on the web. React Native never reports which day a screen reader or a keyboard is on, so `focused` moves only when the months turn to show a day: a press on a day of another month, or a controller's `focus()` on a date in another month. `onFocusedChange` runs for those presses and for every controller `focus()`, never for a press on a day of the month shown.
 
 <ComponentExample
   name="calendar/range-progress"
@@ -448,6 +448,8 @@ Create one with `createCalendarController()` and pass it as `controller`. Every 
 ## Accessibility
 
 On the web, each month is a `grid` of `gridcell`s that arrow keys move through. React Native has no grid cells or arrow keys for views, so each day is its own button, reached by swiping, and named by its full date, like "Friday, October 16, 2026". A selected day, and every day of a range, is announced as selected. Unavailable days and days that can't end a range are announced as dimmed on iOS and disabled on Android, where they also leave Tab's order on a hardware keyboard.
+
+Each grid's view takes the grid role on Android, named by its month; iOS has no grid role.
 
 The heading is announced when the month changes: a live region on Android, and an announcement on iOS, which has no live regions. Weekday headers are read by their full names.
 

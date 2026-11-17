@@ -11,6 +11,7 @@ import {
   CalendarDay,
   CalendarGrid,
   CalendarHeading,
+  CalendarNext,
   CalendarWeekday,
   CalendarWeekdays,
   CalendarWeeks,
@@ -125,9 +126,12 @@ describe("Calendar", () => {
     await act(() => controller.focus())
     expect(focusedTestID()).toBe("2026-10-16")
     expect(sendAccessibilityEvent.mock.lastCall?.[1]).toBe("focus")
+    sendAccessibilityEvent.mockClear()
     await act(() => controller.focus("2026-12-24"))
     expect(screen.getByText("December 2026")).toBeTruthy()
     await waitFor(() => expect(focusedTestID()).toBe("2026-12-24"))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)))
+    expect(sendAccessibilityEvent).toHaveBeenCalledTimes(1)
   })
 
   test("a press on a day of the next month selects it, shows its month and moves the screen reader to it", async () => {
@@ -137,6 +141,27 @@ describe("Calendar", () => {
     expect(onValueChange.mock.lastCall[0]).toBe("2026-10-01")
     expect(screen.getByText("October 2026")).toBeTruthy()
     await waitFor(() => expect(focusedTestID()).toBe("2026-10-01"))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)))
+    expect(sendAccessibilityEvent).toHaveBeenCalledTimes(1)
+  })
+
+  test("a heading whose children are elements is still announced on iOS", async () => {
+    const announce = jest
+      .spyOn(AccessibilityInfo, "announceForAccessibilityWithOptions")
+      .mockImplementation(() => {})
+    await render(
+      <Calendar defaultMonth="2028-03" locale="en-US">
+        <CalendarHeading>
+          {(heading) => <Text>{heading.label}</Text>}
+        </CalendarHeading>
+        <CalendarNext testID="next" />
+      </Calendar>
+    )
+    await fireEvent.press(screen.getByTestId("next"))
+    if (Platform.OS === "ios") {
+      expect(announce).toHaveBeenCalledWith("April 2028", { queue: true })
+    }
+    announce.mockRestore()
   })
 
   test("without outside days a cell of another month is an empty view", async () => {

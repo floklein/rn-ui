@@ -79,6 +79,23 @@ const flush = () =>
 const tick = () => new Promise((resolve) => setTimeout(resolve))
 
 describe("a calendar on the native host", () => {
+  test("names are in the device's locale from the first render", () => {
+    host()
+    const resolved = Intl.DateTimeFormat.prototype.resolvedOptions
+    const device = vi
+      .spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions")
+      .mockImplementation(function (this: Intl.DateTimeFormat) {
+        return { ...resolved.call(this), locale: "de-DE" }
+      })
+    const instance = calendar({
+      id: "c",
+      defaultMonth: "2026-10",
+    } as CalendarOptions & { id: string })
+    const heading = partState(instance.part("heading", {}, true), {})
+    device.mockRestore()
+    expect((heading as { label: string }).label).toBe("Oktober 2026")
+  })
+
   test("the root reads today and the device's locale as it mounts", () => {
     host()
     const { instance } = mount({ defaultMonth: "2026-10" }, [])
@@ -113,7 +130,9 @@ describe("a calendar on the native host", () => {
     expect(instance.get().month).toBe("2026-12")
     render()
     await tick()
+    expect(focus).toHaveBeenCalledTimes(1)
     expect(focus).toHaveBeenLastCalledWith(days.get("2026-12-24"))
+    expect(instance.get().focused).toBe("2026-12-24")
   })
 
   test("pressing a day of the next month selects it, turns the month and focuses its day", async () => {

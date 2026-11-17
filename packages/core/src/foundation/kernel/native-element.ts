@@ -3,8 +3,12 @@ import type { Part } from "./primitive-types"
 
 const parts = new WeakMap<object, Part>()
 
-// Focus is requested on native and never observed, so no element is active.
-const ownerDocument = { activeElement: null, body: null }
+// Focus is requested, never observed: an element reads as active only in the
+// task that requested it, so shared code doesn't ask again.
+const ownerDocument: { activeElement: object | null; body: null } = {
+  activeElement: null,
+  body: null,
+}
 
 /**
  * What a native behavior file hands shared code in place of a part's
@@ -13,7 +17,11 @@ const ownerDocument = { activeElement: null, body: null }
  */
 function nativeElement(part: Part) {
   const el = {
-    focus: () => nativeHost()?.focus(part),
+    focus() {
+      ownerDocument.activeElement = el
+      queueMicrotask(() => (ownerDocument.activeElement = null))
+      nativeHost()?.focus(part)
+    },
     // Shared code hears focus on an item's element, which the native host never reports.
     addEventListener() {},
     removeEventListener() {},

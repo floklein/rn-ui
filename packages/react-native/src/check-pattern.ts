@@ -18,7 +18,8 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
- * A calendar's days are its buttons with a selected state.
+ * A calendar's days are its buttons with a selected state; pass one that can
+ * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * @experimental
  */

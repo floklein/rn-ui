@@ -155,7 +155,7 @@ describe("checkDirection on the native host", () => {
     await expect(
       checkDirection(
         async () => {
-          await render(<Calendar defaultValue="2026-10-16" locale="en-US" />)
+          await render(<Calendar defaultValue="2026-02-16" locale="en-US" />)
           return screen.container
         },
         { os, act }

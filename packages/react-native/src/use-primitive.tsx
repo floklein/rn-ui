@@ -637,7 +637,10 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       : undefined,
     text
   )
-  useLiveText(merged["aria-live"], text)
+  useLiveText(
+    merged["aria-live"],
+    shown && merged["aria-live"] ? plainText(content, true) : undefined
+  )
 
   let element: React.ReactElement | null = null
   if (shown) {
