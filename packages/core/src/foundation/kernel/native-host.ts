@@ -29,6 +29,8 @@ type NativeTouch = { x: number; y: number; target: Part | undefined }
 type NativeDrag = {
   /** Whether a touch starting now takes the responder. */
   accepts: () => boolean
+  /** Whether a touch that started inside the part, on a view that took it, takes it back now it has moved by `dx` and `dy`. */
+  claims?: (dx: number, dy: number) => boolean
   start: (touch: NativeTouch) => void
   move: (touch: NativeTouch) => void
   /** The touch lifted. */
