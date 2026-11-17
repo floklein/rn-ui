@@ -2,7 +2,9 @@ import type { Part } from "@ui-sdk/core"
 import {
   type NativeDrag,
   type NativeInput,
+  type NativeSeen,
   type NativeTextField,
+  nativePressSource,
   setNativeHost,
 } from "@ui-sdk/core/native"
 import { withSource } from "@ui-sdk/core/renderer"
@@ -23,6 +25,7 @@ const controlsById: Map<string, (() => void)[]> = new Map()
 const parts: WeakMap<HostInstance, Part> = new WeakMap()
 const drags: WeakMap<Part, NativeDrag> = new WeakMap()
 const steps: WeakMap<Part, (direction: 1 | -1) => void> = new WeakMap()
+const seen: WeakMap<Part, () => NativeSeen> = new WeakMap()
 const holds: WeakMap<Part, () => void> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
@@ -34,7 +37,7 @@ AccessibilityInfo.isScreenReaderEnabled().then((enabled) => {
 AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
   screenReader = enabled
 })
-const pressSource = () => (screenReader ? "virtual" : "touch")
+const pressSource = () => nativePressSource(screenReader ? "virtual" : "touch")
 
 const following = 4
 
@@ -117,6 +120,7 @@ setNativeHost({
   box: (part) => views.get(part)?.getBoundingClientRect(),
   follow: (part, drag) => register(drags, part, drag),
   adjustable: (part, step) => register(steps, part, step),
+  seen: (part) => seen.get(part)?.(),
   // A Modal hears Android's back itself, through `onRequestClose`.
   listen(next) {
     input = next
@@ -207,6 +211,7 @@ export {
   pressSource,
   renders,
   responder,
+  seen,
   steps,
   textInputs,
   views,

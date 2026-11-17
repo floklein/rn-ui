@@ -204,20 +204,15 @@ function RegionView({
       }),
     }
   }
-  return usePart(
-    region,
-    "region",
-    {},
-    {
-      pointerEvents: "box-none",
-      ...props,
-      style: (state: ToastRegionState, interaction: Interaction) => [
-        place(state),
-        typeof style === "function" ? style(state, interaction) : style,
-      ],
-      children: list,
-    } as Record<string, unknown>
-  )
+  return usePart(region, "region", {}, {
+    pointerEvents: "box-none",
+    ...props,
+    style: (state: ToastRegionState, interaction: Interaction) => [
+      place(state),
+      typeof style === "function" ? style(state, interaction) : style,
+    ],
+    children: list,
+  } as Record<string, unknown>)
 }
 
 function useKeyboardHeight() {

@@ -71,6 +71,7 @@ describe("the form twin", () => {
       box: vi.fn(),
       follow: vi.fn(),
       adjustable: vi.fn(),
+      seen: vi.fn(),
     })
     const el = nativeElement(part)
     form.claimInvalidFocus(el, null)
