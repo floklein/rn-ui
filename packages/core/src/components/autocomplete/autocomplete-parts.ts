@@ -114,7 +114,7 @@ const autocompleteSlots = (
     }),
     // A label that isn't a native one for the field, like a custom element, focuses it all the same.
     press({ api, el }) {
-      if (el instanceof HTMLLabelElement && el.control) {
+      if (el?.localName === "label" && (el as HTMLLabelElement).control) {
         return
       }
       api.focus()

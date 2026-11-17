@@ -14,7 +14,7 @@ const probe = (args: string[] = []) =>
   )
 
 describe("the no-document probe", () => {
-  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input, field, otp input, number input, date input or time input", () => {
+  test("lists the press throws of core as native resolves it, each against its component, and none for switch, input, password input, field, otp input, number input, date input, time input or autocomplete", () => {
     const { status, stdout } = probe()
     const throws = stdout
       .split("\n")
@@ -22,7 +22,6 @@ describe("the no-document probe", () => {
       .map((line) => line.replace(/ throws .*/, ""))
     expect(throws).toEqual([
       "combobox (pending): combobox label press",
-      "autocomplete (pending): autocomplete label press",
       "tree (pending): tree item press",
     ])
     expect(stdout).not.toMatch(/^switch/m)
@@ -32,6 +31,7 @@ describe("the no-document probe", () => {
     expect(stdout).not.toMatch(/^number-input/m)
     expect(stdout).not.toMatch(/^date-input/m)
     expect(stdout).not.toMatch(/^time-input/m)
+    expect(stdout).not.toMatch(/^autocomplete.* throws /m)
     expect(stdout).not.toMatch(/^field/m)
     expect(status).toBe(0)
   })

@@ -84,14 +84,14 @@ function partIn(internal: PopupParts["internal"], slot: string, key?: string) {
  * layer, back, escape and outside press from the host's input, the flags
  * the title, description and trigger set, focus on open and its return on
  * close, and the content held mounted until its exit ends. `focus` picks the
- * part focus goes to on open; `escape` restates a popup's own Escape rule,
+ * part focus goes to on open, or null to leave it; `escape` restates a popup's own Escape rule,
  * with whether the gesture reached its content.
  */
 function popupNative<Api extends PopupParts>({
   focus,
   escape,
 }: {
-  focus?: (api: Api, plan: FocusPlan) => Part | undefined
+  focus?: (api: Api, plan: FocusPlan) => Part | null | undefined
   escape?: (api: Api, inside: boolean) => void
 } = {}) {
   const behavior: NativeBehavior<Api> = {
@@ -132,7 +132,11 @@ function popupNative<Api extends PopupParts>({
         ) {
           return
         }
-        nativeHost()?.focus(focus?.(api, plan) ?? part)
+        const target = focus?.(api, plan)
+        if (target === null) {
+          return
+        }
+        nativeHost()?.focus(target ?? part)
         entered = true
       }
 

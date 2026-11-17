@@ -6,6 +6,12 @@
  * @module
  */
 export { accordionNative } from "./components/accordion/accordion-native"
+export {
+  autocompleteNative,
+  pressAutocompleteTrigger,
+  submitAutocomplete,
+  typeAutocomplete,
+} from "./components/autocomplete/autocomplete-native"
 export { calendarNative } from "./components/calendar/calendar-native"
 export {
   carouselNative,

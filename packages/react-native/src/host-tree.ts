@@ -205,11 +205,11 @@ function perform(node: HostNode, action: Action) {
 }
 
 /** Performs an action and returns the parts core asked the host to focus meanwhile. */
-async function performWatched(
-  node: HostNode,
-  action: Action,
-  act: Act = settle
-) {
+const performWatched = (node: HostNode, action: Action, act?: Act) =>
+  watched(() => perform(node, action), act)
+
+/** Runs `run` and returns the parts core asked the host to focus meanwhile. */
+async function watched(run: () => void, act: Act = settle) {
   const host = nativeHost()
   const requests: Part[] = []
   setNativeHost({
@@ -231,7 +231,7 @@ async function performWatched(
     seen: (part) => host?.seen(part),
   })
   try {
-    await act(() => perform(node, action))
+    await act(run)
   } finally {
     setNativeHost(host)
   }
@@ -253,4 +253,5 @@ export {
   shownNodes,
   stateOf,
   textOf,
+  watched,
 }

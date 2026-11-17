@@ -426,6 +426,8 @@
   "@ui-sdk/react-native/alert-dialog": 32513,
   "@ui-sdk/react-native/alert-dialog (lazy)": 181,
   "@ui-sdk/react-native/async-options": 803,
+  "@ui-sdk/react-native/autocomplete": 48077,
+  "@ui-sdk/react-native/autocomplete (lazy)": 6083,
   "@ui-sdk/react-native/avatar": 12080,
   "@ui-sdk/react-native/button": 12224,
   "@ui-sdk/react-native/button (lazy)": 181,

@@ -38,6 +38,7 @@ import { on } from "../../foundation/kernel/events"
 import type { PrimitiveContext } from "../../foundation/kernel/primitive-types"
 import { createChange } from "../../foundation/kernel/input-source"
 import { elements } from "../../foundation/kernel/elements"
+import { focusPart } from "../../foundation/focus/focus-part"
 
 type AutocompleteState = PopupState &
   AutocompleteCoreState & {
@@ -284,25 +285,39 @@ function autocompleteApiBody(
   // `inlineComplete` an insertion at the end completes the first match,
   // keeping the case the user typed, with the rest selected.
   function typed(input: HTMLInputElement, event: Event) {
+    const insertion = event as InputEvent
+    typeText(
+      input.value,
+      !insertion.isComposing &&
+        !!insertion.inputType?.startsWith("insert") &&
+        insertion.inputType !== "insertReplacementText" &&
+        input.selectionEnd === input.value.length,
+      event,
+      (completed, start) => {
+        input.value = completed
+        input.setSelectionRange(start, completed.length)
+      }
+    )
+  }
+
+  // `inserted` is whether the text was inserted at its end, where it completes.
+  function typeText(
+    text: string,
+    inserted: boolean,
+    event?: Event,
+    complete?: (completed: string, start: number) => void
+  ) {
     if (!editable()) {
       return
     }
-    const text = input.value
-    const insertion = event as InputEvent
-    const completing =
-      completes() &&
-      !insertion.isComposing &&
-      !!insertion.inputType?.startsWith("insert") &&
-      insertion.inputType !== "insertReplacementText" &&
-      input.selectionEnd === text.length
-    const match = completing ? completionFor(text, core.listbox) : undefined
+    const match =
+      completes() && inserted ? completionFor(text, core.listbox) : undefined
     const completed = match ? text + match.label.slice(text.length) : text
     if (!setValue(completed, "input-change", { event, query: text })) {
       return
     }
     if (match && completed !== text) {
-      input.value = completed
-      input.setSelectionRange(text.length, completed.length)
+      complete?.(completed, text.length)
     }
     if (!store.get().open) {
       if (text) {
@@ -483,10 +498,14 @@ function autocompleteApiBody(
       event,
     }: AutocompleteChangeOptions<AutocompleteValueChangeReason> = {}) =>
       store.get().value !== "" && setValue("", reason, { event }),
-    focus: () => inputElement()?.focus(),
+    focus: () => focusPart(inputElement, context.parts, "input"),
     // Internal. Used by slots and adapters.
     internal: {
       ...core,
+      // The popup's own internals, which the native host reads.
+      popupCore: kit.internal,
+      store,
+      typeText,
       options,
       popup,
       presentation,
