@@ -200,19 +200,15 @@ async function checkContentFollows(
   return true
 }
 
-const expandables = {
-  disclosure: { role: "button", article: "a" },
-  accordion: { role: "header button", article: "an" },
-}
+const articles = { disclosure: "a", accordion: "an" }
 
 // An accordion's open item that can't close turns disabled (APG accordion).
 // TalkBack offers expand or collapse from the expanded state alone, so on
 // Android the button handles them too.
 async function checkExpandable(
   context: Context,
-  pattern: keyof typeof expandables
+  pattern: keyof typeof articles
 ) {
-  const { role, article } = expandables[pattern]
   const apg = `APG ${pattern}`
   const buttons = () =>
     context
@@ -221,12 +217,12 @@ async function checkExpandable(
   if (!buttons().length) {
     context.problem(
       context.root,
-      `has no ${role} with an expanded state, so it isn't ${article} ${pattern} (${apg}).`
+      `has no button with an expanded state, so it isn't ${articles[pattern]} ${pattern} (${apg}).`
     )
     return
   }
   for (const button of buttons()) {
-    requireName(context, button, role)
+    requireName(context, button, "button")
   }
   for (const index of buttons().keys()) {
     const button = () => buttons()[index]

@@ -1023,7 +1023,7 @@ describe("checkPattern's accordion pattern on the native host", () => {
       </Button>
     )
     await expect(checkAccordion()).rejects.toThrow(
-      "has no header button with an expanded state"
+      "has no button with an expanded state, so it isn't an accordion"
     )
   })
 

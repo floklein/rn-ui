@@ -30,17 +30,38 @@ const items = [
 const slide = (height: Animated.Value, toValue: number) =>
   Animated.timing(height, { toValue, duration: 200, useNativeDriver: false })
 
-function Grow({ height, to }: { height: Animated.Value; to?: number }) {
+function Grow({
+  height,
+  to,
+  snap,
+}: {
+  height: Animated.Value
+  to?: number
+  snap: { pending: boolean }
+}) {
   useEffect(() => {
-    if (to !== undefined) {
+    if (to === undefined) {
+      return
+    }
+    if (snap.pending) {
+      snap.pending = false
+      height.setValue(to)
+    } else {
       slide(height, to).start()
     }
-  }, [height, to])
+  }, [height, to, snap])
   return null
 }
 
-function Item({ item }: { item: (typeof items)[number] }) {
+function Item({
+  item,
+  startsOpen,
+}: {
+  item: (typeof items)[number]
+  startsOpen: boolean
+}) {
   const [height] = useState(() => new Animated.Value(0))
+  const [snap] = useState({ pending: startsOpen })
   return (
     <AccordionItem value={item.value} style={styles.item}>
       <AccordionHeader>
@@ -62,7 +83,9 @@ function Item({ item }: { item: (typeof items)[number] }) {
       >
         {(state) => (
           <View style={styles.content}>
-            {state.open && <Grow height={height} to={state.panelHeight} />}
+            {state.open && (
+              <Grow height={height} to={state.panelHeight} snap={snap} />
+            )}
             <Text>{item.content}</Text>
           </View>
         )}
@@ -71,11 +94,17 @@ function Item({ item }: { item: (typeof items)[number] }) {
   )
 }
 
+const defaultValue = ["one"]
+
 function Example() {
   return (
-    <Accordion defaultValue={["one"]} style={styles.list}>
+    <Accordion defaultValue={defaultValue} style={styles.list}>
       {items.map((item) => (
-        <Item key={item.value} item={item} />
+        <Item
+          key={item.value}
+          item={item}
+          startsOpen={defaultValue.includes(item.value)}
+        />
       ))}
     </Accordion>
   )

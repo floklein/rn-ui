@@ -6,7 +6,13 @@ import {
   AccordionTrigger,
 } from "@ui-sdk/react-native/accordion"
 import { useState } from "react"
-import { StyleSheet, Text, TextInput, View } from "react-native"
+import {
+  AccessibilityInfo,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native"
 
 const faq = [
   {
@@ -113,14 +119,14 @@ function Example() {
         placeholder="Search questions…"
         value={query}
         onChangeText={(next) => {
+          const found = faq.filter((question) => matches(question, next))
           setQuery(next)
-          setValue(
-            next.trim()
-              ? faq
-                  .filter((question) => matches(question, next))
-                  .map((question) => question.value)
-              : []
-          )
+          setValue(next.trim() ? found.map((question) => question.value) : [])
+          if (found.length === 0 && results.length > 0) {
+            AccessibilityInfo.announceForAccessibility(
+              `No questions match “${next}”.`
+            )
+          }
         }}
         style={styles.input}
       />
@@ -159,9 +165,7 @@ function Example() {
         ))}
       </Accordion>
       {results.length === 0 && (
-        <Text accessibilityLiveRegion="polite" style={styles.hint}>
-          No questions match “{query}”.
-        </Text>
+        <Text style={styles.hint}>No questions match “{query}”.</Text>
       )}
     </View>
   )

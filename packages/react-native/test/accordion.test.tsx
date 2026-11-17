@@ -323,4 +323,42 @@ describe("Accordion", () => {
     await fireEvent.press(trigger("Shipping"))
     expect(height()).toBe(80)
   })
+
+  test("a panel inside a nested accordion follows its own item", async () => {
+    await render(
+      <Accordion defaultValue={["billing"]}>
+        <AccordionItem value="billing">
+          <AccordionTrigger>
+            <Text>Billing</Text>
+          </AccordionTrigger>
+          <AccordionPanel>
+            <Accordion>
+              <AccordionItem value="invoices">
+                <AccordionTrigger>
+                  <Text>Invoices</Text>
+                </AccordionTrigger>
+                <AccordionPanel
+                  testID="invoices-panel"
+                  onExit={() => {}}
+                  style={(state) => ({ opacity: state.endingStyle ? 0 : 1 })}
+                >
+                  <Text>Every invoice from the last two years.</Text>
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
+          </AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+    )
+    await fireEvent.press(trigger("Invoices"))
+    expect(
+      screen.getByText("Every invoice from the last two years.")
+    ).toBeVisible()
+    expect(trigger("Billing")).toBeExpanded()
+    await fireEvent.press(trigger("Invoices"))
+    expect(
+      screen.getByTestId("invoices-panel", { includeHiddenElements: true })
+    ).toHaveStyle({ opacity: 0 })
+    expect(trigger("Billing")).toBeExpanded()
+  })
 })
