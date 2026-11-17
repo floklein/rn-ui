@@ -23,16 +23,21 @@ async function scale() {
   return density / 160
 }
 
+// Measured before opening: on Android a Modal hides the screen behind it.
 async function open(name: string) {
+  const trigger = await device.rect(`${name}-trigger`)
   await device.press(`${name}-trigger`)
   await expectShown(`${name}-content`, true)
+  return trigger
 }
 
 // The content sits 8 points below its trigger, across its center, and was
 // never laid out anywhere else while open.
-async function expectBeside(name: string) {
+async function expectBeside(
+  name: string,
+  trigger: Awaited<ReturnType<typeof device.rect>>
+) {
   const unit = await scale()
-  const trigger = await device.rect(`${name}-trigger`)
   const content = await device.rect(`${name}-content`)
   const gap = content.y - (trigger.y + trigger.height)
   assert.ok(
@@ -69,8 +74,7 @@ afterEach(async () => {
 })
 
 test("a non-modal popover opens beside its trigger in the root host, in its first frame", async () => {
-  await open("plain")
-  await expectBeside("plain")
+  await expectBeside("plain", await open("plain"))
   await expectText("changes", "plain:true:trigger-press")
 })
 
@@ -86,8 +90,7 @@ test("a press outside a non-modal popover closes it and reaches what is under it
 })
 
 test("a modal popover in its Modal is placed against its trigger outside it", async () => {
-  await open("modal")
-  await expectBeside("modal")
+  await expectBeside("modal", await open("modal"))
 })
 
 test("a press outside a modal popover only closes it", async () => {
@@ -121,14 +124,12 @@ for (const kind of ["translucent", "opaque"]) {
   test(`inside an app's Modal whose status bar is ${kind}, it opens beside its trigger`, async () => {
     await device.press(`app-modal-${kind}`)
     await expectShown("app-modal-close", true)
-    await open("inner")
-    await expectBeside("inner")
+    await expectBeside("inner", await open("inner"))
   })
 }
 
 test("it follows its trigger while a scroll view scrolls it", async () => {
-  await open("scrolling")
-  await expectBeside("scrolling")
+  await expectBeside("scrolling", await open("scrolling"))
   const before = await device.rect("scrolling-trigger")
   const box = await device.rect("scroller")
   const x = box.x + box.width * 0.85
