@@ -210,12 +210,13 @@ function ModalHost({ children }: { children?: React.ReactNode }) {
  * Renders a non-modal popup's layer in the topmost open host from the moment
  * it shows until it hides, or in place with a warning when there is none. A
  * modal popup's `Modal` renders in place, keeping the providers above it,
- * unless a `Modal` it isn't inside is up.
+ * unless a `Modal` it isn't inside is up. With `follow`, a non-modal layer
+ * moves to each host that becomes topmost while it shows, as toasts do.
  */
 function useHosted(
   element: React.ReactNode,
   shown: boolean,
-  popup: { component: string; id: string; modal: boolean }
+  popup: { component: string; id: string; modal: boolean; follow?: boolean }
 ) {
   const key = React.useId()
   const nearest = React.useContext(HostContext)
@@ -228,11 +229,12 @@ function useHosted(
   const [chosen, setChosen] = React.useState<{ host?: Host }>()
   // A non-modal one open on the first render, before the host around it has
   // mounted, takes it once it has.
-  const wanted = shown
-    ? chosen && (chosen.host || !target || popup.modal)
-      ? chosen
-      : { host: target }
-    : undefined
+  const keep =
+    chosen &&
+    (popup.follow
+      ? chosen.host === target
+      : chosen.host || !target || popup.modal)
+  const wanted = shown ? (keep ? chosen : { host: target }) : undefined
   if (wanted !== chosen) {
     setChosen(wanted)
   }

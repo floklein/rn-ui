@@ -4,6 +4,7 @@ import {
   type Overlays,
   overlays as sharedOverlays,
 } from "@ui-sdk/core/overlays"
+import { toasterInternals, type Toaster } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { StyleSheet, Text, View } from "react-native"
 import {
@@ -15,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "./alert-dialog"
 import { RootHost, type RootHostProps } from "./overlay-host"
+import { Region, type ToastRegionProps } from "./toast"
 
 const noEntries: readonly OverlayEntry[] = []
 
@@ -25,19 +27,23 @@ const noEntries: readonly OverlayEntry[] = []
 type OverlayHostProps = RootHostProps & {
   /**
    * The registry it renders.
-   * @defaultValue the shared `overlays`, which `confirm()` opens into
+   * @defaultValue the shared `overlays`, which `toast()` and `confirm()` open into
    */
   overlays?: Overlays
+  /** Props for the toast regions it renders, like `side`, `style` and `children`. */
+  toast?: Omit<ToastRegionProps, "toaster">
 }
 
 /**
- * Where non-modal popups and what `confirm()` opens render, above the app
- * it wraps. Wrap the app in one, near the root. Modal popups need none: each
- * `Modal` carries its own host.
+ * Where non-modal popups and what `toast()` and `confirm()` open render,
+ * above the app it wraps. Wrap the app in one, near the root. Modal popups
+ * need none: each `Modal` carries its own host. A `ToastRegion` you place
+ * yourself takes over its toaster.
  * @experimental
  */
 function OverlayHost({
   overlays = sharedOverlays,
+  toast,
   children,
   ...props
 }: OverlayHostProps) {
@@ -50,14 +56,41 @@ function OverlayHost({
   return (
     <RootHost {...props}>
       {children}
-      {entries.map(
-        (entry) =>
-          entry.type === "confirm" && (
+      {entries.map((entry) => {
+        if (entry.type === "toaster") {
+          return (
+            <HostedToaster
+              key={entry.id}
+              {...(entry.data as { toaster: Toaster })}
+              props={toast}
+            />
+          )
+        }
+        if (entry.type === "confirm") {
+          return (
             <HostedConfirm key={entry.id} entry={entry.data as ConfirmEntry} />
           )
-      )}
+        }
+        return null
+      })}
     </RootHost>
   )
+}
+
+function HostedToaster({
+  toaster,
+  props,
+}: {
+  toaster: Toaster
+  props?: Omit<ToastRegionProps, "toaster">
+}) {
+  const placed = React.useSyncExternalStore(toaster.subscribe, () =>
+    toasterInternals(toaster).hasPlacedRegion()
+  )
+  if (placed) {
+    return null
+  }
+  return <Region {...props} toaster={toaster} placed={false} />
 }
 
 function HostedConfirm({ entry }: { entry: ConfirmEntry }) {
