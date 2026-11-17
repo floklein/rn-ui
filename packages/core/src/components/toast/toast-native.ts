@@ -84,9 +84,6 @@ function swipesOf(api: object) {
  */
 const nativeToast = (api: object) => swipesOf(api).bridge
 
-// The responder's touches make the swipe the web's pointer handlers make: a
-// press becomes a swipe once it moves past a few points along an axis with a
-// direction, and its release dismisses or snaps back.
 function follow(part: ToastPart) {
   const { api, store, key } = part
   const toastId = String(key)

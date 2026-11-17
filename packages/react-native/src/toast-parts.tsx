@@ -171,8 +171,7 @@ function Region({
   return shown ? hosted : null
 }
 
-// Rendered in the host it lands in, so it keeps clear of that host's insets
-// and of the keyboard, as the web's region does with its default styles.
+// Rendered in the host it lands in, whose insets it keeps clear of.
 function RegionView({
   region,
   props: { style, ...props },
