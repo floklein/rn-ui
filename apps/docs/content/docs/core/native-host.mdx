@@ -43,6 +43,7 @@ setNativeHost({
     input = next
     return () => (input = undefined)
   },
+  seen: (part) => renderedOf(part),
 })
 ```
 
@@ -56,6 +57,9 @@ setNativeHost({
 - `follow(part, drag)` follows the touches that start on the part's view with a `NativeDrag`, until the cleanup it returns runs. `@ui-sdk/react-native` makes the view a responder: `accepts` decides whether a touch takes it, and `start`, `move` and `end` get each `NativeTouch`, its position and the innermost part under it. A responder cancelled, or taken by another view such as a scroll view, calls `cancel`. The view refuses to hand the responder to a scroll view around it, as `touch-action: none` does on the web; on iOS a scroll view along the same axis still scrolls during the drag unless the app turns its `scrollEnabled` off, as [Slider](/docs/react-native/components/slider#inside-a-scroll-view) shows. A [Scroll Area](/docs/react-native/components/scroll-area#drags-inside)'s viewport turns its own off while a drag inside it holds the touch.
 - `adjustable(part, step)` routes a screen reader's increment and decrement on the part's view to `step`, with `1` or `-1`, until the cleanup it returns runs, where the web hears a range input's `input` event.
 - `listen(input)` hears what dismisses a popup while one is open, and returns what stops it. The host calls `input.back()` for Android's back, from a `Modal`'s `onRequestClose`, `input.escape(api)` for VoiceOver's escape gesture on a popup's content, and `input.outsidePress()` for a press on a modal popup's backdrop. Each goes to the topmost open popup, and returns whether one took it: a popup that refuses the dismissal still takes it, so back never falls through to navigation.
+- `seen(part)` returns what an agent reads of the part's view, a `NativeSeen`, or `undefined` while the part renders none: its accessibility label and role, the plain text inside it, whether it's disabled or hidden from accessibility, the `data-agent-*` marks around it, the instances it renders inside and its press. The agent bridge from `@ui-sdk/core/agent` reads every part through it, where the web reads elements, as [Connect an Agent](/docs/react-native/agents) shows.
+
+A press the host delivers names its source with `nativePressSource`, from `"touch"` or `"virtual"`, which reports `"agent"` instead while the agent bridge presses, so the changes the press causes say the agent made them.
 
 Core's locale on native comes from `Intl`: the page's and the user's language are the device's, and a component's `locale` option still wins.
 

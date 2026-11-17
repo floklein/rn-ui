@@ -54,9 +54,17 @@ function reaches(
   return runtimeImports(file).some((next) => reaches(next, target, seen))
 }
 
-const entries = Object.entries(packageJson.exports as Record<string, string>)
+const entries = Object.entries(
+  packageJson.exports as Record<string, string | { default: string }>
+)
   .filter(([entry]) => entry !== "." && !entry.includes("*"))
-  .map(([entry, file]) => [entry.slice(2), path.join(root, file)] as const)
+  .map(
+    ([entry, file]) =>
+      [
+        entry.slice(2),
+        path.join(root, typeof file === "string" ? file : file.default),
+      ] as const
+  )
   .filter(([, file]) => reaches(file, modality))
 
 // Which exports are primitives, and their slots, read once through a wrapped
