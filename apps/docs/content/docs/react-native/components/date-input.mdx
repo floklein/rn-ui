@@ -1,0 +1,238 @@
+---
+title: Date Input
+description: Type a date one part at a time, in the order your user's language writes it.
+---
+
+Use a Date Input for dates people know by heart, like a birthday or a booking date. Each part of the date is its own small `TextInput`, ordered the way the locale writes it.
+
+<ComponentExample
+  name="date-input/basic"
+  caption="Tap the month and type 11042026. Each part moves to the next as it fills."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `DateInput`:
+
+```text
+DateInput
+├── DateInputSegment
+└── DateInputSegment
+```
+
+`DateInput` renders a `View` with one `DateInputSegment` for each part of the date: month, day and year in English, day, month and year in German. Each segment you type in is a `TextInput` with a number pad. The slashes or dots between them are segments too, rendered as `Text`. Without children, `DateInput` renders its segments unstyled; pass a function as children to render and style them, as every example here does.
+
+## Usage
+
+Put the input in a [Field](/docs/react-native/components/field) and give it a label:
+
+```tsx
+import {
+  DateInput,
+  DateInputSegment,
+  type DateInputState,
+} from "@ui-sdk/react-native/date-input"
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
+
+const segments = ({ segments }: DateInputState) =>
+  segments.map((segment) => (
+    <DateInputSegment key={segment.key} segment={segment} />
+  ))
+
+function Example() {
+  return (
+    <Field>
+      <FieldLabel>Start date</FieldLabel>
+      <DateInput defaultValue="2026-11-02" style={{ flexDirection: "row" }}>
+        {segments}
+      </DateInput>
+    </Field>
+  )
+}
+
+export { Example }
+```
+
+The value is an ISO date string like `"2026-11-02"`. It stays `null` until every segment holds something, so your app only sees whole dates.
+
+Type digits and each segment fills, then focus moves to the next one. A month that can't take another digit, like 4, moves on at once. Backspace removes the last digit, then empties the segment, and in an empty segment it moves back to the one before. Leaving a segment keeps what was typed, so a 1 left in the month becomes January. The day is kept within its month. Paste a whole date into any segment, as `2026-11-02` or written the way the locale writes it. A tap around the segments, or on the text between them, starts editing the nearest one.
+
+## Field
+
+The Field's label and description follow each segment's own name for screen readers, and a tap on the label starts editing the first segment.
+
+<ComponentExample
+  name="date-input/field"
+  caption="Tap Birthday to start editing the month, then type a date."
+/>
+
+## Date and Time
+
+Set `granularity` to `"hour"`, `"minute"` or `"second"` to add the time. The value becomes a local date and time like `"2026-11-02T14:30"`. For a time alone, use [Time Input](/docs/react-native/components/time-input).
+
+<ComponentExample
+  name="date-input/date-time"
+  caption="Type a date and a time. In the last segment, type A or P to switch between AM and PM."
+/>
+
+## Min and Max
+
+`min` and `max` take ISO dates. A date outside them is invalid: the state's `invalid` is true, for your styles.
+
+<ComponentExample
+  name="date-input/min-max"
+  caption="Change the year of Check-in to 2027: the border turns red. Change it back to 2026."
+/>
+
+## Unavailable Dates
+
+`unavailable` takes the same matchers as [Calendar](/docs/react-native/components/calendar): ISO dates, `{ from, to }` ranges, weekdays like `{ weekday: [0, 6] }`, or a function. An unavailable date is invalid.
+
+<ComponentExample
+  name="date-input/unavailable"
+  caption="Change the day of Delivery date to 1, a Sunday. The border turns red until you pick a weekday again."
+/>
+
+## Locale
+
+The input reads its order, separators and clock from `locale`, or from the device's language when you leave it out. The digits are always 0 to 9, and the calendar is always the Gregorian one. Each segment's name comes from the locale where the device's JavaScript engine has `Intl.DisplayNames`; Hermes doesn't, so segments are named in English there, like "month".
+
+<ComponentExample
+  name="date-input/locale"
+  caption="The same date in British English, German and Japanese. Each orders its parts its own way."
+/>
+
+## Disabled and Read Only
+
+Set `disabled` on the input, or on a `FieldSet` around it, to stop focus and typing.
+
+<ComponentExample
+  name="date-input/disabled"
+  caption="Tap Start date. Nothing starts editing, and the date stays November 2, 2026."
+/>
+
+`readOnly` keeps the date from changing. React Native has no read-only field that stays enabled, so screen readers announce each segment as dimmed or disabled, and Android's Tab skips them. `required` stays in the state, for your styles and labels. It isn't announced.
+
+<ComponentExample
+  name="date-input/read-only"
+  caption="Tap Signed on and type a digit. The date stays the same."
+/>
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. The callback runs with each whole date, and with `null` once any part of it is erased. A half-typed date already reads `null`, so setting the value to `null` leaves it as typed. Call `clear()` on a [controller](#controller) to empty every segment.
+
+<ComponentExample
+  name="date-input/controlled"
+  caption="Change Due date: the console logs each whole date. Clear sets the value to null."
+/>
+
+## Controller
+
+Create a controller with `createDateInputController()` and pass it as `controller` to set, clear or start editing the input from elsewhere. `focus("year")` starts editing a segment by its unit.
+
+<ComponentExample
+  name="date-input/controller"
+  caption="Press Christmas to set the date, Edit Year to start editing the year, or Clear to empty it."
+/>
+
+## Forms
+
+A native view takes part in no form, so there's no `name`, `form`, hidden input, submission or reset: read the value from `onValueChange` or the controller.
+
+## Refused Edits
+
+`TextInput` reports an edit after it shows it, so a character a segment can't take, like a letter in the month, appears for a moment and then goes back, with the caret where it was. Digits a segment can't take whole start it again, as on the web: typing 3 in a full month makes it March and moves on.
+
+## Custom Rendering
+
+Pass a function as `children` to render the segments yourself. It gets the input's state, whose `segments` list each segment in order, with the text between them. Render a `DateInputSegment` for each, and give the text between segments children of your own.
+
+<ComponentExample
+  name="date-input/segments"
+  caption="The segments here are separated by dashes in place of the locale's slashes. The order stays the locale's."
+/>
+
+A segment you type in renders a `TextInput`, and the text between segments a `Text`. Give `render` a `TextInput` only when `segment.editable` is true.
+
+## Styling
+
+Style the root as the field's box, with `flexDirection: "row"`, and its segments inside it. A segment's state has its `type`, so you can make the year wider or mute the text between segments, whose type is `"literal"`. An empty segment's `empty` is true and it shows its placeholder, `––` or `––––`; pass `placeholder` to change it. The root's `invalid` is true while the date is out of range or unavailable. Every part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### DateInput [#part-state-dateinput]
+
+<PartStateTable
+  component="date-input"
+  part="root"
+  path="../../packages/core/src/components/date-input/date-input-parts.ts"
+  name="DateInputState"
+/>
+
+### DateInputSegment [#part-state-dateinputsegment]
+
+<PartStateTable
+  component="date-input"
+  part="segment"
+  path="../../packages/core/src/components/date-input/date-input-parts.ts"
+  name="DateInputSegmentState"
+/>
+
+## API Reference
+
+### DateInput
+
+<TypeTable
+  path="../../packages/core/src/components/date-input/date-input.ts"
+  name="DateInputOptions"
+  omit={["name", "form"]}
+/>
+
+### DateInputSegment
+
+<TypeTable
+  path="../../packages/core/src/components/date-input/date-input-parts.ts"
+  name="DateInputSegmentProps"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed. On native, `reset` and `restore` don't happen, and `step-key` comes from a screen reader's adjustment.
+
+<ReasonTable
+  path="../../packages/core/src/components/date-input/date-input-api.ts"
+  name="DateInputValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createDateInputController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/date-input/date-input.ts"
+  name="DateInputController"
+/>
+
+## Accessibility
+
+Each segment is a text field with the spinbutton role, named by its unit, like "month", with its value, range and text, followed by the Field's label and description or the root's `aria-label`. An empty segment reads as "Empty". Swiping up or down with VoiceOver, or TalkBack's adjust actions, step a segment by one, as the arrow keys do on the web. The text between segments is hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key             | Does                                                           |
+| --------------- | -------------------------------------------------------------- |
+| 0 to 9          | Fill the segment, then move to the next one                    |
+| Backspace       | Remove the last digit, then empty the segment, then move back  |
+| A / P           | Choose AM or PM, in a time with a 12-hour clock                |
+| Tab / Shift+Tab | Move through the segments, then out of the input               |
+
+There's no stepping with the arrow keys, Page Up, Page Down, Home or End, and no Delete, since `TextInput` doesn't report those keys. Android reports Backspace only from the on-screen keyboard, so with a hardware keyboard Backspace in an empty segment stays there.

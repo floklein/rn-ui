@@ -1,0 +1,131 @@
+---
+title: Time Input
+description: Type a time one part at a time, on the clock your user's language uses.
+---
+
+Use a Time Input for a time of day, like a meeting or an opening hour. It works like [Date Input](/docs/react-native/components/date-input), with segments for the hour, the minute and, on a 12-hour clock, AM or PM.
+
+<ComponentExample
+  name="date-input/time"
+  caption="Tap the hour and type 230. On a 12-hour clock, type P in the last segment."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `TimeInput`:
+
+```text
+TimeInput
+├── TimeInputSegment
+└── TimeInputSegment
+```
+
+`TimeInput` renders a `View` with one `TimeInputSegment` for each part of the time: a `TextInput` for the hour, the minute, the second and AM/PM, and a `Text` for the text between them.
+
+## Usage
+
+Put the input in a [Field](/docs/react-native/components/field) and render its segments:
+
+```tsx
+import { Field, FieldLabel } from "@ui-sdk/react-native/field"
+import {
+  TimeInput,
+  TimeInputSegment,
+  type TimeInputState,
+} from "@ui-sdk/react-native/time-input"
+
+const segments = ({ segments }: TimeInputState) =>
+  segments.map((segment) => (
+    <TimeInputSegment key={segment.key} segment={segment} />
+  ))
+
+function Example() {
+  return (
+    <Field>
+      <FieldLabel>Meeting time</FieldLabel>
+      <TimeInput defaultValue="09:30" style={{ flexDirection: "row" }}>
+        {segments}
+      </TimeInput>
+    </Field>
+  )
+}
+
+export { Example }
+```
+
+The value is a 24-hour time like `"14:30"`, whatever clock the input shows. Typing, Backspace and pasting work as they do in [Date Input](/docs/react-native/components/date-input#usage). The AM/PM segment takes the text keyboard, where a letter picks AM or PM.
+
+## Clock and Seconds
+
+The input shows the locale's clock. Set `hourCycle` to `12` or `24` to choose one, and `granularity` to `"second"` to add seconds, or `"hour"` to show the hour alone.
+
+<ComponentExample
+  name="date-input/hour-cycle"
+  caption="The same evening time on a 12-hour clock, a 24-hour clock and with seconds. All three report 24-hour values."
+/>
+
+## Min and Max
+
+`min` and `max` take times like `"09:00"`. A time outside them is invalid: the state's `invalid` is true, for your styles.
+
+## Controlled and Controller
+
+Pass `value` and update it in `onValueChange`, or drive the input with `createTimeInputController()`, as in [Date Input](/docs/react-native/components/date-input#controlled). A native view takes part in no form, so there's no `name` or `form`.
+
+## Styling
+
+Style it like [Date Input](/docs/react-native/components/date-input#styling). The AM/PM segment's type is `"dayPeriod"`. Every part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### TimeInput [#part-state-timeinput]
+
+<PartStateTable
+  component="time-input"
+  part="root"
+  path="../../packages/core/src/components/date-input/date-input-parts.ts"
+  name="DateInputState"
+/>
+
+### TimeInputSegment [#part-state-timeinputsegment]
+
+<PartStateTable
+  component="time-input"
+  part="segment"
+  path="../../packages/core/src/components/date-input/date-input-parts.ts"
+  name="DateInputSegmentState"
+/>
+
+## API Reference
+
+### TimeInput
+
+<TypeTable
+  path="../../packages/core/src/components/date-input/time-input.ts"
+  name="TimeInputOptions"
+  omit={["name", "form"]}
+/>
+
+### Reasons
+
+<ReasonTable
+  path="../../packages/core/src/components/date-input/date-input-api.ts"
+  name="DateInputValueChangeReason"
+/>
+
+### Controller
+
+<ControllerTable
+  path="../../packages/core/src/components/date-input/date-input.ts"
+  name="DateInputController"
+/>
+
+## Accessibility
+
+Each segment is a text field with the spinbutton role, named by its unit, like "hour" or "AM/PM", with its value, range and text, followed by the Field's label or the root's `aria-label`. Screen readers' adjustments step a segment, and the keys are the same as in [Date Input](/docs/react-native/components/date-input#keyboard).
