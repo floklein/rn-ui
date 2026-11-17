@@ -52,9 +52,9 @@ type PopoverPlacementState = {
   side?: "top" | "right" | "bottom" | "left"
   /** How it lines up with the anchor. */
   align?: "start" | "center" | "end"
-  /** The anchor's width. */
+  /** The width of the trigger, or of the anchor it's placed against. */
   anchorWidth?: number
-  /** The anchor's height. */
+  /** The height of the trigger, or of the anchor it's placed against. */
   anchorHeight?: number
   /** The width it has before reaching the edge of the space it may use. */
   availableWidth?: number
@@ -79,6 +79,10 @@ type PopoverArrowPlacementState = {
   arrowClamped?: boolean
 }
 
+/**
+ * The props of `Popover`.
+ * @experimental
+ */
 type PopoverProps = Omit<
   PopoverOptions,
   "container" | "modal" | "openOnHover" | "delay" | "closeDelay"

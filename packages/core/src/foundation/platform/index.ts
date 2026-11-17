@@ -44,11 +44,16 @@ export {
 } from "./platform"
 export {
   type Anchor,
+  anchorRect,
+  arrowOffset,
+  computeArrow,
+  computePlacement,
   type PortalProps,
   position,
   type PositionOptions,
   type PositionProps,
   preparePosition,
+  transformOrigin,
 } from "./position"
 export { pressedScrollbar } from "./scrollbar"
 export { physicalSide, type PhysicalSide, type Side } from "./sides"

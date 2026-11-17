@@ -99,11 +99,9 @@ function borderOf(style: unknown) {
 const stillFrames = 3
 const slowCheck = 500
 
-// Measures the anchor, the popup and its arrow in the coordinates of the host
-// it renders in, and places it in the space the host leaves, less its insets
-// and the keyboard, counted once. While open it measures again as the web
-// does, every frame while anything moves and at a slow pace otherwise, since
-// React Native reports no scroll it isn't part of.
+// React Native reports no scroll a popup isn't part of, so while open it
+// measures again as the web does: every frame while anything moves, and at a
+// slow pace otherwise.
 function usePlacement(api: PopupApi, host: Host | null, style: unknown) {
   const placement = placementOf(api)
   const border = borderOf(style)

@@ -668,7 +668,14 @@
       "file": "packages/core/src/foundation/platform/position.ts",
       "mirrors": ["packages/core/src/foundation/platform/position.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports transformOrigin, which placement-native.ts imports."
+      "why": "Exports transformOrigin, which placement-native.ts imports through platform/index.ts."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/platform/index.ts",
+      "mirrors": ["packages/core/src/foundation/platform/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports anchorRect, arrowOffset, computeArrow, computePlacement and transformOrigin, which popups/placement-native.ts imports."
     }
   ],
   "components": {

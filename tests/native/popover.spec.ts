@@ -118,7 +118,7 @@ test("Android's back closes a popover with the back reason", async (t) => {
 })
 
 for (const kind of ["translucent", "opaque"]) {
-  test(`inside an app's Modal with a ${kind} status bar, it opens beside its trigger`, async () => {
+  test(`inside an app's Modal whose status bar is ${kind}, it opens beside its trigger`, async () => {
     await device.press(`app-modal-${kind}`)
     await expectShown("app-modal-close", true)
     await open("inner")
