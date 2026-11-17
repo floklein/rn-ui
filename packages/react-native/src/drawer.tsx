@@ -37,7 +37,7 @@ import {
 import { useControllerEntry, useControllerTarget } from "./controller-target"
 import {
   createOutlet,
-  DialogModal,
+  DialogLayer,
   type DialogParts,
   dialogParts,
   OutletContext,
@@ -45,6 +45,7 @@ import {
   useOutlet,
 } from "./dialog-parts"
 import { layerInput } from "./native-host"
+import { landIn } from "./overlay-host"
 import { mergeProps, renderElement } from "./render-element"
 import {
   HandleScope,
@@ -310,7 +311,7 @@ type RootProps = Omit<
   /**
    * `true`: the drawer renders in a `Modal` over the screen, and a press
    * outside it only closes it. `false`: a drawer beside the screen, rendered
-   * where it is. With `modalAbove`, it renders where it is too.
+   * in the app's `OverlayHost`. With `modalAbove`, it renders there too.
    * @defaultValue true
    */
   modal?: boolean
@@ -323,7 +324,7 @@ type RootProps = Omit<
  */
 type DrawerProps = RootProps
 
-// A `Modal` takes every press, so a drawer the page stays usable beside renders in place.
+// A `Modal` takes every press, so a drawer the page stays usable beside renders in the host.
 const inModal = (options: RootProps) =>
   options.modal !== false && options.modalAbove === undefined
 
@@ -360,13 +361,12 @@ function Drawer({ children, ...options }: DrawerProps) {
     <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
       <OutletContext.Provider value={outlet}>
         {children}
-        {inModal(options) && (
-          <DialogModal
-            handle={handle as unknown as PrimitiveHandle<typeof dialog>}
-            outlet={outlet}
-            Root={Root}
-          />
-        )}
+        <DialogLayer
+          handle={handle as unknown as PrimitiveHandle<typeof dialog>}
+          outlet={outlet}
+          modal={motion.modal}
+          Root={Root}
+        />
       </OutletContext.Provider>
     </HandleScope>
   )
@@ -426,7 +426,7 @@ function DrawerBackdrop(
     ),
     AnimatedPressable
   )
-  return useOutlet("backdrop", element, motion.modal)
+  return useOutlet("backdrop", element)
 }
 
 /**
@@ -464,7 +464,10 @@ function DrawerContent({
     mergeProps(
       {
         ref: view,
+        // The Modal's host isolates it, popups beside it included.
+        accessibilityViewIsModal: false,
         onAccessibilityEscape: () => layerInput()?.escape(handle.api),
+        onTouchStart: landIn(handle.api),
         onLayout(event: LayoutChangeEvent) {
           const { width, height } = event.nativeEvent.layout
           motion.lay({ content: vertical(side) ? height : width })
@@ -494,7 +497,7 @@ function DrawerContent({
       {element}
     </Viewport>
   )
-  return useOutlet("content", viewport, motion.modal)
+  return useOutlet("content", viewport)
 }
 
 // The gesture lives inside the `Modal`, beside its detector: in the

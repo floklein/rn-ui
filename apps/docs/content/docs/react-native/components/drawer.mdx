@@ -132,7 +132,7 @@ The drawer turns a scroll view's scrolling off for the touches it takes, and bac
 
 ## Page Behind
 
-`modalAbove` keeps the screen usable while the drawer rests at or below that snap point, like a map under a sheet of results. A drawer with `modalAbove`, or with `modal={false}`, renders where you put its parts instead of in a `Modal`, so place it over the screen you want it to cover. At or below `modalAbove` the backdrop lets presses through and doesn't dim.
+`modalAbove` keeps the screen usable while the drawer rests at or below that snap point, like a map under a sheet of results. A drawer with `modalAbove`, or with `modal={false}`, renders above your screens in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app, not in a `Modal`. At or below `modalAbove` the backdrop lets presses through and doesn't dim.
 
 <ComponentExample
   name="drawer/non-modal"

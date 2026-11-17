@@ -83,6 +83,15 @@ A Close part's `action` runs before the alert dialog closes. A Promise it return
   caption="Tap Review Two Projects. Answer Acme's question, then Globex's, and the log shows both answers."
 />
 
+## Nested
+
+An alert dialog opened inside another renders inside its `Modal`, such as a second confirmation before something can't be undone. Android's back button closes the topmost one and returns focus to its trigger. To close both once the last question is answered, control the outer alert dialog and close it when the inner one closes with `returnValue` `"confirm"`.
+
+<ComponentExample
+  name="alert-dialog/nested"
+  caption="Choose Delete Workspace, then Delete. Go Back steps back to the first question, and Delete Workspace closes both."
+/>
+
 ## Controlled
 
 <ComponentExample

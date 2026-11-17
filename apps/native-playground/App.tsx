@@ -1,9 +1,18 @@
+import { OverlayHost } from "@ui-sdk/react-native/overlays"
 import { useState } from "react"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { screens, type Screen } from "./screens"
 
 function App() {
+  return (
+    <OverlayHost>
+      <Screens />
+    </OverlayHost>
+  )
+}
+
+function Screens() {
   const [open, setOpen] = useState<Screen>()
   if (open) {
     return (

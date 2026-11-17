@@ -34,4 +34,9 @@ const project = (os) => ({
   testMatch: ["<rootDir>/test/**/*.test.ts?(x)"],
 })
 
-module.exports = { projects: [project("ios"), project("android")] }
+// A file's first test also loads React Native, which takes longer than
+// Jest's 5 seconds on a busy machine or a CI runner.
+module.exports = {
+  projects: [project("ios"), project("android")],
+  testTimeout: 20000,
+}

@@ -321,7 +321,7 @@ Small rules every implementation ticket shares, so that no ticket decides them a
 5. **Sources.** A change reports `touch` for a press and for Android back, and `virtual` for the iOS escape gesture, for an accessibility action, and for a press while a screen reader is running.
 6. **The exit timeout** is two seconds, fixed, with no option.
 7. **`presentation="sheet"` without the sheet entry:** the component uses its own form, and development warns.
-8. **Context across a `Modal`.** A Dialog's Backdrop and Content share one `Modal` by being moved into an outlet the root renders, so React context from a provider placed between the root and the content doesn't reach the content. A provider goes above the root or inside the content. The adapter's own contexts, like a disabled FieldSet's, are carried across: the outlet provides them again inside the `Modal` with the values they have where the content renders (#131).
+8. **Context across a `Modal`.** A Dialog's Backdrop and Content share one `Modal` by being moved into an outlet the root renders, so React context from a provider placed between the root and the content doesn't reach the content. A provider goes above the root or inside the content. The adapter's own contexts, like a disabled FieldSet's, are carried across: the outlet provides them again inside the `Modal` with the values they have where the content renders (#131). A non-modal popup renders in the topmost host (`OverlayHost`, or an open `Modal`'s), so a provider of the app's it reads goes above that host; the adapter's own contexts are carried there too. A modal popup renders its `Modal` in place, unless a `Modal` it isn't inside is up, when it renders in that `Modal`'s host.
 9. **Gesture Handler's root view.** The app renders its own at its root, as Gesture Handler asks of every app. Drawer's entry and the sheet entry render the one inside their `Modal` themselves.
 10. **Development warnings.** The native build of core resolves `#dev` and `#name-check` to their real modules and guards them with React Native's `__DEV__`, so warnings work with no app configuration and release bundles drop them.
 11. **New public names** in core and the adapter get a docs page and a stability label like any public name, in the ticket that introduces them.
@@ -373,7 +373,7 @@ Every difference the resolutions record, by subject.
 - `presentation` and `none` yield to the button role by the part's default host, not by whether it can take focus: a part that defaults to `Pressable` stays a button, a `View` part becomes `none`, and a `render` host doesn't change which ([council batch 2][council-2]).
 - A Toggle given `role="switch"` announces its on or off state from `aria-pressed`, where the web's switch ignores `aria-pressed` and announces no state; an app can still pass `aria-checked` ([council batch 2][council-2]).
 - The current page of a Pagination is announced as selected: `aria-current="page"` becomes `accessibilityState.selected` unless the part sets `aria-selected`, since React Native has no current state. Pagination has no landmark: `navigation` and `listitem` reach no screen reader, and each page and step is its own button (ticket 87).
-- A Label names and presses only a control beside it, through `htmlFor`: it can't wrap one, since VoiceOver reads a `Text` as one element. It reaches Input, Textarea, Switch and Checkbox, not a radio group or a slider; a control has one label, the one mounted last, and ids are shared by every mounted screen. On Android a Label is its own TalkBack and Tab stop, as a pressable `Text` (ticket 82).
+- A Label names and presses only a control beside it, through `htmlFor`: it can't wrap one, since VoiceOver reads a `Text` as one element. It reaches Input, Textarea, Switch, Checkbox and Slider, not a radio group; a Label for a range names every thumb without a name of its own, where the web names the group; a control has one label, the one mounted last, and ids are shared by every mounted screen. On Android a Label is its own TalkBack and Tab stop, as a pressable `Text` (ticket 82).
 
 **Popups**
 
@@ -395,7 +395,7 @@ Every difference the resolutions record, by subject.
 - A panel's size is a state field ([How presence and exit animation work on native][presence]).
 - Drawer's content leaves with its own close settle, so it takes no `onExit`. Under reduced motion it still slides; the web fades it (ticket 72).
 - A scroll view inside a drawer, scrolled away from its start while the drawer rests at its largest snap point, keeps the whole touch: reaching its start doesn't hand the rest of that touch to the drawer, as the web does. At its start the drawer takes the touch and scrolls the content itself, as the web's pointer driver does (ticket 72).
-- A drawer with `modalAbove` renders where its parts are, like a non-modal dialog, since a `Modal` takes every press and the page behind must stay usable (ticket 72).
+- A drawer with `modalAbove` renders in the `OverlayHost`, like a non-modal dialog, since a `Modal` takes every press and the page behind must stay usable (ticket 72).
 - Drawer's keyboard avoidance, the stacked drawer stepping back, `themeColor`, `preventEdgeSwipe` and the scroll-snap `driver` are absent; the handle's arrow keys, Home and End are a screen reader's increment and decrement (ticket 72).
 
 **Input and text entry**

@@ -48,6 +48,8 @@ type NativeInput = {
   escape: (within?: object) => boolean
   /** A press on a modal popup's backdrop. */
   outsidePress: () => boolean
+  /** A press the host lets through, with the api of each popup whose content or trigger it landed in. */
+  press: (within: readonly object[]) => boolean
 }
 
 /**
