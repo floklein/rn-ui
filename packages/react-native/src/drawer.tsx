@@ -25,6 +25,7 @@ import {
   I18nManager,
   type LayoutChangeEvent,
   Pressable,
+  type ScrollViewInstance,
   StyleSheet,
   View,
 } from "react-native"
@@ -225,12 +226,13 @@ function scrollAreaAt(
   const area: NativeScrollArea = {
     position: forward ? scrolled : max - scrolled,
     max,
+    // ScrollView puts its methods on its view; a `contentOffset` set as a
+    // native prop would stay, and Android applies it again on later updates.
     scrollTo(position) {
       const offset = forward ? position : max - position
-      view.setNativeProps({
-        contentOffset: vertical(side)
-          ? { x: 0, y: offset }
-          : { x: offset, y: 0 },
+      ;(view as ScrollViewInstance).scrollTo({
+        ...(vertical(side) ? { x: 0, y: offset } : { x: offset, y: 0 }),
+        animated: false,
       })
     },
   }
