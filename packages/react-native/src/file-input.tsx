@@ -217,11 +217,6 @@ type FileInputItemProps = {
   file: PickedFile
 }
 
-type ViewProps<State> = Omit<PartProps<typeof View, State>, "children"> & {
-  children?: React.ReactNode | ((state: State) => React.ReactNode)
-}
-type PressableProps<State> = PartProps<typeof Pressable, State>
-
 const FileContext = carry(
   "FileInputFile",
   React.createContext<PickedFile | null>(null)
@@ -238,7 +233,6 @@ function useItemFile(part: string, own: PickedFile | undefined) {
   return file
 }
 
-// The remove buttons on screen, by file, so a removal can move focus to the next one.
 const removers = new WeakMap<object, Map<string, Part>>()
 
 /**
@@ -263,7 +257,7 @@ function FileInput({
   pick,
   debug,
   ...props
-}: FileInputOptions & ViewProps<FileInputState>) {
+}: FileInputOptions & PartProps<typeof View, FileInputState>) {
   const options = {
     value,
     defaultValue,
@@ -303,7 +297,9 @@ const unconnectedState: FileInputState = {
 function FileInputTrigger({
   controller,
   ...props
-}: PressableProps<FileInputState> & { controller?: FileInputController }) {
+}: PartProps<typeof Pressable, FileInputState> & {
+  controller?: FileInputController
+}) {
   const handle = useControllerTarget(controller as never, useNearest(fileInput))
   if (!handle) {
     const { render, ...rest } = props
@@ -319,7 +315,7 @@ function FileInputTrigger({
 }
 
 // Inside a Field, its label and the button's own text name it, as on the web.
-function TriggerPart(props: PressableProps<FileInputState>) {
+function TriggerPart(props: PartProps<typeof Pressable, FileInputState>) {
   const handle = useHandle(fileInput)
   const fallback = React.useId()
   const id = props.nativeID ?? fallback
@@ -351,7 +347,9 @@ function TriggerPart(props: PressableProps<FileInputState>) {
  * drops or pastes, so it never shows `dragging`.
  * @experimental
  */
-function FileInputDropzone(props: ViewProps<FileInputDropzoneState>) {
+function FileInputDropzone(
+  props: PartProps<typeof View, FileInputDropzoneState>
+) {
   return usePart(
     fileInput,
     "dropzone",
@@ -369,7 +367,7 @@ function FileInputDropzone(props: ViewProps<FileInputDropzoneState>) {
 function FileInputList({
   children,
   ...props
-}: Omit<ViewProps<FileInputState>, "children"> & {
+}: Omit<PartProps<typeof View, FileInputState>, "children"> & {
   children?: React.ReactNode
 }) {
   const items = (state: FileInputState) =>
@@ -394,7 +392,7 @@ function FileInputList({
 function FileInputItem({
   file: own,
   ...props
-}: ViewProps<FileInputItemState> & Partial<FileInputItemProps>) {
+}: PartProps<typeof View, FileInputItemState> & Partial<FileInputItemProps>) {
   const file = useItemFile("FileInputItem", own)
   const element = usePart(
     fileInput,
@@ -415,14 +413,14 @@ function FileInputItem({
 function FileInputItemRemove({
   file: own,
   ...props
-}: PressableProps<FileInputItemRemoveState> & Partial<FileInputItemProps>) {
+}: PartProps<typeof Pressable, FileInputItemRemoveState> &
+  Partial<FileInputItemProps>) {
   const file = useItemFile("FileInputItemRemove", own)
   const handle = useHandle(fileInput)
   const key = fileKey(file)
   const slotProps = { file: file as unknown as File, value: key }
-  const partRef = React.useRef<Part>(null)
   React.useLayoutEffect(() => {
-    const part = partRef.current!
+    const part = handle.instance.part("item-remove", slotProps, true) as Part
     let shown = removers.get(handle.api)
     if (!shown) {
       removers.set(handle.api, (shown = new Map()))
@@ -440,27 +438,23 @@ function FileInputItemRemove({
     slotProps,
     props as Record<string, unknown>,
     Pressable,
-    (part) => {
-      partRef.current = part
-      return () => {
-        const files = handle.api.getValue()
-        const index = files.indexOf(slotProps.file)
-        const neighbour = files[index + 1] ?? files[index - 1]
-        press(part, slotProps)?.()
-        const moveFocus = () => {
-          if (handle.api.getValue().includes(slotProps.file)) {
-            return
-          }
-          const next =
-            neighbour && removers.get(handle.api)?.get(fileKey(neighbour))
-          if (next) {
-            nativeHost()?.focus(next)
-          } else {
-            handle.api.focus()
-          }
+    (part) => () => {
+      const files = handle.api.getValue()
+      const index = files.indexOf(slotProps.file)
+      const neighbour = files[index + 1] ?? files[index - 1]
+      press(part, slotProps)?.()
+      queueMicrotask(() => {
+        if (handle.api.getValue().includes(slotProps.file)) {
+          return
         }
-        queueMicrotask(moveFocus)
-      }
+        const next =
+          neighbour && removers.get(handle.api)?.get(fileKey(neighbour))
+        if (next) {
+          nativeHost()?.focus(next)
+        } else {
+          handle.api.focus()
+        }
+      })
     }
   )
 }
