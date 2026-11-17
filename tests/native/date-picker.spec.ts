@@ -107,6 +107,16 @@ test("Clear empties it, a typed date is read on submit, and text that isn't one 
   await expectText("value-readout", "null:clear-press:touch")
 })
 
+test("the trigger reads a date typed but not submitted, and opens on its month", async () => {
+  await device.press("clear")
+  await device.press("input")
+  await typeKeys("12/24/2026")
+  await device.press("trigger")
+  await expectText("value-readout", "2026-12-24:input-commit:keyboard")
+  await expectOpen(true)
+  await expectText("heading", "December 2026")
+})
+
 test("each example opens", async () => {
   const folder = path.join(
     import.meta.dirname,

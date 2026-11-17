@@ -241,3 +241,11 @@ test("the hint describes the input", async () => {
   expect(screen.getByText("MM/DD/YYYY")).toBeTruthy()
   expect(input().props.accessibilityHint).toBe("MM/DD/YYYY")
 })
+
+test("pressing the trigger reads a date typed but not yet submitted", async () => {
+  await render(<Example defaultValue="2026-10-16" />)
+  await fireEvent.changeText(input(), "12/24/2026")
+  await fireEvent.press(trigger())
+  expect(screen.getByText("December 2026")).toBeTruthy()
+  expect(input().props.value).toBe("12/24/2026")
+})

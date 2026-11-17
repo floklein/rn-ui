@@ -78,6 +78,7 @@ import {
 import { Calendar } from "../src/calendar"
 import {
   DatePicker,
+  DatePickerClear,
   DatePickerContent,
   DatePickerInput,
   DatePickerTrigger,
@@ -1203,6 +1204,7 @@ describe("checkPattern's date-picker pattern on the native host", () => {
           >
             <DatePickerInput aria-label="Start" />
             {mode === "range" && <DatePickerInput end aria-label="End" />}
+            <DatePickerClear aria-label="Clear" />
             <DatePickerTrigger />
             <DatePickerContent />
           </DatePicker>

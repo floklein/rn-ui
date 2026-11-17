@@ -500,7 +500,10 @@ async function datePickerPattern(context: Context) {
         )
       : []
   }
-  const trigger = buttons().findIndex((button) => !isDisabled(button))
+  const trigger = buttons().findIndex(
+    (button) =>
+      !isDisabled(button) && typeof stateOf(button).expanded === "boolean"
+  )
   const open = async () => {
     const requests = await performWatched(
       buttons()[trigger]!,

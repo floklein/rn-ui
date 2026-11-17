@@ -13,9 +13,9 @@ import {
 } from "@ui-sdk/core/date-picker"
 import { datePickerNative, datePickerText } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
-import { withSource } from "@ui-sdk/core/renderer"
+import { press, withSource } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { Pressable, Text, TextInput, View } from "react-native"
+import { Keyboard, Pressable, Text, TextInput, View } from "react-native"
 import {
   CalendarGrid,
   CalendarHeading,
@@ -48,6 +48,7 @@ import {
   type PrimitiveHandle,
   useHandle,
   usePart,
+  usePressedPart,
   usePrimitive,
 } from "./use-primitive"
 
@@ -267,7 +268,7 @@ function DatePickerTrigger({
   ...props
 }: PartProps<typeof Pressable, DatePickerTriggerState>) {
   const picker = useHandle(datePicker)
-  return usePart(
+  return usePressedPart(
     picker,
     "trigger",
     {},
@@ -275,7 +276,19 @@ function DatePickerTrigger({
       { onTouchStart: landIn(picker.api) },
       { ...(props as Record<string, unknown>), children }
     ),
-    Pressable
+    Pressable,
+    (part) => {
+      const open = press(part)
+      return () => {
+        // A press never blurs a TextInput, so the typed text is read first.
+        withSource("keyboard", () => {
+          picker.api.internal.commit(0)
+          picker.api.internal.commit(1)
+        })
+        Keyboard.dismiss()
+        open?.()
+      }
+    }
   )
 }
 
