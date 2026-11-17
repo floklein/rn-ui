@@ -30,7 +30,7 @@ Resizable
 Put a handle between the panels you want to resize, and name it with `aria-label`, like "Resize files". The group is a `View` that lays its panels out in a row, so give it a size, and each panel's size is a percentage of the space the panels share. A group can sit inside a panel, like an editor above a terminal.
 
 - **Resizable** holds the layout and renders a `View`, a row or a column.
-- **ResizablePanel** is a `View` whose size is a flex basis worked out from the layout. It clips what's inside it.
+- **ResizablePanel** is a `View` whose size is its share of the points the panels share, padding and border included. It clips what's inside it.
 - **ResizableHandle** is what you drag, a `View`. Give it a width in a row, or a height in a column, and widen a thin one's touch area with `hitSlop`.
 
 ## Usage
@@ -187,7 +187,7 @@ A panel's size is in its state, not a CSS variable, so every panel renders on ea
 
 ## Styling
 
-Parts are unstyled, apart from the layout they need: the group is a flex row or column, and panels take their size as a flex basis and clip what's inside them. Give the group a size, and the handle a width or height and a background.
+Parts are unstyled, apart from the layout they need: the group is a flex row or column, and panels take their share of its points as a flex basis and clip what's inside them. The group measures its panels when it lays out, so a panel's padding and border count toward its size, and before that first measure the panels share the group by flex grow. Give the group a size, and the handle a width or height and a background.
 
 Style each part with a function of its state, like `(state) => [styles.handle, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`. `hovering` stays false, since a touch doesn't hover.
 

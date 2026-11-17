@@ -69,6 +69,19 @@ describe("Resizable", () => {
     })
   })
 
+  test("once the group lays out, panels take their share of its points, whatever their padding", async () => {
+    await laidOut(<Editor defaultLayout={[30, 70]} />)
+    await fireEvent(screen.getByTestId("root"), "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 210, height: 50 } },
+    })
+    expect(flat(screen.getByTestId("files").props.style)).toMatchObject({
+      flexGrow: 0,
+      flexShrink: 1,
+      flexBasis: 60,
+    })
+    expect(flat(screen.getByTestId("code").props.style).flexBasis).toBe(140)
+  })
+
   test("a panel with a style of its own keeps its share", async () => {
     await laidOut(
       <Resizable defaultLayout={[30, 70]}>

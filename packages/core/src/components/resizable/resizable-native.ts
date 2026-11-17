@@ -49,6 +49,7 @@ function createNativeResizableDom(
   function measure() {
     space = spaceOf()
     group().setSpace(space)
+    return space
   }
 
   function reconcile() {
@@ -222,14 +223,14 @@ const resizableNative: NativeBehavior<ResizableApi> = {
 /**
  * What the adapter tells a resizable group on the native host, which reads
  * no layout itself: `measure()` once the group has laid out again, so panels
- * sized in pixels keep their size.
+ * sized in pixels keep their size. It returns the points the panels share.
  * @experimental
  */
 function nativeResizable(api: ResizableApi) {
   if (!("measure" in api.internal)) {
     throw new Error("nativeResizable takes a resizable group's api.")
   }
-  return api.internal as unknown as { measure: () => void }
+  return api.internal as unknown as { measure: () => number }
 }
 
 export { createNativeResizableDom, nativeResizable, resizableNative }

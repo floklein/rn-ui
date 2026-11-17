@@ -4,11 +4,11 @@ import {
   type ResizableOptions,
   type ResizablePanelState,
   type ResizablePrimitive,
-  type ResizableSize,
   type ResizableState,
 } from "@ui-sdk/core/resizable"
-import type { ComponentProps } from "react"
+import * as React from "react"
 import { View } from "react-native"
+import { carry } from "./carried-context"
 import { mergeProps } from "./render-element"
 import {
   createParts,
@@ -30,17 +30,8 @@ const parts: ResizableParts = createParts(
   resizableNative
 )
 
-const remSize = 16
-
-function basisOf(size: ResizableSize) {
-  if (typeof size === "number") {
-    return `${size}%` as const
-  }
-  if (size.endsWith("%")) {
-    return size as `${number}%`
-  }
-  return parseFloat(size) * (size.endsWith("rem") ? remSize : 1)
-}
+// The points the panels share, as the group last measured them.
+const SpaceContext = carry("ResizableSpace", React.createContext(0))
 
 /**
  * The group: a `View` that lays its panels out along its orientation. It
@@ -81,23 +72,28 @@ function Resizable({
     },
     resizableNative
   )
-  return usePart(
-    handle,
-    "root",
-    {},
-    mergeProps(
-      {
-        style: (state: ResizableState) => ({
-          flexDirection:
-            state.orientation === "vertical"
-              ? ("column" as const)
-              : ("row" as const),
-        }),
-        onLayout: () => nativeResizable(handle.api).measure(),
-      },
-      props
-    ),
-    View
+  const [space, setSpace] = React.useState(0)
+  return (
+    <SpaceContext.Provider value={space}>
+      {usePart(
+        handle,
+        "root",
+        {},
+        mergeProps(
+          {
+            style: (state: ResizableState) => ({
+              flexDirection:
+                state.orientation === "vertical"
+                  ? ("column" as const)
+                  : ("row" as const),
+            }),
+            onLayout: () => setSpace(nativeResizable(handle.api).measure()),
+          },
+          props
+        ),
+        View
+      )}
+    </SpaceContext.Provider>
   )
 }
 
@@ -106,25 +102,18 @@ function Resizable({
  * every frame of a drag; keep what's inside it cheap to render, or memoized.
  * @experimental
  */
-function ResizablePanel(props: ComponentProps<ResizableParts["Panel"]>) {
+function ResizablePanel(props: React.ComponentProps<ResizableParts["Panel"]>) {
   const group = useHandle(resizable)
-  const { defaultSize } = props
-  // A panel grows by its share of what the handles leave: a percentage basis
-  // needs a width Yoga may not know yet. Before the group lays out, a panel
-  // takes its default size, and one without grows into what's left.
+  const space = React.useContext(SpaceContext)
+  // Until the group has measured its panels, they grow by their shares,
+  // which fills the group whatever their padding. After, each takes its
+  // share of the measured points, as a flex share would short their padding.
   const style = (state: ResizablePanelState) => {
-    if (group.state.layout.length > 0) {
-      return {
-        flexGrow: state.size,
-        flexShrink: 1,
-        flexBasis: 0,
-        overflow: "hidden" as const,
-      }
-    }
+    const laidOut = group.state.layout.length > 0
     return {
-      flexGrow: defaultSize === undefined ? 1 : 0,
+      flexGrow: space && laidOut ? 0 : laidOut ? state.size : 1,
       flexShrink: 1,
-      flexBasis: defaultSize === undefined ? 0 : basisOf(defaultSize),
+      flexBasis: space && laidOut ? (state.size / 100) * space : 0,
       overflow: "hidden" as const,
     }
   }

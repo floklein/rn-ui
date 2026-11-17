@@ -39,7 +39,7 @@ function Fixture() {
         }
         style={styles.row}
       >
-        <ResizablePanel testID="files" minSize={20} style={styles.panel}>
+        <ResizablePanel testID="files" minSize={20} style={styles.padded}>
           <Text>Files</Text>
         </ResizablePanel>
         <ResizableHandle
@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
   fixture: { alignSelf: "stretch", paddingHorizontal: 16, gap: 8 },
   row: { height: 80, borderWidth: 1, borderColor: "#d4d4d8" },
   panel: { padding: 8 },
+  padded: { padding: 32 },
   columnHandle: { width: 44, backgroundColor: "#d4d4d8" },
   rowHandle: { height: 44, backgroundColor: "#d4d4d8" },
   sideways: { height: 80, flexGrow: 0, backgroundColor: "#f4f4f5" },
