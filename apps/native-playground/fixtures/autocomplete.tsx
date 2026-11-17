@@ -109,6 +109,13 @@ function Fixture() {
           </AutocompleteEmpty>
         </AutocompleteContent>
       </Autocomplete>
+      <Autocomplete inlineComplete items={["Apple", "Cherry", "Grape"]}>
+        <AutocompleteInput
+          testID="inline-input"
+          aria-label="Fruit, completed inline"
+          style={styles.input}
+        />
+      </Autocomplete>
     </View>
   )
 }

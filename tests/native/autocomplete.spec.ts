@@ -25,8 +25,8 @@ async function scale() {
   return density / 160
 }
 
-async function typeIn(text: string) {
-  await device.press("input")
+async function typeIn(text: string, id = "input") {
+  await device.press(id)
   await device.driver.waitUntil(() => device.driver.isKeyboardShown())
   await device.type(text)
 }
@@ -100,6 +100,14 @@ test("return chooses the highlighted suggestion, then submits the text", async (
   assert.equal((await device.node("input")).value, "Cherry")
   await device.type("\n")
   await expectText("submitted", "Cherry")
+})
+
+test("inline completion goes on letter by letter", async () => {
+  await typeIn("c", "inline-input")
+  await device.type("h")
+  await device.expectTree((tree) =>
+    assert.equal(tree.get("inline-input")?.value, "cherry")
+  )
 })
 
 test("a press outside closes the list and reaches what is under it", async () => {
