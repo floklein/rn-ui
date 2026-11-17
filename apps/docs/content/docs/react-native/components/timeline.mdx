@@ -1,0 +1,244 @@
+---
+title: Timeline
+description: Show dated events in order, like an activity feed, a changelog or an order's progress.
+---
+
+Use a Timeline for a list of things that happened, or will: a project's activity, an order's status history, a release's milestones. It's a list for screen readers, and VoiceOver and TalkBack read its events in order.
+
+<ComponentExample
+  name="timeline/demo"
+  caption="With VoiceOver or TalkBack on, swipe through the activity. Each event reads its title, then its time and description."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Timeline`:
+
+```text
+Timeline
+├── TimelineItem
+│   ├── TimelineMarker
+│   ├── TimelineConnector
+│   ├── TimelineTitle
+│   ├── TimelineTime
+│   └── TimelineDescription
+└── TimelineItem
+```
+
+`Timeline` and `TimelineItem` render a `View`, `TimelineMarker` and `TimelineConnector` a `View` hidden from screen readers, and `TimelineTitle`, `TimelineTime` and `TimelineDescription` a `Text`. Every part inside an item is optional. The marker is the dot or icon on the line, and the connector the line to the next event: they're only for looks.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineDescription,
+  TimelineItem,
+  TimelineMarker,
+  TimelineTime,
+  TimelineTitle,
+} from "@ui-sdk/react-native/timeline"
+
+function Example() {
+  return (
+    <Timeline aria-label="Activity">
+      <TimelineItem accessible>
+        <TimelineMarker />
+        <TimelineConnector />
+        <TimelineTitle>Deployed to production</TimelineTitle>
+        <TimelineTime>2:32 PM</TimelineTime>
+        <TimelineDescription>Version 2.4.1 is live.</TimelineDescription>
+      </TimelineItem>
+    </Timeline>
+  )
+}
+
+export { Example }
+```
+
+`Timeline` has the `list` role. An event is a container: a screen reader stops on its title, its time and its description in turn, and on each control inside it. Pass `accessible` to an event with no controls inside, and a screen reader reads it as one element, named by its title and described by its time and description, as a focused event reads on the web. Don't pass it to an event with a button or a link inside: one accessible element hides what's inside it.
+
+## Horizontal
+
+Set `orientation="horizontal"` for a row, like a roadmap, and lay the timeline out as a row with your own style. Its state and every part's say which way it runs. React Native lays a row out right to left on its own when the app does.
+
+<ComponentExample
+  name="timeline/horizontal"
+  caption="Swipe through the roadmap with VoiceOver or TalkBack. Each milestone reads its title and month."
+/>
+
+## Status
+
+Give each item a `status` of `"complete"`, `"current"` or `"upcoming"` for a process, like an order's progress. Every part of the event receives it in its state, to draw the marker.
+
+Create a controller with `createTimelineController` and call its `focus()` with an item's `value` to move VoiceOver's or TalkBack's focus to it from anywhere.
+
+<ComponentExample
+  name="timeline/status"
+  caption="With VoiceOver or TalkBack on, tap Go to Current Step. The screen reader moves to Shipped."
+/>
+
+Neither OS has a current step state, so no screen reader announces which event is current. When the status matters, say it in the title or description too, like "Shipped, in progress".
+
+## Details
+
+Put a [Collapsible](./collapsible) inside an item for details that can open. Leave that item without `accessible`, so its trigger stays a button of its own after the event's texts.
+
+<ComponentExample
+  name="timeline/details"
+  caption="Tap What Changed under Version 2.4. Its changes open below it."
+/>
+
+## Feed
+
+Set `feed` for a timeline that loads more as people scroll, like a social feed. Set `busy` while you load or change events: the root's state has `busy`, to dim it, and the root reads as busy.
+
+<ComponentExample
+  name="timeline/feed"
+  caption="Tap Load More: the feed is busy until three more updates arrive. The console logs each load."
+/>
+
+Neither OS has a feed or an article role, so a feed is a list there too, and an event's position isn't announced. Page Down and Page Up between articles aren't built, since React Native delivers no keys to views.
+
+## Inside a Scroll View
+
+A timeline takes no touches, so a swipe that starts on an event scrolls the `ScrollView` or [Scroll Area](./scroll-area) around it, along either axis. Controls inside an event take their own taps.
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on the host so the part keeps its role and names, like a title rendered as a heading:
+
+```tsx
+<TimelineTitle render={(props) => <Text {...props} role="heading" />}>
+  Deployed to production
+</TimelineTitle>
+```
+
+## Styling
+
+Style each part with a function of its state, like `({ last }) => [styles.connector, last && styles.hidden]` to hide the line after the last event. Each part receives the fields listed under [Part State](#part-state). An event's `first`, `last` and `index`, and the root's `count`, are the web's `data-first`, `data-last`, `--timeline-index` and `--timeline-count`: they're set once the events have mounted.
+
+## Part State
+
+### Timeline [#part-state-timeline]
+
+<PartStateTable
+  component="timeline"
+  part="root"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineState"
+/>
+
+With how many events it holds:
+
+| Field   | Type     | Description                                          |
+| ------- | -------- | ---------------------------------------------------- |
+| `count` | `number` | How many events the timeline holds, 0 until mounted. |
+
+### TimelineItem [#part-state-timelineitem]
+
+<PartStateTable
+  component="timeline"
+  part="item"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineItemState"
+/>
+
+With its place among the events:
+
+| Field   | Type                  | Description                                         |
+| ------- | --------------------- | --------------------------------------------------- |
+| `first` | `boolean`             | Whether it's the first event.                       |
+| `last`  | `boolean`             | Whether it's the last event.                        |
+| `index` | `number \| undefined` | Its place from 0, `undefined` until it has mounted. |
+
+### TimelineMarker [#part-state-timelinemarker]
+
+<PartStateTable
+  component="timeline"
+  part="marker"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineMarkerState"
+/>
+
+### TimelineConnector [#part-state-timelineconnector]
+
+<PartStateTable
+  component="timeline"
+  part="connector"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineConnectorState"
+/>
+
+### TimelineTime [#part-state-timelinetime]
+
+<PartStateTable
+  component="timeline"
+  part="time"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineTimeState"
+/>
+
+### TimelineTitle [#part-state-timelinetitle]
+
+<PartStateTable
+  component="timeline"
+  part="title"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineTitleState"
+/>
+
+### TimelineDescription [#part-state-timelinedescription]
+
+<PartStateTable
+  component="timeline"
+  part="description"
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineDescriptionState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props. `TimelineTitle`, `TimelineTime` and `TimelineDescription` also take `Text`'s props, and the others take `View`'s.
+
+### Timeline
+
+<TypeTable
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineOptions"
+/>
+
+`loop` sets nothing on native, which builds no arrow keys between events.
+
+### TimelineItem
+
+<TypeTable
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineItemProps"
+/>
+
+`TimelineMarker`, `TimelineConnector`, `TimelineTime`, `TimelineTitle` and `TimelineDescription` take no props of their own.
+
+### Controller
+
+<ControllerTable
+  path="../../packages/core/src/components/timeline/timeline.ts"
+  name="TimelineController"
+/>
+
+## Accessibility
+
+A timeline is a `View` with the `list` role, named with `aria-label`. On Android the role gives no position or count. iOS gives a list no trait, so VoiceOver reads its events without saying it's a list. An `accessible` event is named by its title and described by its time and description. A marker and a connector are hidden from both screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves between the controls inside events. An event isn't a stop of its own: React Native delivers no arrow keys to views, so the web's single tab stop, its arrow keys, Home, End, Page Down and Page Up aren't built.

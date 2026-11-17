@@ -13,6 +13,7 @@ import type {
   PrimitiveOptions,
 } from "../../foundation/kernel/primitive-types"
 import { selects } from "../../foundation/kernel/selects"
+import { orderEvents } from "./timeline-order"
 
 /**
  * Moves focus to an event from outside the timeline, like a "Jump to
@@ -159,7 +160,8 @@ type State = {
   stop: string | null
   first: string | null
   last: string | null
-  // Only a feed writes these, since a list's places come from its markup.
+  // Only a feed writes these on the DOM host, since a list's places come
+  // from its markup.
   positions: Record<string, number>
   size: number
   titles: readonly string[]
@@ -212,20 +214,14 @@ function timelineApiBody(
   function measure() {
     const items = roving.items()
     const keys = items.map((item) => item.key)
-    context
-      .element("root")
-      ?.style.setProperty("--timeline-count", String(keys.length))
-    items.forEach((item, index) =>
-      item.el.style.setProperty("--timeline-index", String(index))
-    )
-    const { feed } = store.get()
+    const placed = orderEvents(context.element("root"), items, store.get().feed)
     store.set({
       first: keys[0] ?? null,
       last: keys[keys.length - 1] ?? null,
-      positions: feed
+      positions: placed
         ? Object.fromEntries(keys.map((key, index) => [key, index + 1]))
         : noPositions,
-      size: feed ? keys.length : 0,
+      size: placed ? keys.length : 0,
     })
   }
 

@@ -358,7 +358,7 @@ const roles: Record<string, string | undefined> = {
   columnheader: undefined,
   combobox: "combobox",
   dialog: undefined,
-  feed: undefined,
+  feed: "list",
   grid: "grid",
   gridcell: "button",
   group: undefined,

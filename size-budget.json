@@ -466,6 +466,7 @@
   "@ui-sdk/react-native/tabs": 21360,
   "@ui-sdk/react-native/testing": 7766,
   "@ui-sdk/react-native/textarea": 14440,
+  "@ui-sdk/react-native/timeline": 16554,
   "@ui-sdk/react-native/toast": 26169,
   "@ui-sdk/react-native/toast (lazy)": 114,
   "@ui-sdk/react-native/toggle": 17457,
