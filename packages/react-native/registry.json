@@ -1014,6 +1014,59 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The api spreads nativeTouch(...) from image-cropper-touch.ts, which has a native twin, into internal, and the controller's focus() calls focusSelection, which on the web focuses the selection's element as before."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/number-input/number-input-field.native.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input-api.ts",
+        "packages/core/src/components/number-input/number-input-field.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.typeText, selectText, focusText, pressStep, releaseStep, activateStep, setPlatform and scrubDrag: the control's beforeinput, input and focusout, the step buttons' repeating presses and the scrub area's pointer drag restated for a native TextInput's events, a Pressable's press and the responder, where bind and on read elements. An edit the web's beforeinput would refuse is written back with its selection (foundation/text/corrected-edit.ts). The web module returns none, so the web bundle doesn't carry them."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/number-input/number-input-native.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input.ts",
+        "packages/core/src/components/number-input/number-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's bind and the scrub area's pointerdown orchestrate: the root reads the locale, and the scrub area follows the responder's touches with internal.scrubDrag."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/number-input/number-input-api.ts",
+      "mirrors": [
+        "packages/core/src/components/number-input/number-input-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The api spreads nativeField(...) from number-input-field.ts, which has a native twin, into internal, and the controller's focus() calls focusPart instead of input()?.focus(). Additive: the state's selection, which a native corrected edit writes back."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/number-input/number-input.ts",
+      "mirrors": ["packages/core/src/components/number-input/number-input.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The initial state has selection: null, the selection a native corrected edit writes back."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/number/number-parts.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/number/parse.ts",
+        "packages/core/src/foundation/number/number-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes on iOS has no Intl.NumberFormat formatToParts, which the parser reads a locale's separators and affixes from; the twin works the parts out from the formatted text."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/number/parse.ts",
+      "mirrors": ["packages/core/src/foundation/number/parse.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
     }
   ],
   "components": {
@@ -1756,6 +1809,35 @@
           "reason": "Its input and change follow a range <input>, and its bind writes its value, where image-cropper-native.ts follows touches on the track and a screen reader's increment and decrement, and ImageCropperZoom gives the value."
         }
       }
+    },
+    "number-input": {
+      "entry": "packages/react-native/src/number-input.tsx",
+      "slots": {
+        "numberInput.root": {
+          "covered": "packages/core/src/components/number-input/number-input-native.ts",
+          "reason": "Its bind reads the page's language, which number-input-native.ts asks the locale twin for as the root mounts, and makes the field take part in a form, which native doesn't have."
+        },
+        "numberInput.control": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its beforeinput refuses an edit that can't become a number, its input event takes the text and its focusout commits; the TextInput's onChangeText, onSelectionChange, onBlur and onSubmitEditing hand them to internal.typeText, selectText, focusText and commitText, and typeText writes a refused edit back with its selection. Its keys step with arrow keys, Page Up and Down, Home and End, which TextInput doesn't report (spec, Hardware keyboards). The mouse wheel, the platform read from the user agent (setPlatform takes Platform.OS) and the text written into the <input> (the value and selection props follow the state) have no other native counterpart."
+        },
+        "numberInput.increment": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its bind repeats steps while a pointer holds it and its click steps once for a screen reader; the Pressable's onPressIn, onPressOut and onPress call internal.pressStep, releaseStep and activateStep with the same timing. Shift for the large step has no native counterpart."
+        },
+        "numberInput.decrement": {
+          "covered": "packages/core/src/components/number-input/number-input-field.native.ts",
+          "reason": "Its bind repeats steps while a pointer holds it and its click steps once for a screen reader; the Pressable's onPressIn, onPressOut and onPress call internal.pressStep, releaseStep and activateStep with the same timing. Shift for the large step has no native counterpart."
+        },
+        "numberInput.scrub-area": {
+          "covered": "packages/core/src/components/number-input/number-input-native.ts",
+          "reason": "Its pointerdown follows a pointer drag; number-input-native.ts follows the responder's touches with internal.scrubDrag, which steps by distance, commits on lift and focuses the field after a tap. Pointer lock, its drawn cursor, Shift and Alt for the large and small steps have no native counterpart."
+        },
+        "numberInput.hidden-input": {
+          "needs": "nothing",
+          "reason": "The hidden input part isn't rendered on native, which has no forms."
+        }
+      }
     }
   },
   "pending": [
@@ -1769,7 +1851,6 @@
     "menu",
     "menubar",
     "navigation-menu",
-    "number-input",
     "select",
     "time-input",
     "timeline",
@@ -2228,6 +2309,24 @@
       "example": "form",
       "feature": "Form submission and reset",
       "reason": "Native has no forms: the app reads values from change callbacks."
+    },
+    {
+      "component": "number-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the number from change callbacks."
+    },
+    {
+      "component": "number-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "number-input",
+      "example": "wheel",
+      "feature": "Stepping with the mouse wheel",
+      "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
     }
   ]
 }
