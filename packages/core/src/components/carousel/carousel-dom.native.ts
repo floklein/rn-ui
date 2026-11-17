@@ -20,6 +20,7 @@ function readCarouselLayout(
   const outer = api && layoutOf(api, "viewport")
   const inner = api && layoutOf(api, "content")
   const boxes = slides.map(({ key }) => api && layoutOf(api, "item", key))
+
   const laidOut = !!outer && !!inner && boxes.every(Boolean)
   const size = (vertical ? outer?.height : outer?.width) ?? 0
   const measured = (laidOut ? slides : []).map(({ key }, index) => {
@@ -33,10 +34,7 @@ function readCarouselLayout(
       box: { start: rtl ? size - left - box.width : left, size: box.width },
     }
   })
-  const end = Math.max(
-    0,
-    ...measured.map(({ box }) => box.start + box.size)
-  )
+  const end = Math.max(0, ...measured.map(({ box }) => box.start + box.size))
   return {
     slides: measured,
     viewportSize: size,

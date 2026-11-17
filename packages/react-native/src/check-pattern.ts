@@ -35,6 +35,7 @@ type NativePattern =
   | "alertdialog"
   | "button"
   | "calendar"
+  | "carousel"
   | "checkbox"
   | "date-picker"
   | "dialog"
@@ -849,6 +850,46 @@ async function tabsPattern(context: Context) {
   }
 }
 
+// The slides read are what's in view; an indicator's activate shows its
+// page, so what's read beside the controls changes.
+async function carouselPattern(context: Context) {
+  const controls = new Set(["button", "tab", "tabbar", "tablist"])
+  const slides = () =>
+    context
+      .elements()
+      .filter((node) => !controls.has(roleOf(node) ?? ""))
+      .map((node) => nameOf(node))
+      .join("|")
+  for (const button of context.withRole("button")) {
+    requireName(context, button, "button")
+  }
+  if (!slides()) {
+    context.problem(
+      context.root,
+      "reads nothing beside its controls; the slides in view are read (APG carousel)."
+    )
+  }
+  if (!context.withRole("tab").length) {
+    return
+  }
+  await tabsPattern(context)
+  const tabs = context.withRole("tab")
+  const index = tabs.findIndex(
+    (tab) => !isDisabled(tab) && stateOf(tab).selected !== true
+  )
+  if (index < 0) {
+    return
+  }
+  const before = slides()
+  await performWatched(tabs[index], "activate", context.act)
+  if (slides() === before) {
+    context.problem(
+      context.withRole("tab")[index],
+      "shows the same slides after the activate action; an indicator shows its page (APG carousel)."
+    )
+  }
+}
+
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textFieldsIn(node: HostNode): HostNode[] {
   const inside = (node.children ?? []).flatMap((child) =>
@@ -1150,6 +1191,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
   calendar: calendarPattern,
+  carousel: carouselPattern,
   checkbox: checkboxPattern,
   "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),

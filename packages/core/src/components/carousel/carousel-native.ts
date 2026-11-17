@@ -99,13 +99,7 @@ const connected = (part: Part) =>
 const carouselNative: NativeBehavior<CarouselApi> = {
   root: (part) => part.api.internal.bindRoot(nativeElement(part)),
   viewport: (part) => part.api.internal.bindViewport(connected(part)),
-  item(part) {
-    const unbind = part.api.internal.bindItem(connected(part), part.key)
-    return () => {
-      unbind()
-      tracks.get(part.api)?.layouts.delete(layoutKey("item", part.key))
-    }
-  },
+  item: (part) => part.api.internal.bindItem(connected(part), part.key),
   indicator: (part) =>
     part.api.internal.bindIndicator(nativeElement(part), part),
 }
