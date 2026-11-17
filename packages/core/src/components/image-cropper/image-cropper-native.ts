@@ -47,8 +47,8 @@ const stateOf = (part: CropperPart) => part.store.get()
 const offsets = new WeakMap<object, Point>()
 
 // A screen reader's step moves as far as Shift with an arrow key does on the
-// web: ten points on screen, however large the image is.
-const stepPoints = 10
+// web: ten pixels on screen, or ten of the image's when it shows larger.
+const shiftSteps = 10
 
 // A drag of the whole selection or of a handle, in a box. It starts on the
 // first move, as the web's starts past its threshold, from where the touch
@@ -322,7 +322,7 @@ function adjust(part: CropperPart, handle: ResizeHandle) {
     if (isLocked(state) || !at) {
       return
     }
-    const by = (direction * stepPoints) / at.scale
+    const by = direction * shiftSteps * Math.max(1, Math.round(1 / at.scale))
     part.api.setCrop(
       resizeCrop(
         state.crop!,

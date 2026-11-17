@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
 export { Example }
 ```
 
-`src` is any URI an `Image` loads, like a file from the photo library. The crop is in the pixels the `Image` reports when it loads.
+`src` is any URI an `Image` loads, like a file from the photo library. The crop is in the file's own pixels, which `Image.getSize` reads once the image loads, not in the smaller bitmap the `Image` may decode for the screen. The viewport's content lays out left to right in a right-to-left app too, as the crop does.
 
 ## Aspect Ratio
 
@@ -344,7 +344,7 @@ Callbacks get the new crop first, then the details.
 
 No WAI-ARIA pattern covers an image cropper, so it's built from ones that do, translated to React Native's accessibility props. The selection, each handle and the zoom follow the [WAI-ARIA slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/): each is one element with the `adjustable` role. The selection and handles say the crop in words, like "300 by 300 pixels, at 50, 0", and the zoom says its level, like "125%". The image is named by its `alt`.
 
-VoiceOver adjusts them with a swipe up or down, and TalkBack with its adjust gestures, each committing at once. The selection moves across by ten points on screen, as Shift with an arrow key does on the web, a handle grows the crop from its edge by ten points, and the zoom moves a tenth of the way to `maxZoom`.
+VoiceOver adjusts them with a swipe up or down, and TalkBack with its adjust gestures, each committing at once. The selection moves across as Shift with an arrow key does on the web, ten pixels on screen, or ten of the image's when it shows larger, a handle grows the crop from its edge as far, and the zoom moves a tenth of the way to `maxZoom`.
 
 The selection, handles and zoom are named in English by default. Pass `aria-label` to name them in another language.
 

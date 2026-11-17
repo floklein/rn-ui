@@ -205,9 +205,15 @@ function ImageCropperImage({
         "aria-label": alt || undefined,
         resizeMode: placed ? "stretch" : "contain",
         style: placed ? [styles.placed, placed.image] : StyleSheet.absoluteFill,
-        onLoad: (event: {
-          nativeEvent: { source: { width: number; height: number } }
-        }) => cropper.load(event.nativeEvent.source),
+        // The size onLoad reports is the bitmap decoded for the view, which
+        // iOS, and Android for local files, shrink below the file's pixels.
+        onLoad: () =>
+          src &&
+          Image.getSize(
+            src,
+            (width, height) => cropper.load({ width, height }),
+            () => cropper.fail()
+          ),
         onError: () => cropper.fail(),
       },
       props
@@ -341,7 +347,8 @@ const ImageCropperFlip: ImageCropperParts["Flip"] = parts.Flip
 
 const styles = StyleSheet.create({
   viewport: { overflow: "hidden" },
-  content: { flex: 1, alignSelf: "stretch" },
+  // The crop is physical, as on the web: right to left would swap left for start.
+  content: { flex: 1, alignSelf: "stretch", direction: "ltr" },
   placed: { position: "absolute" },
 })
 

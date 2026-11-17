@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import { Platform, Text, View } from "react-native"
+import { Image, Platform, Text, View } from "react-native"
 import { checkPattern } from "../src/check-pattern"
 import {
   createImageCropperController,
@@ -45,10 +45,14 @@ function Cropper(props: ImageCropperOptions) {
   )
 }
 
-// A 640 by 420 image in a 320 by 210 viewport shows at half its size.
+// A 640 by 420 image in a 320 by 210 viewport shows at half its size. The
+// Image reports the bitmap it decoded, smaller than the file.
 async function loaded(width = 640, height = 420) {
+  jest
+    .spyOn(Image, "getSize")
+    .mockImplementation((_uri, done) => done(width, height))
   await fireEvent(screen.getByTestId("image", hidden), "load", {
-    nativeEvent: { source: { width, height } },
+    nativeEvent: { source: { width: width / 4, height: height / 4 } },
   })
   await fireEvent(
     screen.getByTestId("viewport").children[0] as never,
@@ -224,6 +228,36 @@ describe("ImageCropper", () => {
       { rotate: "90deg" },
     ])
     expect(seen.at(-1)).toBeCloseTo(420 / 640)
+  })
+
+  test("the crop is in the image file's pixels, not the bitmap the Image decoded", async () => {
+    await render(<Cropper />)
+    await loaded()
+    expect(screen.getByTestId("selection").props.accessibilityValue.text).toBe(
+      "512 by 336 pixels, at 64, 42"
+    )
+    expect(Image.getSize).toHaveBeenCalledWith(
+      photo,
+      expect.any(Function),
+      expect.any(Function)
+    )
+  })
+
+  test("the viewport's content lays out left to right, so the crop isn't mirrored against the finger", async () => {
+    await render(<Cropper />)
+    expect(
+      flat(screen.getByTestId("viewport").children[0].props.style)
+    ).toMatchObject({ direction: "ltr" })
+  })
+
+  test("a screen reader's step on a small image moves at least a pixel per point", async () => {
+    const onCropCommit = jest.fn()
+    await render(<Cropper onCropCommit={onCropCommit} />)
+    await loaded(16, 10)
+    onCropCommit.mockClear()
+    await adjust("selection", "decrement")
+    await adjust("selection", "increment")
+    expect(onCropCommit).toHaveBeenCalledTimes(2)
   })
 
   test("in a frame one finger pans the image and two pinch it, committing once", async () => {
