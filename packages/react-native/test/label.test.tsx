@@ -1,10 +1,11 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import type { TextInputInstance } from "react-native"
+import { AccessibilityInfo, type TextInputInstance } from "react-native"
 import { Checkbox } from "../src/checkbox"
 import { Field, FieldLabel } from "../src/field"
 import { Input } from "../src/input"
 import { Label } from "../src/label"
+import { Slider, SliderThumb } from "../src/slider"
 import { Switch } from "../src/switch"
 
 // Jest's TextInput mock shares one focus mock between instances.
@@ -51,6 +52,36 @@ describe("Label", () => {
     jest.clearAllMocks()
     await fireEvent.press(screen.getByText("Phone"))
     expect(disabled.current!.focus).not.toHaveBeenCalled()
+  })
+
+  test("a label for a slider names each thumb without a name of its own, and focuses the slider", async () => {
+    await render(
+      <>
+        <Label htmlFor="volume">Volume</Label>
+        <Slider id="volume" defaultValue={75}>
+          <SliderThumb />
+        </Slider>
+        <Label htmlFor="price">Price</Label>
+        <Slider id="price" defaultValue={[20, 80]}>
+          <SliderThumb />
+          <SliderThumb index={1} aria-label="Maximum" />
+        </Slider>
+      </>
+    )
+    await tick()
+    expect(screen.getByLabelText("Volume").props.accessibilityValue.now).toBe(
+      75
+    )
+    expect(screen.getByLabelText("Price").props.accessibilityValue.now).toBe(20)
+    await fireEvent.press(screen.getByText("Volume"))
+    expect(AccessibilityInfo.sendAccessibilityEvent).toHaveBeenCalledTimes(1)
+    const [view, event] = jest.mocked(AccessibilityInfo.sendAccessibilityEvent)
+      .mock.calls[0]
+    expect(
+      (view as unknown as { props: { accessibilityLabel: string } }).props
+        .accessibilityLabel
+    ).toBe("Volume")
+    expect(event).toBe("focus")
   })
 
   test("a control's own name wins, and so does its field's label", async () => {

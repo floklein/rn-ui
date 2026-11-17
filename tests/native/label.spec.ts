@@ -47,6 +47,7 @@ test("each example opens, its control named by its label", async () => {
   )
   const names: Record<string, string> = {
     input: "Shipping city",
+    slider: "Volume",
     switch: "Email me product updates",
   }
   for (const file of readdirSync(folder)) {
@@ -56,7 +57,7 @@ test("each example opens, its control named by its label", async () => {
       assert.ok(
         [...tree.values()].some(
           (node) =>
-            (node.role === "textbox" || node.role === "switch") &&
+            ["textbox", "slider", "switch"].includes(node.role) &&
             node.label === names[example]
         )
       )

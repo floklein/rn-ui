@@ -37,11 +37,20 @@ function City() {
 export { City }
 ```
 
-Label renders a `Text`. Its children must be plain text, which becomes the control's name. A press on the label starts editing a text field, and presses a switch or a checkbox. It reaches [Input](./input), [Textarea](./textarea), [Switch](./switch) and [Checkbox](./checkbox).
+Label renders a `Text`. Its children must be plain text, which becomes the control's name. A press on the label starts editing a text field, presses a switch or a checkbox, and moves the screen reader to a slider. It reaches [Input](./input), [Textarea](./textarea), [Switch](./switch), [Checkbox](./checkbox) and [Slider](./slider).
 
 An `id` names one control for the whole app, since a native screen has no document of its own. When two mounted screens use the same `id`, the label and the control mounted last are the ones that count, so give each screen its own ids. A control has one label: a second label for the same `id` takes over until it unmounts.
 
 Inside a [Field](./field), use `FieldLabel`, which also ties the field's description and errors to the control.
+
+## Slider
+
+Point the label at the slider's `id`. It names each thumb that has no name of its own, so the thumb reads as **Volume**, and a press on the label moves the screen reader to it.
+
+<ComponentExample
+  name="label/slider"
+  caption="With VoiceOver or TalkBack on, press Volume. Focus moves to the thumb, which reads as Volume."
+/>
 
 ## Switch
 
