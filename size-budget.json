@@ -431,6 +431,8 @@
   "@ui-sdk/react-native/calendar": 22200,
   "@ui-sdk/react-native/checkbox": 17786,
   "@ui-sdk/react-native/collapsible": 16137,
+  "@ui-sdk/react-native/color": 5936,
+  "@ui-sdk/react-native/color-picker": 30535,
   "@ui-sdk/react-native/date": 3630,
   "@ui-sdk/react-native/date-picker": 46190,
   "@ui-sdk/react-native/date-picker (lazy)": 6065,
