@@ -72,10 +72,10 @@ import {
 } from "./names"
 import {
   captures,
+  isFollowed,
   parts as viewParts,
   pressSource,
   renders,
-  isFollowed,
   letGo,
   responder,
   steps,
