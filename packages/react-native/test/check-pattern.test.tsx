@@ -46,6 +46,14 @@ import {
   ProgressValue,
 } from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import { OverlayHost } from "../src/overlays"
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "../src/popover"
 import {
   Pagination,
   PaginationEllipsis,
@@ -1463,6 +1471,59 @@ describe("checkPattern's dialog patterns on the native host", () => {
     await expect(
       checkPattern(screen.container, "alertdialog", { os, act })
     ).resolves.toBeUndefined()
+  })
+
+  test.each([false, true])(
+    "passes on a popover with modal %s, which opens beside its trigger",
+    async (modal) => {
+      await render(
+        <OverlayHost>
+          <Popover modal={modal}>
+            <PopoverTrigger>
+              <Text>Share</Text>
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverTitle>Share link</PopoverTitle>
+              <PopoverClose>
+                <Text>Done</Text>
+              </PopoverClose>
+            </PopoverContent>
+          </Popover>
+        </OverlayHost>
+      )
+      await expect(checkDialog()).resolves.toBeUndefined()
+    }
+  )
+
+  test("fails on a popover whose expand action moves no focus", async () => {
+    function Panel() {
+      const [open, setOpen] = useState(false)
+      const toggle = () => setOpen(!open)
+      return (
+        <View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            accessibilityActions={[{ name: open ? "collapse" : "expand" }]}
+            onAccessibilityAction={toggle}
+            onPress={toggle}
+          >
+            <Text>Share</Text>
+          </Pressable>
+          {open && (
+            <View onAccessibilityEscape={toggle}>
+              <Text accessibilityRole="header">Share link</Text>
+            </View>
+          )}
+        </View>
+      )
+    }
+    await render(<Panel />)
+    await expect(checkDialog()).rejects.toThrow(
+      os === "ios"
+        ? "requests no accessibility focus when it opens the dialog"
+        : "requests no accessibility focus after the expand action"
+    )
   })
 
   test("fails on a dialog with no title", async () => {

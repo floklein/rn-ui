@@ -1,6 +1,11 @@
 import { warn } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { type GestureResponderEvent, StyleSheet, View } from "react-native"
+import {
+  type GestureResponderEvent,
+  type HostInstance,
+  StyleSheet,
+  View,
+} from "react-native"
 import { layerInput } from "./native-host"
 
 type Insets = { top: number; right: number; bottom: number; left: number }
@@ -23,6 +28,7 @@ type OverlayHostProps = {
 type Host = {
   inModal: boolean
   insets: () => Insets
+  view: { current: HostInstance | null }
   entries: () => ReadonlyMap<string, React.ReactNode>
   set: (key: string, element: React.ReactNode) => void
   remove: (key: string) => void
@@ -39,6 +45,7 @@ function createHost(inModal: boolean, insets: () => Insets) {
   const host: Host = {
     inModal,
     insets,
+    view: { current: null },
     entries: () => entries,
     set(key, element) {
       if (entries.get(key) !== element) {
@@ -93,6 +100,18 @@ const landed = new Set<object>()
 let started:
   { event: object; within: object[]; x: number; y: number } | undefined
 
+// A finger on the screen can scroll what a popup is placed against.
+const touchListeners = new Set<() => void>()
+
+function onTouch(listener: () => void) {
+  touchListeners.add(listener)
+  return () => {
+    touchListeners.delete(listener)
+  }
+}
+
+const touched = () => touchListeners.forEach((listener) => listener())
+
 const landIn = (api: object) => () => {
   if (hosts.length) {
     landed.add(api)
@@ -110,6 +129,7 @@ function touchStart({ nativeEvent }: GestureResponderEvent) {
     y: nativeEvent.pageY,
   }
   landed.clear()
+  touched()
 }
 
 function touchCancel() {
@@ -142,11 +162,13 @@ function HostView({
   return (
     <HostContext.Provider value={host}>
       <View
+        ref={host.view}
         style={styles.host}
         // A Modal hides the screen from VoiceOver. Here rather than on the
         // content, it doesn't hide the popups rendered beside the content.
         accessibilityViewIsModal={host.inModal}
         onTouchStart={touchStart}
+        onTouchMove={touched}
         onTouchEnd={touchEnd}
         onTouchCancel={touchCancel}
       >
@@ -205,7 +227,13 @@ function useHosted(
       ? topmost
       : undefined
   const [chosen, setChosen] = React.useState<{ host?: Host }>()
-  const wanted = shown ? (chosen ?? { host: target }) : undefined
+  // A non-modal one open on the first render, before the host around it has
+  // mounted, takes it once it has.
+  const wanted = shown
+    ? chosen && (chosen.host || !target || popup.modal)
+      ? chosen
+      : { host: target }
+    : undefined
   if (wanted !== chosen) {
     setChosen(wanted)
   }
@@ -216,7 +244,7 @@ function useHosted(
   React.useLayoutEffect(() => () => host?.remove(key), [host, key])
   const missing = shown && !host && !popup.modal
   React.useEffect(() => {
-    if (missing) {
+    if (missing && !topmostHost()) {
       warn(
         "a non-modal popup opened with no host to render it in. Wrap the app in <OverlayHost>.",
         popup
@@ -226,6 +254,17 @@ function useHosted(
   return host ? null : element
 }
 
+const useHost = () => React.useContext(HostContext)
+
 const styles = StyleSheet.create({ host: { flex: 1 } })
 
-export { ModalHost, OverlayHost, type OverlayHostProps, landIn, useHosted }
+export {
+  type Host,
+  landIn,
+  ModalHost,
+  onTouch,
+  OverlayHost,
+  type OverlayHostProps,
+  useHost,
+  useHosted,
+}

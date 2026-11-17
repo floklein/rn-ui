@@ -262,11 +262,15 @@ async function checkExpandable(
 }
 
 // A modal dialog renders in a `Modal`, which isolates it for screen readers,
-// and is named by its title, a header. Native has no dialog role.
+// and a non-modal one, like a popover, in a view that takes the escape
+// gesture. It is named by its title, a header. Native has no dialog role.
 function openDialog(context: Context) {
-  const modal = shownNodes(context.root).find(
-    (node) => node.type === "Modal" && node.props.visible !== false
-  )
+  const shown = shownNodes(context.root)
+  const modal =
+    shown.find(
+      (node) => node.type === "Modal" && node.props.visible !== false
+    ) ??
+    shown.find((node) => typeof node.props.onAccessibilityEscape === "function")
   const title =
     modal && shownNodes(modal).find((node) => roleOf(node) === "header")
   return modal && title ? { modal, title } : undefined
@@ -339,9 +343,12 @@ async function dialogPattern(context: Context, kind: string) {
     )
   }
   if (context.os === "android") {
-    await closes("Android's back", () =>
-      performWatched(open()!.modal, "back", context.act)
-    )
+    if (open()!.modal.type === "Modal") {
+      await closes("Android's back", () =>
+        performWatched(open()!.modal, "back", context.act)
+      )
+    }
+    await checkExpandFocus(context, trigger)
     return
   }
   const escapable = shownNodes(open()!.modal).find(
@@ -357,6 +364,27 @@ async function dialogPattern(context: Context, kind: string) {
   await closes("the escape action", () =>
     performWatched(escapable, "escape", context.act)
   )
+}
+
+// TalkBack's collapse and expand on a popup's trigger close and open it as a
+// press does, moving the screen reader's focus each time.
+async function checkExpandFocus(context: Context, index: number) {
+  const trigger = () => context.withRole("button")[index]
+  for (const action of ["collapse", "expand"] as const) {
+    if (!actionsOf(trigger()).includes(action)) {
+      return
+    }
+    const requests = await performWatched(trigger(), action, context.act)
+    if (!!openDialog(context) !== (action === "expand")) {
+      return
+    }
+    if (!requests.length) {
+      context.problem(
+        trigger(),
+        `requests no accessibility focus after the ${action} action; the screen reader moves ${action === "expand" ? "into the popup" : "back to the trigger"}.`
+      )
+    }
+  }
 }
 
 // An image still loading or that failed is hidden, and its fallback is read.

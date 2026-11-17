@@ -439,7 +439,7 @@
   "@ui-sdk/react-native/label": 10027,
   "@ui-sdk/react-native/meter": 10608,
   "@ui-sdk/react-native/otp-input": 16492,
-  "@ui-sdk/react-native/overlays": 1253,
+  "@ui-sdk/react-native/overlays": 1305,
   "@ui-sdk/react-native/pagination": 12752,
   "@ui-sdk/react-native/password-input": 13894,
   "@ui-sdk/react-native/primitive": 7184,
@@ -454,5 +454,7 @@
   "@ui-sdk/react-native/textarea": 13007,
   "@ui-sdk/react-native/toggle": 16454,
   "@ui-sdk/react-native/slider": 19660,
-  "@ui-sdk/react-native/toolbar": 14564
+  "@ui-sdk/react-native/toolbar": 14564,
+  "@ui-sdk/react-native/popover": 34410,
+  "@ui-sdk/react-native/popover (lazy)": 13810
 }

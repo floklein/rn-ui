@@ -906,6 +906,7 @@ export {
   type PositionOptions,
   preparePosition,
   type PositionProps,
+  transformOrigin,
   untransformed,
   type VirtualAnchor,
 }

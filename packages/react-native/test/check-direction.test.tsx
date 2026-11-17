@@ -34,6 +34,14 @@ import {
   ProgressValue,
 } from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import { OverlayHost } from "../src/overlays"
+import {
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "../src/popover"
 import {
   Pagination,
   PaginationLink,
@@ -417,6 +425,31 @@ describe("checkDirection on the native host", () => {
                 </AccordionPanel>
               </AccordionItem>
             </Accordion>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a popover, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <Popover>
+                <PopoverTrigger>
+                  <Text>Share</Text>
+                </PopoverTrigger>
+                <PopoverContent side="right">
+                  <PopoverArrow />
+                  <PopoverTitle>Share link</PopoverTitle>
+                </PopoverContent>
+              </Popover>
+            </OverlayHost>
           )
           return screen.container
         },
