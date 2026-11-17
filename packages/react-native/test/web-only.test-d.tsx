@@ -4,6 +4,7 @@ import { dialog as dialogPrimitive } from "@ui-sdk/core/dialog"
 import { radioGroup } from "@ui-sdk/core/radio"
 import { rating } from "@ui-sdk/core/rating"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
+import { listbox } from "@ui-sdk/core/listbox"
 import { select } from "@ui-sdk/core/select"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { Pressable, TextInput, View } from "react-native"
@@ -16,6 +17,7 @@ import type * as DrawerEntry from "../src/drawer"
 import { Field, FieldError, FieldLabel } from "../src/field"
 import { FileInput, FileInputTrigger } from "../src/file-input"
 import type * as FileInputEntry from "../src/file-input"
+import { Listbox } from "../src/listbox"
 import { NumberInput } from "../src/number-input"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
@@ -78,6 +80,16 @@ createParts(segmentedControl, { input: View })
 createParts(checkboxGroup, { "group-input": View })
 // @ts-expect-error A select's hidden value input can't be given a host.
 createParts(select, { "value-input": View })
+// @ts-expect-error A listbox's hidden form input can't be given a host.
+createParts(listbox, { "form-input": View })
+
+const listboxes = [
+  <Listbox aria-label="Fruit" multiple defaultValue={["apple"]} readOnly />,
+  // @ts-expect-error `name` has no native meaning.
+  <Listbox aria-label="Fruit" name="fruit" />,
+  // @ts-expect-error `form` has no native meaning.
+  <Listbox aria-label="Fruit" form="order" />,
+]
 
 const { Input: ComboboxInput } = createParts(combobox, {
   input: TextInput,
@@ -317,6 +329,7 @@ export {
   type FileInputHiddenInput,
   files,
   hoverCards,
+  listboxes,
   NativeDialog,
   NativeSwitch,
   paginations,

@@ -39,6 +39,7 @@
     "./hover-card": "./src/hover-card.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
+    "./listbox": "./src/listbox.tsx",
     "./meter": "./src/meter.tsx",
     "./number-input": "./src/number-input.tsx",
     "./observe": "./src/observe.ts",
@@ -164,6 +165,10 @@
       "./label": {
         "types": "./dist/label.d.ts",
         "default": "./dist/label.js"
+      },
+      "./listbox": {
+        "types": "./dist/listbox.d.ts",
+        "default": "./dist/listbox.js"
       },
       "./meter": {
         "types": "./dist/meter.d.ts",

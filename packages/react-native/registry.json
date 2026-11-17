@@ -666,7 +666,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options and text-match."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options, text-match and listbox."
     },
     {
       "kind": "behavior",
@@ -1120,6 +1120,16 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The listbox engine on the native host, for Select now and Combobox, Autocomplete, Command and Trigger Menu after it: an option registers a stand-in from nativeElement that reads as connected, sorted by the order twin and focused through the host, with the label the adapter reads from its text where the engine reads the element's; and the highlighted option is announced while focus stays in a search field, where the web points aria-activedescendant at it."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/listbox/listbox-root-native.ts",
+      "mirrors": [
+        "packages/core/src/components/listbox/listbox-root-parts.ts",
+        "packages/core/src/components/listbox/listbox-root-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the item, item-icon and group-label slots' bind orchestrate: an option's registration with the engine (listbox-native.ts) and the selected label it learns, an icon's registration with its item and the labeled groups; and focusListboxItem, what the root's focusin and focusout do for one option, from the focus and blur the native host reports on the option's view."
     },
     {
       "kind": "behavior",
@@ -2005,6 +2015,35 @@
           "reason": "The hidden input a form submits, resets and autofills: native has no forms, so it isn't rendered, and name, form and autoComplete are left out of the native types."
         }
       }
+    },
+    "listbox": {
+      "entry": "packages/react-native/src/listbox.tsx",
+      "slots": {
+        "listbox.root": {
+          "covered": "packages/react-native/src/listbox.tsx",
+          "reason": "Its bind makes a web component's root take part in a form (ElementInternals, restore, reset, a disabled fieldset) and warns about a missing name; native has no forms, so name and form are left out of the native types, and a Field's label and a disabled FieldSet reach it through useFieldControl and usePart, a press on the label focusing the option with the tab stop. Its keydown handles arrow keys, Home, End, Space, Enter, typeahead and select all, which React Native never reports (spec, Hardware keyboards). Its focusin hands focus to the tab stop and its focusout clears the highlight, which ListboxItem does from each option's own focus and blur through focusListboxItem."
+        },
+        "listbox.item": {
+          "covered": "packages/core/src/components/listbox/listbox-root-native.ts",
+          "reason": "Its bind registers the option with the listbox engine, which listbox-root-native.ts does with the stand-in listbox-native.ts makes, sorted by the order twin; the adapter passes the option's text as its label, where the DOM host reads the element's text. Its focusin highlights the option and gives it the tab stop, which focusListboxItem does from the Pressable's onFocus, and its mousedown keeps Shift from selecting text, which a touch never does."
+        },
+        "listbox.item-indicator": {
+          "needs": "nothing",
+          "reason": "Its bind starts the web's enter animation as an option turns selected; on native the indicator's presence is the adapter's, with startingStyle in its state."
+        },
+        "listbox.item-icon": {
+          "covered": "packages/core/src/components/listbox/listbox-root-native.ts",
+          "reason": "Its bind registers the icon with its item, which listbox-root-native.ts does while it's mounted, and flips a mirrored icon right to left, which the translation does when the app runs right to left. Its missing-name check reads the DOM."
+        },
+        "listbox.group-label": {
+          "covered": "packages/core/src/components/listbox/listbox-root-native.ts",
+          "reason": "Its bind lists the group's key among the labeled groups while it's mounted, which listbox-root-native.ts does, so the group is named by its label."
+        },
+        "listbox.form-input": {
+          "needs": "nothing",
+          "reason": "The hidden input a form submits, resets and autofills: native has no forms, so it isn't rendered, and name and form are left out of the native types."
+        }
+      }
     }
   },
   "pending": [
@@ -2013,7 +2052,6 @@
     "command",
     "date-input",
     "image-cropper",
-    "listbox",
     "menu",
     "menubar",
     "navigation-menu",
@@ -2492,6 +2530,30 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager; a right-to-left app pages from the right with no prop."
+    },
+    {
+      "component": "listbox",
+      "example": "activation",
+      "feature": "Selection that follows arrow keys, with Ctrl or ⌘ adding and Shift ranges",
+      "reason": "Native builds no arrow keys inside a composite and reports no modifier keys: a press always toggles an option of a multiple list."
+    },
+    {
+      "component": "listbox",
+      "example": "form",
+      "feature": "Form submission, reset and required",
+      "reason": "Native has no forms: name and form are left out of the native types, and the app reads the value from onValueChange."
+    },
+    {
+      "component": "listbox",
+      "example": "manual",
+      "feature": "Arrow keys moving focus without selecting",
+      "reason": "Native builds no arrow keys inside a composite: an option selects when it's activated."
+    },
+    {
+      "component": "listbox",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "select",

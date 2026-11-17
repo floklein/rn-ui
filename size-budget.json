@@ -449,6 +449,7 @@
   "@ui-sdk/react-native/hover-card": 32268,
   "@ui-sdk/react-native/input": 14691,
   "@ui-sdk/react-native/label": 11656,
+  "@ui-sdk/react-native/listbox": 25910,
   "@ui-sdk/react-native/meter": 12288,
   "@ui-sdk/react-native/number-input": 23206,
   "@ui-sdk/react-native/observe": 1534,
