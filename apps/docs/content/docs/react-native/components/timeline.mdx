@@ -80,7 +80,7 @@ Set `orientation="horizontal"` for a row, like a roadmap, and lay the timeline o
 
 Give each item a `status` of `"complete"`, `"current"` or `"upcoming"` for a process, like an order's progress. Every part of the event receives it in its state, to draw the marker.
 
-Create a controller with `createTimelineController` and call its `focus()` with an item's `value` to move VoiceOver's or TalkBack's focus to it from anywhere.
+Create a controller with `createTimelineController` and call its `focus()` with an item's `value` to move VoiceOver's or TalkBack's focus to it from anywhere. Screen readers land only on an element, so give that item `accessible`.
 
 <ComponentExample
   name="timeline/status"
@@ -100,7 +100,7 @@ Put a [Collapsible](./collapsible) inside an item for details that can open. Lea
 
 ## Feed
 
-Set `feed` for a timeline that loads more as people scroll, like a social feed. Set `busy` while you load or change events: the root's state has `busy`, to dim it, and the root reads as busy.
+Set `feed` for a timeline that loads more as people scroll, like a social feed. Set `busy` while you load or change events: the root's state has `busy`, to dim it. iOS announces nothing for a busy list, which isn't an element of its own, so announce the loading yourself when it matters.
 
 <ComponentExample
   name="timeline/feed"
@@ -241,4 +241,4 @@ A timeline is a `View` with the `list` role, named with `aria-label`. On Android
 
 ### Keyboard
 
-With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves between the controls inside events. An event isn't a stop of its own: React Native delivers no arrow keys to views, so the web's single tab stop, its arrow keys, Home, End, Page Down and Page Up aren't built.
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves between the controls inside events, and onto each event passed `accessible`, which is a stop of its own on both platforms. A container event isn't a stop. React Native delivers no arrow keys to views, so the web's single tab stop, its arrow keys, Home, End, Page Down and Page Up aren't built: a long feed of `accessible` events is a long row of Tab stops.

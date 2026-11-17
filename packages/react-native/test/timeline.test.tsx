@@ -106,6 +106,31 @@ describe("Timeline", () => {
     })
   })
 
+  test("events sorted again without any joining or leaving take their new places", async () => {
+    const places: Record<string, unknown> = {}
+    const List = ({ titles }: { titles: string[] }) => (
+      <Timeline aria-label="Activity">
+        {titles.map((title) => (
+          <TimelineItem key={title}>
+            <TimelineConnector
+              style={({ index, first, last }) =>
+                void (places[title] = { index, first, last })
+              }
+            />
+            <TimelineTitle>{title}</TimelineTitle>
+          </TimelineItem>
+        ))}
+      </Timeline>
+    )
+    const { rerender } = await render(<List titles={["A", "B", "C"]} />)
+    await rerender(<List titles={["C", "B", "A"]} />)
+    expect(places).toEqual({
+      A: { index: 2, first: false, last: true },
+      B: { index: 1, first: false, last: false },
+      C: { index: 0, first: true, last: false },
+    })
+  })
+
   test("each part inside an event has the event's place, kept as events are added after it", async () => {
     const lasts: Record<string, boolean> = {}
     const List = ({ titles }: { titles: string[] }) => (

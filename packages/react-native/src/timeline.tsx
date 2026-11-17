@@ -123,6 +123,9 @@ function Timeline({
     handle.instance.subscribe,
     () => handle.state.size
   )
+  // Events moved without joining or leaving, like a list sorted newest
+  // first, change places, which the web's root hears from the DOM.
+  React.useLayoutEffect(() => handle.api.internal.measure())
   return usePart(
     handle,
     "root",

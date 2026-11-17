@@ -1933,7 +1933,7 @@
       "slots": {
         "timeline.root": {
           "needs": "nothing",
-          "reason": "Its bind checks a feed's name in development, measures the events and watches the DOM for events moved without binding again; on native each event joins the roving group as it mounts (timeline-native.ts), whose item change measures them, and the native order twin sorts the views."
+          "reason": "Its bind checks a feed's name in development, measures the events and watches the DOM for events moved without binding again. On native each event joins the roving group as it mounts (timeline-native.ts), whose item change measures them, the order twin sorts by the views on each read, and the adapter's root (packages/react-native/src/timeline.tsx) measures again after each render, which catches events moved without joining or leaving."
         },
         "timeline.item": {
           "covered": "packages/core/src/components/timeline/timeline-native.ts",

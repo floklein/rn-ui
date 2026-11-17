@@ -1107,7 +1107,7 @@ async function timelinePattern(context: Context) {
       context.problem(list, "holds no event a screen reader can read.")
     }
     for (const node of inside) {
-      requireName(context, node, roleOf(node) ?? "event")
+      requireName(context, node, roleOf(node) ?? "element")
     }
   }
   if (context.withRole("button").length) {

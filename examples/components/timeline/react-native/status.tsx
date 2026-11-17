@@ -79,9 +79,7 @@ function Example() {
                 status === "current" && styles.current,
               ]}
             >
-              {step.status === "complete" && (
-                <Text style={styles.check}>✓</Text>
-              )}
+              {step.status === "complete" && <View style={styles.dot} />}
             </TimelineMarker>
             <TimelineConnector
               style={({ last }) => [styles.connector, last && styles.hidden]}
@@ -134,7 +132,7 @@ const styles = StyleSheet.create({
   },
   complete: { borderColor: "#18181b", backgroundColor: "#18181b" },
   current: { borderColor: "#18181b", borderWidth: 4 },
-  check: { fontSize: 9, fontWeight: "700", color: "#ffffff" },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#ffffff" },
   connector: {
     position: "absolute",
     left: 7,

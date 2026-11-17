@@ -1998,7 +1998,7 @@ describe("checkPattern's timeline pattern on the native host", () => {
         </TimelineItem>
       </Timeline>
     )
-    await expect(checkTimeline()).rejects.toThrow("an event needs")
+    await expect(checkTimeline()).rejects.toThrow("an element needs")
   })
 
   test("fails on two timelines when one has no name", async () => {
