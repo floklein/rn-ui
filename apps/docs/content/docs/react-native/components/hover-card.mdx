@@ -70,7 +70,7 @@ export { Example }
 
 ## Pointer
 
-A card opens when a pointer, like a mouse or a trackpad, rests on its link for `delay`, 600 milliseconds by default, and closes once the pointer has left the link and the card for `closeDelay`, 300 milliseconds by default. The pointer can move from the link onto the card within `closeDelay` without closing it. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a card never opens on hover. A finger's pointer events never open it.
+A card opens when a pointer, like a mouse or a trackpad, rests on its link for `delay`, 600 milliseconds by default, and closes once the pointer has left the link and the card for `closeDelay`, 300 milliseconds by default. The pointer can move from the link onto the card within `closeDelay` without closing it, so `closeDelay` is at least 100 ms on native, as Tooltip's is. React Native reports a pointer only once your app turns on its W3C pointer events: `RCTSetDispatchW3CPointerEvents(YES)` on iOS and `ReactFeatureFlags.dispatchPointerEvents = true` on Android, before React Native starts. In an Expo app, that's in the native project `expo prebuild` generates, or in a config plugin. Without them, and on a touch screen, a card never opens on hover. A finger's pointer events never open it.
 
 `disabled` stops the card from opening and leaves a plain link.
 
@@ -165,7 +165,7 @@ Props and callbacks are the same as below, as React Native props. `HoverCardTrig
 
 ### HoverCard
 
-`delay` and `closeDelay` apply to a [pointer](#pointer).
+`delay` and `closeDelay` apply to a [pointer](#pointer), and `closeDelay` is at least 100.
 
 <TypeTable
   path="../../packages/core/src/components/hover-card/hover-card.ts"

@@ -27,6 +27,7 @@ import type {
   PopoverPlacementState,
 } from "./popover"
 import {
+  closeDelayFloor,
   createOutlet,
   OutletContext,
   PopupLayer,
@@ -94,8 +95,18 @@ const pointer = (event: PointerEvent) =>
  * with a pointer, resting on the link opens it.
  * @experimental
  */
-function HoverCard({ children, ...options }: HoverCardProps) {
-  const handle = usePrimitive(hoverCard, options, hoverCardNative)
+function HoverCard({ children, closeDelay, ...options }: HoverCardProps) {
+  const handle = usePrimitive(
+    hoverCard,
+    {
+      ...options,
+      closeDelay:
+        closeDelay === undefined
+          ? undefined
+          : Math.max(closeDelay, closeDelayFloor),
+    },
+    hoverCardNative
+  )
   useControllerEntry(options.controller, handle)
   const [outlet] = React.useState(createOutlet)
   return (

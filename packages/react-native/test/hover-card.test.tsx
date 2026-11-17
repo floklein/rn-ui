@@ -138,6 +138,23 @@ test("a pointer that reaches the card within the close delay keeps it open, unti
     expect(screen.queryByText(bio)).toBeNull()
   }))
 
+test("a close delay under 100 ms still leaves the pointer 100 ms to reach the card", () =>
+  withTimers(async () => {
+    await render(<Example delay={0} closeDelay={0} />)
+    await pointer("trigger", "pointerEnter")
+    await act(() => jest.advanceTimersByTime(0))
+    await pointer("trigger", "pointerLeave")
+    await act(() => jest.advanceTimersByTime(99))
+    await pointer("content", "pointerEnter")
+    await act(() => jest.advanceTimersByTime(1000))
+    expect(screen.getByText(bio)).toBeOnTheScreen()
+    await pointer("content", "pointerLeave")
+    await act(() => jest.advanceTimersByTime(99))
+    expect(screen.getByText(bio)).toBeOnTheScreen()
+    await act(() => jest.advanceTimersByTime(1))
+    expect(screen.queryByText(bio)).toBeNull()
+  }))
+
 test("a touch's pointer events open nothing", () =>
   withTimers(async () => {
     await render(<Example />)
