@@ -1,0 +1,456 @@
+---
+title: Calendar
+description: Choose one date, several dates, or a range from a month grid.
+---
+
+Calendar shows dates directly on the screen. Use it for a booking flow, a schedule, or any place where the dates should stay visible.
+
+<ComponentExample
+  name="calendar/basic"
+  caption="Tap a date, then use Previous or Next to change the month."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Calendar`:
+
+```text
+Calendar
+├── CalendarPrevious
+├── CalendarHeading
+├── CalendarNext
+└── CalendarGrid
+    ├── CalendarWeekdays
+    │   └── CalendarWeekday
+    └── CalendarWeeks
+        └── CalendarDay
+```
+
+`Calendar`, `CalendarGrid`, `CalendarWeekdays` and `CalendarWeeks` are `View`s, and each week is a row `View`. `CalendarHeading` and `CalendarWeekday` are `Text`s. `CalendarPrevious`, `CalendarNext` and each `CalendarDay` are `Pressable`s with the button role.
+
+An empty `Calendar` renders the default structure, and an empty `CalendarGrid` renders its weekdays and weeks. Write the parts out to add your styles and content. A day shows its day of the month in a `Text` unless you give it children.
+
+A cell that shows nothing, like a day of another month with `showOutsideDays={false}`, is an empty `View` with `flex: 1`. Give days `flex: 1` too, and the columns stay aligned.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Calendar,
+  CalendarDay,
+  CalendarGrid,
+  CalendarHeading,
+  CalendarNext,
+  CalendarPrevious,
+  CalendarWeekday,
+  CalendarWeekdays,
+  CalendarWeeks,
+} from "@ui-sdk/react-native/calendar"
+import { StyleSheet, Text, View } from "react-native"
+
+function Example() {
+  return (
+    <Calendar defaultValue="2026-10-16" style={styles.calendar}>
+      <View style={styles.header}>
+        <CalendarPrevious>
+          <Text>‹</Text>
+        </CalendarPrevious>
+        <CalendarHeading style={styles.heading} />
+        <CalendarNext>
+          <Text>›</Text>
+        </CalendarNext>
+      </View>
+      <CalendarGrid>
+        <CalendarWeekdays>
+          {(index) => <CalendarWeekday index={index} style={styles.cell} />}
+        </CalendarWeekdays>
+        <CalendarWeeks>
+          {(cell) => <CalendarDay value={cell.date} style={styles.day} />}
+        </CalendarWeeks>
+      </CalendarGrid>
+    </Calendar>
+  )
+}
+
+const styles = StyleSheet.create({
+  calendar: { width: 308 },
+  header: { flexDirection: "row", alignItems: "center" },
+  heading: { flex: 1, textAlign: "center" },
+  cell: { flex: 1, textAlign: "center" },
+  day: {
+    flex: 1,
+    aspectRatio: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+})
+
+export { Example }
+```
+
+## Values
+
+Dates are ISO strings such as `"2026-10-16"`, with no time or time zone attached. No date library is needed. The date helpers in `@ui-sdk/react-native/date` handle arithmetic; `Intl` formats names and labels.
+
+| Mode                 | Value                           |
+| -------------------- | ------------------------------- |
+| `"single"` (default) | A date string or `null`.        |
+| `"multiple"`         | A sorted array of date strings. |
+| `"range"`            | `[start, end]` or `null`.       |
+
+A value with the wrong shape for its mode is treated as no selection.
+
+## Range
+
+`mode="range"` chooses a start and then an end. The value changes once both ends are chosen. A date before the start ends it too, and becomes the start.
+
+<ComponentExample
+  name="calendar/range"
+  caption="Tap a start date, then an end date. Every day between them is selected."
+/>
+
+## Multiple
+
+`mode="multiple"` toggles each date independently. Its value is a sorted array, even when dates were chosen in another order.
+
+<ComponentExample
+  name="calendar/multiple"
+  caption="Tap another date to add it, or a selected date to remove it."
+/>
+
+## Unavailable Dates
+
+`unavailable` accepts a date, `{ from, to }`, `{ weekday: [0, 6] }` for weekends, `{ before }`, `{ after }`, a predicate, or an array of these matchers. Weekday zero is Sunday.
+
+Unavailable dates can't be selected. Screen readers still reach them and announce them as dimmed on iOS and disabled on Android.
+
+<ComponentExample
+  name="calendar/unavailable"
+  caption="Try an unavailable date, then tap an available one."
+/>
+
+## Deselect
+
+`deselectable` lets a second press on the selected date clear it, in single mode. Without it, a second press keeps the date selected.
+
+## Min and Max
+
+`min` and `max` set the earliest and latest selectable dates. Previous and Next stop at their months.
+
+<ComponentExample
+  name="calendar/min-max"
+  caption="Move toward either end of the allowed dates. The month buttons stop at the limits."
+/>
+
+## Disabled and Read Only
+
+`disabled` prevents selection and month navigation. `readOnly` allows navigation so dates can be inspected, but keeps the selected value unchanged.
+
+<ComponentExample
+  name="calendar/disabled"
+  caption="Try tapping a date or changing months. A disabled calendar has no available controls."
+/>
+
+<ComponentExample
+  name="calendar/read-only"
+  caption="Change months and tap dates. The selected value stays unchanged."
+/>
+
+## Two Months
+
+Set `months` to `2` and render grids with offsets `0` and `1`. Dates that another visible month already shows leave an empty cell, so each date appears once.
+
+`pageBy="page"` makes Previous and Next move by the full number of months.
+
+<ComponentExample
+  name="calendar/two-months"
+  caption="October and November show one above the other. Next advances both to December and January."
+/>
+
+## Fixed Weeks
+
+`fixedWeeks` renders six week rows in every month. Set `showOutsideDays` to `false` to leave dates from neighboring months blank.
+
+<ComponentExample
+  name="calendar/fixed-weeks"
+  caption="Move from February to March. Both grids keep six week rows, and dates outside each month are hidden."
+/>
+
+## Month and Year Selects
+
+On the web, `CalendarMonthSelect` and `CalendarYearSelect` are native `select` elements. React Native has no select, so the native Calendar has neither part. To jump to a month or a year, control the calendar's `month` and set it from your own picker.
+
+## Language
+
+`locale` controls month names, weekday headers, and full date labels. If you omit it, Calendar uses the device's language, which `Intl` reports. The first weekday follows the locale, unless `weekStartsOn` sets it. `weekdayFormat` accepts `"narrow"`, `"short"`, or `"long"`.
+
+Previous and Next are named "Previous month" and "Next month". Pass `aria-label` to name them in another language. Dates remain Gregorian. Localized year systems, such as Buddhist or Japanese era years, can still appear in the labels.
+
+<ComponentExample
+  name="calendar/locale"
+  caption="Month names, weekday headers, and full date labels are in German, with Monday first."
+/>
+
+## Name Formats
+
+Set `weekdayFormat` for the weekday headers and `monthFormat` for the heading. Both take `"narrow"`, `"short"` or `"long"`, and follow the calendar's locale. Screen readers still hear full names: each weekday and each day keep their long labels.
+
+<ComponentExample
+  name="calendar/formats"
+  caption="The weekday headers are narrow and the heading uses short month names: Oct – Nov 2026."
+/>
+
+## Custom Days
+
+A day's children receive its state, including the date, label, selection, and whether it is outside the month. This example adds a price below each day. Weekday headers can have custom content too.
+
+<ComponentExample
+  name="calendar/custom-day"
+  caption="Tap a date to see its price selected with it. Dates outside the current month have no price."
+/>
+
+## Range Limits
+
+`minDays` and `maxDays` count both ends. A three-day range includes its start, the day between, and its end. A press that would break a limit keeps the start, so another end can be chosen. Until then, the dates that can't end the range are disabled.
+
+A range cannot include an unavailable date unless `allowUnavailable` is set. That allows unavailable dates between the ends; they still cannot be chosen as an endpoint.
+
+<ComponentExample
+  name="calendar/range-limits"
+  caption="In October 2026, tap October 15 then October 20. This example accepts 3–8 days and allows the range to span the unavailable weekend."
+/>
+
+## Range in Progress
+
+The root's state has `anchor`, the start while an end is being picked. `onAnchorChange` reports it before it changes, to show the range being picked outside the calendar, and canceling keeps things as they were.
+
+The root's `focused` is the day with the keyboard's Tab stop on the web. React Native never reports which day a screen reader or a keyboard is on, so `focused` moves only when a controller's `focus()` asks for a day, and `onFocusedChange` doesn't run for a press.
+
+<ComponentExample
+  name="calendar/range-progress"
+  caption="Tap a start date, then an end date. The console logs the start, then the range finishing."
+/>
+
+## Controlled
+
+The selection and displayed month are separate. `value` uses the shape for the chosen mode; `month` names the first displayed month, such as `"2026-10"`.
+
+Use `value` with `onValueChange` and `month` with `onMonthChange` to control them. Use `defaultValue` and `defaultMonth` for initial state. Change details include a reason; `details.cancel()` rejects the change. The [reason tables](#reasons) list Calendar's reasons.
+
+<ComponentExample
+  name="calendar/controlled"
+  caption="Tap a date or change the month. The console logs each change and its reason."
+/>
+
+## Today
+
+The `today` state is true on today's date. When there is no selection or starting month, the calendar opens on today's month. It reads today once it mounts; set `today` to pin a date explicitly.
+
+`timeZone` determines which date is today. It does not convert the selected date into another time zone.
+
+<ComponentExample
+  name="calendar/time-zone"
+  caption="Find the marked date for today in Pacific/Kiritimati, which may differ from today in your time zone."
+/>
+
+## Driving It from Anywhere
+
+A `createCalendarController()` instance can set the value, change months, and focus a date. Focusing a date in another month shows that month first, then moves the screen reader to the date.
+
+<ComponentExample
+  name="calendar/controller"
+  caption="Press Go to Christmas to select December 25 and show its month, or Today to jump back to today and select it."
+/>
+
+## Presets
+
+Drive a range calendar from buttons for the ranges people pick most. Each preset sets the value through the [controller](#driving-it-from-anywhere) and moves the screen reader to its first day, using the date helpers for the arithmetic.
+
+<ComponentExample
+  name="calendar/presets"
+  caption="Tap Last 7 Days, This Month or Next 30 Days. The range is selected and the calendar shows its start."
+/>
+
+## Custom Rendering
+
+The grid's state exposes its month, label, weekdays, and weeks when you need to lay out the grid yourself, like with a column of week numbers. Keep an empty cell for each cell marked `hidden`, so dates shown by another month don't appear twice. Every part also takes `render`, an element or a function of the native props, the part's state and its interaction.
+
+<ComponentExample
+  name="calendar/custom-grid"
+  caption="The grid is your own views, built from its state, with the ISO week number before each week."
+/>
+
+## Styling
+
+Parts are unstyled. Style each one with a function of its state, like `(state) => [styles.day, state.selected && styles.selected, state.outside && styles.outside]` for a day. A day's state has `selected`, `today`, `outside`, `unavailable` and `disabled`, and a range's `rangeStart`, `rangeEnd` and `inRange`. Previous and Next have `disabled` at the bounds. Each part also receives a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### Calendar [#part-state-calendar]
+
+<PartStateTable
+  component="calendar"
+  part="root"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarState"
+/>
+
+### CalendarHeading [#part-state-calendarheading]
+
+<PartStateTable
+  component="calendar"
+  part="heading"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarHeadingState"
+/>
+
+### CalendarPrevious [#part-state-calendarprevious]
+
+<PartStateTable
+  component="calendar"
+  part="previous"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarStepState"
+/>
+
+### CalendarNext [#part-state-calendarnext]
+
+<PartStateTable
+  component="calendar"
+  part="next"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarStepState"
+/>
+
+### CalendarGrid [#part-state-calendargrid]
+
+<PartStateTable
+  component="calendar"
+  part="grid"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarGridState"
+/>
+
+### CalendarWeekday [#part-state-calendarweekday]
+
+<PartStateTable
+  component="calendar"
+  part="weekday"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarWeekdayState"
+/>
+
+### CalendarDay [#part-state-calendarday]
+
+<PartStateTable
+  component="calendar"
+  part="day"
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarDayState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Calendar
+
+<TypeTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarOptions"
+/>
+
+### CalendarGrid
+
+<TypeTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarGridProps"
+/>
+
+### CalendarWeekdays
+
+Renders the row of weekday headers. Its children are a function that receives each weekday's index.
+
+### CalendarWeekday
+
+<TypeTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarWeekdayProps"
+/>
+
+### CalendarWeeks
+
+Renders the week rows. Its children are a function that receives each cell, with its `date`.
+
+### CalendarDay
+
+<TypeTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarDayProps"
+/>
+
+`CalendarPrevious`, `CalendarHeading` and `CalendarNext` take no props of their own.
+
+### State
+
+What render, style, class name and children functions receive.
+
+<StateTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarState"
+/>
+
+<StateTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarDayState"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed:
+
+<ReasonTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarValueChangeReason"
+/>
+
+And why the month changed. `list-navigation` and `select-change` come from arrow keys and the month and year selects, which native doesn't have:
+
+<ReasonTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarMonthChangeReason"
+/>
+
+And why a range's start changed. `escape-key` doesn't happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarAnchorChangeReason"
+/>
+
+### Controller
+
+Create one with `createCalendarController()` and pass it as `controller`. Every write method takes an optional `{ reason }` and returns `false` when the change is canceled, there's nowhere to go, or the calendar is disabled or read-only.
+
+<ControllerTable
+  path="../../packages/core/src/components/calendar/calendar.ts"
+  name="CalendarController"
+/>
+
+## Accessibility
+
+On the web, each month is a `grid` of `gridcell`s that arrow keys move through. React Native has no grid cells or arrow keys for views, so each day is its own button, reached by swiping, and named by its full date, like "Friday, October 16, 2026". A selected day, and every day of a range, is announced as selected. Unavailable days and days that can't end a range are announced as dimmed on iOS and disabled on Android, where they also leave Tab's order on a hardware keyboard.
+
+The heading is announced when the month changes: a live region on Android, and an announcement on iOS, which has no live regions. Weekday headers are read by their full names.
+
+Neither OS has a current-date state, so today isn't announced. Add it to the day's label yourself if it matters, like with `aria-label`.
+
+A press on a day of another month shows that month and moves the screen reader to the day, as does a controller's `focus()`.

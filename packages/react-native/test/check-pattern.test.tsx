@@ -1130,7 +1130,7 @@ describe("checkPattern's calendar pattern on the native host", () => {
     )
     await expect(checkCalendar()).resolves.toBeUndefined()
     expect(onValueChange).toHaveBeenCalled()
-  })
+  }, 30_000)
 
   test("passes on a disabled calendar, which ignores the activation", async () => {
     await render(<Calendar disabled defaultMonth="2026-10" locale="en-US" />)

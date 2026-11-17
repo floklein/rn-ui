@@ -644,6 +644,20 @@
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the root's and the day's bind orchestrate: the root reads the locale and today through bindRoot, and each day joins the roving group with a native element the order twin sorts and the host focuses."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/week.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/week.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl has no Intl.Locale, so the first day of the week comes from the tag's region and CLDR's table, where the DOM module asks Intl.Locale's week info and maximizes the tag."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/date/format.native.ts",
+      "mirrors": ["packages/core/src/foundation/date/format.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
     }
   ],
   "components": {
