@@ -43,25 +43,21 @@ function Example() {
 
   return (
     <>
-      <Pressable
-        role="button"
-        onPress={saveChanges}
-        style={styles.button}
-      >
+      <Pressable role="button" onPress={saveChanges} style={styles.button}>
         <Text>Save Changes</Text>
       </Pressable>
       <ToastRegion toaster={toast} style={styles.region}>
         {() => (
           <Toast
             style={(state) => [
-            styles.toast,
-            {
-              transform: [
-                { translateX: state.swipeX },
-                { translateY: state.swipeY },
-              ],
-            },
-          ]}
+              styles.toast,
+              {
+                transform: [
+                  { translateX: state.swipeX },
+                  { translateY: state.swipeY },
+                ],
+              },
+            ]}
           >
             <View style={styles.stack}>
               <ToastTitle style={styles.title} />

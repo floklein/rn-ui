@@ -403,6 +403,13 @@ function useDevice(name: string) {
         await driver.getPageSource()
       )
     },
+    /** Saves a screenshot beside the saved trees, for a check a person reads. */
+    async screenshot(state: string) {
+      await mkdir(output, { recursive: true })
+      await driver.saveScreenshot(
+        path.join(output, `${platform}-${name}-${state}.png`)
+      )
+    },
     /** Apple's accessibility audit of the screen; an empty list on Android, which has none. */
     async audit() {
       if (platform !== "ios") {

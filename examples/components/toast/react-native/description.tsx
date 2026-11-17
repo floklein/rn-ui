@@ -35,14 +35,14 @@ function Example() {
         {() => (
           <Toast
             style={(state) => [
-            styles.toast,
-            {
-              transform: [
-                { translateX: state.swipeX },
-                { translateY: state.swipeY },
-              ],
-            },
-          ]}
+              styles.toast,
+              {
+                transform: [
+                  { translateX: state.swipeX },
+                  { translateY: state.swipeY },
+                ],
+              },
+            ]}
           >
             <View style={styles.stack}>
               <ToastTitle style={styles.title} />

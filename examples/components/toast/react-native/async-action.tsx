@@ -48,14 +48,14 @@ function Example() {
         {() => (
           <Toast
             style={(state) => [
-            styles.toast,
-            {
-              transform: [
-                { translateX: state.swipeX },
-                { translateY: state.swipeY },
-              ],
-            },
-          ]}
+              styles.toast,
+              {
+                transform: [
+                  { translateX: state.swipeX },
+                  { translateY: state.swipeY },
+                ],
+              },
+            ]}
           >
             <View style={styles.stack}>
               <ToastTitle style={styles.title} />
@@ -64,7 +64,11 @@ function Example() {
             <ToastAction style={styles.action}>
               {(state) => (
                 <Text style={styles.actionText}>
-                  {state.pending ? "Restoring…" : state.error ? "Retry" : "Undo"}
+                  {state.pending
+                    ? "Restoring…"
+                    : state.error
+                      ? "Retry"
+                      : "Undo"}
                 </Text>
               )}
             </ToastAction>

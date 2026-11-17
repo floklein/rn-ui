@@ -96,32 +96,35 @@ function Example() {
       </View>
       <AlertDialog controller={confirm.controller}>
         <AlertDialogBackdrop style={styles.backdrop} />
-        <AlertDialogContent<ConfirmOptions> style={styles.content}>
-          {(state) => (
-            <>
-              <View style={styles.texts}>
-                <AlertDialogTitle style={styles.dialogTitle}>
-                  {state.payload?.title}
-                </AlertDialogTitle>
-                <AlertDialogDescription style={styles.description}>
-                  {state.payload?.description}
-                </AlertDialogDescription>
-              </View>
-              <View style={styles.answers}>
-                <AlertDialogClose style={styles.button}>
-                  <Text>{state.payload?.cancelLabel}</Text>
-                </AlertDialogClose>
-                <AlertDialogClose
-                  value="confirm"
-                  style={[styles.button, styles.solid]}
-                >
-                  <Text style={styles.solidText}>
-                    {state.payload?.confirmLabel}
-                  </Text>
-                </AlertDialogClose>
-              </View>
-            </>
-          )}
+        <AlertDialogContent style={styles.content}>
+          {(state) => {
+            const question = (state.payload ?? {}) as ConfirmOptions
+            return (
+              <>
+                <View style={styles.texts}>
+                  <AlertDialogTitle style={styles.dialogTitle}>
+                    {question.title}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription style={styles.description}>
+                    {question.description}
+                  </AlertDialogDescription>
+                </View>
+                <View style={styles.answers}>
+                  <AlertDialogClose style={styles.button}>
+                    <Text>{question.cancelLabel}</Text>
+                  </AlertDialogClose>
+                  <AlertDialogClose
+                    value="confirm"
+                    style={[styles.button, styles.solid]}
+                  >
+                    <Text style={styles.solidText}>
+                      {question.confirmLabel}
+                    </Text>
+                  </AlertDialogClose>
+                </View>
+              </>
+            )
+          }}
         </AlertDialogContent>
       </AlertDialog>
     </OverlayHost>

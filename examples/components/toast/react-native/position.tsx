@@ -49,7 +49,7 @@ function Example() {
           <SegmentedControlItem
             key={option.value}
             value={option.value}
-            style={(state) => [styles.item, state.selected && styles.selected]}
+            style={(state) => [styles.item, state.checked && styles.selected]}
           >
             <Text>{option.label}</Text>
           </SegmentedControlItem>
@@ -65,7 +65,7 @@ function Example() {
           <SegmentedControlItem
             key={option.value}
             value={option.value}
-            style={(state) => [styles.item, state.selected && styles.selected]}
+            style={(state) => [styles.item, state.checked && styles.selected]}
           >
             <Text>{option.label}</Text>
           </SegmentedControlItem>

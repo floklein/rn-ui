@@ -1,10 +1,6 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-} from "@testing-library/react-native"
-import { AccessibilityInfo, Text } from "react-native"
+import { act, fireEvent, render, screen } from "@testing-library/react-native"
+import type { ReactNode } from "react"
+import { AccessibilityInfo, AppState, Text } from "react-native"
 import {
   Dialog,
   DialogClose,
@@ -19,6 +15,7 @@ import {
   Toast,
   ToastAction,
   ToastClose,
+  type Toaster,
   ToastRegion,
   type ToastState,
   ToastTitle,
@@ -80,7 +77,7 @@ function Region({
   toaster,
   onState,
 }: {
-  toaster: ReturnType<typeof createToaster>
+  toaster: Toaster<ReactNode>
   onState?: (state: ToastState) => void
 }) {
   return (
@@ -211,6 +208,29 @@ describe("toast()", () => {
 })
 
 describe("ToastRegion", () => {
+  test("its timers wait while the app is in the background", async () => {
+    const listen = jest.spyOn(AppState, "addEventListener")
+    await render(
+      <OverlayHost>
+        <Text>App</Text>
+      </OverlayHost>
+    )
+    await act(async () => {
+      toast({ title: "Saved", duration: 1000 })
+    })
+    const [, change] = listen.mock.calls.at(-1)!
+    await act(async () => {
+      change("background")
+      jest.advanceTimersByTime(2000)
+    })
+    expect(screen.getByText("Saved")).toBeOnTheScreen()
+    await act(async () => {
+      change("active")
+      jest.advanceTimersByTime(1000)
+    })
+    expect(screen.queryByText("Saved")).toBeNull()
+  })
+
   test("takes over its toaster, so OverlayHost renders no second region", async () => {
     const toaster = createToaster()
     await render(

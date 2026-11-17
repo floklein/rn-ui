@@ -1934,14 +1934,14 @@ describe("checkPattern's toast pattern on the native host", () => {
     const toaster = createToaster()
     await render(
       <OverlayHost>
-      <ToastRegion toaster={toaster}>
-        {() => (
-          <Toast>
-            <ToastTitle />
-            <ToastClose />
-          </Toast>
-        )}
-      </ToastRegion>
+        <ToastRegion toaster={toaster}>
+          {() => (
+            <Toast>
+              <ToastTitle />
+              <ToastClose />
+            </Toast>
+          )}
+        </ToastRegion>
       </OverlayHost>
     )
     await act(async () => {
@@ -1956,14 +1956,14 @@ describe("checkPattern's toast pattern on the native host", () => {
     const toaster = createToaster()
     await render(
       <OverlayHost>
-      <ToastRegion toaster={toaster}>
-        {() => (
-          <Toast>
-            <ToastTitle />
-            <ToastAction dismiss={false} />
-          </Toast>
-        )}
-      </ToastRegion>
+        <ToastRegion toaster={toaster}>
+          {() => (
+            <Toast>
+              <ToastTitle />
+              <ToastAction dismiss={false} />
+            </Toast>
+          )}
+        </ToastRegion>
       </OverlayHost>
     )
     await act(async () => {

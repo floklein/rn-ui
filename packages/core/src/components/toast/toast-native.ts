@@ -153,7 +153,10 @@ function follow(part: ToastPart) {
         directions: directions(),
       })
       if (direction && api.internal.close(toastId, "swipe")) {
-        set(toastId, { ...swipeOffset(x, y, swiped.axis, directions()), direction })
+        set(toastId, {
+          ...swipeOffset(x, y, swiped.axis, directions()),
+          direction,
+        })
         return
       }
       set(toastId, undefined)

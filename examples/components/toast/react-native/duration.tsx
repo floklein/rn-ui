@@ -52,14 +52,14 @@ function Example() {
         {(item) => (
           <Toast
             style={(state) => [
-            styles.toast,
-            {
-              transform: [
-                { translateX: state.swipeX },
-                { translateY: state.swipeY },
-              ],
-            },
-          ]}
+              styles.toast,
+              {
+                transform: [
+                  { translateX: state.swipeX },
+                  { translateY: state.swipeY },
+                ],
+              },
+            ]}
           >
             <ToastTitle style={[styles.title, styles.grow]} />
             {item.cancel && (

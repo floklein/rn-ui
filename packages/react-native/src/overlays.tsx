@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "./alert-dialog"
 import { RootHost, type RootHostProps } from "./overlay-host"
-import { Region, type ToastRegionProps } from "./toast"
+import { Region, type ToastRegionProps } from "./toast-parts"
 
 const noEntries: readonly OverlayEntry[] = []
 

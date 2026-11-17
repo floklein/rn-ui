@@ -4,18 +4,14 @@
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/announce.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/announce.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/announce.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Hands an announcement to the native host's screen reader where the DOM module writes it into a live region."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/focus/focus-part.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/forms/toggle-control.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/forms/toggle-control.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Focuses a part through the native host where the toggle control focused its root element."
     },
@@ -33,9 +29,7 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/input/input.ts",
-      "mirrors": [
-        "packages/core/src/components/input/input.ts"
-      ],
+      "mirrors": ["packages/core/src/components/input/input.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "InputGroup's control lookup, clear and press around the field move to foundation/forms/group-field.ts, which has a native twin."
     },
@@ -51,18 +45,14 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/foundation/forms/text-field.ts",
-      "mirrors": [
-        "packages/core/src/foundation/forms/text-field.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/forms/text-field.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The text field's focus() calls focusPart instead of control()?.focus(), and its context type picks parts."
     },
     {
       "kind": "behavior",
       "file": "packages/core/src/foundation/motion/presence-native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/motion/presence.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/motion/presence.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Presence on the native host: the first-frame and closing flags as state, and an exit the app ends through onExit's done or a two-second timeout, where the DOM host reads the running animations. Entering and the end of an exit settle the part for a native behavior's onSettled listener, where bindPanel's settled and exited callbacks wait for the animations."
     },
@@ -79,18 +69,14 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/foundation/forms/toggle-control.ts",
-      "mirrors": [
-        "packages/core/src/foundation/forms/toggle-control.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/forms/toggle-control.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of element(\"root\")?.focus(), and its context type picks parts."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/kernel/order.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/kernel/order.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/kernel/order.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Orders a group's members by where the host renders their parts, and sorts on every read, since nothing reports a part that moves; the DOM module compares elements, walks the tree and watches moves with a MutationObserver."
     },
@@ -127,18 +113,14 @@
     {
       "kind": "behavior",
       "file": "packages/core/src/components/toolbar/toolbar-native.ts",
-      "mirrors": [
-        "packages/core/src/components/toolbar/toolbar.ts"
-      ],
+      "mirrors": ["packages/core/src/components/toolbar/toolbar.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the button, link and input slots' bind orchestrates: each item joins the toolbar (api.internal.join) while it's mounted, so the toolbar lists its items in render order, keeps its stop on an enabled one and its controller focuses it."
     },
     {
       "kind": "behavior",
       "file": "packages/core/src/components/toggle/toggle-native.ts",
-      "mirrors": [
-        "packages/core/src/components/toggle/toggle.ts"
-      ],
+      "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the root slot's bind orchestrates: the toggle joins its group (api.internal.join) while its root is mounted, so the group lists its toggles in render order, refuses a disabled one and focuses one."
     },
@@ -178,9 +160,7 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/collapsible/collapsible.ts",
-      "mirrors": [
-        "packages/core/src/components/collapsible/collapsible.ts"
-      ],
+      "mirrors": ["packages/core/src/components/collapsible/collapsible.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of element(\"trigger\")?.focus(), and the api reads parts from its context."
     },
@@ -197,18 +177,14 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/toggle/toggle.ts",
-      "mirrors": [
-        "packages/core/src/components/toggle/toggle.ts"
-      ],
+      "mirrors": ["packages/core/src/components/toggle/toggle.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of element(\"root\")?.focus()."
     },
     {
       "kind": "reroute",
       "file": "packages/core/src/components/avatar/avatar.ts",
-      "mirrors": [
-        "packages/core/src/components/avatar/avatar.ts"
-      ],
+      "mirrors": ["packages/core/src/components/avatar/avatar.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "internal.reportImageStatus, the image's load, error and source decisions as an api method, which a native Image's events call where watchImage's handlers read an <img>."
     },
@@ -225,441 +201,343 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/otp-input/otp-input-api.ts",
-      "mirrors": [
-        "packages/core/src/components/otp-input/otp-input-api.ts"
-      ],
+      "mirrors": ["packages/core/src/components/otp-input/otp-input-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The api spreads nativeField(...) from otp-input-field.ts, which has a native twin, into internal, and the controller's focus() calls focusPart instead of input()?.focus()."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/forms/form.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/forms/form.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/forms/form.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Form participation does nothing on the native host, which has no forms: hidden inputs, internals, change events, implicit submission, validity and labels. A disabled FieldSet hands its state down through the adapter, so no fieldset is watched. Focus registration and the disabled checks behave as the DOM module's."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/forms/label-press.native.ts",
-      "mirrors": [
-        "packages/core/src/components/field/field.ts"
-      ],
+      "mirrors": ["packages/core/src/components/field/field.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "A press on a field's label asks the native host to activate the control that joined the field, where the DOM module leaves a native <label> to the browser and finds the control in the field's element."
     },
     {
       "kind": "reroute",
       "file": "packages/core/src/components/field/field.ts",
-      "mirrors": [
-        "packages/core/src/components/field/field.ts"
-      ],
+      "mirrors": ["packages/core/src/components/field/field.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The label slot's press is pressLabel from foundation/forms/label-press.ts, which has a native twin, instead of its inline HTMLLabelElement check and api.activate()."
     },
     {
       "kind": "behavior",
       "file": "packages/core/src/components/field/field-native.ts",
-      "mirrors": [
-        "packages/core/src/components/field/field.ts"
-      ],
+      "mirrors": ["packages/core/src/components/field/field.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "What the label, description and error slots' bind orchestrates: each registers its id with the field while mounted, so the control points at the parts that render; the root marks the field bound."
     },
     {
       "kind": "edit",
       "file": "AGENTS.md",
-      "mirrors": [
-        "AGENTS.md"
-      ],
+      "mirrors": ["AGENTS.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The fork's issue tracker, triage labels and domain docs, appended. react-native in the framework experts' list."
     },
     {
       "kind": "edit",
       "file": "contributing/README.md",
-      "mirrors": [
-        "contributing/README.md"
-      ],
+      "mirrors": ["contributing/README.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "A row for upstream.md, the routine for merging upstream. A row for native-manual-pass.md, the manual screen reader and keyboard pass."
     },
     {
       "kind": "edit",
       "file": "apps/docs/content/docs/core/meta.json",
-      "mirrors": [
-        "apps/docs/content/docs/core/meta.json"
-      ],
+      "mirrors": ["apps/docs/content/docs/core/meta.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native-host page in Core's navigation."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/package-docs.ts",
-      "mirrors": [
-        "apps/docs/lib/package-docs.ts"
-      ],
+      "mirrors": ["apps/docs/lib/package-docs.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "\"react-native\": undefined, so the package ships Core docs until its own section exists. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
     },
     {
       "kind": "edit",
       "file": "examples/tsconfig.react.json",
-      "mirrors": [
-        "examples/tsconfig.react.json"
-      ],
+      "mirrors": ["examples/tsconfig.react.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Excludes components/*/react-native, which the native playground type-checks."
     },
     {
       "kind": "edit",
       "file": "packages/core/package.json",
-      "mirrors": [
-        "packages/core/package.json"
-      ],
+      "mirrors": ["packages/core/package.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The ./native export, in exports and publishConfig; a react-native condition on every publishConfig export and around the #dev and #name-check pairs; --native in the build script."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/focus/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/focus/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/focus/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports focusPart."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/forms/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/forms/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/forms/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports groupField, which input.ts imports."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/motion/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/motion/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/motion/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports onSettled, holdExit and endExit, which native behavior files import, and exit.ts's afterExit and holdsMount, which popup.ts imports."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/kernel/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/kernel/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/kernel/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports nativeHost, NativeHost, NativeInput, NativeBehavior, NativeDrag, NativeTouch, nativeElement, partOf and Twin."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/renderer.ts",
-      "mirrors": [
-        "packages/core/src/renderer.ts"
-      ],
+      "mirrors": ["packages/core/src/renderer.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports withSource, liveAttrs, createPresence, onSettled and PresenceState for the native adapter."
     },
     {
       "kind": "edit",
       "file": "pnpm-lock.yaml",
-      "mirrors": [
-        "pnpm-lock.yaml"
-      ],
+      "mirrors": ["pnpm-lock.yaml"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Generated. After a merge, take upstream's and run pnpm install."
     },
     {
       "kind": "edit",
       "file": "scripts/build/build-package.mjs",
-      "mirrors": [
-        "scripts/build/build-package.mjs"
-      ],
+      "mirrors": ["scripts/build/build-package.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The --native flag, which runs scripts/native/native-build.mjs and adds its problems to the publish problems."
     },
     {
       "kind": "edit",
       "file": "scripts/check-packages.mjs",
-      "mirrors": [
-        "scripts/check-packages.mjs"
-      ],
+      "mirrors": ["scripts/check-packages.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native as a peer, and frameworkOptions[\"react-native\"] with skipLibCheck."
     },
     {
       "kind": "edit",
       "file": "scripts/public-exports.mjs",
-      "mirrors": [
-        "scripts/public-exports.mjs"
-      ],
+      "mirrors": ["scripts/public-exports.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native in documentedPackages."
     },
     {
       "kind": "edit",
       "file": ".github/workflows/ci.yml",
-      "mirrors": [
-        ".github/workflows/ci.yml"
-      ],
+      "mirrors": [".github/workflows/ci.yml"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The device specs jobs: a plan, then Android and iOS runs, with Android's result read by CI passed."
     },
     {
       "kind": "edit",
       "file": "package.json",
-      "mirrors": [
-        "package.json"
-      ],
+      "mirrors": ["package.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The test:device and test:device:sweep scripts."
     },
     {
       "kind": "edit",
       "file": "scripts/size.mjs",
-      "mirrors": [
-        "scripts/size.mjs"
-      ],
+      "mirrors": ["scripts/size.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Core's native entry is skipped like renderer and testing, since no app ships it. A react-native adapter row that bundles native twins, with no budget needed for registry-pending components."
     },
     {
       "kind": "edit",
       "file": "tests/README.md",
-      "mirrors": [
-        "tests/README.md"
-      ],
+      "mirrors": ["tests/README.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native playground's and Appium's ports, a row for device specs and a section on running them. How pnpm size measures React Native rows."
     },
     {
       "kind": "edit",
       "file": "tests/package.json",
-      "mirrors": [
-        "tests/package.json"
-      ],
+      "mirrors": ["tests/package.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "webdriverio, which the device specs drive Appium with."
     },
     {
       "kind": "edit",
       "file": ".agents/skills/ui-sdk-expert-review/SKILL.md",
-      "mirrors": [
-        ".agents/skills/ui-sdk-expert-review/SKILL.md"
-      ],
+      "mirrors": [".agents/skills/ui-sdk-expert-review/SKILL.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native in the skill description's expert list."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/react/decisions.md",
-      "mirrors": [
-        ".agents/experts/react/decisions.md"
-      ],
+      "mirrors": [".agents/experts/react/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88, 68): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/solid/decisions.md",
-      "mirrors": [
-        ".agents/experts/solid/decisions.md"
-      ],
+      "mirrors": [".agents/experts/solid/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88, 68): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/svelte/decisions.md",
-      "mirrors": [
-        ".agents/experts/svelte/decisions.md"
-      ],
+      "mirrors": [".agents/experts/svelte/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88, 68): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/vue/decisions.md",
-      "mirrors": [
-        ".agents/experts/vue/decisions.md"
-      ],
+      "mirrors": [".agents/experts/vue/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88, 68): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": ".agents/experts/web/decisions.md",
-      "mirrors": [
-        ".agents/experts/web/decisions.md"
-      ],
+      "mirrors": [".agents/experts/web/decisions.md"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The native tickets' branches in the last-reviewed line (78, 122, 61, 81, 88, 68): native-only changes, with no change on the web."
     },
     {
       "kind": "edit",
       "file": "apps/docs/components/component-example.tsx",
-      "mirrors": [
-        "apps/docs/components/component-example.tsx"
-      ],
+      "mirrors": ["apps/docs/components/component-example.tsx"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Code-only frameworks show their example source with copy and no live preview."
     },
     {
       "kind": "edit",
       "file": "apps/docs/components/mdx.tsx",
-      "mirrors": [
-        "apps/docs/components/mdx.tsx"
-      ],
+      "mirrors": ["apps/docs/components/mdx.tsx"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Registers PartStateTable for MDX pages."
     },
     {
       "kind": "edit",
       "file": "apps/docs/components/site-preferences.tsx",
-      "mirrors": [
-        "apps/docs/components/site-preferences.tsx"
-      ],
+      "mirrors": ["apps/docs/components/site-preferences.tsx"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The react-native framework's visibility class."
     },
     {
       "kind": "edit",
       "file": "apps/docs/components/type-tables.tsx",
-      "mirrors": [
-        "apps/docs/components/type-tables.tsx"
-      ],
+      "mirrors": ["apps/docs/components/type-tables.tsx"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "PartStateTable, the state fields a part's style functions receive on React Native. TypeTable passes omit to its rows."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/reference-rows.ts",
-      "mirrors": [
-        "apps/docs/lib/reference-rows.ts"
-      ],
+      "mirrors": ["apps/docs/lib/reference-rows.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Native TypeTables leave out the web-only names and modal's \"trap-focus\" value, which @ui-sdk/react-native's types don't take. TypeTable takes omit, the fields a table leaves out, like Textarea's submit options on native."
     },
     {
       "kind": "edit",
       "file": "apps/docs/content/docs/meta.json",
-      "mirrors": [
-        "apps/docs/content/docs/meta.json"
-      ],
+      "mirrors": ["apps/docs/content/docs/meta.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The react-native section in the docs navigation."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/css-variables.test.ts",
-      "mirrors": [
-        "apps/docs/lib/css-variables.test.ts"
-      ],
+      "mirrors": ["apps/docs/lib/css-variables.test.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Skips code-only pages and checks native pages have a Part State section per styled part."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/data-attributes.ts",
-      "mirrors": [
-        "apps/docs/lib/data-attributes.ts"
-      ],
+      "mirrors": ["apps/docs/lib/data-attributes.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports partStates, the sampled state each part's render and style functions receive."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/frameworks.ts",
-      "mirrors": [
-        "apps/docs/lib/frameworks.ts"
-      ],
+      "mirrors": ["apps/docs/lib/frameworks.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The react-native framework, code-only, and isCodeOnly."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/llms.ts",
-      "mirrors": [
-        "apps/docs/lib/llms.ts"
-      ],
+      "mirrors": ["apps/docs/lib/llms.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native's package mapping, and no Utilities section when a framework has none. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24)."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/page-markdown.ts",
-      "mirrors": [
-        "apps/docs/lib/page-markdown.ts"
-      ],
+      "mirrors": ["apps/docs/lib/page-markdown.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Renders PartStateTable in agent Markdown. Shows the fork's `@rn-ui-sdk/*` names in the native section (spec rule 24). TypeTable's omit in agent Markdown."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/pages.ts",
-      "mirrors": [
-        "apps/docs/lib/pages.ts"
-      ],
+      "mirrors": ["apps/docs/lib/pages.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Returns no pages for a missing directory."
     },
     {
       "kind": "edit",
       "file": "apps/docs/next.config.mjs",
-      "mirrors": [
-        "apps/docs/next.config.mjs"
-      ],
+      "mirrors": ["apps/docs/next.config.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "react-native in the docs frameworks list."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/example-sources.ts",
-      "mirrors": [
-        "apps/docs/lib/example-sources.ts"
-      ],
+      "mirrors": ["apps/docs/lib/example-sources.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "A native example's code shows the fork's `@rn-ui-sdk/*` names (spec rule 24); the files keep `@ui-sdk/*`."
     },
     {
       "kind": "edit",
       "file": "apps/docs/lib/source.ts",
-      "mirrors": [
-        "apps/docs/lib/source.ts"
-      ],
+      "mirrors": ["apps/docs/lib/source.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The remark plugin that shows the fork's `@rn-ui-sdk/*` names on the native section's pages (spec rule 24)."
     },
     {
       "kind": "edit",
       "file": "scripts/expert-scope.mjs",
-      "mirrors": [
-        "scripts/expert-scope.mjs"
-      ],
+      "mirrors": ["scripts/expert-scope.mjs"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The react-native expert, reached by the native playground and native tests."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/env.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/env.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/env.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Reads the direction from the native host (I18nManager.isRTL) for the whole app, ignoring the element, where the DOM module reads the element's computed direction. There's no browser, so isBrowser and isIOS are false."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/text/locale.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/text/locale.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/text/locale.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The page's and the user's language are the device's, from Intl, where the DOM module reads the nearest lang attribute and navigator.languages."
     },
@@ -677,18 +555,14 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/slider/slider-api.ts",
-      "mirrors": [
-        "packages/core/src/components/slider/slider-api.ts"
-      ],
+      "mirrors": ["packages/core/src/components/slider/slider-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of the thumb input's focus(). Additive: internal.cancel(), which puts the value back and commits nothing, and adjust()'s event is optional."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/layers.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/layers.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/layers.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The layer stack with no document: the same stack, order, nesting and persistent layers, with back, the escape gesture and a backdrop press coming from the native host's listen and going to the topmost layer (a backdrop press down to the first shielding one), where the DOM module listens to the document. Its Layer widens the DOM's with onBack, onEscapeGesture and onBackdropPress, which take no event."
     },
@@ -729,36 +603,28 @@
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/popups/popup.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/popup.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/popups/popup.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The ADR's two popup.ts changes: the unmount on close of a popup with no element goes through motion/exit.ts's afterExit and mountedAs asks its holdsMount (both at once on the DOM host), and closeFocus() reads the focus mode of the close under way."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/popups/popup-features.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/popup-features.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/popups/popup-features.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The ADR's popup-features.ts change: a trigger press takes its opener from the caller, defaulting to openerOf(event)."
     },
     {
       "kind": "reroute",
       "file": "packages/core/src/foundation/popups/create-popup.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/create-popup.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/popups/create-popup.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The controller's focus() calls focusPart instead of triggerElement()?.focus()."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/popups/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
     },
@@ -775,38 +641,30 @@
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/date/week.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/date/week.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/date/week.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Hermes's Intl has no Intl.Locale, so the first day of the week comes from the tag's region and CLDR's table, where the DOM module asks Intl.Locale's week info and maximizes the tag."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/date/format.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/date/format.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/date/format.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Hermes's Intl.DateTimeFormat has no formatRange, so a range of dates is its two dates joined by a dash, where the DOM module formats it with formatRange."
     },
     {
       "kind": "edit",
       "file": "packages/core/test/slot-role-messages.test.ts",
-      "mirrors": [
-        "packages/core/test/slot-role-messages.test.ts"
-      ],
+      "mirrors": ["packages/core/test/slot-role-messages.test.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "A 30 second timeout: the type program it builds took about 6 seconds after Calendar (#102) merged, over Vitest's 5 second default."
     },
     {
       "kind": "edit",
       "file": "size-budget.json",
-      "mirrors": [
-        "size-budget.json"
-      ],
+      "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover and file-input."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover, file-input, overlays and toast."
     },
     {
       "kind": "behavior",
@@ -822,18 +680,14 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/accordion/accordion.ts",
-      "mirrors": [
-        "packages/core/src/components/accordion/accordion.ts"
-      ],
+      "mirrors": ["packages/core/src/components/accordion/accordion.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The items' order sorts the registered items with inDocumentOrder instead of reading elements(context, \"item\"), so the order twin sorts native stand-ins; the controller's focus() calls focusPart, with the first item's key when no value is given."
     },
     {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/style.native.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/style.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/style.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "No page styles on the native host: ahead, afterPaint and the style writers do nothing, so a popup preset's placement.prepare never reaches performance or CSS."
     },
@@ -861,18 +715,14 @@
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/platform/position.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/position.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/position.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports transformOrigin, which placement-native.ts imports through platform/index.ts."
     },
     {
       "kind": "edit",
       "file": "packages/core/src/foundation/platform/index.ts",
-      "mirrors": [
-        "packages/core/src/foundation/platform/index.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/platform/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Exports anchorRect, arrowOffset, computeArrow, computePlacement and transformOrigin, which popups/placement-native.ts imports."
     },
@@ -902,9 +752,7 @@
     {
       "kind": "behavior",
       "file": "packages/core/src/foundation/popups/native-sheet.ts",
-      "mirrors": [
-        "packages/core/src/foundation/popups/sheet-driver.ts"
-      ],
+      "mirrors": ["packages/core/src/foundation/popups/sheet-driver.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "Where the native sheet and the host meet: the host's view (sizes, moves, the spring or the reduced-motion fade, and whether motion is reduced) and the finger it feeds the sheet, the native counterpart of the DOM driver boundary."
     },
@@ -940,9 +788,7 @@
     {
       "kind": "reroute",
       "file": "packages/core/src/components/file-input/file-input-api.ts",
-      "mirrors": [
-        "packages/core/src/components/file-input/file-input-api.ts"
-      ],
+      "mirrors": ["packages/core/src/components/file-input/file-input-api.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "open() calls openPicker from file-input-picker.ts, which has a native twin, instead of clicking input() itself, and the controller's focus() calls focusPart instead of element(\"trigger\")?.focus()."
     },
@@ -1589,7 +1435,7 @@
       "entry": "packages/react-native/src/toast.tsx",
       "slots": {
         "toastRegion.region": {
-          "covered": "packages/react-native/src/toast.tsx",
+          "covered": "packages/react-native/src/toast-parts.tsx",
           "reason": "Its bind connects the region to its toaster while it's on the page, which the adapter's Region does from mount to unmount through internal.connect(); shows it in the top layer, which the adapter does by rendering it in the topmost open host, following each host that becomes topmost; adds default styles, which the adapter's placement style restates with the host's insets and the keyboard; registers the F6 shortcut and tracks the keyboard, which native has none of; and pauses timers on hover, focus and a hidden page, which touch has no hover for and React Native reports no focus or visibility to (recorded difference). Its keydown returns focus after the shortcut, which native has no shortcut for."
         },
         "toastRegion.root": {
