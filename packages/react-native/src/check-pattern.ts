@@ -6,6 +6,7 @@ import {
   type HostNode,
   nameOf,
   performWatched,
+  watched,
   readTree,
   roleOf,
   shownNodes,
@@ -29,6 +30,8 @@ import {
  * unless told otherwise; render some toasts before the check.
  * A tooltip's triggers are its buttons, each named or described by its text.
  * A hover card's triggers are its links, which activating never opens.
+ * A combobox that's a `TextInput` is checked as an editable one: typing
+ * opens its list, which it does by typing a letter and taking it back out.
  * @experimental
  */
 type NativePattern =
@@ -1302,6 +1305,9 @@ async function comboboxPattern(context: Context) {
   if (isDisabled(box())) {
     return
   }
+  if (box().type === "TextInput") {
+    return editableComboboxPattern(context, box)
+  }
   const open = () => stateOf(box()).expanded === true
   const activate = (node: HostNode) =>
     performWatched(node, "activate", context.act)
@@ -1416,6 +1422,89 @@ async function comboboxPattern(context: Context) {
   }
 }
 
+// APG editable combobox with list autocomplete: typing opens the list while
+// focus stays in the field, choosing an option fills the field in and closes
+// it, and iOS's escape gesture on the list closes it with focus back in the field.
+async function editableComboboxPattern(
+  context: Context,
+  field: () => HostNode
+) {
+  const open = () => stateOf(field()).expanded === true
+  const type = (text: string) =>
+    watched(() => field().props.onChangeText?.(text), context.act)
+  const opening = async () => {
+    const text = (field().props.value as string | undefined) ?? ""
+    return [...(await type(`${text}a`)), ...(await type(text))]
+  }
+  if ((await opening()).length) {
+    context.problem(
+      field(),
+      "requests accessibility focus as typing opens its list; focus stays in the field (APG combobox)."
+    )
+  }
+  if (!open()) {
+    context.problem(
+      field(),
+      "stays collapsed after typing; typing in a combobox opens its list (APG combobox)."
+    )
+    return
+  }
+  if (openModal(context)) {
+    context.problem(
+      field(),
+      "opens its list in a Modal, which takes the screen reader and the keyboard from the field."
+    )
+  }
+  if (!optionsOf(context).length) {
+    context.problem(
+      context.root,
+      "shows no option once open; an option is a button with a selected state."
+    )
+    return
+  }
+  for (const option of optionsOf(context)) {
+    requireName(context, option, "option")
+  }
+  const target = optionsOf(context).find((node) => !isDisabled(node))
+  if (target) {
+    const name = nameOf(target)
+    await performWatched(target, "activate", context.act)
+    if (open()) {
+      context.problem(field(), "stays expanded after an option is chosen.")
+    } else if (field().props.value !== name) {
+      context.problem(
+        field(),
+        `shows "${field().props.value}" after "${name}" was chosen; choosing an option fills the field in (APG combobox).`
+      )
+    }
+  }
+  if (context.os === "android") {
+    return
+  }
+  if (!open()) {
+    await opening()
+  }
+  const escapable = shownNodes(context.root).find(
+    (node) => typeof node.props.onAccessibilityEscape === "function"
+  )
+  if (!escapable) {
+    context.problem(
+      field(),
+      "opens a list with no view that takes VoiceOver's escape gesture, which closes it."
+    )
+    return
+  }
+  const requests = await performWatched(escapable, "escape", context.act)
+  if (open()) {
+    context.problem(field(), "stays expanded after the escape action.")
+  } else if (!requests.length) {
+    context.problem(
+      field(),
+      "requests no accessibility focus after the escape action; focus returns to the field."
+    )
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   accordion: (context) => checkExpandable(context, "accordion"),
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
@@ -1460,7 +1549,8 @@ async function checkActions(context: Context) {
   for (const action of osActions[context.os]) {
     const elements = context.elements()
     for (const node of elements.filter((node) => hasAction(node, action))) {
-      if (isDisabled(node)) {
+      // An earlier action can take this one away, like a field's expand from its list's button.
+      if (isDisabled(node) || !hasAction(node, action)) {
         continue
       }
       // Content shown or hidden before it can move it among the elements.

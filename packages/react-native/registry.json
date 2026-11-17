@@ -2,6 +2,34 @@
   "upstream": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
   "entries": [
     {
+      "kind": "behavior",
+      "file": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+      "mirrors": [
+        "packages/core/src/components/autocomplete/autocomplete-parts.ts",
+        "packages/core/src/components/autocomplete/autocomplete-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the label, content, list, item and group-label slots' bind orchestrate: the flags they set while mounted, a suggestion's registration with the engine (listbox-native.ts), the popup's layer and exit (popup-native.ts) with focus left in the field, the highlight announced while focus stays there, and focus back in the field after a screen reader chooses or escapes; and what the field's input and keydown events and the trigger's press do on the web, from the TextInput's text, its return key and the press source (typeAutocomplete, submitAutocomplete, pressAutocompleteTrigger)."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/autocomplete/autocomplete-api.ts",
+      "mirrors": [
+        "packages/core/src/components/autocomplete/autocomplete-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "typed(input, event) hands the text and whether it was inserted at the end to internal.typeText, which the native host calls with a TextInput's text and writes an inline completion back through a callback; internal.popupCore holds the popup's own internals, which popup-native.ts and the adapter's placement read; the controller's focus() calls focusPart instead of focusing the input. None of it changes the web."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/autocomplete/autocomplete-parts.ts",
+      "mirrors": [
+        "packages/core/src/components/autocomplete/autocomplete-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The label's press checks for a native <label> by its localName instead of instanceof HTMLLabelElement, a global React Native doesn't have, so the press threw there."
+    },
+    {
       "kind": "twin",
       "file": "packages/core/src/foundation/platform/announce.native.ts",
       "mirrors": ["packages/core/src/foundation/platform/announce.ts"],
@@ -1147,6 +1175,59 @@
     }
   ],
   "components": {
+    "autocomplete": {
+      "entry": "packages/react-native/src/autocomplete.tsx",
+      "slots": {
+        "autocomplete.label": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its bind marks the autocomplete labeled while it's mounted, which autocomplete-native.ts does, so the field takes the label as its name. Its press focuses the field through the controller's focus(), which goes through focusPart."
+        },
+        "autocomplete.input": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its bind writes the text into the <input>, which AutocompleteInput's value prop follows, warns about a missing name, and joins forms (reset, a disabled fieldset) and the sheet header, none of which exists on native: a disabled FieldSet reaches it through useInheritedDisabled, and the sheet is the sheet entry's (ticket 16). Its input event is the TextInput's onChangeText, which typeAutocomplete hands to typeText with whether the caret was at the end, and an inline completion's rest comes back as the TextInput's selection. Its keydown takes arrow keys, Enter, Escape and Tab, which React Native never reports from a TextInput: the return key's onSubmitEditing runs submitAutocomplete, Android's expand and collapse actions open and close the list, and keyboard focus reaches the suggestions as their own elements. Its focusin opens the list with openOnFocus, which the TextInput's onFocus does; its focusout closes the list, which native leaves to an outside press, back and VoiceOver's escape. aria-activedescendant has no native counterpart: while focus stays in the field, autocomplete-native.ts announces the highlighted suggestion through listbox-native.ts."
+        },
+        "autocomplete.trigger": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its pointerdown and mousedown keep focus in the field, which a touch on a Pressable never takes; its press goes through pressAutocompleteTrigger, which moves a screen reader's focus to the first suggestion, as a touch screen reader's tap does on the web."
+        },
+        "autocomplete.clear": {
+          "needs": "nothing",
+          "reason": "Its pointerdown and mousedown keep focus in the field, which a touch on a Pressable never takes."
+        },
+        "autocomplete.content": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its bind shows the list: the layer, focus left in the field as it opens and the exit, which popup-native.ts and autocomplete-native.ts restate, with focus moved to the first suggestion after a screen reader's press on the trigger and back to the field when a screen reader chooses or escapes, and its placement against the field, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. It settles whether the list is empty a microtask after it mounts, which autocomplete-native.ts does. It loads more when the list scrolls near its end, which needs the app's own ScrollView on native, so only the highlight reaching the last suggestion calls onLoadMore. The sheet presentation is the sheet entry's (ticket 16). Its keydown takes the list's keys while a screen reader moved focus there, which React Native never reports; its pointerdown keeps focus in the field. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "autocomplete.list": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its bind marks the autocomplete listed while it's mounted, which autocomplete-native.ts does."
+        },
+        "autocomplete.item": {
+          "covered": "packages/core/src/foundation/lists/listbox-native.ts",
+          "reason": "Its bind registers the suggestion with the listbox engine, which autocomplete-native.ts does with the stand-in listbox-native.ts makes, sorted by the order twin; the adapter passes the suggestion's text as its label, where the DOM host reads the element's text. Its pointermove highlights under a mouse and its pointerdown and mousedown keep focus in the field, none of which a touch does; a suggestion's Pressable takes focus from Android's keyboard, which highlights it."
+        },
+        "autocomplete.item-text": {
+          "needs": "nothing",
+          "reason": "Its bind writes the marked segments into a web component's element, which native never needs: AutocompleteItemText renders from its state's segments in a Text."
+        },
+        "autocomplete.item-icon": {
+          "needs": "nothing",
+          "reason": "Its bind adds the stylesheet that mirrors an icon and checks in development that an item with only an icon is named; on native the translation flips a mirrored icon right to left, and an icon is hidden from screen readers."
+        },
+        "autocomplete.group-label": {
+          "covered": "packages/core/src/components/autocomplete/autocomplete-native.ts",
+          "reason": "Its bind lists the group's key among the labeled groups while it's mounted, which autocomplete-native.ts does, so the group is named by its label."
+        },
+        "autocomplete.empty": {
+          "needs": "nothing",
+          "reason": "Its bind stashes a web component's message while the list has suggestions, which AutocompleteEmpty does by rendering its children only while its state says empty."
+        },
+        "autocomplete.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the field; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        }
+      }
+    },
     "avatar": {
       "entry": "packages/react-native/src/avatar.tsx",
       "slots": {
@@ -2008,7 +2089,6 @@
     }
   },
   "pending": [
-    "autocomplete",
     "combobox",
     "command",
     "date-input",
@@ -2492,6 +2572,24 @@
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager; a right-to-left app pages from the right with no prop."
+    },
+    {
+      "component": "autocomplete",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: name, form and required are left out of the native types, and the app reads the text from onValueChange or onSubmit."
+    },
+    {
+      "component": "autocomplete",
+      "example": "presentation",
+      "feature": "Presenting as a sheet",
+      "reason": "The sheet presentation is the /sheet entry (ticket 16); without it the suggestions present as a popover."
+    },
+    {
+      "component": "autocomplete",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "select",

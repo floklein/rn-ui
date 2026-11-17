@@ -21,6 +21,7 @@
     "./agent": "./src/agent.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
     "./async-options": "./src/async-options.ts",
+    "./autocomplete": "./src/autocomplete.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./calendar": "./src/calendar.tsx",
@@ -92,6 +93,10 @@
       "./async-options": {
         "types": "./dist/async-options.d.ts",
         "default": "./dist/async-options.js"
+      },
+      "./autocomplete": {
+        "types": "./dist/autocomplete.d.ts",
+        "default": "./dist/autocomplete.js"
       },
       "./avatar": {
         "types": "./dist/avatar.d.ts",
