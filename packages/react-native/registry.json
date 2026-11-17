@@ -1682,6 +1682,12 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "date-picker",
+      "example": "form",
+      "feature": "Form submission and the valueMissing error",
+      "reason": "Native has no forms: the app reads the date from onValueChange, and a Field shows an error it sets itself."
     }
   ]
 }
