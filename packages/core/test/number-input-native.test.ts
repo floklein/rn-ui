@@ -51,6 +51,7 @@ function host() {
     adjustable: vi.fn(),
     listen: vi.fn(),
     seen: vi.fn(),
+    scrollNear: vi.fn(),
   })
   return { drags, focus }
 }
