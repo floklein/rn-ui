@@ -1,6 +1,13 @@
 import { act, cleanup, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "../src/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
@@ -385,6 +392,31 @@ describe("checkDirection on the native host", () => {
                 </DialogClose>
               </DialogContent>
             </Dialog>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an accordion", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Accordion defaultValue={["shipping"]}>
+              <AccordionItem value="shipping">
+                <AccordionHeader>
+                  <AccordionTrigger>
+                    <Text>Shipping</Text>
+                  </AccordionTrigger>
+                </AccordionHeader>
+                <AccordionPanel>
+                  <Text>Ships in two days.</Text>
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
           )
           return screen.container
         },

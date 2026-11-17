@@ -9,6 +9,7 @@ import {
   openAttrs,
   triggerKeydown,
 } from "../../foundation/disclosure/disclosure"
+import { focusPart } from "../../foundation/focus/focus-part"
 import { stateAndRenders } from "../../foundation/motion/panel"
 import type { AccordionGeneric } from "./accordion-generic"
 import { idPart } from "../../foundation/kernel/attrs"
@@ -32,6 +33,7 @@ import {
   createChange,
 } from "../../foundation/kernel/input-source"
 import { elements } from "../../foundation/kernel/elements"
+import { inDocumentOrder } from "../../foundation/kernel/order"
 
 /**
  * Why items opened or closed: a trigger was pressed, find in page matched
@@ -296,10 +298,10 @@ interface AccordionApi extends ReturnType<typeof accordionApiBody> {}
 function accordionApiBody(
   context: PrimitiveContext<AccordionOptions, AccordionStore, string>
 ) {
-  const { id, store, options, element, props } = context
+  const { id, store, options, element, props, parts } = context
   const change = createChange(context)
   const panels = new Set<string>()
-  const items = new Set<string>()
+  const items = new Map<string, Element>()
   const itemElements = new Set<Element>()
   // Items opened after mount, with the reason they opened. Their panels animate
   // in; panels open on the first paint don't, and find in page shows at once.
@@ -402,14 +404,21 @@ function accordionApiBody(
     store.set({ exiting: exitingAfter(from, value, exiting) })
   })
 
-  // Items in document order where they're in the DOM, else in the order they registered.
+  // Items in document order where they're in the page, else in the order they registered.
   function syncItems() {
     itemsChanged = false
-    const inPage = elements(context, "item")
-      .map((entry) => entry.key)
-      .filter((key) => items.has(key))
+    const registered = [...items].map(([key, el]) => ({
+      key,
+      el: el as HTMLElement,
+    }))
+    const inPage = inDocumentOrder(
+      registered.filter(({ el }) => el.isConnected)
+    )
     store.set({
-      items: [...inPage, ...[...items].filter((key) => !inPage.includes(key))],
+      items: [
+        ...inPage,
+        ...registered.filter((entry) => !inPage.includes(entry)),
+      ].map(({ key }) => key),
     })
   }
 
@@ -465,11 +474,15 @@ function accordionApiBody(
       )
     },
     focus(value?: string) {
-      const trigger =
-        value === undefined
-          ? elements(context, "trigger")[0]?.el
-          : element("trigger", value)
-      trigger?.focus()
+      focusPart(
+        () =>
+          value === undefined
+            ? elements(context, "trigger")[0]?.el
+            : element("trigger", value),
+        parts,
+        "trigger",
+        value ?? store.get().items[0]
+      )
     },
     internal: {
       itemDisabled,
@@ -491,7 +504,7 @@ function accordionApiBody(
         itemProps(key)?.onOpenChangeComplete?.(open)
       },
       registerItem(key: string, el: Element) {
-        items.add(key)
+        items.set(key, el)
         itemElements.add(el)
         queueSync(true)
         return () => {
