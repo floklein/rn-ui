@@ -1731,12 +1731,6 @@
     },
     {
       "component": "alert-dialog",
-      "example": "confirm-anywhere",
-      "feature": "confirm() with no alert dialog of your own",
-      "reason": "The overlay host that renders confirm()'s own alert dialog comes with overlays opened from code (ticket 62); with your own AlertDialog and confirm.controller it works, as the confirm example shows."
-    },
-    {
-      "component": "alert-dialog",
       "example": "rtl",
       "feature": "A direction for part of the screen",
       "reason": "React Native has one direction for the whole app, from I18nManager."

@@ -1,3 +1,4 @@
+import { confirm } from "@ui-sdk/react-native/alert-dialog"
 import {
   createDialogController,
   Dialog,
@@ -71,6 +72,7 @@ function Fixture() {
   const [sibling] = useState(createDialogController)
   const [presses, setPresses] = useState(0)
   const [changes, setChanges] = useState<string[]>([])
+  const [answer, setAnswer] = useState("none")
   const onChanges = (change: string) =>
     setChanges((current) => [...current, change])
 
@@ -78,6 +80,7 @@ function Fixture() {
     <View style={styles.fixture}>
       <Text testID="changes">{changes.join(" ") || "none"}</Text>
       <Text testID="presses">{presses}</Text>
+      <Text testID="answer">{answer}</Text>
       <View style={styles.actions}>
         <Action
           id="under"
@@ -90,6 +93,7 @@ function Fixture() {
           onPress={() => {
             setChanges([])
             setPresses(0)
+            setAnswer("none")
           }}
         />
       </View>
@@ -111,6 +115,17 @@ function Fixture() {
               onChanges={onChanges}
             />
             <Panel name="confirm" title="Confirm" onChanges={onChanges} />
+            <Action
+              id="ask"
+              label="Ask"
+              onPress={async () => {
+                const yes = await confirm({
+                  title: "Discard changes?",
+                  confirmLabel: "Discard",
+                })
+                setAnswer(String(yes))
+              }}
+            />
             <Action
               id="open-sibling"
               label="Open sibling"

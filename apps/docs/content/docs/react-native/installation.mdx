@@ -35,7 +35,7 @@ The function also receives the part's interaction, `{ pressed, hovered, focused 
 
 ## Wrap Your App
 
-A modal popup, like a dialog, renders in React Native's `Modal` and needs nothing from your app. A non-modal popup renders above your screens in an `OverlayHost`, so wrap your app in one, near the root:
+A modal popup, like a dialog, renders in React Native's `Modal` and needs nothing from your app. A non-modal popup renders above your screens in an `OverlayHost`, and so does what you open from code, like [`confirm()`](./components/alert-dialog#confirm-from-anywhere), so wrap your app in one, near the root:
 
 ```tsx title="App.tsx"
 import { OverlayHost } from "@ui-sdk/react-native/overlays"
@@ -72,3 +72,10 @@ function App() {
   )
 }
 ```
+
+## OverlayHost Props
+
+<TypeTable
+  path="../../packages/react-native/src/overlays.tsx"
+  name="OverlayHostProps"
+/>

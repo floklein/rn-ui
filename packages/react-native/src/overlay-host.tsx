@@ -10,11 +10,7 @@ import { layerInput } from "./native-host"
 
 type Insets = { top: number; right: number; bottom: number; left: number }
 
-/**
- * Props for `OverlayHost`.
- * @experimental
- */
-type OverlayHostProps = {
+type RootHostProps = {
   /** The app. */
   children?: React.ReactNode
   /**
@@ -185,12 +181,7 @@ function HostView({
 
 const zero: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
 
-/**
- * Where non-modal popups render, above the app it wraps. Wrap the app in one,
- * near the root. Modal popups need none: each `Modal` carries its own host.
- * @experimental
- */
-function OverlayHost({ children, insets }: OverlayHostProps) {
+function RootHost({ children, insets }: RootHostProps) {
   const current = React.useRef(zero)
   React.useLayoutEffect(() => {
     current.current = { ...zero, ...insets }
@@ -263,8 +254,8 @@ export {
   landIn,
   ModalHost,
   onTouch,
-  OverlayHost,
-  type OverlayHostProps,
+  RootHost,
+  type RootHostProps,
   useHost,
   useHosted,
 }
