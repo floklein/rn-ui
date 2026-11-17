@@ -31,6 +31,7 @@ import {
   type PopupState,
 } from "../../foundation/popups/create-popup"
 import { datePickerPreset } from "../../foundation/popups/popup-presets"
+import { focusPart } from "../../foundation/focus/focus-part"
 import { elements } from "../../foundation/kernel/elements"
 import type { PrimitiveContext } from "../../foundation/kernel/primitive-types"
 import type {
@@ -388,6 +389,13 @@ function datePickerApiBody(
     focus: calendar.focus,
     internal: {
       ...calendar.internal,
+      label: kit.internal.label,
+      store: kit.internal.store,
+      parts: kit.internal.parts,
+      preset: kit.internal.preset,
+      rules: kit.internal.rules,
+      triggerSlot: kit.internal.triggerSlot,
+      control,
       show: control.show,
       hide: control.hide,
       popup,
@@ -400,7 +408,13 @@ function datePickerApiBody(
       submitted: () => submitted(store.get()),
       setFormDisabled: (formDisabled: boolean) => store.set({ formDisabled }),
       // The input whose text isn't a date, else the start's.
-      focusInput: () => (invalidInput() ?? inputElement())?.focus(),
+      focusInput: () =>
+        focusPart(
+          () => invalidInput() ?? inputElement(),
+          context.parts,
+          "input",
+          "start"
+        ),
       invalidInput,
       // A form-associated root, like a custom element's, reports the inputs' problems itself.
       rootValidates: () => !!formInternals(element("root")),

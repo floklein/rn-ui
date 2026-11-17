@@ -29,6 +29,7 @@ type NativePattern =
   | "button"
   | "calendar"
   | "checkbox"
+  | "date-picker"
   | "dialog"
   | "disclosure"
   | "img"
@@ -477,6 +478,92 @@ async function calendarPattern(context: Context) {
   }
 }
 
+// A date picker's trigger opens its calendar in a popup that takes the escape
+// gesture and moves the screen reader in. Activating a day picks it: once the
+// popup closes, focus goes back to the trigger, and the day reads selected.
+async function datePickerPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  for (const button of buttons()) {
+    requireName(context, button, "button")
+  }
+  const popup = () =>
+    shownNodes(context.root).find(
+      (node) => typeof node.props.onAccessibilityEscape === "function"
+    )
+  const days = () => {
+    const shown = popup()
+    return shown
+      ? shownNodes(shown).filter(
+          (node) =>
+            roleOf(node) === "button" &&
+            typeof stateOf(node).selected === "boolean"
+        )
+      : []
+  }
+  const trigger = buttons().findIndex(
+    (button) =>
+      !isDisabled(button) && typeof stateOf(button).expanded === "boolean"
+  )
+  const open = async () => {
+    const requests = await performWatched(
+      buttons()[trigger]!,
+      "activate",
+      context.act
+    )
+    return popup() ? requests : undefined
+  }
+  const requests = trigger < 0 ? undefined : await open()
+  if (!requests) {
+    context.problem(
+      context.root,
+      "has no button that opens its calendar in a view that takes the escape gesture."
+    )
+    return
+  }
+  if (!requests.length) {
+    context.problem(
+      buttons()[trigger]!,
+      "requests no accessibility focus when it opens the calendar; the screen reader moves into it."
+    )
+  }
+  requireName(context, popup()!, "popup")
+  for (const day of days()) {
+    requireName(context, day, "day")
+  }
+  const name = days()
+    .filter((day) => !isDisabled(day) && !stateOf(day).selected)
+    .map(nameOf)
+    .find(Boolean)
+  if (!name) {
+    context.problem(
+      popup()!,
+      "shows no day that can be picked, so picking one can't be checked."
+    )
+    return
+  }
+  const picked = () => days().find((day) => nameOf(day) === name)
+  const closing = await performWatched(picked()!, "activate", context.act)
+  if (!popup()) {
+    if (!closing.length) {
+      context.problem(
+        context.root,
+        "requests no accessibility focus after a day closes the calendar; focus returns to the trigger."
+      )
+    }
+    await open()
+  }
+  const after = picked()
+  if (!after || stateOf(after).selected !== true) {
+    context.problem(
+      after ?? context.root,
+      "isn't selected after the activate action; activating a day that isn't disabled picks it."
+    )
+  }
+  if (context.os === "android") {
+    await checkExpandFocus(context, trigger)
+  }
+}
+
 // Activating a radio checks it and unchecks the one checked before.
 async function radioGroupPattern(context: Context) {
   const radios = context.withRole("radio")
@@ -884,6 +971,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   button: buttonPattern,
   calendar: calendarPattern,
   checkbox: checkboxPattern,
+  "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
   img: imgPattern,

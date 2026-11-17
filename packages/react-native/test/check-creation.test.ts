@@ -14,6 +14,7 @@ import { nativeHost } from "@ui-sdk/core/native"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
 import { calendar } from "@ui-sdk/core/calendar"
+import { datePicker } from "@ui-sdk/core/date-picker"
 import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
@@ -95,6 +96,28 @@ describe("checkCreation", () => {
     ).not.toThrow()
     expect(() =>
       checkCreation(calendar, { disabled: true }, props)
+    ).not.toThrow()
+  })
+
+  test("passes on a date picker, one date or a range, open or closed", () => {
+    const props = {
+      day: { value: "2026-10-16" },
+      weekday: { index: 0 },
+      preset: { value: "2026-10-31" },
+    }
+    expect(() =>
+      checkCreation(datePicker, { defaultValue: "2026-10-16" }, props)
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        datePicker,
+        {
+          mode: "range",
+          defaultValue: ["2026-10-12", "2026-10-14"],
+          defaultOpen: true,
+        },
+        { ...props, preset: { value: ["2026-10-01", "2026-10-07"] } }
+      )
     ).not.toThrow()
   })
 

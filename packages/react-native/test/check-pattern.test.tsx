@@ -77,6 +77,13 @@ import {
 } from "../src/segmented-control"
 import { Calendar } from "../src/calendar"
 import {
+  DatePicker,
+  DatePickerClear,
+  DatePickerContent,
+  DatePickerInput,
+  DatePickerTrigger,
+} from "../src/date-picker"
+import {
   Drawer,
   DrawerBackdrop,
   DrawerClose,
@@ -1185,6 +1192,46 @@ describe("checkPattern's pagination pattern on the native host", () => {
     )
     await expect(checkPagination()).rejects.toThrow(
       "has no name; a button needs an accessibilityLabel or text inside it."
+    )
+  })
+})
+
+describe("checkPattern's date-picker pattern on the native host", () => {
+  const checkDatePicker = () =>
+    checkPattern(screen.container, "date-picker", { os, act })
+
+  test.each(["single", "range"] as const)(
+    "passes on a date picker in %s mode, picking a day in its popup",
+    async (mode) => {
+      await render(
+        <OverlayHost>
+          <DatePicker
+            mode={mode}
+            locale="en-US"
+            today="2026-10-01"
+            defaultMonth="2026-10"
+          >
+            <DatePickerInput aria-label="Start" />
+            {mode === "range" && <DatePickerInput end aria-label="End" />}
+            <DatePickerClear aria-label="Clear" />
+            <DatePickerTrigger />
+            <DatePickerContent />
+          </DatePicker>
+        </OverlayHost>
+      )
+      await expect(checkDatePicker()).resolves.toBeUndefined()
+    },
+    30_000
+  )
+
+  test("fails when no button opens a popup", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Choose date</Text>
+      </Pressable>
+    )
+    await expect(checkDatePicker()).rejects.toThrow(
+      "has no button that opens its calendar in a view that takes the escape gesture."
     )
   })
 })

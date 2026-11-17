@@ -1,0 +1,365 @@
+---
+title: Date Picker
+description: Type a date or choose one from a calendar in a popup beside the field, with support for ranges.
+---
+
+Date Picker combines a `TextInput` with [Calendar](./calendar). People can type a date in their language or choose it from the popup. Your app receives an ISO date string either way.
+
+<ComponentExample
+  name="date-picker/basic"
+  caption="Type a date and submit it, or tap the calendar button and choose a day. VoiceOver or TalkBack moves to the selected day when the popup opens."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+The popup renders in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app. Without one, it renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `DatePicker`:
+
+```text
+DatePicker
+├── DatePickerInput
+├── DatePickerTrigger
+├── DatePickerHint
+└── DatePickerContent
+```
+
+`DatePicker` renders a `View`, `DatePickerInput` a `TextInput`, `DatePickerTrigger`, `DatePickerClear` and `DatePickerPreset` a `Pressable`, `DatePickerContent` a `View` and `DatePickerHint` a `Text`. An empty content part renders a calendar for you, and an empty `DatePicker` renders the input, trigger and popup, with an input for each end in range mode.
+
+Every [Calendar part](./calendar#composition) also works inside `DatePickerContent` and is exported from the Date Picker entry. Write those parts out when you need to add styles, change the layout or show custom day content.
+
+The content renders in the `OverlayHost`, so context from your own provider placed between `DatePicker` and `DatePickerContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+## Usage
+
+Import the parts and put them together. The popup is placed for you, so give it a size and a look, not a position:
+
+```tsx
+import {
+  DatePicker,
+  DatePickerContent,
+  DatePickerHint,
+  DatePickerInput,
+  DatePickerTrigger,
+} from "@ui-sdk/react-native/date-picker"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <DatePicker defaultValue="2026-10-16">
+      <DatePickerInput aria-label="Due date" style={styles.input} />
+      <DatePickerTrigger>
+        <Text>Choose date</Text>
+      </DatePickerTrigger>
+      <DatePickerHint />
+      <DatePickerContent style={styles.content} />
+    </DatePicker>
+  )
+}
+
+const styles = StyleSheet.create({
+  input: { width: 140, height: 40, borderWidth: 1 },
+  content: { width: 308, padding: 8, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+## Values
+
+Dates are strings such as `"2026-10-16"`, with no time or time zone attached. No date library is needed.
+
+| Mode                 | Value                                                 |
+| -------------------- | ----------------------------------------------------- |
+| `"single"` (default) | A date string or `null`.                              |
+| `"range"`            | `[start, end]` or `null`, with an input for each end. |
+
+## Typing a Date
+
+The input reads its text when editing ends or the keyboard's return key submits it. It uses the locale's date order, such as `10/16/2026` in American English or `16.10.2026` in German, and also accepts ISO dates, digits without separators, two-digit years and month names. Dates without a year use the current year.
+
+The field formats a valid date once it's read, and leaves your typing alone until then. Text that isn't a date stays, the input's state turns `invalid`, and the value doesn't change. The hint's state includes an example date you can show beside the field.
+
+<ComponentExample
+  name="date-picker/invalid"
+  caption="Type not a date and submit it to mark the field invalid. Replace it with 10/18/2026 to clear it."
+/>
+
+## Range
+
+`mode="range"` uses one input for the start and another with `end` for the end. The calendar stays open after the start is picked and closes once both dates are chosen. A typed end before the start is invalid. The range is `null` until both ends are set.
+
+For two months, set `months={2}` and add a second `CalendarGrid` with `offset={1}`.
+
+<ComponentExample
+  name="date-picker/range"
+  caption="Choose October 20, then October 23. The calendar stays open after the first date and closes after the second."
+/>
+
+## Presets
+
+`DatePickerPreset` chooses its `value` and closes the popup. It's a toggle button, checked, and `selected` in its state, while its value is the one selected. Your app works out relative dates, such as the last seven days.
+
+<ComponentExample
+  name="date-picker/presets"
+  caption="Open the calendar and tap Last 7 Days. Open it again to see the preset selected."
+/>
+
+## Min, Max and Unavailable Dates
+
+`min`, `max` and `unavailable` apply to typing, calendar selection, presets and the controller. A date outside those rules is invalid when typed, a preset that holds one is disabled, and the controller refuses it. [Calendar](./calendar#unavailable-dates) explains the matchers, and `minDays`, `maxDays` and `allowUnavailable` limit a range as there.
+
+<ComponentExample
+  name="date-picker/min-max"
+  caption="Open the calendar. Weekends and the days past November 20 are disabled, and typing one marks the field invalid."
+/>
+
+## Language
+
+`locale` sets the input's format, the hint, month names and date labels. Without it, Date Picker uses the device's language from the first frame. The trigger, the popup and the calendar's steps have English names by default; pass `aria-label` to translate them.
+
+<ComponentExample
+  name="date-picker/locale"
+  caption="Type 3.12.2026 and submit it. The field, the hint and the calendar use German dates."
+/>
+
+## Clear
+
+`DatePickerClear` clears the value and starts editing the input. Its state's `empty` says there's nothing to clear.
+
+<ComponentExample
+  name="date-picker/clear"
+  caption="Tap ✕ to empty the value. The keyboard comes up in the input."
+/>
+
+## Disabled and Read Only
+
+`disabled` stops typing, opening and selection. `readOnly` lets people open the calendar and look at its dates without changing the value. A disabled [Field](./field) or `FieldSet` around it disables it too.
+
+```tsx
+<DatePicker disabled defaultValue="2026-10-16" />
+<DatePicker readOnly defaultValue="2026-10-16" />
+```
+
+## Staying Open
+
+Set `closeOnSelect` to `false` to keep the calendar open after choosing a date, completing a range or pressing a preset.
+
+## Keep It Open Until Both Dates Are Picked
+
+Set `dismissible` to `false` while a choice is incomplete. A press outside, Android's back and VoiceOver's escape gesture then leave the popup open, and `onDismissAttempt` hears each, so you can say what's missing. The trigger and the controller can still close it.
+
+<ComponentExample
+  name="date-picker/dismissible"
+  caption="Choose a check-in date, then tap outside the calendar. The message asks for a check-out date before the popup closes."
+/>
+
+## Popup
+
+`DatePickerContent` opens below the start input and lines up with its start. Place it with `side`, `align` and the offsets as in [Popover](./popover#placement), or pass `anchor`, a view or a point in window coordinates. Its state holds what placement measured. `keepMounted` keeps it while closed, and `finalFocus="none"` leaves the screen reader where it is when it closes.
+
+The sheet presentation comes with the sheet entry: until then, `presentation="sheet"` and `"auto"` open the popup beside the field.
+
+<ComponentExample
+  name="date-picker/popup"
+  caption="Open the calendar and turn the month. The log shows each open, close and month change."
+/>
+
+## Controlled
+
+The selected value, the month shown and the open state are separate. Use `value` with `onValueChange`, `month` with `onMonthChange` and `open` with `onOpenChange` to control them; `defaultValue`, `defaultMonth` and `defaultOpen` set where they start. `details.cancel()` refuses a change.
+
+<ComponentExample
+  name="date-picker/controlled"
+  caption="Type or choose a date. The log shows each value and why it changed."
+/>
+
+## Driving It from Anywhere
+
+A `createDatePickerController()` can set the value, show a month, open or close the popup, and focus a date in the open calendar.
+
+<ComponentExample
+  name="date-picker/controller"
+  caption="Tap Choose Christmas to set the date from outside, or Open to open the calendar."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.input, state.invalid && styles.invalid]`. Each part receives the fields listed under [Part State](#part-state); Calendar's parts receive theirs as on the [Calendar page](./calendar#part-state).
+
+## Part State
+
+### DatePicker [#part-state-datepicker]
+
+<PartStateTable
+  component="date-picker"
+  part="root"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerState"
+/>
+
+### DatePickerInput [#part-state-datepickerinput]
+
+<PartStateTable
+  component="date-picker"
+  part="input"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerInputState"
+/>
+
+### DatePickerTrigger [#part-state-datepickertrigger]
+
+<PartStateTable
+  component="date-picker"
+  part="trigger"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerTriggerState"
+/>
+
+### DatePickerContent [#part-state-datepickercontent]
+
+<PartStateTable
+  component="date-picker"
+  part="content"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerContentState"
+/>
+
+With `startingStyle` and `endingStyle`, as in [Popover](./popover#animation), and what placement measured, undefined until it's first placed:
+
+| Field             | Type                                     | Description                                               |
+| ----------------- | ---------------------------------------- | --------------------------------------------------------- |
+| `side`            | `"top" \| "right" \| "bottom" \| "left"` | The side it opened on, after flipping.                    |
+| `align`           | `"start" \| "center" \| "end"`           | How it lines up with the input.                           |
+| `anchorWidth`     | `number`                                 | The input's width, or the anchor's.                       |
+| `anchorHeight`    | `number`                                 | The input's height, or the anchor's.                      |
+| `availableWidth`  | `number`                                 | The width it has before the edge of the space it may use. |
+| `availableHeight` | `number`                                 | The height it has before that edge.                       |
+| `transformOrigin` | `string`                                 | The point facing the input, as a `transformOrigin` style. |
+
+### DatePickerHint [#part-state-datepickerhint]
+
+<PartStateTable
+  component="date-picker"
+  part="hint"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerHintState"
+/>
+
+### DatePickerClear [#part-state-datepickerclear]
+
+<PartStateTable
+  component="date-picker"
+  part="clear"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerClearState"
+/>
+
+### DatePickerPreset [#part-state-datepickerpreset]
+
+<PartStateTable
+  component="date-picker"
+  part="preset"
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerPresetState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `DatePickerInput` also takes `TextInput`'s props, `DatePickerTrigger`, `DatePickerClear` and `DatePickerPreset` `Pressable`'s, `DatePicker` and `DatePickerContent` `View`'s and `DatePickerHint` `Text`'s.
+
+### DatePicker
+
+Native has no forms, so `name`, `startName`, `endName` and `form` don't exist; read the date from `onValueChange`.
+
+<TypeTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerOptions"
+  omit={["container", "name", "startName", "endName", "form"]}
+/>
+
+### DatePickerInput
+
+<TypeTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerInputProps"
+/>
+
+### DatePickerContent
+
+`anchor` takes a view or a point, as described under [Popup](#popup).
+
+<TypeTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described in [Popover](./popover#animation).
+
+### DatePickerPreset
+
+<TypeTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerPresetProps"
+/>
+
+`DatePickerTrigger`, `DatePickerHint` and `DatePickerClear` take no props of their own.
+
+### Reasons
+
+`details.reason` says why the value changed. `"reset"` and `"restore"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerValueChangeReason"
+/>
+
+Why the popup opened or closed. `"focus-out"`, `"window-blur"` and `"swipe"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createDatePickerController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/date-picker/date-picker.ts"
+  name="DatePickerController"
+/>
+
+### Events
+
+| Prop                   | On           | Receives                                                           |
+| ---------------------- | ------------ | ------------------------------------------------------------------ |
+| `onValueChange`        | `DatePicker` | `(value, details)`: the new value, and the [reason](#reasons)      |
+| `onOpenChange`         | `DatePicker` | `(open, details)`: whether the popup opens, and the reason         |
+| `onOpenChangeComplete` | `DatePicker` | `(open)`, once the popup finished opening or closing               |
+| `onMonthChange`        | `DatePicker` | `(month, details)`: the calendar's new first month, and the reason |
+| `onDismissAttempt`     | `DatePicker` | `({ reason })`, when a dismissal was refused                       |
+
+## Accessibility
+
+The input is a text field named by its `aria-label` or a Field's label, and described by the hint. The trigger is a button with an expanded state, which TalkBack can expand and collapse, named by the date chosen. The popup is a view named "Choose date"; React Native has no dialog role. Its days are buttons, the selected one selected, as in [Calendar](./calendar#accessibility). When it opens, the screen reader moves to the selected day, otherwise today, otherwise the first that can be picked, and it moves back to the trigger when a day closes it. The rest of the screen stays reachable while it's open.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key    | Does                                            |
+| ------ | ----------------------------------------------- |
+| Tab    | Moves through the controls                      |
+| Return | Reads the date typed in the input               |
+| Space  | Opens or closes the calendar from the trigger   |
+| Enter  | Does the same, and picks a day, on Android only |
+
+Arrow keys don't move between days on native.
