@@ -465,7 +465,7 @@ Nothing in the resolutions was run on a device, apart from the playground and th
 
 **Drags** ([How drags and canvas components work on native][drags])
 
-- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android. Resolved for Slider on iOS: the app passes `scrollEnabled={!dragging}` and the view stays while the slider moves, and a perpendicular scroll view needs nothing ([council batch 3][council-3]). Android is checked in #124.
+- Slider, Resizable, Carousel, Color Picker, Image Cropper, Timeline, Waterfall and reordering, each inside a scroll view scrolling along the same axis, on iOS and Android. Resolved for Slider on iOS: the app passes `scrollEnabled={!dragging}` and the view stays while the slider moves, and a perpendicular scroll view needs nothing ([council batch 3][council-3]). Reordering on iOS (#111): with the same wiring from an item's responder events the list reorders and a same-axis `ScrollView` stays at 0, and a swipe beside the items still scrolls it; inside a Scroll Area no wiring is needed and a drag held at its edge scrolls it. Android is checked in #124.
 - Pinch computed from the responder's touches.
 
 **Locale** ([How direction and locale are read on native][direction])
