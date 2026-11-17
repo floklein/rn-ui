@@ -20,8 +20,10 @@
     "./alert-dialog": "./src/alert-dialog.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
+    "./calendar": "./src/calendar.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./date": "./src/date.ts",
     "./dialog": "./src/dialog.tsx",
     "./field": "./src/field.tsx",
     "./input": "./src/input.tsx",
@@ -66,6 +68,10 @@
         "types": "./dist/button.d.ts",
         "default": "./dist/button.js"
       },
+      "./calendar": {
+        "types": "./dist/calendar.d.ts",
+        "default": "./dist/calendar.js"
+      },
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
         "default": "./dist/checkbox.js"
@@ -73,6 +79,10 @@
       "./collapsible": {
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
+      },
+      "./date": {
+        "types": "./dist/date.d.ts",
+        "default": "./dist/date.js"
       },
       "./dialog": {
         "types": "./dist/dialog.d.ts",
@@ -98,6 +108,7 @@
         "types": "./dist/otp-input.d.ts",
         "default": "./dist/otp-input.js"
       },
+      "./package.json": "./package.json",
       "./pagination": {
         "types": "./dist/pagination.d.ts",
         "default": "./dist/pagination.js"
@@ -157,8 +168,7 @@
       "./toolbar": {
         "types": "./dist/toolbar.d.ts",
         "default": "./dist/toolbar.js"
-      },
-      "./package.json": "./package.json"
+      }
     }
   },
   "scripts": {

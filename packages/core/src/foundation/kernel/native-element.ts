@@ -3,6 +3,9 @@ import type { Part } from "./primitive-types"
 
 const parts = new WeakMap<object, Part>()
 
+// Focus is requested on native and never observed, so no element is active.
+const ownerDocument = { activeElement: null, body: null }
+
 /**
  * What a native behavior file hands shared code in place of a part's
  * element, like a toggle joining its group. Focusing it asks the host to
@@ -14,6 +17,7 @@ function nativeElement(part: Part) {
     // Shared code hears focus on an item's element, which the native host never reports.
     addEventListener() {},
     removeEventListener() {},
+    ownerDocument,
   }
   parts.set(el, part)
   return el as unknown as HTMLElement

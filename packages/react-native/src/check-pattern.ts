@@ -18,12 +18,14 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A calendar's days are its buttons with a selected state.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * @experimental
  */
 type NativePattern =
   | "alertdialog"
   | "button"
+  | "calendar"
   | "checkbox"
   | "dialog"
   | "disclosure"
@@ -392,6 +394,40 @@ async function paginationPattern(context: Context) {
       context.problem(
         button,
         `leaves the current page "${nameOf(before)}" after the activate action; a page or a step that isn't disabled goes to another page.`
+      )
+    }
+  }
+}
+
+// Days are buttons with a selected state, since neither OS has a grid cell.
+// Each is found again by name, since a day of another month turns the months.
+async function calendarPattern(context: Context) {
+  const days = () =>
+    context
+      .withRole("button")
+      .filter((button) => typeof stateOf(button).selected === "boolean")
+  if (!days().length) {
+    context.problem(
+      context.root,
+      "has no button with a selected state, so it has no days."
+    )
+    return
+  }
+  for (const day of days()) {
+    requireName(context, day, "day")
+  }
+  for (const name of days().map(nameOf)) {
+    const day = () => days().find((node) => nameOf(node) === name)
+    const before = day()
+    if (!name || !before || isDisabled(before) || stateOf(before).selected) {
+      continue
+    }
+    await performWatched(before, "activate", context.act)
+    const after = day()
+    if (after && stateOf(after).selected !== true) {
+      context.problem(
+        after,
+        "isn't selected after the activate action; activating a day that isn't disabled selects it."
       )
     }
   }
@@ -801,6 +837,7 @@ async function sliderPattern(context: Context) {
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
+  calendar: calendarPattern,
   checkbox: checkboxPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: disclosurePattern,

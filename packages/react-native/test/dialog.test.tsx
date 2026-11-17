@@ -30,6 +30,7 @@ import {
   DialogTrigger,
 } from "../src/dialog"
 import { dialog } from "@ui-sdk/core/dialog"
+import "../src/calendar"
 import { carried, carry } from "../src/carried-context"
 import "../src/checkbox"
 import { FieldSet } from "../src/field"
@@ -413,6 +414,8 @@ describe("the adapter's contexts inside the Modal", () => {
       .filter((name) => !name?.endsWith("Scope"))
       .sort()
     expect(own).toEqual([
+      "Calendar",
+      "CalendarGrid",
       "CheckboxGroup",
       "Described",
       "Disabled",

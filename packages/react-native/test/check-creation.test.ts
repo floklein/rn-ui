@@ -10,6 +10,7 @@ import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
+import { calendar } from "@ui-sdk/core/calendar"
 import { progress } from "@ui-sdk/core/progress"
 import { passwordInput } from "@ui-sdk/core/password-input"
 import { radioGroup } from "@ui-sdk/core/radio"
@@ -69,6 +70,28 @@ describe("checkCreation", () => {
     expect(() => checkCreation(separator, {})).not.toThrow()
     expect(() =>
       checkCreation(separator, { orientation: "vertical", decorative: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a calendar, one date, a range, two months or disabled", () => {
+    const props = { day: { value: "2026-10-16" }, weekday: { index: 0 } }
+    expect(() =>
+      checkCreation(calendar, { defaultValue: "2026-10-16" }, props)
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        calendar,
+        {
+          mode: "range",
+          defaultValue: ["2026-10-12", "2026-10-14"],
+          months: 2,
+          locale: "de-DE",
+        },
+        props
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(calendar, { disabled: true }, props)
     ).not.toThrow()
   })
 

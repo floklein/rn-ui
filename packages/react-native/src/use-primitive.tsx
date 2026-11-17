@@ -39,6 +39,7 @@ import {
 } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import {
+  AccessibilityInfo,
   I18nManager,
   Platform,
   Pressable,
@@ -381,6 +382,23 @@ function useMissingNames(
   }, [key, from.component, from.id])
 }
 
+// iOS has no live regions, so a live part's new text is announced, as
+// Android's live region reads it.
+function useLiveText(live: string | undefined, text: string | undefined) {
+  const last = React.useRef(text)
+  React.useEffect(() => {
+    if (last.current === text) {
+      return
+    }
+    last.current = text
+    if (Platform.OS === "ios" && text && live && live !== "off") {
+      AccessibilityInfo.announceForAccessibilityWithOptions(text, {
+        queue: live === "polite",
+      })
+    }
+  })
+}
+
 let rendered = 0
 
 type OnExit = (done: () => void) => void
@@ -610,14 +628,16 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
     typeof rest.children === "function"
       ? rest.children(state, interaction)
       : rest.children
+  const text = shown && !render ? plainText(content) : undefined
   useText(
     shown
       ? (translated.nativeID ??
           (rest.nativeID as string | undefined) ??
           (rest.id as string | undefined))
       : undefined,
-    shown && !render ? plainText(content) : undefined
+    text
   )
+  useLiveText(merged["aria-live"], text)
 
   let element: React.ReactElement | null = null
   if (shown) {
