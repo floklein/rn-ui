@@ -250,4 +250,5 @@ export {
   roleOf,
   shownNodes,
   stateOf,
+  textOf,
 }

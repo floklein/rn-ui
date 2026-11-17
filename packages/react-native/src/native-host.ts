@@ -55,6 +55,8 @@ function partUnder(target: unknown) {
 }
 
 const fingers = new WeakMap<Part, string>()
+const downs = new WeakMap<Part, { x: number; y: number }>()
+const claimed = new WeakMap<Part, { x: number; y: number }>()
 
 // Fabric reports the first changed touch, so a second finger's moves would
 // reach the responder as its own.
@@ -144,6 +146,27 @@ function letGo(part: Part) {
 function responder(part: Part, hold: (() => () => void) | null) {
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
+    onStartShouldSetResponderCapture({ nativeEvent }: GestureResponderEvent) {
+      if ((nativeEvent.touches?.length ?? 1) <= 1) {
+        downs.set(part, { x: nativeEvent.pageX, y: nativeEvent.pageY })
+      }
+      return false
+    },
+    // A touch a button inside took becomes the part's drag once it moves.
+    onMoveShouldSetResponderCapture({ nativeEvent }: GestureResponderEvent) {
+      const drag = drags.get(part)
+      const down = downs.get(part)
+      if (
+        !drag?.claims ||
+        !down ||
+        !drag.accepts() ||
+        !drag.claims(nativeEvent.pageX - down.x, nativeEvent.pageY - down.y)
+      ) {
+        return false
+      }
+      claimed.set(part, down)
+      return true
+    },
     onResponderTerminationRequest: () => false,
     onResponderGrant(event: GestureResponderEvent) {
       fingers.set(part, String(event.nativeEvent.identifier))
@@ -152,8 +175,12 @@ function responder(part: Part, hold: (() => () => void) | null) {
         holds.set(part, hold())
       }
       const touch = touchOf(event, part)
+      const from = claimed.get(part)
+      claimed.delete(part)
       if (touch) {
-        withSource("touch", () => drags.get(part)?.start(touch))
+        withSource("touch", () =>
+          drags.get(part)?.start(from ? { ...touch, ...from } : touch)
+        )
       }
       return true
     },

@@ -120,6 +120,14 @@ import { Switch, SwitchThumb } from "../src/switch"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../src/tabs"
 import { Textarea } from "../src/textarea"
 import { checkPattern } from "../src/testing"
+import {
+  createToaster,
+  Toast,
+  ToastAction,
+  ToastClose,
+  ToastRegion,
+  ToastTitle,
+} from "../src/toast"
 import { Toggle, ToggleGroup } from "../src/toggle"
 import {
   Toolbar,
@@ -1883,5 +1891,88 @@ describe("checkPattern's toolbar pattern on the native host", () => {
     await expect(checkToolbar()).rejects.toThrow(
       "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
     )
+  })
+})
+
+describe("checkPattern's toast pattern on the native host", () => {
+  const checkToast = () => checkPattern(screen.container, "toast", { os, act })
+
+  test("passes on toasts whose action and close buttons dismiss them", async () => {
+    const toaster = createToaster()
+    await render(
+      <OverlayHost>
+        <ToastRegion toaster={toaster} />
+      </OverlayHost>
+    )
+    await act(async () => {
+      toaster({
+        title: "Deleted",
+        duration: Infinity,
+        action: { label: "Undo", onAction: () => {} },
+      })
+      toaster({
+        title: "Saved",
+        duration: Infinity,
+        cancel: { label: "Dismiss" },
+      })
+    })
+    await expect(checkToast()).resolves.toBeUndefined()
+    expect(screen.queryByText("Deleted")).toBeNull()
+    expect(screen.queryByText("Saved")).toBeNull()
+  })
+
+  test("fails with no toast showing", async () => {
+    await render(
+      <OverlayHost>
+        <ToastRegion toaster={createToaster()} />
+      </OverlayHost>
+    )
+    await expect(checkToast()).rejects.toThrow("shows no toast with text")
+  })
+
+  test("fails on an unnamed close button", async () => {
+    const toaster = createToaster()
+    await render(
+      <OverlayHost>
+        <ToastRegion toaster={toaster}>
+          {() => (
+            <Toast>
+              <ToastTitle />
+              <ToastClose />
+            </Toast>
+          )}
+        </ToastRegion>
+      </OverlayHost>
+    )
+    await act(async () => {
+      toaster({ title: "Saved", duration: Infinity })
+    })
+    await expect(checkToast()).rejects.toThrow(
+      "has no name; a button needs an accessibilityLabel or text inside it."
+    )
+  })
+
+  test("fails on an action that leaves its toast showing", async () => {
+    const toaster = createToaster()
+    await render(
+      <OverlayHost>
+        <ToastRegion toaster={toaster}>
+          {() => (
+            <Toast>
+              <ToastTitle />
+              <ToastAction dismiss={false} />
+            </Toast>
+          )}
+        </ToastRegion>
+      </OverlayHost>
+    )
+    await act(async () => {
+      toaster({
+        title: "Deleted",
+        duration: Infinity,
+        action: { label: "Undo", onAction: () => {} },
+      })
+    })
+    await expect(checkToast()).rejects.toThrow("leaves its toast showing")
   })
 })
