@@ -81,7 +81,9 @@ function Fruit({
           onChanges(`${name}=${[value ?? "none"].flat().join("+")}`)
         }
       >
-        <SelectLabel testID={`${name}-label`}>Fruit {name}</SelectLabel>
+        <SelectLabel testID={`${name}-label`} style={styles.label}>
+          Fruit {name}
+        </SelectLabel>
         <SelectTrigger testID={`${name}-trigger`} style={styles.trigger}>
           <SelectValue testID={`${name}-value`} />
         </SelectTrigger>
@@ -147,6 +149,7 @@ const styles = StyleSheet.create({
   fixture: { alignSelf: "stretch", paddingHorizontal: 16, gap: 8 },
   row: { flexDirection: "row", gap: 12 },
   field: { gap: 4 },
+  label: { minHeight: 44, textAlignVertical: "center" },
   action: {
     minHeight: 44,
     justifyContent: "center",
