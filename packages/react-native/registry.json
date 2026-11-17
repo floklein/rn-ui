@@ -778,6 +778,13 @@
       "mirrors": ["packages/core/src/foundation/number/parse.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/text/index.ts",
+      "mirrors": ["packages/core/src/foundation/text/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Lists corrected-edit.ts's createCorrectedEdit and TextSelection, which Number Input's native twin and api import from another folder."
     }
   ],
   "components": {

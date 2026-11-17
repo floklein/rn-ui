@@ -14,8 +14,6 @@ import type * as Native from "./number-input-field.native"
 const repeatDelay = 400
 const repeatEvery = 60
 
-// The api methods a native TextInput's events, the step buttons' presses and
-// a scrub area's touches call, where the web's `bind` and `on` read elements.
 function nativeField({
   store,
   type,

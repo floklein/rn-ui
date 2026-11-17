@@ -9,9 +9,23 @@ const device = useDevice("number-input")
 // The Android keyboard pushes the fixture's readouts off the screen, where
 // UiAutomator can't read them.
 async function closeKeyboard() {
-  if (await device.driver.isKeyboardShown()) {
+  if (
+    device.platform === "android" &&
+    (await device.driver.isKeyboardShown())
+  ) {
     await device.driver.hideKeyboard()
   }
+}
+
+// Text sent to the field itself, past the keyboard, which on Android would
+// filter a letter out of a number pad before the field sees it.
+async function insert(text: string) {
+  const field = device.driver.$(
+    device.platform === "ios"
+      ? "~amount-control"
+      : 'android=new UiSelector().resourceId("amount-control")'
+  )
+  await field.addValue(text)
 }
 
 async function startEditing() {
@@ -37,7 +51,7 @@ test("typing a number reaches the value from the keyboard", async () => {
 test("a letter is written back at once, and the caret stays where it was", async () => {
   await startEditing()
   await device.type("42")
-  await device.driver.$("~Amount").addValue("x")
+  await insert("x")
   await device.type("1")
   await closeKeyboard()
   await device.expectTree((tree) => {

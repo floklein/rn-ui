@@ -8,6 +8,7 @@ export {
   roleOf,
 } from "./accessible-name"
 export { textDiff, textFieldAdapter } from "./caret"
+export { createCorrectedEdit, type TextSelection } from "./corrected-edit"
 export { fuzzyFilter } from "./fuzzy"
 export { createInputHistory, type InputHistoryOptions } from "./input-history"
 export { bindPageLocale, localeOf, pageLocale } from "./locale"

@@ -1,7 +1,3 @@
-/**
- * Where a text field's selection starts and ends.
- * @experimental
- */
 type TextSelection = { start: number; end: number }
 
 function commonPrefix(a: string, b: string) {
@@ -21,14 +17,9 @@ function isDeletion(previous: string, text: string) {
   )
 }
 
-/**
- * The edits a native text field reports after they show, accepted or written
- * back. A field reports only its whole new text, so the selection it last
- * reported says what replaced what, and a refused edit's text is put back
- * with that selection. Deleting is always accepted, as the web never
- * refuses it.
- * @experimental
- */
+// A native field reports an edit's whole text after it shows, so the
+// selection it last reported says what replaced what. Deleting is always
+// accepted, as the web never refuses it.
 function createCorrectedEdit() {
   let selection: TextSelection | undefined
   // The caret the field reports for the refused text, after the write back.
