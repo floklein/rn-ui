@@ -35,6 +35,7 @@ function focusListboxItem(part: Part<any, ListboxApi>, focused: boolean) {
   const { api, key, store } = part
   if (focused) {
     api.internal.focused(key)
+    api.internal.listbox.highlight(key, { focus: false })
   } else if (store.get().highlighted === key) {
     store.set({ highlighted: null })
   }

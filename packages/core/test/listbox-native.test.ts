@@ -179,3 +179,15 @@ test("a group label names its group while it's mounted", async () => {
   await flush()
   expect(instance.get().groupLabels).toEqual([])
 })
+
+test("keyboard focus on an option reports it to onHighlight, with its index", async () => {
+  host()
+  const onHighlight = vi.fn()
+  const { parts } = mount({ onHighlight })
+  await flush()
+  focusListboxItem(parts.cherry, true)
+  expect(onHighlight).toHaveBeenLastCalledWith(
+    "cherry",
+    expect.objectContaining({ index: 2 })
+  )
+})

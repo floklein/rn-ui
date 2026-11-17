@@ -264,3 +264,13 @@ test("renders without a host", async () => {
   )
   expect(option("Apple")).toBeTruthy()
 })
+
+test("keyboard focus on an option reports it to onHighlight", async () => {
+  const onHighlight = jest.fn()
+  await render(<Fruit onHighlight={onHighlight} />)
+  await fireEvent(option("Cherry"), "focus")
+  expect(onHighlight).toHaveBeenLastCalledWith(
+    "cherry",
+    expect.objectContaining({ index: 2 })
+  )
+})
