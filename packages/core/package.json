@@ -99,7 +99,10 @@
     "./color": "./src/foundation/color/color.ts",
     "./image": "./src/foundation/image/image.ts",
     "./date-picker": "./src/components/date-picker/date-picker.ts",
-    "./agent": "./src/page/agent/agent.ts",
+    "./agent": {
+      "react-native": "./src/page/agent/agent.native.ts",
+      "default": "./src/page/agent/agent.ts"
+    },
     "./observe": "./src/page/observe/observe.ts",
     "./history": "./src/page/history/history.ts",
     "./gesture": "./src/foundation/motion/gesture.ts",

@@ -41,6 +41,7 @@ function host() {
     box: vi.fn(),
     follow: vi.fn(),
     adjustable: vi.fn(),
+    seen: vi.fn(),
     listen(next) {
       input = next
       return () => (input = undefined)

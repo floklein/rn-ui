@@ -18,6 +18,7 @@
   "license": "Apache-2.0",
   "exports": {
     "./accordion": "./src/accordion.tsx",
+    "./agent": "./src/agent.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
@@ -30,9 +31,11 @@
     "./drawer": "./src/drawer.tsx",
     "./field": "./src/field.tsx",
     "./file-input": "./src/file-input.tsx",
+    "./history": "./src/history.ts",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
+    "./observe": "./src/observe.ts",
     "./otp-input": "./src/otp-input.tsx",
     "./overlays": "./src/overlays.tsx",
     "./pagination": "./src/pagination.tsx",
@@ -65,6 +68,10 @@
       "./accordion": {
         "types": "./dist/accordion.d.ts",
         "default": "./dist/accordion.js"
+      },
+      "./agent": {
+        "types": "./dist/agent.d.ts",
+        "default": "./dist/agent.js"
       },
       "./alert-dialog": {
         "types": "./dist/alert-dialog.d.ts",
@@ -114,6 +121,10 @@
         "types": "./dist/file-input.d.ts",
         "default": "./dist/file-input.js"
       },
+      "./history": {
+        "types": "./dist/history.d.ts",
+        "default": "./dist/history.js"
+      },
       "./input": {
         "types": "./dist/input.d.ts",
         "default": "./dist/input.js"
@@ -125,6 +136,10 @@
       "./meter": {
         "types": "./dist/meter.d.ts",
         "default": "./dist/meter.js"
+      },
+      "./observe": {
+        "types": "./dist/observe.d.ts",
+        "default": "./dist/observe.js"
       },
       "./otp-input": {
         "types": "./dist/otp-input.d.ts",

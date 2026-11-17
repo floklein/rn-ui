@@ -49,6 +49,13 @@ import {
   type AccessibilityActionEvent,
   type HostInstance,
 } from "react-native"
+import {
+  AgentContext,
+  isSecretField,
+  useMarks,
+  useSeen,
+  withoutMarks,
+} from "./agent-context"
 import { carry } from "./carried-context"
 import { mergeAccessibility, splitAria, toNativeProps } from "./accessibility"
 import {
@@ -68,6 +75,7 @@ import {
   textInputs,
   views,
 } from "./native-host"
+import { useHost } from "./open-hosts"
 import {
   idle,
   mergeProps,
@@ -581,21 +589,20 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
   const slotState = partState(part, slotProps) as { open?: boolean }
   // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted. A
   // popup's content leaves as it closes: core keeps it mounted until it has.
+  const presentNow = present(part, {
+    ...slotProps,
+    keepMounted: false,
+    hiddenUntilFound: false,
+  })
   const presence = usePresence(
     part,
-    animates &&
-      slotState.open !== false &&
-      present(part, {
-        ...slotProps,
-        keepMounted: false,
-        hiddenUntilFound: false,
-      }),
+    animates && slotState.open !== false && presentNow,
     onExit,
     rerender
   )
 
   const shown = present(part, slotProps) || presence.exiting
-  const { render, ref, ...user } = hostProps
+  const [marks, { render, ref, ...user }] = withoutMarks(hostProps)
   const { aria, rest } = splitAria(user)
   const merged: Record<string, string | undefined> = shown
     ? ariaOf(part, slotProps, aria, presence.exiting)
@@ -645,6 +652,17 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
     merged["aria-live"],
     shown && merged["aria-live"] ? plainText(content, true) : undefined
   )
+
+  // Kept mounted isn't shown: an agent reads a part only while its slot is present.
+  const { outside, inside: marked } = useMarks(
+    marks,
+    !presentNow ||
+      presence.exiting ||
+      translated.accessibilityElementsHidden === true ||
+      translated.importantForAccessibility === "no-hide-descendants",
+    owner.instance.id
+  )
+  const layer = useHost()
 
   let element: React.ReactElement | null = null
   if (shown) {
@@ -736,6 +754,30 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
         ? { ...interaction, pressed: false, hovered: false }
         : interaction
     )
+  }
+  // The press of the element it rendered, which a `render` may have set.
+  const onPress = (element?.props as { onPress?: () => void } | undefined)
+    ?.onPress
+  useSeen(
+    part,
+    layer,
+    shown
+      ? {
+          label: translated.accessibilityLabel,
+          text: plainText(content, true),
+          role: merged.role ?? translated.accessibilityRole,
+          disabled: translated.accessibilityState?.disabled === true,
+          hidden: marked.hidden,
+          offLimits: marked.offLimits,
+          secret: marked.secret || isSecretField(rest),
+          confirm: marked.confirm,
+          within: marked.within,
+          press: onPress && (() => onPress()),
+        }
+      : undefined
+  )
+  if (marked !== outside) {
+    element = <AgentContext value={marked}>{element}</AgentContext>
   }
   if (provided === scope) {
     return element
