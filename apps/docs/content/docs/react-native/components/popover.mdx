@@ -1,0 +1,317 @@
+---
+title: Popover
+description: A panel placed beside its trigger, with its placement in the content's state.
+---
+
+Use a popover for a small task next to what it's about, like sharing a link or setting a status, when the user stays on the screen.
+
+<ComponentExample
+  name="popover/basic"
+  caption="Tap Share. The popover opens below the button, and VoiceOver or TalkBack moves to its title. Tap Cancel, anywhere outside it or Android's back to close it."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+A non-modal popover renders in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app. Without one, it renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `Popover`:
+
+```text
+Popover
+├── PopoverTrigger
+└── PopoverContent
+    ├── PopoverArrow
+    ├── PopoverTitle
+    ├── PopoverDescription
+    └── PopoverClose
+```
+
+`PopoverTrigger` and `PopoverClose` render a `Pressable`, `PopoverContent` and `PopoverArrow` a `View`, and `PopoverTitle` and `PopoverDescription` a `Text`. The content renders in the `OverlayHost`, or in a `Modal` when it's modal, so context from your own provider placed between `Popover` and `PopoverContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+## Usage
+
+Import the parts and put them together. The content is placed for you, so give it a size and a look, not a position:
+
+```tsx
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@ui-sdk/react-native/popover"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Text>Share</Text>
+      </PopoverTrigger>
+      <PopoverContent style={styles.content}>
+        <PopoverTitle>Share this document</PopoverTitle>
+        <PopoverClose>
+          <Text>Done</Text>
+        </PopoverClose>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+const styles = StyleSheet.create({
+  content: { width: 280, padding: 16, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+## Placement
+
+The content opens on `side` of its trigger, `"bottom"` by default, and lines up with it by `align`, `"center"` by default. It flips to the other side when there isn't room and shifts along the trigger to stay on screen. `sideOffset` sets the gap, `alignOffset` shifts it along the trigger and `collisionPadding` keeps it away from the edges.
+
+The content's position is absolute in the host it renders in, set from measurements taken before its first frame. While it's open it measures again, every frame while something moves and twice a second otherwise, so it follows a trigger in a scroll view. The space it may use leaves out the `insets` you pass to `OverlayHost` and the on-screen keyboard, counted once.
+
+<ComponentExample
+  name="popover/placement"
+  caption="Pick a side and an alignment, then tap Delivery."
+/>
+
+<ComponentExample
+  name="popover/align"
+  caption="Tap each button. The popover lines up with its start, center or end."
+/>
+
+<ComponentExample
+  name="popover/offsets"
+  caption="Pick the offsets, then tap Delivery. The gap, the shift and the room kept from the edges follow."
+/>
+
+The content's state holds what was measured, like `availableHeight`, the room it has before the edge. Use it to cap a long list:
+
+```tsx
+<PopoverContent
+  style={(state) => [styles.content, { maxHeight: state.availableHeight }]}
+>
+```
+
+## Anchor
+
+`anchor` places the content against something other than its trigger: a view, like a ref's `current`, or a point in window coordinates, like a touch's `pageX` and `pageY`. A controller's `open({ anchor })` does the same for one open.
+
+<ComponentExample
+  name="popover/anchor"
+  caption="Tap Filters. The popover lines up with the search field, not the button."
+/>
+
+## Arrow
+
+`PopoverArrow` is placed along the content's edge facing the trigger, pointing at the trigger's center and kept `arrowPadding` from the corners. Its state's `side` says which edge, so you can turn it. When the trigger's center is past a corner, `arrowClamped` is true.
+
+<ComponentExample
+  name="popover/arrow"
+  caption="Pick a side, then tap ?. The arrow moves to the edge facing the button."
+/>
+
+## Closing
+
+A press on a Close part closes the popover with the `"close-press"` reason. It also closes when:
+
+- something outside it is pressed, with `"outside-press"`;
+- Android's back button or gesture is used, with `"back"`;
+- VoiceOver's escape gesture, a two-finger Z, is made, with `"escape-key"`.
+
+Set `dismissible={false}` to refuse those, and ask in `onDismissAttempt`.
+
+<ComponentExample
+  name="popover/draft"
+  caption="Tap Add Note and type something, then tap outside. The popover stays open and asks whether to discard your note."
+/>
+
+## Modal
+
+By default a popover is non-modal: the screen stays usable, and a press outside closes the popover and still reaches what you pressed. `modal` renders it in a React Native `Modal` instead, which hides the rest of the screen from screen readers, and a press outside only closes it. The content is still placed beside its trigger.
+
+<ComponentExample
+  name="popover/modal"
+  caption="Tap Add Comment, then pick Modal and open it again. Outside presses stop reaching the screen."
+/>
+
+## Focus
+
+When the popover opens from a screen reader, it moves VoiceOver or TalkBack to its title. `initialFocus="content"` moves to the content instead, and `"none"` leaves the screen reader where it is. When it closes, the screen reader moves back to the trigger, unless `finalFocus` is `"none"`.
+
+<ComponentExample
+  name="popover/focus"
+  caption="With VoiceOver or TalkBack, open each popover. Rename starts on the title, Publish on the popover and Status stays on the trigger."
+/>
+
+## Controlled
+
+Pass `open` and update it in `onOpenChange`. Call `details.cancel()` in the callback to cancel the change.
+
+<ComponentExample
+  name="popover/controlled"
+  caption="Turn on Open, or tap Set Status. The log shows each change and its reason."
+/>
+
+## Animation
+
+The content leaves through `onExit`, as in [Dialog](./dialog#animation): it stays on screen until you call `done`, or two seconds pass. Its state's `transformOrigin` is the point facing the trigger, for a scale that grows out of it.
+
+<ComponentExample
+  name="popover/animation"
+  caption="Tap What's New, then Got It. The popover grows from the button and shrinks back."
+/>
+
+## Opening from Anywhere
+
+Create a controller with `createPopoverController<Payload>()` and pass it as `controller`, to the popover and to triggers outside it, like one per row. The content is placed against the trigger that opened it, and its state's `payload` is that trigger's.
+
+<ComponentExample
+  name="popover/payload"
+  caption="Tap Edit on a member and pick a role."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its role and press.
+
+<ComponentExample
+  name="popover/custom-rendering"
+  caption="Tap Show Updates. The trigger's text follows whether the popover is open."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.content, { maxHeight: state.availableHeight }]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### PopoverTrigger [#part-state-popovertrigger]
+
+<PartStateTable
+  component="popover"
+  part="trigger"
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverTriggerState"
+/>
+
+### PopoverContent [#part-state-popovercontent]
+
+<PartStateTable
+  component="popover"
+  part="content"
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation), and what placement measured, undefined until it's first placed:
+
+| Field             | Type                                     | Description                                                           |
+| ----------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| `side`            | `"top" \| "right" \| "bottom" \| "left"` | The side it opened on, after flipping.                                |
+| `align`           | `"start" \| "center" \| "end"`           | How it lines up with the trigger.                                     |
+| `anchorWidth`     | `number`                                 | The trigger's width, or the anchor's.                                 |
+| `anchorHeight`    | `number`                                 | The trigger's height, or the anchor's.                                |
+| `availableWidth`  | `number`                                 | The width it has before the edge of the space it may use.             |
+| `availableHeight` | `number`                                 | The height it has before that edge.                                   |
+| `transformOrigin` | `string`                                 | The point facing the trigger, as a `transformOrigin` style.           |
+| `arrowOffset`     | `number`                                 | Where the trigger's center falls along the edge facing it, in points. |
+
+### PopoverArrow [#part-state-popoverarrow]
+
+<PartStateTable
+  component="popover"
+  part="arrow"
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverArrowState"
+/>
+
+With what placement measured:
+
+| Field          | Type                                     | Description                                                    |
+| -------------- | ---------------------------------------- | -------------------------------------------------------------- |
+| `side`         | `"top" \| "right" \| "bottom" \| "left"` | The edge of the content it sits on, facing the trigger.        |
+| `align`        | `"start" \| "center" \| "end"`           | How the content lines up with the trigger.                     |
+| `arrowClamped` | `boolean`                                | Whether it stopped at a corner, short of the trigger's center. |
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. `PopoverTrigger` and `PopoverClose` also take `Pressable`'s props, `PopoverContent` and `PopoverArrow` `View`'s, and `PopoverTitle` and `PopoverDescription` `Text`'s.
+
+### Popover
+
+`openOnHover`, `delay` and `closeDelay` don't exist on native: a popover opens on press.
+
+<TypeTable
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverOptions"
+  omit={["container", "presentation", "openOnHover", "delay", "closeDelay"]}
+/>
+
+### PopoverTrigger
+
+<TypeTable
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverTriggerProps"
+  omit={["shortcut"]}
+/>
+
+### PopoverContent
+
+`anchor` takes a view or a point, described under [Anchor](#anchor), and `initialFocus` takes `"auto"`, `"content"` or `"none"`.
+
+<TypeTable
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why the popover opened or closed. `"trigger-hover"`, `"focus-out"`, `"window-blur"`, `"shortcut"` and `"swipe"` never happen on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createPopoverController<Payload, Result>()` and pass it as `controller`. Its `focus()` moves the screen reader to the trigger.
+
+<ControllerTable
+  path="../../packages/core/src/components/popover/popover.ts"
+  name="PopoverController"
+/>
+
+### Events
+
+| Prop                   | On        | Receives                                                    |
+| ---------------------- | --------- | ----------------------------------------------------------- |
+| `onOpenChange`         | `Popover` | `(open, details)`: the new state and the [reason](#reasons) |
+| `onOpenChangeComplete` | `Popover` | `(open)`, as described under [Animation](#animation)        |
+| `onPayloadChange`      | `Popover` | `(payload, details)`: the content's new payload             |
+| `onDismissAttempt`     | `Popover` | `({ reason })`, when a dismissal was refused                |
+
+## Accessibility
+
+The trigger is a button with an expanded state, which TalkBack can expand and collapse. The title has the header role and names the popover; React Native has no dialog role, so screen readers announce the title, not "dialog". A non-modal popover leaves the rest of the screen reachable; a modal one's `Modal` hides it. The arrow is hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                                  |
+| ----- | --------------------------------------------------------------------- |
+| Tab   | Moves through the controls                                            |
+| Space | Opens or closes the popover from the trigger, or presses a Close part |
+| Enter | Does the same, on Android only                                        |
