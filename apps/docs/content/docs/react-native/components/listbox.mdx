@@ -1,0 +1,302 @@
+---
+title: Listbox
+description: Choose one or several options from an always-visible list.
+---
+
+Use a Listbox when the choices should stay in view. It handles selection, disabled and read-only options, and what screen readers hear. You provide the parts and styles.
+
+<ComponentExample
+  name="listbox/basic"
+  caption="Tap Comments and New sign-ins to add them, then tap Mentions to take it out."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Listbox`:
+
+```text
+Listbox
+├── ListboxItem
+│   └── ListboxItemIndicator
+└── ListboxItem
+    └── ListboxItemIndicator
+```
+
+`ListboxItem` renders a `Pressable`, `ListboxGroupLabel` a `Text`, and the other parts a `View`. Text inside a `Pressable` or `View` part goes in a `Text` you write. Give each option a unique value. `ListboxItemIndicator` shows its content while its option is selected.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Listbox,
+  ListboxItem,
+  ListboxItemIndicator,
+} from "@ui-sdk/react-native/listbox"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Listbox aria-label="Toppings" defaultValue="basil">
+      <ListboxItem value="basil" style={styles.item}>
+        <Text>Basil</Text>
+        <ListboxItemIndicator>
+          <Text>✓</Text>
+        </ListboxItemIndicator>
+      </ListboxItem>
+      <ListboxItem value="olive" style={styles.item}>
+        <Text>Olive</Text>
+        <ListboxItemIndicator>
+          <Text>✓</Text>
+        </ListboxItemIndicator>
+      </ListboxItem>
+    </Listbox>
+  )
+}
+
+const styles = StyleSheet.create({
+  item: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+  },
+})
+
+export { Example }
+```
+
+An option's label is its text, read from the `Text` inside it, or its `label` when the content holds more than its words.
+
+## Multiple
+
+Add `multiple` to select several options. The value becomes an array; a single list uses one value or `null`. A press toggles an option. Shift ranges and Ctrl or ⌘ with A don't exist on native, where nothing reports those keys; the controller's `selectAll()` selects every enabled option.
+
+<ComponentExample
+  name="listbox/multiple"
+  caption="Tap Basil to add it and Extra cheese to take it out. The log shows each change."
+/>
+
+## Deselectable
+
+Add `deselectable` to let pressing the selected option clear a single selection. Without it, the selection stays as it is.
+
+<ComponentExample
+  name="listbox/deselectable"
+  caption="Tap Astro again to clear the selection, or choose another framework. The log shows each change."
+/>
+
+## Groups
+
+Use `ListboxGroup` and `ListboxGroupLabel` to name a group. `ListboxSeparator` adds a visual break, hidden from screen readers.
+
+<ComponentExample
+  name="listbox/groups"
+  caption="Choose Apple and Carrot. Both groups belong to one list."
+/>
+
+## Icons
+
+Wrap an icon in `ListboxItemIcon` so screen readers skip it and it isn't part of the option's label. `mirror` flips a directional icon when the app runs right to left.
+
+<ComponentExample
+  name="listbox/icons"
+  caption="Choose Drafts. The icon stays out of the option’s accessible name."
+/>
+
+## Horizontal
+
+`orientation="horizontal"` lays nothing out by itself: it's in the root's state, so lay the options out in a row with your style.
+
+<ComponentExample
+  name="listbox/horizontal"
+  caption="Choose a size. XL cannot be selected."
+/>
+
+## Disabled
+
+A disabled option can't be selected; on Android it reads as disabled. A disabled list disables every option.
+
+<ComponentExample
+  name="listbox/disabled"
+  caption="Try choosing Olive. Then tap Disable the List to make every option unavailable until you enable it again."
+/>
+
+## Read-Only
+
+Use `readOnly` when people should be able to read the list without changing its value. Its options stay enabled and reachable.
+
+<ComponentExample
+  name="listbox/read-only"
+  caption="Tap another framework. Nuxt stays selected because the list is read-only."
+/>
+
+## Object Values
+
+Pass objects as item values when the selection should carry more than an ID. `itemToValue` provides the string used for identity; `isItemEqualToValue` matches objects that represent the same option but are different instances. `items` supplies the collection as data and renders the options for you when the list has no children, typed with `ListData<T>`.
+
+<ComponentExample
+  name="listbox/data"
+  caption="Choose Team. The log shows the price from the selected object, not from its string ID."
+/>
+
+## Controller
+
+A controller can select all options, clear the selection, or move the screen reader into the list from another control. Create one with `createListboxController()` and pass it as `controller`.
+
+<ComponentExample
+  name="listbox/controller"
+  caption="Tap Select All, Clear and Focus. Each button drives the same list through its controller, and the log shows the change."
+/>
+
+## Scrollable
+
+Put a long list in a `ScrollView` with a maximum height. The list doesn't scroll itself: the selected option isn't scrolled into view when it first shows, and `keepInView` changes nothing. `onHighlight` reports the option that takes keyboard focus, with its index.
+
+<ComponentExample
+  name="listbox/scrollable"
+  caption="Scroll the list and choose a time zone."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the option keeps its role, state and press.
+
+<ComponentExample
+  name="listbox/render"
+  caption="Choose Remix. Its row shows Open while it's selected."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.item, state.selected && styles.selected]`. `highlighted` is true while an option has keyboard focus, which React Native reports on Android; a touch or a screen reader doesn't highlight. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+`ListboxGroup`, `ListboxGroupLabel` and `ListboxSeparator` have no state fields of their own.
+
+### Listbox [#part-state-listbox]
+
+<PartStateTable
+  component="listbox"
+  part="root"
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxState"
+/>
+
+### ListboxItem [#part-state-listboxitem]
+
+<PartStateTable
+  component="listbox"
+  part="item"
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxItemState"
+/>
+
+### ListboxItemIndicator [#part-state-listboxitemindicator]
+
+<PartStateTable
+  component="listbox"
+  part="item-indicator"
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxItemIndicatorState"
+/>
+
+With `startingStyle` and `endingStyle`, as on [Checkbox's indicator](./checkbox). Pass `onExit` to keep it on screen while it animates out.
+
+### ListboxItemIcon [#part-state-listboxitemicon]
+
+<PartStateTable
+  component="listbox"
+  part="item-icon"
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxItemIconState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. Each part also takes its host's props.
+
+### Listbox
+
+`name` and `form` don't exist on native, which has no forms: read the value from `onValueChange`. `activation` and `loop` only change arrow keys, which native doesn't report, so a press always selects, or toggles with `multiple`.
+
+<TypeTable
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxOptions"
+  omit={["name", "form"]}
+/>
+
+### ListboxItem
+
+<TypeTable
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxItemProps"
+/>
+
+### ListboxItemIndicator
+
+<TypeTable
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxItemIndicatorProps"
+/>
+
+### ListboxItemIcon
+
+<TypeTable
+  path="../../packages/core/src/foundation/lists/item-icon.ts"
+  name="ItemIconProps"
+/>
+
+`ListboxGroup`, `ListboxGroupLabel` and `ListboxSeparator` take no props of their own.
+
+### Reasons
+
+`details.reason` says why the value changed. `"list-navigation"`, `"reset"` and `"restore"` never happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createListboxController()` and pass it as `controller`. Its `focus()` moves the screen reader to the option that would hold the list's tab stop: the one focused last, the first selected, or the first enabled.
+
+<ControllerTable
+  path="../../packages/core/src/components/listbox/listbox-root.ts"
+  name="ListboxController"
+/>
+
+### Events
+
+| Prop            | On        | Receives                                                           |
+| --------------- | --------- | ------------------------------------------------------------------ |
+| `onValueChange` | `Listbox` | `(value, details)`: the new value, and the [reason](#reasons)      |
+| `onHighlight`   | `Listbox` | `(value, { index })`: the option that took keyboard focus, its row |
+
+## Accessibility
+
+Follows the [WAI-ARIA listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/), translated to React Native's accessibility props. React Native has no option role: each option is a button whose selected state says whether it's selected, its own accessible element reached by swiping, and a double-tap selects it, or toggles it with `multiple`. A separator and an indicator are hidden from screen readers.
+
+The list's own name, from `aria-label` or a [Field](./field)'s label, sits on a container, so it reaches no screen reader; name the list with a visible heading or label beside it. A press on a Field's label moves the screen reader to the option that holds the list's tab stop.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                                       |
+| ----- | -------------------------------------------------------------------------- |
+| Tab   | Moves to the next option, and Shift-Tab back; Android skips a disabled one |
+| Space | Selects the focused option, or toggles it with `multiple`                  |
+| Enter | Does the same, on Android only                                             |
+
+Every option is its own stop: React Native delivers no arrow keys, Home, End or typing to views, so the list's single tab stop, its arrow keys, typeahead and Shift ranges aren't built.

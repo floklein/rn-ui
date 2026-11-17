@@ -454,6 +454,7 @@
   "@ui-sdk/react-native/image-cropper": 23065,
   "@ui-sdk/react-native/input": 14750,
   "@ui-sdk/react-native/label": 11714,
+  "@ui-sdk/react-native/listbox": 25910,
   "@ui-sdk/react-native/meter": 12336,
   "@ui-sdk/react-native/number-input": 23289,
   "@ui-sdk/react-native/observe": 1533,
