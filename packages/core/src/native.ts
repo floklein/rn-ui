@@ -23,6 +23,7 @@ export {
   bindTransferItem,
 } from "./foundation/drag-and-drop/drag-and-drop-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
+export { numberInputNative } from "./components/number-input/number-input-native"
 export { popoverNative } from "./components/popover/popover-native"
 export { tooltipNative } from "./components/tooltip/tooltip-native"
 export { radioNative } from "./components/radio/radio-native"

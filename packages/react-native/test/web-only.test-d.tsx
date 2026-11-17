@@ -16,6 +16,7 @@ import type * as DrawerEntry from "../src/drawer"
 import { Field, FieldError, FieldLabel } from "../src/field"
 import { FileInput, FileInputTrigger } from "../src/file-input"
 import type * as FileInputEntry from "../src/file-input"
+import { NumberInput } from "../src/number-input"
 import { OTPInput } from "../src/otp-input"
 import { Pagination } from "../src/pagination"
 import { PasswordInput, PasswordInputControl } from "../src/password-input"
@@ -174,6 +175,16 @@ const codes = [
   <OTPInput form="verify" />,
 ]
 
+const numbers = [
+  <NumberInput min={0} max={10} step={0.5} required />,
+  // @ts-expect-error `name` has no native meaning.
+  <NumberInput name="amount" />,
+  // @ts-expect-error `form` has no native meaning.
+  <NumberInput form="order" />,
+  // @ts-expect-error there's no mouse wheel to step with.
+  <NumberInput wheel />,
+]
+
 const fields = [
   <Field disabled invalid>
     <FieldLabel>Email</FieldLabel>
@@ -278,6 +289,7 @@ type TooltipShortcut = typeof TooltipEntry.TooltipShortcut
 
 export {
   codes,
+  numbers,
   ComboboxInput,
   dialogEntries,
   type DialogShortcut,
