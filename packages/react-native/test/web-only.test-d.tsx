@@ -29,6 +29,8 @@ import {
 import type * as SwitchEntry from "../src/switch"
 import { Switch, SwitchThumb } from "../src/switch"
 import { Toggle } from "../src/toggle"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../src/tooltip"
+import type * as TooltipEntry from "../src/tooltip"
 
 const values = [
   <Checkbox value="terms" />,
@@ -271,6 +273,20 @@ const files = [
 // @ts-expect-error The file input has no hidden input on native.
 type FileInputHiddenInput = typeof FileInputEntry.FileInputInput
 
+const tooltips = [
+  <Tooltip toggleable delay={300} closeDelay={100} />,
+  <TooltipTrigger payload="bold" />,
+  // @ts-expect-error `container` is a DOM element.
+  <Tooltip container={null} />,
+  // @ts-expect-error `container` is a DOM element.
+  <TooltipContent container={null} />,
+  // @ts-expect-error A tooltip's keyboard shortcut is a web hint.
+  <Tooltip shortcut="mod+s" />,
+]
+
+// @ts-expect-error The shortcut part is web-only.
+type TooltipShortcut = typeof TooltipEntry.TooltipShortcut
+
 export {
   codes,
   numbers,
@@ -290,5 +306,7 @@ export {
   passwords,
   switches,
   type SwitchInput,
+  tooltips,
+  type TooltipShortcut,
   values,
 }

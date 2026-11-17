@@ -27,6 +27,7 @@ import {
  * A file input's remove buttons are the buttons inside its list.
  * A toast's buttons and links each dismiss it, as action and close parts do
  * unless told otherwise; render some toasts before the check.
+ * A tooltip's triggers are its buttons, each named or described by its text.
  * @experimental
  */
 type NativePattern =
@@ -52,6 +53,7 @@ type NativePattern =
   | "textbox"
   | "toast"
   | "toolbar"
+  | "tooltip"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -139,6 +141,53 @@ async function buttonPattern(context: Context) {
         "togglebutton",
         index,
         (node) => stateOf(node).checked
+      )
+    }
+  }
+}
+
+// A tooltip's text names or describes its trigger. A toggleable one shows
+// on activate and hides on the next, and never takes focus.
+async function tooltipPattern(context: Context) {
+  const buttons = () => context.withRole("button")
+  if (!buttons().length) {
+    context.problem(
+      context.root,
+      "has no button for a tooltip to name or describe."
+    )
+    return
+  }
+  const shown = () => shownNodes(context.root).length
+  for (const index of buttons().keys()) {
+    const button = () => buttons()[index]!
+    requireName(context, button(), "button")
+    const { accessibilityLabel, accessibilityHint } = button().props
+    if (!accessibilityLabel && !accessibilityHint) {
+      context.problem(
+        button(),
+        "is neither named nor described by its tooltip; the tooltip's text becomes its accessibilityLabel or accessibilityHint."
+      )
+    }
+    if (isDisabled(button())) {
+      continue
+    }
+    const before = shown()
+    const requests = await performWatched(button(), "activate", context.act)
+    if (requests.length) {
+      context.problem(
+        button(),
+        "requests accessibility focus when it's activated; a tooltip never takes focus."
+      )
+    }
+    // A press closes any tooltip; only a toggleable one opens.
+    if (shown() <= before) {
+      continue
+    }
+    await performWatched(button(), "activate", context.act)
+    if (shown() !== before) {
+      context.problem(
+        button(),
+        "leaves its tooltip open when activated again; a toggleable tooltip's trigger closes it."
       )
     }
   }
@@ -1119,6 +1168,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   textbox: textboxPattern,
   toast: toastPattern,
   toolbar: toolbarPattern,
+  tooltip: tooltipPattern,
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's

@@ -66,6 +66,12 @@ import {
 } from "../src/popover"
 import { createToaster, ToastRegion } from "../src/toast"
 import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipTrigger,
+} from "../src/tooltip"
+import {
   Pagination,
   PaginationLink,
   PaginationNext,
@@ -568,6 +574,29 @@ describe("checkDirection on the native host", () => {
                 </AccordionPanel>
               </AccordionItem>
             </Accordion>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a tooltip, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <Tooltip defaultOpen>
+                <TooltipTrigger aria-label="Info" />
+                <TooltipContent side="right">
+                  <TooltipArrow />
+                  <Text>Files in the trash still use storage.</Text>
+                </TooltipContent>
+              </Tooltip>
+            </OverlayHost>
           )
           return screen.container
         },

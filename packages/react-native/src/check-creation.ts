@@ -67,6 +67,10 @@ function watchHostReads<T>(report: (reading: string) => void, read: () => T) {
       report("asks the native host for a screen reader's adjustments")
       return () => {}
     },
+    scrollNear: () => {
+      report("asks the native host to scroll near an edge")
+      return false
+    },
     listen: () => {
       report("listens to the native host's input")
       return () => {}

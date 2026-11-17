@@ -7,6 +7,7 @@ import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
 import { drawer } from "@ui-sdk/core/drawer"
 import { popover } from "@ui-sdk/core/popover"
+import { tooltip } from "@ui-sdk/core/tooltip"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
@@ -274,6 +275,13 @@ describe("checkCreation", () => {
     expect(() => checkCreation(popover, {})).not.toThrow()
     expect(() =>
       checkCreation(popover, { defaultOpen: true, modal: true })
+    ).not.toThrow()
+  })
+
+  test("passes on a tooltip, open or closed", () => {
+    expect(() => checkCreation(tooltip, {})).not.toThrow()
+    expect(() =>
+      checkCreation(tooltip, { defaultOpen: true, toggleable: true })
     ).not.toThrow()
   })
 

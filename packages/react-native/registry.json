@@ -169,10 +169,12 @@
       "file": "packages/core/src/foundation/kernel/native-element.ts",
       "mirrors": [
         "packages/core/src/foundation/focus/roving-focus.ts",
-        "packages/core/src/foundation/kernel/order.ts"
+        "packages/core/src/foundation/kernel/order.ts",
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, and the order twin sorts it. It answers only what roving-focus.ts's bind and focus and order.ts call on an element."
+      "why": "The stand-in a native behavior file passes where shared code keeps a member's element: focus() asks the host, the order twin sorts it, and getBoundingClientRect() reads the part's box from the host. It answers only what roving-focus.ts's bind and focus, order.ts, and reorder.ts's and transfer.ts's drop places call on an element."
     },
     {
       "kind": "reroute",
@@ -713,6 +715,23 @@
       "why": "Popover's focus on open: the title, where pressOpening's initialFocus picks the first focusable element, and the content after a touch or with initialFocus=\"content\", as the DOM host focuses the popup itself."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/components/tooltip/tooltip-native.ts",
+      "mirrors": [
+        "packages/core/src/components/tooltip/tooltip.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/kernel/dev.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "checkEvent skips an event that isn't a DOM Event, like the pointer event React Native hands a tooltip's hover."
+    },
+    {
       "kind": "edit",
       "file": "packages/core/src/foundation/platform/position.ts",
       "mirrors": ["packages/core/src/foundation/platform/position.ts"],
@@ -855,10 +874,50 @@
       "file": "packages/core/src/components/scroll-area/scroll-area-native.ts",
       "mirrors": [
         "packages/core/src/components/scroll-area/scroll-area-view.ts",
-        "packages/core/src/components/scroll-area/scroll-area-pointer.ts"
+        "packages/core/src/components/scroll-area/scroll-area-pointer.ts",
+        "packages/core/src/foundation/drag-and-drop/auto-scroll.ts"
       ],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables."
+      "why": "What the viewport's, scrollbars' and thumbs' binds orchestrate: edges, overflow, scrolling and visibility flags from the reported scroll position, sticking to the end as the content grows, the controller's scrolls, and a scrollbar touch that drags the thumb or pages, with the thumb's geometry handed to the host instead of CSS variables. A drag held near the viewport's edge scrolls it a step at a time (edgeScroll), at auto-scroll.ts's speeds."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/reorder.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/reorder.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Additive: drag(key), the decisions pointerdown's handler makes (pick up as a pointer, place by the items' boxes, drop with the drag reason or put back), followed through point-drag.ts with edge scrolling, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/drag-and-drop/transfer.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/transfer.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The pointer drag's placing moves out of pointerdown into place(key, x, y), unchanged. Additive: drag(key), as reorder.ts's, through point-drag.ts, for a drag that doesn't start with pointerdown, like a native touch. An item's default label goes through item-label.ts, which has a native twin, instead of labelOf."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/item-label.native.ts",
+      "mirrors": ["packages/core/src/foundation/text/typeahead.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "A moving item the app doesn't label is announced by its key, where labelOf reads the element's text, which core can't read from a native view."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/drag-and-drop/auto-scroll.native.ts",
+      "mirrors": ["packages/core/src/foundation/drag-and-drop/auto-scroll.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Scrolls only the library's Scroll Areas under the finger, through the host's scrollNear and each viewport's edgeScroll, once per frame while it's near an edge, where the DOM module scrolls any scrollable element and the window."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/drag-and-drop/drag-and-drop-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/drag-and-drop/reorder.ts",
+        "packages/core/src/foundation/drag-and-drop/transfer.ts",
+        "packages/core/src/foundation/drag-and-drop/pointer.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What a reorderable item's and a transfer's list and item binds and pointerdown orchestrate: each joins with a stand-in, and the responder's touches pick the item up past the drag threshold, follow it with drag(key), and drop it, or put it back on a cancelled, taken or unmounted responder. A transfer's list holds the touch, since an item moved to another list is a new view."
     },
     {
       "kind": "behavior",
@@ -1413,6 +1472,27 @@
         }
       }
     },
+    "tooltip": {
+      "entry": "packages/react-native/src/tooltip.tsx",
+      "slots": {
+        "tooltip.trigger": {
+          "covered": "packages/react-native/src/tooltip.tsx",
+          "reason": "Its asleep sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and decides whether the trigger has a name of its own, which the adapter reads from the trigger's aria-label, accessibilityLabel and text. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its keydown and focus handlers open on keyboard focus, which a native view doesn't report. Its press goes through the slot's own press, which opens a toggleable tooltip, with its text announced, and closes any other."
+        },
+        "tooltip.content": {
+          "covered": "packages/core/src/components/tooltip/tooltip-native.ts",
+          "reason": "Its bind joins the warm group and shows the popup: the layer, back and the exit, which popup-native.ts and tooltip-native.ts restate, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its asleep labels the content with its spoken text, which the adapter registers by the content's id from the content's text, so it names or describes the trigger while closed too. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave."
+        },
+        "tooltip.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "tooltip.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1602,7 +1682,6 @@
     "time-input",
     "timeline",
     "token-input",
-    "tooltip",
     "tree",
     "trigger-menu",
     "waterfall"
@@ -1976,6 +2055,18 @@
     },
     {
       "component": "popover",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "tooltip",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tooltip",
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
