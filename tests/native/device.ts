@@ -64,6 +64,8 @@ const capabilities =
         "appium:adbExecTimeout": limits.adb,
         "appium:androidInstallTimeout": limits.adb,
         "appium:uiautomator2ServerInstallTimeout": limits.adb,
+        "appium:uiautomator2ServerLaunchTimeout": limits.adb,
+        "appium:appWaitDuration": limits.adb,
         // An emulator from simlock sits behind its own adb server.
         ...(process.env.ANDROID_ADB_SERVER_PORT && {
           "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
