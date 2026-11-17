@@ -140,7 +140,32 @@ test("a mouse resting on the trigger opens it after the delay, and leaving close
       "pointerLeave",
       pointerAt("mouse")
     )
-    await act(() => jest.runOnlyPendingTimers())
+    await act(() => jest.advanceTimersByTime(100))
+    expect(screen.queryByText(tip)).toBeNull()
+  } finally {
+    performance.now = now
+    jest.useRealTimers()
+  }
+})
+
+test("a mouse crossing from the trigger to the content within the close delay keeps it open", async () => {
+  jest.useFakeTimers({ doNotFake: ["performance"] })
+  const { now } = performance
+  performance.now = () => 1e15
+  try {
+    await render(<Example delay={0} closeDelay={0} />)
+    const mouse = pointerAt("mouse")
+    await fireEvent(screen.getByTestId("trigger"), "pointerEnter", mouse)
+    expect(screen.getByText(tip)).toBeOnTheScreen()
+    await fireEvent(screen.getByTestId("trigger"), "pointerLeave", mouse)
+    await act(() => jest.advanceTimersByTime(99))
+    await fireEvent(screen.getByTestId("content"), "pointerEnter", mouse)
+    await act(() => jest.advanceTimersByTime(1000))
+    expect(screen.getByText(tip)).toBeOnTheScreen()
+    await fireEvent(screen.getByTestId("content"), "pointerLeave", mouse)
+    await act(() => jest.advanceTimersByTime(99))
+    expect(screen.getByText(tip)).toBeOnTheScreen()
+    await act(() => jest.advanceTimersByTime(1))
     expect(screen.queryByText(tip)).toBeNull()
   } finally {
     performance.now = now

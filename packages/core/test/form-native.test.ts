@@ -72,6 +72,7 @@ describe("the form twin", () => {
       follow: vi.fn(),
       adjustable: vi.fn(),
       scrollNear: vi.fn(),
+      screenReader: vi.fn(),
       seen: vi.fn(),
     })
     const el = nativeElement(part)
