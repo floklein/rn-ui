@@ -20,9 +20,11 @@
     "./accordion": "./src/accordion.tsx",
     "./agent": "./src/agent.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
+    "./async-options": "./src/async-options.ts",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./calendar": "./src/calendar.tsx",
+    "./carousel": "./src/carousel.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
     "./color": "./src/color.ts",
@@ -53,11 +55,13 @@
     "./resizable": "./src/resizable.tsx",
     "./scroll-area": "./src/scroll-area.tsx",
     "./segmented-control": "./src/segmented-control.tsx",
+    "./select": "./src/select.tsx",
     "./separator": "./src/separator.tsx",
     "./slider": "./src/slider.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
+    "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
     "./time-input": "./src/time-input.tsx",
     "./toast": "./src/toast.tsx",
@@ -87,6 +91,10 @@
         "types": "./dist/alert-dialog.d.ts",
         "default": "./dist/alert-dialog.js"
       },
+      "./async-options": {
+        "types": "./dist/async-options.d.ts",
+        "default": "./dist/async-options.js"
+      },
       "./avatar": {
         "types": "./dist/avatar.d.ts",
         "default": "./dist/avatar.js"
@@ -98,6 +106,10 @@
       "./calendar": {
         "types": "./dist/calendar.d.ts",
         "default": "./dist/calendar.js"
+      },
+      "./carousel": {
+        "types": "./dist/carousel.d.ts",
+        "default": "./dist/carousel.js"
       },
       "./checkbox": {
         "types": "./dist/checkbox.d.ts",
@@ -220,6 +232,10 @@
         "types": "./dist/segmented-control.d.ts",
         "default": "./dist/segmented-control.js"
       },
+      "./select": {
+        "types": "./dist/select.d.ts",
+        "default": "./dist/select.js"
+      },
       "./separator": {
         "types": "./dist/separator.d.ts",
         "default": "./dist/separator.js"
@@ -239,6 +255,10 @@
       "./testing": {
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
+      },
+      "./text-match": {
+        "types": "./dist/text-match.d.ts",
+        "default": "./dist/text-match.js"
       },
       "./textarea": {
         "types": "./dist/textarea.d.ts",

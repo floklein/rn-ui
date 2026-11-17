@@ -628,7 +628,7 @@
       "file": "packages/core/src/foundation/popups/index.ts",
       "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
+      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover, Drawer, Tooltip and Select import."
     },
     {
       "kind": "behavior",
@@ -666,7 +666,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays and toast."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, color, color-picker, dialog, alert-dialog, popover, file-input, overlays, toast, select, async-options and text-match."
     },
     {
       "kind": "behavior",
@@ -1055,6 +1055,95 @@
       "mirrors": ["packages/core/src/foundation/number/parse.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-dom.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-dom.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Reads the slides' layout from what their views reported through nativeCarousel's layout, which leaves out the content's translation, where the DOM side reads offsets and computed scroll padding. Views have no CSS order or scroll snap, so writing the slides' order and snap areas does nothing (a loop rewinds), and the adapter labels each slide \"1 of 5\" itself."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/components/carousel/carousel-motion.native.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The web's mouse drag through the same gesture machine, fed by the responder's touches on the viewport (followed with the host's follow, taken back from a button inside once it moves along the axis), and the same springs; the position goes to the adapter through nativeCarousel instead of the viewport's scroll position. A cancelled or taken responder springs back to the page it started on. No native scrolling, so no scroll rest or snapping."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/carousel/carousel-native.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel.ts",
+        "packages/core/src/components/carousel/carousel-api.ts",
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the root's, viewport's, slides' and indicators' binds orchestrate: each binds with a stand-in for its view, the views' layouts reach the api through nativeCarousel, which measures again, and the content's offset goes back to the adapter."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-api.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The viewport and the slides are the ones bound (kept in an order, which the native order twin sorts by the views), instead of the parts' elements, which native never sets. The tab stop, the resize and intersection observers, the visibility listener and the interval's CSS variable run only where isBrowser is true. Additive: internal.measure(), which the native host calls once its views lay out."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/carousel/carousel-indicators.ts",
+      "mirrors": [
+        "packages/core/src/components/carousel/carousel-indicators.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The indicators are the ones bound, kept in an order, instead of the parts' elements, so indicators without a page take theirs from their order on native too."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/components/carousel/carousel-motion.ts",
+      "mirrors": ["packages/core/src/components/carousel/carousel-motion.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "onRelease's event is optional, since a native release has none."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/lists/index.ts",
+      "mirrors": ["packages/core/src/foundation/lists/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports announceHighlight and nativeItem from listbox-native.ts, which Select's native behavior imports, and Combobox's, Autocomplete's and Command's will."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/foundation/lists/listbox-native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/lists/listbox-engine.ts",
+        "packages/core/src/foundation/lists/listbox-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "The listbox engine on the native host, for Select now and Combobox, Autocomplete, Command and Trigger Menu after it: an option registers a stand-in from nativeElement that reads as connected, sorted by the order twin and focused through the host, with the label the adapter reads from its text where the engine reads the element's; and the highlighted option is announced while focus stays in a search field, where the web points aria-activedescendant at it."
+    },
+    {
+      "kind": "behavior",
+      "file": "packages/core/src/components/select/select-native.ts",
+      "mirrors": [
+        "packages/core/src/components/select/select-parts.ts",
+        "packages/core/src/components/select/select-api.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the label, trigger, content, list, input, item, select-all, group-label and item-icon slots' bind orchestrate: the flags they set while mounted, an option's registration with the engine (listbox-native.ts), the popup's layer, focus and exit (popup-native.ts) with focus on the item initialFocus picks, the settled flag, and the trigger's press with the opener its source stands for (pressSelectTrigger), where the trigger slot's press reads it from the event."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/components/select/select-api.ts",
+      "mirrors": ["packages/core/src/components/select/select-api.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "internal.popupCore holds the popup's own internals (createPopup's preset, parts, rules, label, trigger slot), which popup-native.ts and the adapter's placement read; spreading them into Select's internal instead left the web content detached in leaks.spec. The controller's focus() calls focusPart instead of focusing the trigger element. Neither changes the web."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/text/match.ts",
+      "mirrors": ["packages/core/src/foundation/text/match.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Listens for languagechange only where window has addEventListener: React Native's window is the global object, with no events, so filtering threw on native."
     },
     {
       "kind": "twin",
@@ -1847,6 +1936,104 @@
         }
       }
     },
+    "carousel": {
+      "entry": "packages/react-native/src/carousel.tsx",
+      "slots": {
+        "carousel.root": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind runs rotation, which carousel-native.ts starts through the same bind with a stand-in, and pauses it under a hovering mouse, for a hidden tab and off screen, and stops it when keyboard focus moves in: native has no hover over a carousel, no document visibility or intersection observer, and reports no focus (spec, Hardware keyboards). A drag pauses it, and paging stops it."
+        },
+        "carousel.viewport": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind moves the viewport and observes its size; carousel-native.ts binds it with a stand-in whose motion (carousel-motion.native.ts) follows the responder's touches and moves the content, and the adapter's onLayout measures again where the ResizeObserver does. Its tab stop and arrow keys scroll by keyboard, which native doesn't deliver to views (spec, Hardware keyboards); the Previous and Next parts and the indicators page instead."
+        },
+        "carousel.item": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the slide in order, observes its size and labels it \"1 of 5\"; carousel-native.ts joins it with a stand-in, the adapter's onLayout measures it and the adapter labels it. Its focusin keeps a focused slide shown, and native reports no focus."
+        },
+        "carousel.previous": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.next": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.play-toggle": {
+          "needs": "nothing",
+          "reason": "Its bind only checks in development that the part is named, which reads the DOM; the pattern check's button names do it on native."
+        },
+        "carousel.indicator-group": {
+          "needs": "nothing",
+          "reason": "Its keydown moves between the indicators with arrow keys, which native doesn't deliver to views (spec, Hardware keyboards); each indicator is its own accessible element, reached by swiping."
+        },
+        "carousel.indicator": {
+          "covered": "packages/core/src/components/carousel/carousel-native.ts",
+          "reason": "Its bind joins the indicators' roving group, which orders the indicators that take their page from their order; carousel-native.ts joins it with a stand-in. Its development name check reads the DOM."
+        }
+      }
+    },
+    "select": {
+      "entry": "packages/react-native/src/select.tsx",
+      "slots": {
+        "select.root": {
+          "needs": "nothing",
+          "reason": "Its bind makes a web component's root take part in a form (ElementInternals, restore, reset, a disabled fieldset) and names the trigger from the <label>s pointing at the element, none of which exists on native: a Field's label names the trigger through useFieldControl, and a disabled FieldSet reaches it through usePart."
+        },
+        "select.label": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select labeled while it's mounted, which select-native.ts does, so the trigger takes the label as its name."
+        },
+        "select.trigger": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind settles whether a label is bound and sets the first trigger's key, which select-native.ts does while the trigger is mounted; it also prepares the hidden list so a value's label is known, which the adapter's learnLabels does from its children, and warns about a missing name. Its keydown handles arrow keys, Home, End, Enter, Space and typeahead, which React Native never reports; its pointerdown opens on a mouse press, which native has none of; its press goes through pressSelectTrigger, which passes the opener a touch or a screen reader stands for. Its pointerenter and focusin prepare the list early, which nothing needs on native."
+        },
+        "select.value": {
+          "needs": "nothing",
+          "reason": "Its bind writes the label into a web component's element, which native never needs: SelectValue renders the label from its state in a Text."
+        },
+        "select.content": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind shows the list: the layer, focus on the selected item as it opens and back to the trigger as it closes, and the exit, which popup-native.ts and select-native.ts restate, and its placement against the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. It settles whether the list is empty a microtask after it mounts, which select-native.ts does. It loads more when the list scrolls near its end, which needs the app's own ScrollView on native, so only the highlight reaching the last item calls onLoadMore. The sheet presentation is the sheet entry's (ticket 16). Its keydown handles the list's keys, which React Native never reports; VoiceOver's escape gesture and Android's back close it. Its connect registers the element for Escape's ownership, which native has no element for."
+        },
+        "select.list": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select listed while it's mounted, which select-native.ts does."
+        },
+        "select.input": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind marks the select searchable while the field is mounted, which select-native.ts does, and writes the query into the <input>, which SelectInput's value prop follows; its input event is the TextInput's onChangeText, which calls setQuery with the input-change reason. aria-activedescendant has no native counterpart: while focus stays in the field, select-native.ts announces the highlighted option through listbox-native.ts."
+        },
+        "select.item": {
+          "covered": "packages/core/src/foundation/lists/listbox-native.ts",
+          "reason": "Its bind registers the option with the listbox engine, which select-native.ts does with the stand-in listbox-native.ts makes, sorted by the order twin; the adapter passes the option's text as its label, where the DOM host reads the element's text. Its pointermove highlights under a mouse and its pointerdown and mousedown keep focus in the search field, none of which a touch does; an option's Pressable takes focus from Android's keyboard, which highlights it."
+        },
+        "select.item-text": {
+          "needs": "nothing",
+          "reason": "Its bind writes the marked segments into a web component's element, which native never needs: SelectItemText renders from its state's segments in a Text."
+        },
+        "select.item-indicator": {
+          "needs": "nothing",
+          "reason": "Its bind starts the web's enter animation as an option turns selected; on native the indicator's presence is the adapter's, with startingStyle in its state."
+        },
+        "select.group-label": {
+          "covered": "packages/core/src/components/select/select-native.ts",
+          "reason": "Its bind lists the group's key among the labeled groups while it's mounted, which select-native.ts does, so the group is named by its label."
+        },
+        "select.empty": {
+          "needs": "nothing",
+          "reason": "Its bind stashes a web component's message while the list has items, which SelectEmpty does by rendering its children only while its state says empty."
+        },
+        "select.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "select.form-input": {
+          "needs": "nothing",
+          "reason": "The hidden input a form submits, resets and autofills: native has no forms, so it isn't rendered, and name, form and autoComplete are left out of the native types."
+        }
+      }
+    },
     "date-input": {
       "entry": "packages/react-native/src/date-input.tsx",
       "slots": {
@@ -1884,7 +2071,6 @@
   },
   "pending": [
     "autocomplete",
-    "carousel",
     "combobox",
     "command",
     "image-cropper",
@@ -1892,7 +2078,6 @@
     "menu",
     "menubar",
     "navigation-menu",
-    "select",
     "timeline",
     "token-input",
     "tree",
@@ -2051,12 +2236,6 @@
       "reason": "Menu has no native entry yet (ticket 57); the example comes with it."
     },
     {
-      "component": "toolbar",
-      "example": "select",
-      "feature": "A select opened from a toolbar button",
-      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
-    },
-    {
       "component": "collapsible",
       "example": "find-in-page",
       "feature": "Find in page revealing a hidden panel",
@@ -2213,18 +2392,6 @@
       "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
-      "component": "calendar",
-      "example": "month-year-select",
-      "feature": "Native selects of the months and years",
-      "reason": "Native has no select element, so the month and year select parts aren't rendered."
-    },
-    {
-      "component": "calendar",
-      "example": "custom-select",
-      "feature": "A styled Select for the month and year",
-      "reason": "Select has no native entry yet (ticket 13); the example comes with it."
-    },
-    {
       "component": "accordion",
       "example": "deep-link",
       "feature": "A link to text inside a closed panel",
@@ -2373,6 +2540,54 @@
       "example": "wheel",
       "feature": "Stepping with the mouse wheel",
       "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
+    },
+    {
+      "component": "carousel",
+      "example": "progress",
+      "feature": "A progress bar timed by the --carousel-progress CSS variable",
+      "reason": "Native has no CSS variables; the controller's getProgress() reads how far the slides have moved, and onPageChangeComplete says when they rest."
+    },
+    {
+      "component": "carousel",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager; a right-to-left app pages from the right with no prop."
+    },
+    {
+      "component": "select",
+      "example": "align-item",
+      "feature": "The selected item lined up over the trigger",
+      "reason": "alignItemWithTrigger falls back to opening below for touch, and native is all touch, so it's left out of the native content props."
+    },
+    {
+      "component": "select",
+      "example": "container",
+      "feature": "A portal container for the list",
+      "reason": "Native has no portals: a non-modal list renders in the app's OverlayHost, a modal one in a Modal."
+    },
+    {
+      "component": "select",
+      "example": "form",
+      "feature": "Form submission, reset and autofill",
+      "reason": "Native has no forms: name, form and autoComplete are left out of the native types, and the app reads the value from onValueChange."
+    },
+    {
+      "component": "select",
+      "example": "invalid",
+      "feature": "Validity from a required select on submit, with a field's error",
+      "reason": "Native has no forms and computes no validity."
+    },
+    {
+      "component": "select",
+      "example": "presentation",
+      "feature": "Presenting as a sheet",
+      "reason": "The sheet presentation is the /sheet entry (ticket 16); without it a select presents as a popover."
+    },
+    {
+      "component": "select",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
     },
     {
       "component": "date-input",

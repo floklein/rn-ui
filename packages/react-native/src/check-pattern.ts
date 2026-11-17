@@ -36,13 +36,16 @@ type NativePattern =
   | "alertdialog"
   | "button"
   | "calendar"
+  | "carousel"
   | "checkbox"
+  | "combobox"
   | "date-picker"
   | "dialog"
   | "disclosure"
   | "file-input"
   | "hover-card"
   | "img"
+  | "listbox"
   | "meter"
   | "pagination"
   | "progressbar"
@@ -887,6 +890,46 @@ async function tabsPattern(context: Context) {
   }
 }
 
+// The slides read are what's in view; an indicator's activate shows its
+// page, so what's read beside the controls changes.
+async function carouselPattern(context: Context) {
+  const controls = new Set(["button", "tab", "tabbar", "tablist"])
+  const slides = () =>
+    context
+      .elements()
+      .filter((node) => !controls.has(roleOf(node) ?? ""))
+      .map((node) => nameOf(node))
+      .join("|")
+  for (const button of context.withRole("button")) {
+    requireName(context, button, "button")
+  }
+  if (!slides()) {
+    context.problem(
+      context.root,
+      "reads nothing beside its controls; the slides in view are read (APG carousel)."
+    )
+  }
+  if (!context.withRole("tab").length) {
+    return
+  }
+  await tabsPattern(context)
+  const tabs = context.withRole("tab")
+  const index = tabs.findIndex(
+    (tab) => !isDisabled(tab) && stateOf(tab).selected !== true
+  )
+  if (index < 0) {
+    return
+  }
+  const before = slides()
+  await performWatched(tabs[index], "activate", context.act)
+  if (slides() === before) {
+    context.problem(
+      context.withRole("tab")[index],
+      "shows the same slides after the activate action; an indicator shows its page (APG carousel)."
+    )
+  }
+}
+
 // check-code: allow return-type recursive, so TypeScript cannot infer it.
 function textFieldsIn(node: HostNode): HostNode[] {
   const inside = (node.children ?? []).flatMap((child) =>
@@ -1185,18 +1228,209 @@ const adjustablePattern = (widget: string) => async (context: Context) => {
   }
 }
 
+// Native has no option role: an option is a button with a selected state,
+// which means the committed value.
+const optionsOf = (context: Context) =>
+  context
+    .withRole("button")
+    .filter((node) => typeof stateOf(node).selected === "boolean")
+
+// Each option is its own element, named, and activating one that isn't
+// disabled selects it while a disabled one stays unselected (APG listbox).
+async function listboxPattern(context: Context) {
+  if (!optionsOf(context).length) {
+    context.problem(
+      context.root,
+      "has no button with a selected state, so it has no options (APG listbox)."
+    )
+    return
+  }
+  for (const option of optionsOf(context)) {
+    requireName(context, option, "option")
+  }
+  for (const name of optionsOf(context).map(nameOf)) {
+    const option = () =>
+      optionsOf(context).find((node) => nameOf(node) === name)
+    const before = option()
+    if (!name || !before || stateOf(before).selected) {
+      continue
+    }
+    await performWatched(before, "activate", context.act)
+    const after = option()
+    if (!after) {
+      continue
+    }
+    if (isDisabled(before) && stateOf(after).selected) {
+      context.problem(
+        after,
+        "is selected after the activate action, though it's disabled."
+      )
+    } else if (!isDisabled(before) && stateOf(after).selected !== true) {
+      context.problem(
+        after,
+        "isn't selected after the activate action; activating an option selects it (APG listbox)."
+      )
+    }
+  }
+}
+
+const openModal = (context: Context) =>
+  shownNodes(context.root).find(
+    (node) => node.type === "Modal" && node.props.visible !== false
+  )
+
+// APG select-only combobox: opening moves the screen reader into the options,
+// and choosing one, back on Android or iOS's escape gesture closes the list
+// with focus back on the combobox.
+async function comboboxPattern(context: Context) {
+  const box = () => context.withRole("combobox")[0]
+  if (!box()) {
+    context.problem(
+      context.root,
+      "has no element with the combobox role, so it isn't a combobox (APG combobox)."
+    )
+    return
+  }
+  requireName(context, box(), "combobox")
+  if (typeof stateOf(box()).expanded !== "boolean") {
+    context.problem(
+      box(),
+      "has no expanded state; a combobox says whether its list is open (APG combobox)."
+    )
+    return
+  }
+  if (isDisabled(box())) {
+    return
+  }
+  const open = () => stateOf(box()).expanded === true
+  const activate = (node: HostNode) =>
+    performWatched(node, "activate", context.act)
+  if (open()) {
+    await activate(box())
+  }
+  const opening = await activate(box())
+  if (!open()) {
+    context.problem(
+      box(),
+      "stays collapsed after the activate action; activating a combobox opens its list (APG combobox)."
+    )
+    return
+  }
+  if (!opening.length) {
+    context.problem(
+      box(),
+      "requests no accessibility focus when it opens its list; the screen reader moves into it."
+    )
+  }
+  if (!optionsOf(context).length) {
+    context.problem(
+      context.root,
+      "shows no option once open; an option is a button with a selected state."
+    )
+    return
+  }
+  for (const option of optionsOf(context)) {
+    requireName(context, option, "option")
+  }
+  const target = optionsOf(context).find(
+    (node) => !isDisabled(node) && !stateOf(node).selected
+  )
+  if (target) {
+    const name = nameOf(target)
+    const chosen = () =>
+      optionsOf(context).find((node) => nameOf(node) === name)
+    const requests = await activate(target)
+    if (!open()) {
+      if (!requests.length) {
+        context.problem(
+          box(),
+          "requests no accessibility focus after an option closes the list; focus returns to the combobox."
+        )
+      }
+      await activate(box())
+    }
+    const after = chosen()
+    if (after && stateOf(after).selected !== true) {
+      context.problem(
+        after,
+        "isn't selected once chosen; an option's selected state is the committed value."
+      )
+    }
+  }
+  if (!open()) {
+    await activate(box())
+  }
+  const closes = async (label: string, run: () => Promise<unknown[]>) => {
+    const requests = await run()
+    if (open()) {
+      context.problem(box(), `stays expanded after ${label}.`)
+      return
+    }
+    if (!requests.length) {
+      context.problem(
+        box(),
+        `requests no accessibility focus after ${label}; focus returns to the combobox.`
+      )
+    }
+    await activate(box())
+  }
+  if (context.os === "android") {
+    const modal = openModal(context)
+    if (modal) {
+      await closes("Android's back", () =>
+        performWatched(modal, "back", context.act)
+      )
+    }
+    for (const action of ["collapse", "expand"] as const) {
+      if (!actionsOf(box()).includes(action)) {
+        break
+      }
+      const requests = await performWatched(box(), action, context.act)
+      if (open() !== (action === "expand")) {
+        break
+      }
+      if (!requests.length) {
+        context.problem(
+          box(),
+          `requests no accessibility focus after the ${action} action; the screen reader moves ${action === "expand" ? "into the list" : "back to the combobox"}.`
+        )
+      }
+    }
+  } else {
+    const escapable = shownNodes(context.root).find(
+      (node) => typeof node.props.onAccessibilityEscape === "function"
+    )
+    if (escapable) {
+      await closes("the escape action", () =>
+        performWatched(escapable, "escape", context.act)
+      )
+    } else {
+      context.problem(
+        box(),
+        "opens a list with no view that takes VoiceOver's escape gesture, which closes it."
+      )
+    }
+  }
+  if (open()) {
+    await activate(box())
+  }
+}
+
 const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   accordion: (context) => checkExpandable(context, "accordion"),
   alertdialog: (context) => dialogPattern(context, "alert dialog"),
   button: buttonPattern,
   calendar: calendarPattern,
+  carousel: carouselPattern,
   checkbox: checkboxPattern,
+  combobox: comboboxPattern,
   "date-picker": datePickerPattern,
   dialog: (context) => dialogPattern(context, "dialog"),
   disclosure: (context) => checkExpandable(context, "disclosure"),
   "file-input": fileInputPattern,
   "hover-card": hoverCardPattern,
   img: imgPattern,
+  listbox: listboxPattern,
   meter: (context) => barPattern(context, "meter"),
   pagination: paginationPattern,
   progressbar: (context) => barPattern(context, "progressbar"),

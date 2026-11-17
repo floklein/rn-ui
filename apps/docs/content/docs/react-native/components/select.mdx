@@ -1,0 +1,529 @@
+---
+title: Select
+description: Choose one value or several from a list placed against its trigger.
+---
+
+Use a Select when someone needs to choose from a set of options. It handles opening the list, placing it, selection and what screen readers hear. You provide the parts and styles.
+
+<ComponentExample
+  name="select/demo"
+  caption="Tap Role and choose Editor. The list closes and the trigger shows your choice."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+By default the list renders in a React Native `Modal`. With `modal={false}` it renders in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app; without one, it renders in place and warns in development.
+
+## Composition
+
+Use the following composition to build a `Select`:
+
+```text
+Select
+├── SelectLabel
+├── SelectTrigger
+│   └── SelectValue
+└── SelectContent
+    ├── SelectItem
+    │   └── SelectItemIndicator
+    └── SelectItem
+```
+
+`SelectTrigger`, `SelectItem`, `SelectSelectAll` and `SelectClear` render a `Pressable`, `SelectLabel`, `SelectValue`, `SelectItemText` and `SelectGroupLabel` a `Text`, `SelectInput` a `TextInput`, and the other parts a `View`. Text inside a `Pressable` or `View` part goes in a `Text` you write. The content renders in a `Modal` or in the `OverlayHost`, so context from your own provider placed between `Select` and `SelectContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+## Usage
+
+Import the parts and put them together. The content is placed for you, so give it a size and a look, not a position:
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@ui-sdk/react-native/select"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Select placeholder="Select a role">
+      <SelectLabel>Role</SelectLabel>
+      <SelectTrigger style={styles.trigger}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent style={styles.content}>
+        <SelectItem value="viewer">
+          <Text>Viewer</Text>
+        </SelectItem>
+        <SelectItem value="editor">
+          <Text>Editor</Text>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  )
+}
+
+const styles = StyleSheet.create({
+  trigger: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
+  content: { width: 220, padding: 4, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+An item's label is its text, read from the `Text` inside it, or its `label` when the content holds more than the words to match. `SelectValue` shows the selected item's label, or the placeholder.
+
+## Items as Data
+
+Pass an array to `items` when your options come from data. A string is both the value and the label; use an object when they differ. `items` can also hold groups and separators, typed with `ListData`. Keeping the data on the root also makes labels known before the list opens.
+
+<ComponentExample
+  name="select/data"
+  caption="Tap Plan to see the options, the separator and the Contact sales group. Education is disabled; choose Enterprise to update the value."
+/>
+
+## Groups
+
+Put related items inside `SelectGroup` and name each group with `SelectGroupLabel`. `SelectSeparator` adds a visual break, hidden from screen readers.
+
+<ComponentExample
+  name="select/groups"
+  caption="Tap Font and choose from Sans serif, Serif or Monospace."
+/>
+
+## Icons
+
+`SelectItemIcon` keeps an icon apart from the item's text, so it isn't part of its label or what search matches. Add `SelectValueIcon` to the trigger to show the selected item's icon there too: it renders a copy of that item's icon children. `mirror` flips an icon when the app runs right to left.
+
+<ComponentExample
+  name="select/icons"
+  caption="Choose Center or End. The label and the icon in the trigger follow."
+/>
+
+## Disabled
+
+A disabled select can't be opened or changed. A read-only select can be opened, but its value can't change. A disabled item can't be chosen; on Android it reads as disabled.
+
+<ComponentExample
+  name="select/disabled"
+  caption="Billing country is disabled and Shipping from is read-only. Open Shipping to: Denmark can't be chosen."
+/>
+
+## Clear Button
+
+`placeholder` shows while nothing is selected. Add `SelectClear` beside the trigger to return to that state: a single value becomes `null`, and multiple values an empty array. `keepMounted` keeps it on screen when there's nothing to clear.
+
+<ComponentExample
+  name="select/clearable"
+  caption="Tap the clear button. The trigger shows Unassigned. Choose someone to bring the button back."
+/>
+
+## Multiple
+
+Set `multiple` to select more than one value. The value becomes an array, and a press toggles an item while the list stays open. `SelectValue` hands its children function the selected `labels`.
+
+<ComponentExample
+  name="select/multiple"
+  caption="Choose several languages, then choose one again to remove it. The list stays open."
+/>
+
+## Select All
+
+Add `SelectSelectAll` to select or clear every enabled item, mixed while only some are selected. Inside a `SelectGroup`, it covers that group. `SelectValue maxLabels={2}` shows two labels and counts the rest, in words `getMoreLabel` can change.
+
+<ComponentExample
+  name="select/select-all"
+  caption="Tap Regions and press Select all. Press it again to clear, then choose one region to see the mixed state."
+/>
+
+## Search
+
+Add `SelectInput` inside `SelectContent` to filter the options, and put the items in `SelectList`. `SelectEmpty` shows while nothing matches, and groups with no match hide. `SelectItemText`'s state splits its text into `segments`, marking what the search matched, so you can render matches bold. Closing the list empties the search.
+
+While focus stays in the search field, VoiceOver and TalkBack say the highlighted option as typing moves it, where the web points `aria-activedescendant` at it.
+
+<ComponentExample
+  name="select/searchable"
+  caption="Tap Fruit and type “an”. Only the fruits with “an” remain."
+/>
+
+<ComponentExample
+  name="select/search-groups"
+  caption="Tap Country and type “ja”. Only Asia Pacific and Japan remain. Type “zz” to see the empty message."
+/>
+
+## Async Search
+
+Use `filter={false}` when your server filters the options. Connect `query` and `onQueryChange` to your loader, and pass its items and status to `Select`. `useAsyncOptions` from `@ui-sdk/react-native/async-options` drops stale requests and loads the next page. `SelectStatus` shows loading and result counts; without one, Select announces the count once typing pauses. `onLoadMore` runs when the highlight reaches the last result, not as the list scrolls.
+
+<ComponentExample
+  name="select/async-search"
+  caption="Tap Country and type “an”. Results arrive after a short delay."
+/>
+
+## Object Values
+
+A value can be an object. `itemToValue` returns the string that identifies it, `itemToLabel` the text the trigger shows, and `isItemEqualToValue` matches an item with a value that is another copy.
+
+<ComponentExample
+  name="select/object-values"
+  caption="Inès starts selected though the initial value is a copy of her item. Choose another assignee."
+/>
+
+## Long Lists
+
+Cap the content's height with its state's `availableHeight` and put the items in a `ScrollView`. For a very long list, render the content state's `items` with a `FlatList`, giving each `SelectItem` its full-list `index`.
+
+<ComponentExample
+  name="select/scrollable"
+  caption="Tap Time zone and scroll the list."
+/>
+
+<ComponentExample
+  name="select/virtualized"
+  caption="Tap Item and scroll. Only the rows near the screen render."
+/>
+
+## Placement
+
+The content opens on `side` of its trigger, `"bottom"` by default, lined up with its start by `align`. It flips when there isn't room and shifts to stay on screen; `sideOffset`, 4 by default, sets the gap. It's placed before its first frame and measured again while open, so it follows a trigger in a scroll view. `SelectArrow` points at the trigger. [Popover](./popover#placement) describes placement in full.
+
+<ComponentExample
+  name="select/positioning"
+  caption="Pick a side, then tap Fruit."
+/>
+
+## Closing
+
+Choosing an item closes a single select with the `"item-press"` reason. It also closes when:
+
+- something outside it is pressed, with `"outside-press"`;
+- Android's back button or gesture is used, with `"back"`;
+- VoiceOver's escape gesture, a two-finger Z, is made, with `"escape-key"`.
+
+Set `dismissible={false}` to refuse those, and ask in `onDismissAttempt`.
+
+## Modal
+
+By default the list renders in a `Modal`, which hides the rest of the screen from screen readers, and a press outside only closes it. `modal={false}` renders it in the `OverlayHost` instead: the screen stays reachable, and a press outside closes the list and still reaches what you pressed.
+
+<ComponentExample
+  name="select/modal"
+  caption="Tap Status, then tap the counter behind the list. Pick Non-modal and try again: the press reaches the counter."
+/>
+
+## Focus
+
+When the list opens from a screen reader, VoiceOver or TalkBack moves to the selected item, or the first one that can be chosen, or to the search field when there is one. When it closes, the screen reader moves back to the trigger. The controller's `focus()` moves it to the trigger, and a press on `SelectLabel` does too.
+
+## Controlled
+
+Use `value` with `onValueChange` to own the selection, and `open` with `onOpenChange` to own the list. A single value is `T | null`; with `multiple`, it's `T[]`. Call `details.cancel()` in a callback to refuse the change.
+
+<ComponentExample
+  name="select/controlled"
+  caption="Choose a fruit, or tap Reset. The log shows each change and its reason."
+/>
+
+## Controller
+
+`createSelectController()` opens, reads and changes the select from outside it, and connects a trigger placed elsewhere.
+
+<ComponentExample
+  name="select/controller"
+  caption="Tap Open, or Choose Cherry. The select follows."
+/>
+
+## Animation
+
+The content leaves through `onExit`, as in [Dialog](./dialog#animation): it stays on screen until you call `done`, or two seconds pass. Its state's `transformOrigin` is the point facing the trigger.
+
+<ComponentExample
+  name="select/animation"
+  caption="Tap Fruit. The list grows from the trigger, and shrinks back as it closes."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its role and press.
+
+<ComponentExample
+  name="select/custom-rendering"
+  caption="Tap the trigger. Its text follows whether the list is open."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.item, state.highlighted && styles.highlighted]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### SelectLabel [#part-state-selectlabel]
+
+It has no fields of its own: style it as the trigger it names.
+
+<PartStateTable
+  component="select"
+  part="label"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectTriggerState"
+/>
+
+### SelectTrigger [#part-state-selecttrigger]
+
+<PartStateTable
+  component="select"
+  part="trigger"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectTriggerState"
+/>
+
+### SelectValue [#part-state-selectvalue]
+
+<PartStateTable
+  component="select"
+  part="value"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectValueState"
+/>
+
+### SelectClear [#part-state-selectclear]
+
+<PartStateTable
+  component="select"
+  part="clear"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectClearState"
+/>
+
+### SelectContent [#part-state-selectcontent]
+
+<PartStateTable
+  component="select"
+  part="content"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation), and what placement measured, undefined until it's first placed: `side`, `align`, `anchorWidth`, `anchorHeight`, `availableWidth`, `availableHeight`, `transformOrigin` and `arrowOffset`, as on [Popover's content](./popover#part-state-popovercontent).
+
+### SelectItem [#part-state-selectitem]
+
+<PartStateTable
+  component="select"
+  part="item"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemState"
+/>
+
+### SelectItemText [#part-state-selectitemtext]
+
+<PartStateTable
+  component="select"
+  part="item-text"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemTextState"
+/>
+
+### SelectItemIndicator [#part-state-selectitemindicator]
+
+<PartStateTable
+  component="select"
+  part="item-indicator"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemIndicatorState"
+/>
+
+### SelectSelectAll [#part-state-selectselectall]
+
+<PartStateTable
+  component="select"
+  part="select-all"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectSelectAllState"
+/>
+
+### SelectEmpty [#part-state-selectempty]
+
+<PartStateTable
+  component="select"
+  part="empty"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectEmptyState"
+/>
+
+### SelectStatus [#part-state-selectstatus]
+
+<PartStateTable
+  component="select"
+  part="status"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectStatusState"
+/>
+
+### SelectArrow [#part-state-selectarrow]
+
+<PartStateTable
+  component="select"
+  part="arrow"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectArrowState"
+/>
+
+With `side`, `align` and `arrowClamped`, as on [Popover's arrow](./popover#part-state-popoverarrow).
+
+### SelectItemIcon [#part-state-selectitemicon]
+
+<PartStateTable
+  component="select"
+  part="item-icon"
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemIconState"
+/>
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. Each part also takes its host's props.
+
+### Select
+
+`name`, `form`, `autoComplete` and `container` don't exist on native, which has no forms or DOM containers. `presentation="sheet"` and `"auto"` present as the list until the sheet entry is imported.
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectOptions"
+  omit={["container", "name", "form", "autoComplete"]}
+/>
+
+### SelectTrigger
+
+A trigger outside the select also takes `controller`.
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectTriggerProps"
+/>
+
+### SelectValue
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectValueProps"
+/>
+
+### SelectContent
+
+`anchor` takes a view or a point in window coordinates. `alignItemWithTrigger` doesn't exist on native, where every press is a touch.
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectContentProps"
+  omit={["container", "alignItemWithTrigger"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### SelectItem
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemProps"
+/>
+
+### SelectItemIndicator
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemIndicatorProps"
+/>
+
+### SelectItemIcon
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectItemIconProps"
+/>
+
+`SelectValueIcon` takes no props of its own, and no children.
+
+### SelectClear
+
+<TypeTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectClearProps"
+/>
+
+### Items as Data
+
+Each item in `items`. Groups are `{ type: "group", label, items }` and separators `{ type: "separator" }`.
+
+<TypeTable
+  path="../../packages/core/src/foundation/lists/listbox.ts"
+  name="ListItem"
+/>
+
+### Reasons
+
+`details.reason` says why the value changed. `"list-navigation"`, `"reset"` and `"restore"` never happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectValueChangeReason"
+/>
+
+And why the list opened or closed. `"focus-out"`, `"window-blur"` and `"swipe"` never happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectOpenChangeReason"
+/>
+
+And why the search text changed:
+
+<ReasonTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectQueryChangeReason"
+/>
+
+### Controller
+
+Create one with `createSelectController<Value, Multiple>()` and pass it as `controller`. Its `focus()` moves the screen reader to the trigger.
+
+<ControllerTable
+  path="../../packages/core/src/components/select/select.ts"
+  name="SelectController"
+/>
+
+### Events
+
+| Prop                   | On       | Receives                                                        |
+| ---------------------- | -------- | --------------------------------------------------------------- |
+| `onValueChange`        | `Select` | `(value, details)`: the new value, and the [reason](#reasons)   |
+| `onOpenChange`         | `Select` | `(open, details)`: the new state, and the [reason](#reasons)    |
+| `onOpenChangeComplete` | `Select` | `(open)`, as described under [Animation](#animation)            |
+| `onHighlight`          | `Select` | `(value, { index })`: the highlighted item and its row          |
+| `onQueryChange`        | `Select` | `(query, details)`: the search text, and the [reason](#reasons) |
+| `onLoadMore`           | `Select` | `()`, when the highlight reaches the last item                  |
+| `onDismissAttempt`     | `Select` | `({ reason })`, when a dismissal was refused                    |
+
+## Accessibility
+
+The trigger has the combobox role and an expanded state, which TalkBack can expand and collapse, and it's named by `SelectLabel`, a [Field](./field)'s label or its own `aria-label`. The selected label is its accessibility value. TalkBack announces it as a combo box; React Native gives iOS no combo box trait, so VoiceOver reads its label and value. Each option is its own element, a button whose selected state is the committed value; React Native has no option role. A separator and an indicator are hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key   | Does                                                                                   |
+| ----- | -------------------------------------------------------------------------------------- |
+| Tab   | Moves through the controls, and through a list's options; Android skips a disabled one |
+| Space | Opens or closes the list from the trigger, or chooses an item                          |
+| Enter | Does the same, on Android only                                                         |
+
+Arrow keys, Home, End and typeahead don't move through the list: React Native doesn't report them.

@@ -108,8 +108,13 @@ function userFolder() {
   if (folder) {
     return folder
   }
-  // The user can switch languages while the page is open.
-  if (!watching && typeof window !== "undefined") {
+  // The user can switch languages while the page is open. React Native's
+  // window has no events.
+  if (
+    !watching &&
+    typeof window !== "undefined" &&
+    typeof window.addEventListener === "function"
+  ) {
     watching = true
     window.addEventListener("languagechange", () => (folder = undefined))
   }
