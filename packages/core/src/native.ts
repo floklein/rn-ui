@@ -15,6 +15,7 @@ export {
 } from "./components/date-picker/date-picker-native"
 export { gaugeNative } from "./foundation/gauge/gauge-native"
 export { popoverNative } from "./components/popover/popover-native"
+export { tooltipNative } from "./components/tooltip/tooltip-native"
 export { radioNative } from "./components/radio/radio-native"
 export { dialogNative } from "./components/dialog/dialog-native"
 export { drawerNative } from "./components/drawer/drawer-native"

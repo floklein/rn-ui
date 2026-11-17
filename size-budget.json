@@ -468,5 +468,6 @@
   "@ui-sdk/react-native/slider": 20658,
   "@ui-sdk/react-native/toolbar": 15716,
   "@ui-sdk/react-native/popover": 35674,
-  "@ui-sdk/react-native/popover (lazy)": 6066
+  "@ui-sdk/react-native/popover (lazy)": 6066,
+  "@ui-sdk/react-native/tooltip": 34019
 }

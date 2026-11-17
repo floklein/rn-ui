@@ -18,6 +18,7 @@ import type { RatingPrimitive } from "@ui-sdk/core/rating"
 import type { SegmentedControlPrimitive } from "@ui-sdk/core/segmented-control"
 import type { SliderPrimitive } from "@ui-sdk/core/slider"
 import type { SwitchPrimitive } from "@ui-sdk/core/switch"
+import type { TooltipPrimitive } from "@ui-sdk/core/tooltip"
 import {
   attrs,
   commit,
@@ -48,6 +49,7 @@ import {
   View,
   type AccessibilityActionEvent,
   type HostInstance,
+  type PointerEvent,
 } from "react-native"
 import {
   AgentContext,
@@ -425,11 +427,16 @@ let rendered = 0
 
 type OnExit = (done: () => void) => void
 
-// A part animates in and out when its slot takes `keepMounted`.
+// A part animates in and out when its slot takes `keepMounted`, or, like a
+// tooltip's content, is always present on the web and hidden while closed.
 type Animates<
   P extends Primitive,
   S extends SlotName<P>,
-> = "keepMounted" extends keyof PropsOf<P, S> ? true : false
+> = "keepMounted" extends keyof PropsOf<P, S>
+  ? true
+  : [P, S] extends [TooltipPrimitive, "content"]
+    ? true
+    : false
 
 type PresenceOf<P extends Primitive, S extends SlotName<P>> =
   Animates<P, S> extends true ? PresenceState : {}
@@ -596,7 +603,9 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       part.store.set({ formDisabled: disabling.disabled })
     }
   }, [disabling, part, owner])
-  const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
+  const animates =
+    "keepMounted" in (schemaOf(primitive).slots[slot] ?? {}) ||
+    (primitive.name === "tooltip" && slot === "content")
   const { onExit, ...hostProps } = props as typeof props & ExitProps
   const slotState = partState(part, slotProps) as { open?: boolean }
   // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted. A
@@ -689,8 +698,12 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
             (() => withSource(pressSource(), activate)),
           onPressIn: set({ pressed: true }),
           onPressOut: set({ pressed: false }),
-          onHoverIn: set({ hovered: true }),
-          onHoverOut: set({ hovered: false }),
+          // Not onHoverIn: behind a React Native flag it replaces a part's own
+          // onPointerEnter, and it drops pointerType, so a finger would hover.
+          onPointerEnter: (event: PointerEvent) =>
+            event.nativeEvent.pointerType !== "touch" &&
+            setInteraction((current) => ({ ...current, hovered: true })),
+          onPointerLeave: set({ hovered: false }),
           onFocus: set({ focused: true }),
           onBlur: set({ focused: false }),
         }
