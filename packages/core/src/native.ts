@@ -18,6 +18,7 @@ export {
   nativeColorPicker,
 } from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
+export { dateInputNative } from "./components/date-input/date-input-native"
 export {
   datePickerNative,
   datePickerText,
@@ -52,6 +53,10 @@ export {
   type NativeThumb,
   nativeScrollView,
 } from "./components/scroll-area/scroll-area-native"
+export {
+  pressSelectTrigger,
+  selectNative,
+} from "./components/select/select-native"
 export { segmentedControlNative } from "./components/segmented-control/segmented-control-native"
 export { sliderNative } from "./components/slider/slider-native"
 export { tabsNative } from "./components/tabs/tabs-native"

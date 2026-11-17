@@ -20,6 +20,7 @@
     "./accordion": "./src/accordion.tsx",
     "./agent": "./src/agent.tsx",
     "./alert-dialog": "./src/alert-dialog.tsx",
+    "./async-options": "./src/async-options.ts",
     "./avatar": "./src/avatar.tsx",
     "./button": "./src/button.tsx",
     "./calendar": "./src/calendar.tsx",
@@ -29,6 +30,7 @@
     "./color": "./src/color.ts",
     "./color-picker": "./src/color-picker.tsx",
     "./date": "./src/date.ts",
+    "./date-input": "./src/date-input.tsx",
     "./date-picker": "./src/date-picker.tsx",
     "./dialog": "./src/dialog.tsx",
     "./drawer": "./src/drawer.tsx",
@@ -55,12 +57,15 @@
     "./resizable": "./src/resizable.tsx",
     "./scroll-area": "./src/scroll-area.tsx",
     "./segmented-control": "./src/segmented-control.tsx",
+    "./select": "./src/select.tsx",
     "./separator": "./src/separator.tsx",
     "./slider": "./src/slider.tsx",
     "./switch": "./src/switch.tsx",
     "./tabs": "./src/tabs.tsx",
     "./testing": "./src/testing.ts",
+    "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
+    "./time-input": "./src/time-input.tsx",
     "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toolbar": "./src/toolbar.tsx",
@@ -87,6 +92,10 @@
       "./alert-dialog": {
         "types": "./dist/alert-dialog.d.ts",
         "default": "./dist/alert-dialog.js"
+      },
+      "./async-options": {
+        "types": "./dist/async-options.d.ts",
+        "default": "./dist/async-options.js"
       },
       "./avatar": {
         "types": "./dist/avatar.d.ts",
@@ -123,6 +132,10 @@
       "./date": {
         "types": "./dist/date.d.ts",
         "default": "./dist/date.js"
+      },
+      "./date-input": {
+        "types": "./dist/date-input.d.ts",
+        "default": "./dist/date-input.js"
       },
       "./date-picker": {
         "types": "./dist/date-picker.d.ts",
@@ -229,6 +242,10 @@
         "types": "./dist/segmented-control.d.ts",
         "default": "./dist/segmented-control.js"
       },
+      "./select": {
+        "types": "./dist/select.d.ts",
+        "default": "./dist/select.js"
+      },
       "./separator": {
         "types": "./dist/separator.d.ts",
         "default": "./dist/separator.js"
@@ -249,9 +266,17 @@
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
       },
+      "./text-match": {
+        "types": "./dist/text-match.d.ts",
+        "default": "./dist/text-match.js"
+      },
       "./textarea": {
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
+      },
+      "./time-input": {
+        "types": "./dist/time-input.d.ts",
+        "default": "./dist/time-input.js"
       },
       "./toast": {
         "types": "./dist/toast.d.ts",
