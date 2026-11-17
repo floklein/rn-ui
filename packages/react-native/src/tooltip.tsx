@@ -34,6 +34,7 @@ import type {
   PopoverPlacementState,
 } from "./popover"
 import {
+  closeDelayFloor,
   createOutlet,
   OutletContext,
   PopupLayer,
@@ -100,10 +101,6 @@ const contentId = (handle: Handle) => `${handle.instance.id}-content`
 // Pointer events reach `onPointerEnter` only where the app turned them on.
 const pointer = (event: PointerEvent) =>
   event.nativeEvent as unknown as globalThis.PointerEvent
-
-// No bridge spans the trigger and the content on native, so a pointer gets
-// this long to cross from one to the other (WCAG 1.4.13).
-const closeDelayFloor = 100
 
 /**
  * A short label or hint for its trigger. On a touch screen it stays closed,

@@ -35,6 +35,7 @@
     "./field": "./src/field.tsx",
     "./file-input": "./src/file-input.tsx",
     "./history": "./src/history.ts",
+    "./hover-card": "./src/hover-card.tsx",
     "./input": "./src/input.tsx",
     "./label": "./src/label.tsx",
     "./meter": "./src/meter.tsx",
@@ -144,6 +145,10 @@
       "./history": {
         "types": "./dist/history.d.ts",
         "default": "./dist/history.js"
+      },
+      "./hover-card": {
+        "types": "./dist/hover-card.d.ts",
+        "default": "./dist/hover-card.js"
       },
       "./input": {
         "types": "./dist/input.d.ts",
