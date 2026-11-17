@@ -167,6 +167,23 @@ test("inline completion selects the completed rest of the text", async () => {
   expect(input().props.selection).toBeUndefined()
 })
 
+test("inline completion goes on as typing replaces the selected rest, though iOS never reports the selection it was given", async () => {
+  await render(
+    <OverlayHost>
+      <Autocomplete inlineComplete items={["Apple", "Cherry"]}>
+        <AutocompleteInput testID="input" aria-label="Fruit" />
+      </Autocomplete>
+    </OverlayHost>
+  )
+  await fireEvent.changeText(input(), "c")
+  await fireEvent(input(), "selectionChange", {
+    nativeEvent: { selection: { start: 1, end: 1 } },
+  })
+  await fireEvent.changeText(input(), "ch")
+  expect(input().props.value).toBe("cherry")
+  expect(input().props.selection).toEqual({ start: 2, end: 6 })
+})
+
 test("data items render their suggestions", async () => {
   await render(
     <OverlayHost>

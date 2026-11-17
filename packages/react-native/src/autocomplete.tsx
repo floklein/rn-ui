@@ -219,6 +219,7 @@ function AutocompleteInput(
   // Set only until the caret next moves, so it never fights the keyboard.
   const [selection, setSelection] = React.useState<Selection>()
   const caret = React.useRef<Selection | undefined>(undefined)
+  const written = React.useRef<Selection | undefined>(undefined)
   const user = useFieldControl(props as Record<string, unknown>, () =>
     handle.api.focus()
   )
@@ -238,10 +239,20 @@ function AutocompleteInput(
         onTouchStart: landIn(handle.api),
         onChangeText(text: string) {
           const atEnd = (caret.current?.end ?? value.length) >= value.length
-          setSelection(typeAutocomplete(handle.api, text, atEnd))
+          const completion = typeAutocomplete(handle.api, text, atEnd)
+          written.current = completion
+          caret.current = completion ?? caret.current
+          setSelection(completion)
         },
         onSelectionChange(event: TextInputSelectionChangeEvent) {
-          caret.current = event.nativeEvent.selection
+          const reported = event.nativeEvent.selection
+          const typing = written.current
+          written.current = undefined
+          // iOS never reports a selection set from JS, only the caret of the
+          // keystroke before it, which leaves the completion selected.
+          if (!typing || reported.end !== typing.start) {
+            caret.current = reported
+          }
           setSelection(undefined)
         },
         onSubmitEditing: () => submitAutocomplete(handle.api),
