@@ -470,7 +470,7 @@ function ColorPickerChannelInput({
       withSource("keyboard", () =>
         api.internal.setChannelValue(
           channel,
-          Number(draft.replace(",", ".")),
+          draft.trim() ? Number(draft.replace(",", ".")) : NaN,
           undefined as never
         )
       )

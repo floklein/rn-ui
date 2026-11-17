@@ -207,6 +207,41 @@ describe("ColorPicker", () => {
     expect(screen.getByTestId("red").props.value).toBe("255")
   })
 
+  test("a channel field left empty keeps the channel", async () => {
+    await render(<Picker space="srgb" format="hex" defaultValue="#ff0000" />)
+    await fireEvent.changeText(screen.getByTestId("red"), " ")
+    await fireEvent(screen.getByTestId("red"), "blur")
+    expect(screen.getByTestId("input").props.value).toBe("#ff0000")
+    expect(screen.getByTestId("red").props.value).toBe("255")
+  })
+
+  test("a slider unmounting mid-drag leaves the area's drag alone", async () => {
+    const onValueCommit = jest.fn()
+    function Toggled({ alpha }: { alpha: boolean }) {
+      return (
+        <ColorPicker defaultValue="#000000" onValueCommit={onValueCommit}>
+          <ColorPickerArea testID="area">
+            <ColorPickerAreaThumb testID="area-thumb" />
+          </ColorPickerArea>
+          {alpha && (
+            <ColorPickerSlider channel="alpha">
+              <ColorPickerSliderThumb />
+            </ColorPickerSlider>
+          )}
+        </ColorPicker>
+      )
+    }
+    const { rerender } = await render(<Toggled alpha />)
+    const area = await drag("area", [100, 0])
+    await rerender(<Toggled alpha={false} />)
+    await fireEvent(area, "responderRelease", at(100, 0))
+    expect(value()).toBe("Saturation 100%, Brightness 100%")
+    expect(onValueCommit).toHaveBeenCalledWith(
+      "#ff0000",
+      expect.objectContaining({ reason: "track-press" })
+    )
+  })
+
   test("a swatch item is a button, selected when it is the color, and a press picks it", async () => {
     const onValueCommit = jest.fn()
     await render(

@@ -133,7 +133,7 @@ While a drag holds a color past the edge, the value is already the closest color
 
 Put `ColorPickerSwatchItem`s inside `ColorPickerSwatches` for preset colors. Each is a button named by its color, and selected while the value is its color, however either is written, so `#0000ff` selects `rgb(0 0 255)`.
 
-`ColorPickerChannelInput` edits one channel as a number and sets it when you press Return or leave it.
+`ColorPickerChannelInput` edits one channel as a number and sets it when you press Return or leave it. Its keyboard is the decimal pad, which has no Return key on iPhone, so there it sets the channel when focus moves on; pass `returnKeyType="done"` and `keyboardType="numbers-and-punctuation"` for a keyboard with one. A field left empty keeps the channel.
 
 <ComponentExample
   name="color-picker/swatches"

@@ -59,6 +59,8 @@ function follow(
 ) {
   const { api, store } = part
   let box: Box | undefined
+  // The picker holds one drag, so a part only cancels its own.
+  let dragging = false
   const to = (touch: NativeTouch, reason: "track-press" | "drag") => {
     const color = box && colorAt(touch, box)
     if (color) {
@@ -69,16 +71,25 @@ function follow(
     accepts: () => !isLocked(store.get()),
     start(touch) {
       box = nativeHost()?.box(part)
+      dragging = true
       api.internal.dragStart("track-press")
       to(touch, "track-press")
     },
     move: (touch) => to(touch, "drag"),
-    end: () => api.internal.dragEnd(),
-    cancel: () => api.internal.dragCancel(),
+    end() {
+      dragging = false
+      api.internal.dragEnd()
+    },
+    cancel() {
+      dragging = false
+      api.internal.dragCancel()
+    },
   })
   return () => {
     stop?.()
-    api.internal.dragCancel()
+    if (dragging) {
+      api.internal.dragCancel()
+    }
   }
 }
 
