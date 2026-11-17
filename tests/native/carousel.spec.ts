@@ -35,7 +35,8 @@ test("a swipe toward the start goes to the next page when the finger lifts", asy
 })
 
 test("a tap on a slide pages nowhere", async () => {
-  await device.press("slide-Dunes")
+  const view = await device.rect("viewport")
+  await device.tapAt(view.x + view.width / 2, view.y + view.height / 2)
   await expectReadout("readout", "Page 1, rested 1")
 })
 

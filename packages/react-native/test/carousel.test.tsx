@@ -1,3 +1,4 @@
+import * as React from "react"
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { carousel } from "@ui-sdk/core/carousel"
 import { Platform, Pressable, Text, View } from "react-native"
@@ -129,6 +130,39 @@ describe("Carousel", () => {
       )
       await settle()
       expect(translateX()).toBe(-300)
+    })
+
+    test("a drag survives the app re-rendering on its grant", async () => {
+      const onPageChange = jest.fn()
+      function Held() {
+        const [held, setHeld] = React.useState(false)
+        return (
+          <Carousel aria-label="Photos" onPageChange={onPageChange}>
+            <CarouselViewport
+              testID="viewport"
+              accessibilityHint={held ? "held" : undefined}
+              onResponderGrant={() => setHeld(true)}
+              onResponderRelease={() => setHeld(false)}
+            >
+              <CarouselContent testID="content">
+                {slides.map((name) => (
+                  <CarouselItem key={name} testID={name}>
+                    <Text>{name}</Text>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </CarouselViewport>
+          </Carousel>
+        )
+      }
+      await render(<Held />)
+      await layOut()
+      const viewport = await drag(250, 230, 200, 150)
+      await fireEvent(viewport, "responderRelease", at(150))
+      expect(onPageChange).toHaveBeenCalledWith(
+        2,
+        expect.objectContaining({ reason: "swipe" })
+      )
     })
 
     test("a drag a scroll view takes goes back to its page", async () => {

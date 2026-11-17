@@ -12,6 +12,7 @@ type Track = {
 }
 
 const tracks = new WeakMap<object, Track>()
+const bridges = new WeakMap<object, NativeCarousel>()
 
 function trackOf(api: object) {
   let track = tracks.get(api)
@@ -59,9 +60,13 @@ type NativeCarousel = {
  * A carousel's layout and motion on the native host, by its api.
  * @experimental
  */
-function nativeCarousel(api: CarouselApi): NativeCarousel {
+function nativeCarousel(api: CarouselApi) {
+  const known = bridges.get(api)
+  if (known) {
+    return known
+  }
   const track = trackOf(api)
-  return {
+  const carousel: NativeCarousel = {
     layout(slot, key, layout) {
       const at = layoutKey(slot, key)
       const before = track.layouts.get(at)
@@ -85,6 +90,8 @@ function nativeCarousel(api: CarouselApi): NativeCarousel {
       }
     },
   }
+  bridges.set(api, carousel)
+  return carousel
 }
 
 const connected = (part: Part) =>

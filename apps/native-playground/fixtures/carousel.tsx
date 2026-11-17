@@ -110,7 +110,7 @@ function Fixture() {
           <Carousel
             aria-label="Gallery"
             onPageChange={setGallery}
-            style={styles.carousel}
+            style={styles.gallery}
           >
             <CarouselViewport
               testID="gallery"
@@ -161,8 +161,9 @@ const styles = StyleSheet.create({
   },
   dot: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#d4d4d8" },
   selected: { backgroundColor: "#18181b" },
-  sideways: { width: 300, flexGrow: 0 },
-  wide: { width: 900, paddingStart: 200 },
+  gallery: { width: 220, marginVertical: 8 },
+  sideways: { width: 340, flexGrow: 0 },
+  wide: { width: 900, paddingStart: 60 },
   spacer: { height: 600 },
 })
 

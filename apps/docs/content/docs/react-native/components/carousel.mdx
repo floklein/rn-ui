@@ -1,0 +1,376 @@
+---
+title: Carousel
+description: Page through slides with a touch drag, Previous and Next, indicators and optional rotation.
+---
+
+Use a Carousel to show a set of slides one view at a time, like product photos or featured stories. A touch drag moves the slides and lets go on a page, and Previous and Next page through them.
+
+<ComponentExample
+  name="carousel/basic"
+  caption="Use Previous and Next, or drag the slides sideways."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Carousel`:
+
+```text
+Carousel
+├── CarouselViewport
+│   └── CarouselContent
+│       └── CarouselItem
+├── CarouselPrevious
+├── CarouselNext
+├── CarouselIndicatorGroup
+│   └── CarouselIndicator
+└── CarouselPlayToggle
+```
+
+- **Carousel** holds the page and renders a `View`. Name it with `aria-label`.
+- **CarouselViewport** is the window onto the slides, a `View` that clips them and takes the touches that drag them.
+- **CarouselContent** is the row, or column, of slides, an `Animated.View` that moves as the carousel pages.
+- **CarouselItem** is one slide, a `View`. Give it a size along the axis, like `width: "100%"` for one slide a page.
+- **CarouselPrevious** and **CarouselNext** page back and forward, each a `Pressable`.
+- **CarouselIndicatorGroup** and **CarouselIndicator** show the pages and go to one, as a tab list and its tabs.
+- **CarouselPlayToggle** starts and stops rotation, a `Pressable`.
+
+The carousel reads the slides' sizes from their layout, so it knows its pages once the views have laid out.
+
+## Usage
+
+Import the parts and put them together. Give the slides their size with styles:
+
+```tsx
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselViewport,
+} from "@ui-sdk/react-native/carousel"
+import { StyleSheet, Text } from "react-native"
+
+const slides = [1, 2, 3]
+
+function Example() {
+  return (
+    <Carousel aria-label="Featured">
+      <CarouselViewport>
+        <CarouselContent>
+          {slides.map((slide) => (
+            <CarouselItem key={slide} style={styles.item}>
+              <Text>{slide}</Text>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </CarouselViewport>
+      <CarouselPrevious aria-label="Previous slide">
+        <Text>‹</Text>
+      </CarouselPrevious>
+      <CarouselNext aria-label="Next slide">
+        <Text>›</Text>
+      </CarouselNext>
+    </Carousel>
+  )
+}
+
+const styles = StyleSheet.create({
+  item: { width: "100%", height: 160 },
+})
+
+export { Example }
+```
+
+## Vertical
+
+Set `orientation="vertical"` and give the viewport a height. The slides stack in a column, and a drag up or down pages.
+
+<ComponentExample
+  name="carousel/vertical"
+  caption="Drag the slides up or down, or use the arrows above and below them."
+/>
+
+## Loop
+
+`loop` makes Next on the last page go to the first, and Previous on the first go to the last. On native the slides don't wrap around: they spring back across the others to the first page.
+
+<ComponentExample
+  name="carousel/loop"
+  caption="Press Next on the last slide to go back to the first."
+/>
+
+## Align
+
+Slides narrower than the viewport line up with its start, center or end, set by `align`.
+
+<ComponentExample
+  name="carousel/align"
+  caption="Choose an alignment, then page through the photos."
+/>
+
+## Default Page
+
+`defaultPage` sets the page it starts on, from 1.
+
+<ComponentExample
+  name="carousel/default-page"
+  caption="The carousel starts on the third slide."
+/>
+
+## Indicators
+
+Indicators are a tab list, and each indicator is its own accessible element with the current page's selected. Write one per slide. Those past the page count hide themselves, so the same markup works however many slides fit a page. An indicator's `page` is inferred from their order.
+
+<ComponentExample
+  name="carousel/indicators"
+  caption="Press a dot to show its photo."
+/>
+
+## Pages
+
+`slidesPerPage` is how many slides a page holds: Next moves that many, and each indicator stands for that many. `"auto"` fits as many as show. Pages that can't reach the start, like the last few slides, merge into the last page.
+
+<ComponentExample
+  name="carousel/pages"
+  caption="Move through groups of three products with the arrows or the dots."
+/>
+
+## Thumbnails
+
+A gallery and a strip of thumbnails share the selected page. The strip moves freely with `dragFree` and fits as many as show. Pressing a thumbnail selects its slide, and a drag that starts on one moves the strip.
+
+<ComponentExample
+  name="carousel/thumbnails"
+  caption="Press a thumbnail to change the gallery, or drag either carousel."
+/>
+
+## Autoplay
+
+`defaultPlaying` starts rotating, every `interval` milliseconds (5000 by default). `CarouselPlayToggle` starts and stops it; label it from `playing` in its state. A drag pauses rotation, and paging yourself stops it. The slides are announced as they come into view only while it isn't rotating, so screen readers aren't interrupted every few seconds.
+
+<ComponentExample
+  name="carousel/autoplay"
+  caption="Pause or play the rotation. The console logs each change and why."
+/>
+
+## Controlled
+
+Pass `page` and `onPageChange` to control the page, from 1. The root's state has `pageCount`, which is null until the slides have laid out.
+
+Every change carries a [reason](#reasons): `next-press` and `previous-press` for the parts, `item-press` for an indicator, `swipe` for a drag, `timeout` for rotation and `imperative` from a [controller](#controller). Call `details.cancel()` to stay on the page: a drag springs back.
+
+<ComponentExample
+  name="carousel/controlled"
+  caption="Change the page. The console logs each page and the reason for the change."
+/>
+
+## Paging from Anywhere
+
+A [controller](#controller), from `createCarouselController()`, pages the carousel from anywhere. Pass it as `controller` to the carousel, and to `CarouselPrevious`, `CarouselNext`, `CarouselIndicatorGroup` or `CarouselPlayToggle` placed outside it, like in a screen's header.
+
+`drag={false}` turns off dragging, so only the parts and controllers move it.
+
+<ComponentExample
+  name="carousel/controller"
+  caption="Use the controls above the carousel to change its page."
+/>
+
+## Drags
+
+A touch on the viewport becomes a drag once it moves along the carousel's axis: the slides follow the finger, stretch past the ends, and spring from the release velocity to the page a fling would reach. Without `skipSnaps`, one drag moves at most one page, and `dragFree` lets a drag coast to wherever it stops, the nearest page becoming the current one. A tap on a slide pages nowhere, and a drag that starts on a button inside a slide takes the touch from it once it moves along the axis.
+
+A drag that the system or a scroll view takes away springs back to the page it started on. Previous, Next, indicators, rotation and controllers spring the slides to their page too, and a second press turns the spring toward the new page.
+
+## Inside a Scroll View
+
+A drag keeps its touch from a scroll view around it. On iOS, a `ScrollView` that scrolls along the carousel's axis, like a horizontal carousel in a horizontal `ScrollView`, still scrolls while the slides move. Turn its scrolling off for the length of the drag: set `dragging` from the viewport's responder events and pass `scrollEnabled={!dragging}`, as for a [Slider](./slider#inside-a-scroll-view).
+
+<ComponentExample
+  name="carousel/scroll-view"
+  caption="Drag the featured photos sideways. The shelves stay where they are, and a swipe beside the carousel scrolls them."
+/>
+
+A [Scroll Area](./scroll-area#drags-inside) does this for you: its viewport stops scrolling while a drag inside it holds the touch.
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state: a slide's `index`, `active` and `inView`, a step's `disabled`, an indicator's `page` and `selected`, the play toggle's `playing` and `paused`.
+
+<ComponentExample
+  name="carousel/render"
+  caption="Change slides to see each slide describe its state. On the last slide, Next becomes a link."
+/>
+
+## Styling
+
+Parts are unstyled, apart from what paging needs: the viewport clips its content, the content lays the slides out in a row or a column and moves along the axis, and slides don't shrink. Give each slide its size along the axis, and the viewport its size across it.
+
+Style each part with a function of its state, like `(state) => [styles.dot, state.selected && styles.selected]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### Carousel [#part-state-carousel]
+
+<PartStateTable
+  component="carousel"
+  part="root"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselState"
+/>
+
+### CarouselViewport [#part-state-carouselviewport]
+
+<PartStateTable
+  component="carousel"
+  part="viewport"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselViewportState"
+/>
+
+`dragging` is true while a touch drags the slides.
+
+### CarouselContent [#part-state-carouselcontent]
+
+<PartStateTable
+  component="carousel"
+  part="content"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselContentState"
+/>
+
+### CarouselItem [#part-state-carouselitem]
+
+<PartStateTable
+  component="carousel"
+  part="item"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselItemState"
+/>
+
+### CarouselPrevious [#part-state-carouselprevious]
+
+<PartStateTable
+  component="carousel"
+  part="previous"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselPreviousState"
+/>
+
+### CarouselNext [#part-state-carouselnext]
+
+<PartStateTable
+  component="carousel"
+  part="next"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselNextState"
+/>
+
+### CarouselIndicatorGroup [#part-state-carouselindicatorgroup]
+
+<PartStateTable
+  component="carousel"
+  part="indicator-group"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselIndicatorGroupState"
+/>
+
+### CarouselIndicator [#part-state-carouselindicator]
+
+<PartStateTable
+  component="carousel"
+  part="indicator"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselIndicatorState"
+/>
+
+### CarouselPlayToggle [#part-state-carouselplaytoggle]
+
+<PartStateTable
+  component="carousel"
+  part="play-toggle"
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselPlayToggleState"
+/>
+
+`paused` is true while a drag holds the slides.
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props.
+
+### Carousel
+
+<TypeTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselOptions"
+/>
+
+### CarouselPrevious
+
+<TypeTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselControlProps"
+/>
+
+`CarouselNext`, `CarouselIndicatorGroup` and `CarouselPlayToggle` take the same props.
+
+### CarouselIndicator
+
+<TypeTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselIndicatorProps"
+/>
+
+### Reasons
+
+`details.reason` says why the page changed. On native it's `"previous-press"`, `"next-press"`, `"item-press"`, `"swipe"`, `"timeout"`, `"content-resize"` or `"imperative"`: no keys reach the carousel, and nothing scrolls it but a drag.
+
+<ReasonTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselPageChangeReason"
+/>
+
+And why rotation started or stopped.
+
+<ReasonTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselPlayingChangeReason"
+/>
+
+### Controller
+
+Create one with `createCarouselController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason }`, passed to the change callback, and returns `false` when the change is canceled or there's nowhere to go. `getProgress()` reads how far the slides have moved, from 0 at the first page to 1 at the last.
+
+<ControllerTable
+  path="../../packages/core/src/components/carousel/carousel.ts"
+  name="CarouselController"
+/>
+
+### Events
+
+Callbacks get the new value first, then the details.
+
+| Prop                   | On         | Receives                                                    |
+| ---------------------- | ---------- | ----------------------------------------------------------- |
+| `onPageChange`         | `Carousel` | `(page, details)`: the new page, and the [reason](#reasons) |
+| `onPageChangeComplete` | `Carousel` | `(page)`: the page the slides came to rest on               |
+| `onPlayingChange`      | `Carousel` | `(playing, details)`: whether it rotates, and the reason    |
+
+## Accessibility
+
+The carousel follows the [WAI-ARIA carousel pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/), translated to React Native's accessibility props. Previous, Next and the play toggle are buttons, read as disabled where there's no page that way. The indicators are a tab list whose tabs each say whether they're selected; React Native gives iOS no tab role, so VoiceOver reads an indicator by its name. Each is its own accessible element, reached by swiping, and a double-tap shows its page.
+
+Each slide is labelled by its position, like "1 of 5", unless it has an `aria-label` of its own, which is also how you translate it. Slides less than half in view are hidden from screen readers, so a swipe only reaches what shows. The slides announce what comes into view, except while rotating.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android, Tab moves through Previous, Next, the play toggle, each indicator and the controls in the slides in view, and Space presses them. React Native delivers no arrow keys, Home or End to views, so the viewport's arrow keys and the indicators' single tab stop aren't built.

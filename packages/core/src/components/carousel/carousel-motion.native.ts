@@ -23,10 +23,8 @@ import type * as Native from "./carousel-motion.native"
 
 const freeDecelerationRate = 0.998
 
-// The web's mouse drag, fed by the responder's touches: the content follows
-// the finger and springs from the release velocity to the page the
-// projection picks. Its position goes to the adapter, which translates the
-// content, since nothing scrolls natively.
+// The web's mouse drag, fed by the responder's touches. Nothing scrolls
+// natively, so the position goes to the adapter, which translates the content.
 function createCarouselMotion(options: CarouselMotionOptions) {
   const viewport = partOf(options.viewport)
   const api = viewport?.api
@@ -317,3 +315,8 @@ function createCarouselMotion(options: CarouselMotionOptions) {
 true satisfies Twin<typeof Mirrored, typeof Native>
 
 export { createCarouselMotion }
+export type {
+  CarouselAxis,
+  CarouselMotion,
+  CarouselMotionOptions,
+} from "./carousel-motion"
