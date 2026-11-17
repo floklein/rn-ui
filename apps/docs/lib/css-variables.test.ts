@@ -264,6 +264,9 @@ const allPages = frameworkIds.flatMap((framework) =>
 
 const pages = allPages.filter((page) => !isCodeOnly(page.framework))
 
+// Parts the native adapter renders itself, which take no props or styles.
+const internalOnNative = new Set(["drawer.viewport"])
+
 // A native part has no data attributes or CSS variables: its state replaces both.
 test("a native page has a Part State section per part with data attributes", async () => {
   for (const { framework, component, page, source } of allPages) {
@@ -274,6 +277,9 @@ test("a native page has a Part State section per part with data attributes", asy
     const states = parts(section(source, "Part State"))
     for (const part of (await dataAttributeTables(component, framework))
       .styled) {
+      if (internalOnNative.has(`${component}.${part.slot}`)) {
+        continue
+      }
       expect(
         states.some(
           (each) =>

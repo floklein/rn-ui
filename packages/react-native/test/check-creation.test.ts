@@ -4,6 +4,7 @@ import { button } from "@ui-sdk/core/button"
 import { checkbox, checkboxGroup } from "@ui-sdk/core/checkbox"
 import { collapsible } from "@ui-sdk/core/collapsible"
 import { alertDialog, dialog } from "@ui-sdk/core/dialog"
+import { drawer } from "@ui-sdk/core/drawer"
 import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
@@ -157,6 +158,11 @@ describe("checkCreation", () => {
     expect(() =>
       checkCreation(collapsible, { open: true, disabled: true })
     ).not.toThrow()
+  })
+
+  test("passes on a drawer, open or closed", () => {
+    expect(() => checkCreation(drawer, {})).not.toThrow()
+    expect(() => checkCreation(drawer, { open: true })).not.toThrow()
   })
 
   test("passes on a dialog and an alert dialog, open or closed", () => {

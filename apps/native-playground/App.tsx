@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { screens, type Screen } from "./screens"
 
@@ -6,7 +7,7 @@ function App() {
   const [open, setOpen] = useState<Screen>()
   if (open) {
     return (
-      <View style={styles.screen}>
+      <GestureHandlerRootView style={styles.screen}>
         <Pressable
           accessibilityRole="button"
           testID="back"
@@ -21,23 +22,25 @@ function App() {
         <View style={styles.example}>
           <open.Screen />
         </View>
-      </View>
+      </GestureHandlerRootView>
     )
   }
   return (
-    <ScrollView style={styles.fill} contentContainerStyle={styles.list}>
-      {screens.map((screen) => (
-        <Pressable
-          key={screen.id}
-          accessibilityRole="button"
-          testID={screen.id}
-          onPress={() => setOpen(screen)}
-          style={styles.item}
-        >
-          <Text>{screen.title}</Text>
-        </Pressable>
-      ))}
-    </ScrollView>
+    <GestureHandlerRootView style={styles.fill}>
+      <ScrollView style={styles.fill} contentContainerStyle={styles.list}>
+        {screens.map((screen) => (
+          <Pressable
+            key={screen.id}
+            accessibilityRole="button"
+            testID={screen.id}
+            onPress={() => setOpen(screen)}
+            style={styles.item}
+          >
+            <Text>{screen.title}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </GestureHandlerRootView>
   )
 }
 

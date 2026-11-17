@@ -9,7 +9,11 @@ import type {
   DialogTriggerProps,
   DialogTriggerState,
 } from "@ui-sdk/core/dialog"
-import { dialogNative, pressTrigger } from "@ui-sdk/core/native"
+import {
+  dialogNative,
+  type NativeBehavior,
+  pressTrigger,
+} from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
 import { Modal, Pressable, Text, View } from "react-native"
@@ -106,9 +110,11 @@ function useOutlet(
 function DialogModal({
   handle,
   outlet,
+  Root = React.Fragment,
 }: {
   handle: PrimitiveHandle<typeof dialogPrimitive>
   outlet: Outlet
+  Root?: React.ComponentType<{ children: React.ReactNode }>
 }) {
   const { backdrop, content } = React.useSyncExternalStore(
     outlet.subscribe,
@@ -129,22 +135,27 @@ function DialogModal({
         layerInput()?.back()
       }}
     >
-      {backdrop}
-      {content}
+      <Root>
+        {backdrop}
+        {content}
+      </Root>
     </Modal>
   )
 }
 
-// Dialog and AlertDialog render the same parts over their own primitive.
-function dialogParts(primitive: typeof dialogPrimitive) {
+// Dialog, AlertDialog and Drawer render the same parts over their own primitive.
+function dialogParts(
+  primitive: typeof dialogPrimitive,
+  behavior: NativeBehavior = dialogNative
+) {
   const parts: DialogParts = createParts(
     primitive,
     { title: Text, description: Text, close: Pressable },
-    dialogNative
+    behavior
   )
 
   function Root({ children, ...options }: RootProps) {
-    const handle = usePrimitive(primitive, options, dialogNative)
+    const handle = usePrimitive(primitive, options, behavior)
     useControllerEntry(options.controller, handle)
     const [outlet] = React.useState(createOutlet)
     return (
@@ -261,8 +272,12 @@ function dialogParts(primitive: typeof dialogPrimitive) {
 export {
   type BackdropPartProps,
   type ContentPartProps,
+  createOutlet,
+  DialogModal,
   type DialogParts,
   dialogParts,
+  OutletContext,
+  useOutlet,
   type RootProps,
   type TriggerPartProps,
 }

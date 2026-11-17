@@ -24,6 +24,13 @@ const project = (os) => ({
     "^#dev$": `${core}/src/foundation/kernel/dev.ts`,
     "^#name-check$": `${core}/src/foundation/text/name-check.ts`,
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!((jest-)?react-native(-gesture-handler)?|@react-native(-community)?)/)",
+  ],
+  setupFiles: [
+    ...preset.setupFiles,
+    require.resolve("react-native-gesture-handler/jestSetup.js"),
+  ],
   testMatch: ["<rootDir>/test/**/*.test.ts?(x)"],
 })
 

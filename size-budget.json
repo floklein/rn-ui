@@ -430,6 +430,8 @@
   "@ui-sdk/react-native/collapsible": 14608,
   "@ui-sdk/react-native/dialog": 30859,
   "@ui-sdk/react-native/dialog (lazy)": 13618,
+  "@ui-sdk/react-native/drawer": 40847,
+  "@ui-sdk/react-native/drawer (lazy)": 180,
   "@ui-sdk/react-native/field": 13200,
   "@ui-sdk/react-native/field (lazy)": 180,
   "@ui-sdk/react-native/input": 13100,

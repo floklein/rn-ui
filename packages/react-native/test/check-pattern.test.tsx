@@ -60,6 +60,15 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import {
+  Drawer,
+  DrawerBackdrop,
+  DrawerClose,
+  DrawerContent,
+  DrawerHandle,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../src/drawer"
 import { Separator } from "../src/separator"
 import {
   Slider,
@@ -1318,6 +1327,25 @@ describe("checkPattern's dialog patterns on the native host", () => {
           </DialogClose>
         </DialogContent>
       </Dialog>
+    )
+    await expect(checkDialog()).resolves.toBeUndefined()
+  })
+
+  test("passes on a drawer, opening it and closing it each way", async () => {
+    await render(
+      <Drawer>
+        <DrawerTrigger>
+          <Text>Move goal</Text>
+        </DrawerTrigger>
+        <DrawerBackdrop />
+        <DrawerContent>
+          <DrawerHandle aria-label="Resize" />
+          <DrawerTitle>Move goal</DrawerTitle>
+          <DrawerClose>
+            <Text>Done</Text>
+          </DrawerClose>
+        </DrawerContent>
+      </Drawer>
     )
     await expect(checkDialog()).resolves.toBeUndefined()
   })
