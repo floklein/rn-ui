@@ -761,6 +761,23 @@
       "mirrors": ["packages/core/src/components/number-input/number-input.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
       "why": "The initial state has selection: null, the selection a native corrected edit writes back."
+    },
+    {
+      "kind": "twin",
+      "file": "packages/core/src/foundation/number/number-parts.native.ts",
+      "mirrors": [
+        "packages/core/src/foundation/number/parse.ts",
+        "packages/core/src/foundation/number/number-parts.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Hermes on iOS has no Intl.NumberFormat formatToParts, which the parser reads a locale's separators and affixes from; the twin works the parts out from the formatted text."
+    },
+    {
+      "kind": "reroute",
+      "file": "packages/core/src/foundation/number/parse.ts",
+      "mirrors": ["packages/core/src/foundation/number/parse.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "symbolsOf takes a formatter's parts from number-parts.ts, which has a native twin, instead of calling formatToParts."
     }
   ],
   "components": {
