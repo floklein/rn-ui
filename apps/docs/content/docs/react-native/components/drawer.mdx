@@ -94,6 +94,8 @@ export { Example }
 
 The drawer follows your finger with the same physics as the web's drawer, fitted to iOS sheets: while you drag, it moves with the finger, and when you lift it, the shared physics pick the snap point to settle on from where it is and how fast it moves, and play the spring there on the native driver. A fling toward the edge closes it with the `"swipe"` reason. A drag across the drawer's axis is left to the views under it.
 
+With Reduce Motion on, read from `AccessibilityInfo`, the drawer fades in and out where it rests instead of sliding, and moves between snap points with a short eased move, without the spring's overshoot.
+
 ## Scroll Views Inside
 
 A `ScrollView` inside the content shares the touch with the drawer:
@@ -159,12 +161,16 @@ A press on a Close part closes the drawer with the `"close-press"` reason, and i
 
 ## Nested Drawers
 
-A drawer opened from inside another opens over it, in its own `Modal`.
+A drawer opened from inside another opens over it, in its own `Modal`. The one below steps back as it rises, scaled down by 4% for each drawer open above it, and comes forward as it's dragged away or closes.
 
 <ComponentExample
   name="drawer/nested"
   caption="Tap Account, then Change Password. The second drawer opens over the first."
 />
+
+## Keyboard Avoidance
+
+When the on-screen keyboard opens over a drawer, the drawer rises above it, sliding with the keyboard's own curve, and comes back down when the keyboard hides. Snap points are measured against the room left above the keyboard. A drawer taller than that room keeps its height and lets the keyboard cover its bottom, as iOS sheets do: put the fields in a `ScrollView` so the focused one can scroll into view.
 
 ## Focus
 
@@ -172,7 +178,7 @@ When the drawer opens, it asks VoiceOver or TalkBack to move to its title, which
 
 ## Styling
 
-Style each part with a function of its state, like `(state) => [styles.content, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state). The drawer writes its own position and the backdrop's opacity: don't set `transform` on the content or `opacity` on the backdrop.
+Style each part with a function of its state, like `(state) => [styles.content, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state). The drawer writes its own position, its step back and its fade, and the backdrop's opacity: don't set `transform` or `opacity` on the content, or `opacity` on the backdrop.
 
 ## Part State
 

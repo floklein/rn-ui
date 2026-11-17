@@ -1,6 +1,16 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { createRef } from "react"
-import { I18nManager, StyleSheet, Text, type HostInstance } from "react-native"
+import {
+  AccessibilityInfo,
+  Animated,
+  DeviceEventEmitter,
+  I18nManager,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  type HostInstance,
+} from "react-native"
 import {
   Drawer,
   DrawerBackdrop,
@@ -23,6 +33,35 @@ const active = 4
 afterEach(() => {
   states.length = 0
 })
+
+// The screen is the window; Jest's views share one measureInWindow mock.
+let measureInWindow: jest.Mock | undefined
+beforeEach(async () => {
+  const ref = createRef<HostInstance>()
+  await render(<View ref={ref} />)
+  measureInWindow = ref.current!.measureInWindow as unknown as jest.Mock
+  measureInWindow.mockImplementation((onSuccess) => onSuccess(0, 0, 400, 800))
+})
+afterEach(() => measureInWindow?.mockReset())
+
+function keyboard(height: number) {
+  const coordinates = { screenX: 0, screenY: 800 - height, width: 400, height }
+  return act(() => {
+    if (Platform.OS === "ios") {
+      DeviceEventEmitter.emit("keyboardWillChangeFrame", {
+        duration: 250,
+        easing: "keyboard",
+        endCoordinates: coordinates,
+      })
+    } else {
+      DeviceEventEmitter.emit(height ? "keyboardDidShow" : "keyboardDidHide", {
+        duration: 0,
+        easing: "keyboard",
+        endCoordinates: coordinates,
+      })
+    }
+  })
+}
 
 function Sheet(props: React.ComponentProps<typeof Drawer>) {
   return (
@@ -47,25 +86,31 @@ const content = () =>
   screen.queryByTestId("content", { includeHiddenElements: true })
 
 // The screen is 800 tall and the content 400, as the views report on a device.
-async function layOut() {
+async function layOut(height = 400) {
   const view = content()!
   await fireEvent(view.parent!.parent!, "layout", {
     nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 800 } },
   })
   await fireEvent(view, "layout", {
-    nativeEvent: { layout: { x: 0, y: 400, width: 400, height: 400 } },
+    nativeEvent: { layout: { x: 0, y: 800 - height, width: 400, height } },
   })
 }
 
+const frame = () => content()!.parent!.parent!
+const style = (node: { props: { style?: unknown } }) =>
+  StyleSheet.flatten(node.props.style as never) as Record<string, any>
+const transform = (node: { props: { style?: unknown } }) =>
+  Object.assign({}, ...style(node).transform)
+
 const settled = () => act(() => new Promise((done) => setTimeout(done, 700)))
 
-const detector = () => content()!.parent!
+const detector = (view = content()!) => view.parent!
 const tag = () => detector().props.handlerTags[0]
 
-function touch(eventType: number, y: number) {
+function touch(eventType: number, y: number, view = content()!) {
   return act(() =>
-    detector().props.onGestureHandlerTouchEvent({
-      handlerTag: tag(),
+    detector(view).props.onGestureHandlerTouchEvent({
+      handlerTag: detector(view).props.handlerTags[0],
       state: 2,
       eventType,
       numberOfTouches: 1,
@@ -199,5 +244,113 @@ describe("Drawer", () => {
       justifyContent: "flex-start",
     })
     isRTL.restore()
+  })
+
+  test("the drawer slides above the keyboard from where it was, and back down when it hides", async () => {
+    await render(<Sheet defaultOpen />)
+    await layOut()
+    await settled()
+    await keyboard(300)
+    expect(style(frame())).toMatchObject({
+      paddingBottom: 300,
+      transform: [{ translateY: 300 }],
+    })
+    await keyboard(0)
+    expect(style(frame())).toMatchObject({
+      paddingBottom: 0,
+      transform: [{ translateY: -300 }],
+    })
+  })
+
+  test("a drawer taller than the room above the keyboard keeps its height", async () => {
+    await render(<Sheet defaultOpen />)
+    await layOut(700)
+    await settled()
+    await keyboard(300)
+    expect(style(frame()).paddingBottom).toBe(100)
+  })
+
+  test("a press opens it sliding from its edge", async () => {
+    await render(<Sheet />)
+    await fireEvent.press(screen.getByRole("button", { name: "Open drawer" }))
+    await layOut()
+    expect(style(content()!).opacity).toBe(1)
+    expect(transform(content()!).translateY).toBe(400)
+  })
+
+  test("with reduced motion it fades in and out where it rests instead of sliding", async () => {
+    jest.mocked(AccessibilityInfo.isReduceMotionEnabled).mockResolvedValue(true)
+    try {
+      await render(<Sheet />)
+      await fireEvent.press(screen.getByRole("button", { name: "Open drawer" }))
+      await layOut()
+      expect(style(content()!).opacity).toBe(0)
+      expect(transform(content()!).translateY).toBe(0)
+      await settled()
+      await fireEvent.press(screen.getByRole("button", { name: "Cancel" }))
+      expect(style(content()!).opacity).toBe(1)
+      expect(transform(content()!).translateY).toBe(0)
+      await settled()
+      expect(content()).toBeNull()
+    } finally {
+      jest
+        .mocked(AccessibilityInfo.isReduceMotionEnabled)
+        .mockResolvedValue(false)
+    }
+  })
+
+  test("a parent drawer steps back while a drawer opened from it is open, and comes back as it leaves", async () => {
+    // Jest's native driver never reports values back, so these run in JavaScript.
+    const timing = Animated.timing
+    const inJavaScript = jest
+      .spyOn(Animated, "timing")
+      .mockImplementation((value, config) =>
+        timing(value, { ...config, useNativeDriver: false })
+      )
+    try {
+      const tree = (
+        <Drawer defaultOpen>
+          <DrawerContent testID="content">
+            <DrawerTitle>Account</DrawerTitle>
+            <Drawer>
+              <DrawerTrigger>
+                <Text>Change password</Text>
+              </DrawerTrigger>
+              <DrawerContent testID="child">
+                <DrawerTitle>Change password</DrawerTitle>
+                <DrawerClose>
+                  <Text>Update</Text>
+                </DrawerClose>
+              </DrawerContent>
+            </Drawer>
+          </DrawerContent>
+        </Drawer>
+      )
+      const scale = async () => {
+        await screen.rerender(tree)
+        return transform(content()!).scale
+      }
+      await render(tree)
+      await layOut()
+      await settled()
+      expect(await scale()).toBe(1)
+      await fireEvent.press(
+        screen.getByRole("button", { name: "Change password" })
+      )
+      const child = screen.getByTestId("child", { includeHiddenElements: true })
+      await fireEvent(child.parent!.parent!, "layout", {
+        nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 800 } },
+      })
+      await fireEvent(child, "layout", {
+        nativeEvent: { layout: { x: 0, y: 600, width: 400, height: 200 } },
+      })
+      await settled()
+      expect(await scale()).toBeCloseTo(0.96)
+      await fireEvent.press(screen.getByRole("button", { name: "Update" }))
+      await settled()
+      expect(await scale()).toBeCloseTo(1)
+    } finally {
+      inJavaScript.mockRestore()
+    }
   })
 })

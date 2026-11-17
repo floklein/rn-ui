@@ -20,14 +20,18 @@ import {
 } from "@ui-sdk/core/native"
 import * as React from "react"
 import {
+  AccessibilityInfo,
   Animated,
+  Easing,
   type HostInstance,
   I18nManager,
+  Keyboard,
+  type KeyboardEvent,
   type LayoutChangeEvent,
+  Platform,
   Pressable,
   type ScrollViewInstance,
   StyleSheet,
-  View,
 } from "react-native"
 import {
   GestureDetector,
@@ -75,8 +79,12 @@ const vertical = (side: Side) => side === "bottom" || side === "top"
 const towardEdge = (side: Side) =>
   side === "bottom" || side === "right" ? 1 : -1
 
+type Track = { value: Animated.Value; at: (extent: number) => number }
+
 function createMotion() {
   const extent = new Animated.Value(0)
+  const fade = new Animated.Value(1)
+  const stack = new Animated.Value(0)
   let layout: Layout = {
     container: 0,
     content: 0,
@@ -89,6 +97,7 @@ function createMotion() {
   const stop = () => {
     running?.stop()
     running = undefined
+    fade.setValue(1)
   }
   const closed = () => {
     if (at <= 0 && !running && exit) {
@@ -101,6 +110,23 @@ function createMotion() {
     layout = { ...layout, ...change }
     listeners.forEach((listener) => listener())
   }
+  // As the web's `--drawer-stack`: the drawer it opened from steps back from
+  // 0 to 1 as it rises, the one below that from 1 to 2, and so on.
+  function tracks() {
+    const largest = Math.max(layout.ranges.expand[1], 1)
+    const progress = (to: number) => Math.min(1, Math.max(0, to / largest))
+    const list: Track[] = [{ value: extent, at: (to) => to }]
+    let depth = 0
+    for (
+      let below = stackedOn.get(motion);
+      below;
+      below = stackedOn.get(below)
+    ) {
+      const steps = depth++
+      list.push({ value: below.stack, at: (to) => steps + progress(to) })
+    }
+    return list
+  }
   const view: NativeSheetView = {
     measure: () =>
       layout.container && layout.content
@@ -109,7 +135,7 @@ function createMotion() {
     move(to) {
       stop()
       at = to
-      extent.setValue(to)
+      tracks().forEach((track) => track.value.setValue(track.at(to)))
       closed()
     },
     settle(spring, done) {
@@ -120,15 +146,20 @@ function createMotion() {
         done()
         closed()
       }
-      running =
-        Math.abs(spring.to - spring.from) < 1
-          ? playEachFrame(extent, spring, land)
-          : playOnNativeDriver(extent, spring, land)
+      running = spring.fade
+        ? playFade(tracks(), fade, spring, land)
+        : Math.abs(spring.to - spring.from) < 1
+          ? playEachFrame(tracks(), spring, land)
+          : playOnNativeDriver(tracks(), spring, land)
     },
     ranges: (ranges) => lay({ ranges }),
+    reducedMotion: () => motion.reduced,
   }
-  return {
+  const motion = {
     extent,
+    fade,
+    stack,
+    reduced: false,
     view,
     lay,
     modal: true,
@@ -144,21 +175,62 @@ function createMotion() {
       closed()
     },
   }
+  return motion
+}
+
+function playFade(
+  [extent, ...below]: Track[],
+  fade: Animated.Value,
+  { from, to, duration, fade: direction }: NativeSheetSpring,
+  land: () => void
+) {
+  const out = direction === "out"
+  extent.value.setValue(out ? from : to)
+  fade.setValue(out ? 1 : 0)
+  const timing = (value: Animated.Value, toValue: number) =>
+    Animated.timing(value, {
+      toValue,
+      duration,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    })
+  const animation = Animated.parallel([
+    timing(fade, out ? 0 : 1),
+    ...below.map((track) => {
+      track.value.setValue(track.at(from))
+      return timing(track.value, track.at(to))
+    }),
+  ])
+  animation.start(({ finished }) => {
+    if (finished) {
+      extent.value.setValue(to)
+      fade.setValue(1)
+      land()
+    }
+  })
+  return animation
 }
 
 // The native driver samples the easing before it starts, overshoot included.
+// Every track is linear in the extent, so one easing serves them all.
 function playOnNativeDriver(
-  extent: Animated.Value,
+  tracks: Track[],
   { from, to, duration, extentAt }: NativeSheetSpring,
   land: () => void
 ) {
-  extent.setValue(from)
-  const animation = Animated.timing(extent, {
-    toValue: to,
-    duration,
-    easing: (progress) => (extentAt(progress * duration) - from) / (to - from),
-    useNativeDriver: true,
-  })
+  const easing = (progress: number) =>
+    (extentAt(progress * duration) - from) / (to - from)
+  const animation = Animated.parallel(
+    tracks.map(({ value, at }) => {
+      value.setValue(at(from))
+      return Animated.timing(value, {
+        toValue: at(to),
+        duration,
+        easing,
+        useNativeDriver: true,
+      })
+    })
+  )
   animation.start(({ finished }) => finished && land())
   return animation
 }
@@ -166,14 +238,15 @@ function playOnNativeDriver(
 // A spring that comes back where it started, like a refused dismissal's push,
 // has no progress to ease, so it plays from JavaScript each frame.
 function playEachFrame(
-  extent: Animated.Value,
+  tracks: Track[],
   { duration, extentAt }: NativeSheetSpring,
   land: () => void
 ) {
   const start = performance.now()
   let frame = requestAnimationFrame(function step() {
     const elapsed = performance.now() - start
-    extent.setValue(extentAt(Math.min(elapsed, duration)))
+    const extent = extentAt(Math.min(elapsed, duration))
+    tracks.forEach(({ value, at }) => value.setValue(at(extent)))
     if (elapsed < duration) {
       frame = requestAnimationFrame(step)
     } else {
@@ -184,6 +257,7 @@ function playEachFrame(
 }
 
 const motions = new WeakMap<object, Motion>()
+const stackedOn = new WeakMap<Motion, Motion>()
 
 function useLayout(motion: Motion) {
   return React.useSyncExternalStore(motion.subscribe, motion.get)
@@ -346,12 +420,35 @@ const Root = ({ children }: { children: React.ReactNode }) => (
  * @experimental
  */
 function Drawer({ children, ...options }: DrawerProps) {
+  const parent = useNearest(drawer)
   const handle = usePrimitive(drawer, options, drawerNative)
   useControllerEntry(options.controller, handle)
   const [outlet] = React.useState(createOutlet)
   const [motion] = React.useState(createMotion)
   motion.modal = inModal(options)
   motions.set(handle.api, motion)
+  const below = parent && motions.get(parent.api)
+  if (below) {
+    stackedOn.set(motion, below)
+  }
+  React.useEffect(() => {
+    let live = true
+    AccessibilityInfo.isReduceMotionEnabled().then((on) => {
+      if (live) {
+        motion.reduced = on
+      }
+    })
+    const subscription = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      (on) => {
+        motion.reduced = on
+      }
+    )
+    return () => {
+      live = false
+      subscription.remove()
+    }
+  }, [motion])
   React.useLayoutEffect(() => {
     const bridge = nativeSheet(handle.api)
     bridge.view = motion.view
@@ -401,11 +498,14 @@ function DrawerBackdrop(
   const { dim } = useLayout(motion).ranges
   const opacity = React.useMemo(
     () =>
-      motion.extent.interpolate({
-        inputRange: [dim[0], Math.max(dim[1], dim[0] + 1)],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      }),
+      Animated.multiply(
+        motion.extent.interpolate({
+          inputRange: [dim[0], Math.max(dim[1], dim[0] + 1)],
+          outputRange: [0, 1],
+          extrapolate: "clamp",
+        }),
+        motion.fade
+      ),
     [motion, dim]
   )
   const element = usePart(
@@ -451,6 +551,12 @@ function DrawerContent({
   const motion = motions.get(handle.api)!
   const { content } = useLayout(motion)
   const { side } = handle.state
+  // Each drawer open above scales it back by 4%, as the web's docs suggest.
+  const stepBack = React.useMemo(
+    () =>
+      motion.stack.interpolate({ inputRange: [0, 1], outputRange: [1, 0.96] }),
+    [motion]
+  )
   const view = React.useRef<HostInstance>(null)
   const translate = React.useMemo(
     () =>
@@ -484,11 +590,12 @@ function DrawerContent({
         style: (state: DrawerContentState, interaction: never) => [
           typeof style === "function" ? style(state, interaction) : style,
           {
-            opacity: content ? 1 : 0,
+            opacity: content ? motion.fade : 0,
             transform: [
               vertical(side)
                 ? { translateY: translate }
                 : { translateX: translate },
+              { scale: stepBack },
             ],
           },
         ],
@@ -520,19 +627,88 @@ function SheetFrame({
   children: React.ReactElement
 }) {
   const pan = useSheetGesture(api, content, side)
+  const frame = React.useRef<HostInstance>(null)
+  const size = React.useRef({ width: 0, height: 0 })
+  const { inset, slide } = useKeyboardInset(frame, motion, size, side)
+  const laidOut = () => {
+    const { width, height } = size.current
+    motion.lay({ container: vertical(side) ? height - inset : width })
+    nativeSheet(api).input?.layout()
+  }
+  React.useLayoutEffect(() => {
+    if (size.current.height) {
+      laidOut()
+    }
+    // Only the keyboard changes the room without a layout.
+  }, [inset])
   return (
-    <View
+    <Animated.View
+      ref={frame}
       pointerEvents="box-none"
-      style={[StyleSheet.absoluteFill, placement(side)]}
-      onLayout={(event) => {
-        const { width, height } = event.nativeEvent.layout
-        motion.lay({ container: vertical(side) ? height : width })
-        nativeSheet(api).input?.layout()
+      style={[
+        StyleSheet.absoluteFill,
+        placement(side),
+        { paddingBottom: inset, transform: [{ translateY: slide }] },
+      ]}
+      onLayout={(event: LayoutChangeEvent) => {
+        size.current = event.nativeEvent.layout
+        laidOut()
       }}
     >
       <GestureDetector gesture={pan}>{children}</GestureDetector>
-    </View>
+    </Animated.View>
   )
+}
+
+// iOS tells of the keyboard before it moves, Android once it has moved.
+const keyboardEvents =
+  Platform.OS === "ios"
+    ? (["keyboardWillChangeFrame"] as const)
+    : (["keyboardDidShow", "keyboardDidHide"] as const)
+
+// UIKit's keyboard curve, as the web's sheet rides it.
+const keyboardCurve = Easing.bezier(0.38, 0.7, 0.125, 1)
+
+// The frame takes its new place at once and slides there from where it was
+// drawn. A drawer taller than the room keeps its height and lets the keyboard
+// cover its bottom, as iOS does.
+function useKeyboardInset(
+  frame: React.RefObject<HostInstance | null>,
+  motion: Motion,
+  size: React.RefObject<{ width: number; height: number }>,
+  side: Side
+) {
+  const [inset, setInset] = React.useState(0)
+  const [slide] = React.useState(() => new Animated.Value(0))
+  const shown = React.useRef(0)
+  React.useEffect(() => {
+    const follow = ({ endCoordinates, duration }: KeyboardEvent) =>
+      frame.current?.measureInWindow((_x, y, _width, height) => {
+        const covered = Math.max(0, y + height - endCoordinates.screenY)
+        const room = vertical(side)
+          ? Math.max(0, size.current.height - motion.get().content)
+          : covered
+        const next = endCoordinates.height ? Math.min(covered, room) : 0
+        const shift = next - shown.current
+        if (Math.abs(shift) < 1) {
+          return
+        }
+        shown.current = next
+        setInset(next)
+        slide.setValue(motion.reduced ? 0 : shift)
+        Animated.timing(slide, {
+          toValue: 0,
+          duration: motion.reduced ? 0 : duration || 250,
+          easing: keyboardCurve,
+          useNativeDriver: true,
+        }).start()
+      })
+    const subscriptions = keyboardEvents.map((name) =>
+      Keyboard.addListener(name, follow)
+    )
+    return () => subscriptions.forEach((subscription) => subscription.remove())
+  }, [frame, motion, size, side, slide])
+  return { inset, slide }
 }
 
 // A row starts at the right edge right to left, and `side` is physical.
