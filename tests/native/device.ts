@@ -109,7 +109,7 @@ const byId = (id: string) =>
 const named = (label: string) =>
   platform === "ios"
     ? `~${label}`
-    : `android=new UiSelector().descriptionMatches("\\\\Q${label}\\\\E(, .*)?")`
+    : `android=new UiSelector().descriptionMatches("\\Q${label}\\E(, .*)?")`
 
 // UiAutomator only finds what's on screen, so a screen low in the list is
 // scrolled to first.
