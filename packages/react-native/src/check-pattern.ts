@@ -18,6 +18,7 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A toolbar's buttons and toggles are checked as `"button"` checks them.
  * @experimental
  */
 type NativePattern =
@@ -36,6 +37,7 @@ type NativePattern =
   | "switch"
   | "tabs"
   | "textbox"
+  | "toolbar"
 
 function createContext(root: HostNode, options: CheckOptions) {
   const problems: string[] = []
@@ -598,6 +600,54 @@ async function separatorPattern(context: Context) {
   }
 }
 
+async function toolbarPattern(context: Context) {
+  const bars = shownNodes(context.root).filter(
+    (node) => roleOf(node) === "toolbar"
+  )
+  if (!bars.length) {
+    context.problem(
+      context.root,
+      "has no view with the toolbar role, so it isn't a toolbar (APG toolbar)."
+    )
+    return
+  }
+  const elements = context.elements()
+  const controls = new Set<HostNode>()
+  for (const bar of bars) {
+    if (elements.includes(bar)) {
+      context.problem(
+        bar,
+        "is one accessible element; each control in a toolbar is its own, reached by swiping."
+      )
+      continue
+    }
+    if (bars.length > 1 && !nameOf(bar)) {
+      context.problem(
+        bar,
+        "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel (APG toolbar)."
+      )
+    }
+    const inside = shownNodes(bar).filter((node) => elements.includes(node))
+    if (!inside.length) {
+      context.problem(
+        bar,
+        "holds no control; a toolbar groups buttons, toggles, links and fields."
+      )
+    }
+    inside.forEach((node) => controls.add(node))
+  }
+  const isButton = (node: HostNode) =>
+    roleOf(node) === "button" || roleOf(node) === "togglebutton"
+  for (const control of controls) {
+    if (!isButton(control)) {
+      requireName(context, control, roleOf(control) ?? "control")
+    }
+  }
+  if ([...controls].some(isButton)) {
+    await buttonPattern(context)
+  }
+}
+
 // Without value text, VoiceOver reads the value as a share of max minus min.
 async function barPattern(context: Context, pattern: "progressbar" | "meter") {
   const bars = shownNodes(context.root).filter(
@@ -764,6 +814,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   switch: switchPattern,
   tabs: tabsPattern,
   textbox: textboxPattern,
+  toolbar: toolbarPattern,
 }
 
 // The actions each OS's screen reader offers past activation: VoiceOver's

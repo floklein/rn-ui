@@ -1,0 +1,266 @@
+---
+title: Toolbar
+description: Group the buttons, toggles, links and fields of an editor in one labeled row.
+---
+
+Use a Toolbar to group the controls of an editor, a canvas or a table. Each button, toggle, link and field in it stays its own accessible element, so VoiceOver and TalkBack reach every control by swiping.
+
+<ComponentExample
+  name="toolbar/demo"
+  caption="Tap Bold, Italic or Underline to toggle the style, then tap Insert link. With VoiceOver or TalkBack, swipe from one control to the next. The console logs each change."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `Toolbar`:
+
+```text
+Toolbar
+├── ToolbarButton
+├── ToolbarSeparator
+├── ToolbarGroup
+│   ├── ToolbarButton
+│   └── ToolbarButton
+├── ToolbarLink
+└── ToolbarInput
+```
+
+`Toolbar` and `ToolbarGroup` render a `View`, `ToolbarButton` and `ToolbarLink` a `Pressable`, `ToolbarInput` a `TextInput` and `ToolbarSeparator` a `View`. Put buttons, links and fields straight inside the toolbar. `ToolbarGroup` names a set of related items, and `ToolbarSeparator` draws a line between sets. Toggles and toggle groups join the toolbar on their own.
+
+## Usage
+
+Import the parts and put them together:
+
+```tsx
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarSeparator,
+} from "@ui-sdk/react-native/toolbar"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Toolbar aria-label="Formatting">
+      <ToolbarButton>
+        <Text>Undo</Text>
+      </ToolbarButton>
+      <ToolbarButton>
+        <Text>Redo</Text>
+      </ToolbarButton>
+      <ToolbarSeparator />
+      <ToolbarButton>
+        <Text>Insert Link</Text>
+      </ToolbarButton>
+    </Toolbar>
+  )
+}
+
+export { Example }
+```
+
+Name the toolbar with `aria-label`, and give every icon-only control its own; otherwise the `Text` inside names it.
+
+## Toggle Groups
+
+A [Toggle](./toggle) group inside a toolbar joins it, and keeps its own value.
+
+<ComponentExample
+  name="toolbar/toggle-group"
+  caption="Tap Align center, then Numbered list. The console logs each choice."
+/>
+
+## Groups
+
+Use `ToolbarGroup` to name related controls. Set `disabled` on the group to disable every item in it, toggles included.
+
+<ComponentExample
+  name="toolbar/group"
+  caption="Tap Cut, Copy or Paste. Undo and Redo, in the disabled History group, do nothing."
+/>
+
+## Fields
+
+Use `ToolbarInput` for a text field. It takes `TextInput`'s props, and can't be edited while it's disabled.
+
+<ComponentExample
+  name="toolbar/input"
+  caption="Type a word in Find, then tap Find Next. The console logs the search."
+/>
+
+## Links
+
+`ToolbarLink` is a `Pressable` with the link role. Native has no URLs to follow, so navigate from its `onPress`.
+
+<ComponentExample
+  name="toolbar/link"
+  caption="Tap Files Changed or Checks. The console logs the page it opened."
+/>
+
+## Vertical
+
+Set `orientation="vertical"` for a column, like a canvas tool palette. Lay the toolbar out as a column with your own style; its state and a separator's turn with it.
+
+<ComponentExample
+  name="toolbar/vertical"
+  caption="Tap Draw to pick that tool, then Delete."
+/>
+
+## Disabled
+
+Set `disabled` on an item to stop presses on it. Screen readers still reach it and announce it as dimmed or disabled. On Android the disabled state disables the view, so Tab skips it; `focusableWhenDisabled` changes nothing there.
+
+<ComponentExample
+  name="toolbar/disabled"
+  caption="Tap Reply, Archive and Delete. Only Reply logs a press."
+/>
+
+Set `disabled` on the toolbar to disable every item, and its fields can't be edited.
+
+```tsx
+<Toolbar disabled aria-label="Formatting">
+  <ToolbarButton>
+    <Text>Bold</Text>
+  </ToolbarButton>
+  <ToolbarInput aria-label="Find" />
+</Toolbar>
+```
+
+## Controller
+
+Create a controller with `createToolbarController` and pass it as `controller`. Its `focus()` moves VoiceOver's or TalkBack's focus to the toolbar's first enabled item, and starts editing it when it's a field. Create one controller per toolbar.
+
+<ComponentExample
+  name="toolbar/controller"
+  caption="With VoiceOver or TalkBack on, tap Focus Toolbar. The screen reader moves to Bold."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on the host so the part keeps its role, state and press.
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.button, state.disabled && styles.disabled]`. Each part receives the fields listed under [Part State](#part-state). A second argument, `{ pressed, hovered, focused }`, gives press feedback, and keyboard focus on Android. A separator's `orientation` runs across the toolbar: vertical in a horizontal toolbar.
+
+## Part State
+
+### Toolbar [#part-state-toolbar]
+
+<PartStateTable
+  component="toolbar"
+  part="root"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarState"
+/>
+
+### ToolbarButton [#part-state-toolbarbutton]
+
+<PartStateTable
+  component="toolbar"
+  part="button"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarButtonState"
+/>
+
+### ToolbarLink [#part-state-toolbarlink]
+
+<PartStateTable
+  component="toolbar"
+  part="link"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarLinkState"
+/>
+
+### ToolbarInput [#part-state-toolbarinput]
+
+<PartStateTable
+  component="toolbar"
+  part="input"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarInputState"
+/>
+
+### ToolbarGroup [#part-state-toolbargroup]
+
+<PartStateTable
+  component="toolbar"
+  part="group"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarGroupState"
+/>
+
+### ToolbarSeparator [#part-state-toolbarseparator]
+
+<PartStateTable
+  component="toolbar"
+  part="separator"
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarSeparatorState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props. `ToolbarButton` and `ToolbarLink` also take `Pressable`'s props, `ToolbarInput` takes `TextInput`'s, and the others take `View`'s.
+
+### Toolbar
+
+<TypeTable
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarOptions"
+/>
+
+`loop` sets nothing on native, which builds no arrow keys between items.
+
+### ToolbarButton
+
+<TypeTable
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarButtonProps"
+/>
+
+### ToolbarInput
+
+<TypeTable
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarInputProps"
+/>
+
+### ToolbarGroup
+
+<TypeTable
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarGroupProps"
+/>
+
+`ToolbarLink` and `ToolbarSeparator` take no props of their own.
+
+### Controller
+
+<ControllerTable
+  path="../../packages/core/src/components/toolbar/toolbar.ts"
+  name="ToolbarController"
+/>
+
+## Accessibility
+
+The toolbar follows the [WAI-ARIA toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/), translated to React Native's accessibility props. The root is a `View` with the `toolbar` role that screen readers don't read as one element: each button, toggle, link and field in it is its own accessible element, reached by swiping. A separator has no role on either OS, so no screen reader stops on it.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Presses a button or a toggle                                 |
+| Enter      | Presses a button or a toggle, on Android only                |
+
+Every item is its own stop: React Native delivers no arrow keys to views, so the toolbar's single tab stop, its arrow keys, Home and End aren't built.

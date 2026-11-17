@@ -422,6 +422,8 @@ describe("the adapter's contexts inside the Modal", () => {
       "RatingItem",
       "TabsLayouts",
       "ToggleGroup",
+      "Toolbar",
+      "ToolbarGroup",
     ])
     const scopes = [...carried].filter((context) =>
       context.displayName?.endsWith("Scope")
