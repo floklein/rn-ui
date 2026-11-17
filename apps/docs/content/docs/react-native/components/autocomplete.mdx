@@ -1,0 +1,481 @@
+---
+title: Autocomplete
+description: Suggest text while someone types, without limiting what they can enter.
+---
+
+Use Autocomplete for a text field with helpful suggestions. Choosing one fills in the field, but any text is a valid value. It handles filtering, placing the list against the field and what screen readers hear. You provide the parts and styles.
+
+<ComponentExample
+  name="autocomplete/demo"
+  caption="Type “man” and tap Mango to fill it in. You can also leave text that isn't in the list."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+The suggestions render in the [`OverlayHost`](../installation#wrap-your-app) that wraps your app, so the keyboard stays up while they show; without one, they render in place and warn in development.
+
+## Composition
+
+Use the following composition to build an `Autocomplete`:
+
+```text
+Autocomplete
+├── AutocompleteLabel
+├── AutocompleteInput
+└── AutocompleteContent
+    ├── AutocompleteEmpty
+    └── AutocompleteList
+        ├── AutocompleteItem
+        └── AutocompleteItem
+```
+
+`AutocompleteInput` renders a `TextInput`, `AutocompleteItem`, `AutocompleteTrigger` and `AutocompleteClear` a `Pressable`, `AutocompleteLabel`, `AutocompleteItemText` and `AutocompleteGroupLabel` a `Text`, and the other parts a `View`. Text inside a `Pressable` or `View` part goes in a `Text` you write. The content renders in the `OverlayHost`, so context from your own provider placed between `Autocomplete` and `AutocompleteContent` doesn't reach it: put it above your app's `OverlayHost` or inside the content. The library's own context does reach it.
+
+## Usage
+
+Import the parts and put them together. The content is placed for you, so give it a size and a look, not a position:
+
+```tsx
+import {
+  Autocomplete,
+  AutocompleteContent,
+  AutocompleteInput,
+  AutocompleteItem,
+  AutocompleteLabel,
+  AutocompleteList,
+} from "@ui-sdk/react-native/autocomplete"
+import { StyleSheet, Text } from "react-native"
+
+function Example() {
+  return (
+    <Autocomplete>
+      <AutocompleteLabel>Fruit</AutocompleteLabel>
+      <AutocompleteInput placeholder="Type a fruit…" style={styles.input} />
+      <AutocompleteContent style={styles.content}>
+        <AutocompleteList>
+          <AutocompleteItem value="Apple">
+            <Text>Apple</Text>
+          </AutocompleteItem>
+          <AutocompleteItem value="Banana">
+            <Text>Banana</Text>
+          </AutocompleteItem>
+        </AutocompleteList>
+      </AutocompleteContent>
+    </Autocomplete>
+  )
+}
+
+const styles = StyleSheet.create({
+  input: { minHeight: 44, paddingHorizontal: 12, borderWidth: 1 },
+  content: { width: 240, padding: 4, backgroundColor: "#ffffff" },
+})
+
+export { Example }
+```
+
+A suggestion's label is its text, read from the `Text` inside it, or its `label` when it holds more than the words to match. Choosing it puts the label in the field.
+
+## Autocomplete vs Combobox
+
+Both filter a list as you type. They differ in what the value is.
+
+- **Autocomplete**: the value is the text. Suggestions help fill it in, and anything typed is valid. Use it for a search box, an address or a free-form field.
+- **Combobox**: the value is an option from the list. Use it for a country, an assignee or a set of labels.
+
+## Disabled
+
+A disabled field can't be edited and doesn't open. A read-only field shows its text but doesn't open or take changes; React Native reads a read-only field as disabled on Android and single-line iOS. A disabled suggestion can't fill in the field.
+
+<ComponentExample
+  name="autocomplete/disabled"
+  caption="Try the Disabled and Read-only fields. In the third, type “b”: Banana can't be chosen."
+/>
+
+## Clear and Trigger
+
+`AutocompleteClear` empties the field. `AutocompleteTrigger` opens the suggestions without typing; give it a label that says what it opens. When a screen reader presses it, VoiceOver or TalkBack moves to the first suggestion.
+
+<ComponentExample
+  name="autocomplete/clear"
+  caption="Clear Mango, then tap the arrow to open the suggestions. The clear button hides while the field is empty."
+/>
+
+## Open on Focus
+
+Add `openOnFocus` to offer suggestions as soon as the field gets focus, for useful choices before anything is typed.
+
+<ComponentExample
+  name="autocomplete/open-on-focus"
+  caption="Tap Search to see recent searches before typing."
+/>
+
+## Auto Highlight
+
+`autoHighlight` highlights the first match while typing, so the return key chooses it. The first return fills in the suggestion; the next one submits the text through `onSubmit`.
+
+<ComponentExample
+  name="autocomplete/auto-highlight"
+  caption="Type “pe” and press return to choose the first match."
+/>
+
+## Inline Completion
+
+`inlineComplete` fills in the rest of the first suggestion that starts with the typed text, with the added text selected, so the next letter replaces it. Deleting takes the completion back out, and moving the caret keeps it.
+
+<ComponentExample
+  name="autocomplete/inline"
+  caption="Type “bl” to complete blackberry. Delete once to remove the completion."
+/>
+
+## Highlight Matches
+
+`AutocompleteItemText`'s state splits its text into `segments`, marking what the typed text matched, ignoring case and accents in the current locale, so you can render matches bold. Without string content, it shows the suggestion's label.
+
+<ComponentExample
+  name="autocomplete/highlight"
+  caption="Type “berry”. The matching letters are bold while each suggestion keeps its own spelling."
+/>
+
+## Filter and Keywords
+
+The default filter matches text anywhere in a suggestion. Use `"startsWith"` or `"fuzzy"` for a different match, a function for your own filter, or `false` for results a server already filtered. `keywords` adds searchable text without changing what goes in the field.
+
+<ComponentExample
+  name="autocomplete/filter"
+  caption="Type “bug” to find fix through its keywords."
+/>
+
+## Groups
+
+Put related suggestions inside `AutocompleteGroup` and name each group with `AutocompleteGroupLabel`. `AutocompleteSeparator` adds a visual break, hidden from screen readers. Filtering hides empty groups.
+
+<ComponentExample
+  name="autocomplete/groups"
+  caption="Type “an”. Banana and Mango remain in Tropical; groups with no match disappear."
+/>
+
+## Icons
+
+`AutocompleteItemIcon` keeps an icon out of the suggestion's label, what filtering matches and the text put in the field. `mirror` flips it when the app runs right to left.
+
+<ComponentExample
+  name="autocomplete/icons"
+  caption="Type “rep” and choose Replies. The icon stays out of the text put in the field."
+/>
+
+## Items as Data
+
+Map an array into parts to write each suggestion yourself, or pass it to `items` and leave out the list's children: `items` holds strings, groups and separators, typed with `ListData`, and `emptyItems` shows instead while the field is empty.
+
+<ComponentExample
+  name="autocomplete/data"
+  caption="Type “pe”. Peach and Pear remain under Tree fruits."
+/>
+
+<ComponentExample
+  name="autocomplete/recent"
+  caption="Tap Search docs to see recent searches, then type “vue”."
+/>
+
+## Async Search
+
+Use `filter={false}` when your server filters the suggestions. Connect `onValueChange` to your loader, and pass its items and status to `Autocomplete`. `useAsyncOptions` from `@ui-sdk/react-native/async-options` drops stale requests and loads the next page. `AutocompleteStatus` shows loading and result counts; without one, Autocomplete announces the count once typing pauses. `onLoadMore` runs when the highlight reaches the last result, not as the list scrolls.
+
+<ComponentExample
+  name="autocomplete/async"
+  caption="Type “b” and wait for the city suggestions."
+/>
+
+## Search
+
+The return key runs `onSubmit` with the text, or chooses the highlighted suggestion first. With `submitOnSelect`, choosing a suggestion submits it too, like a search box. The keyboard stays up after return; set `submitBehavior` on `AutocompleteInput` to change that, and `returnKeyType` to label the key.
+
+<ComponentExample
+  name="autocomplete/search"
+  caption="Type a search and press return, or choose a recent search. The log shows what was searched."
+/>
+
+## Long Lists
+
+Cap the content's height with its state's `availableHeight` and put the list in a `ScrollView` with `keyboardShouldPersistTaps="handled"`, so the first tap on a suggestion chooses it instead of closing the keyboard.
+
+## Placement
+
+The content opens on `side` of the field, `"bottom"` by default, lined up with its start by `align`. It flips when there isn't room and shifts to stay on screen; `sideOffset`, 4 by default, sets the gap. It's placed before its first frame and measured again while open, so it follows the keyboard and a field in a scroll view. `anchor` places it against another view. `AutocompleteArrow` points at the field. [Popover](./popover#placement) describes placement in full.
+
+<ComponentExample
+  name="autocomplete/positioning"
+  caption="Type “a”. The list opens above the card, lined up with its end."
+/>
+
+## Closing
+
+Choosing a suggestion closes the list with the `"item-press"` reason, and the return key with `"input-commit"` when nothing is highlighted. It also closes when:
+
+- something outside it is pressed, with `"outside-press"`;
+- Android's back button or gesture is used, with `"back"`;
+- VoiceOver's escape gesture, a two-finger Z, is made, with `"escape-key"`.
+
+Set `dismissible={false}` to refuse those, and ask in `onDismissAttempt`. Focus leaving the field doesn't close the list on native.
+
+## Focus
+
+Focus stays in the field while the suggestions open and change, so the keyboard stays up. While it does, VoiceOver and TalkBack say the highlighted suggestion as typing moves it, where the web points `aria-activedescendant` at it. A screen reader's press on `AutocompleteTrigger` moves it to the first suggestion, and choosing one or the escape gesture moves it back to the field. The controller's `focus()` and a press on `AutocompleteLabel` start editing the field.
+
+## Controlled
+
+Use `value` with `onValueChange` to own the text, and `open` with `onOpenChange` to own the list. Call `details.cancel()` in a callback to refuse the change.
+
+<ComponentExample
+  name="autocomplete/controlled"
+  caption="Type a fruit. The log shows each change and its reason; text past 12 characters is refused."
+/>
+
+## Controller
+
+`createAutocompleteController()` opens, reads and changes the autocomplete from outside it.
+
+<ComponentExample
+  name="autocomplete/controller"
+  caption="Tap Type “Pea”, then Open. The list shows Peach and Pear."
+/>
+
+## Animation
+
+The content leaves through `onExit`, as in [Dialog](./dialog#animation): it stays on screen until you call `done`, or two seconds pass. Its state's `transformOrigin` is the point facing the field.
+
+<ComponentExample
+  name="autocomplete/animation"
+  caption="Type “a”. The list fades in, and fades out as it closes."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. A suggestion can hold more than its label, like a hint, with `label` set to the words that fill in the field.
+
+<ComponentExample
+  name="autocomplete/custom-rendering"
+  caption="Type “sty”. Each suggestion shows its section beside its title."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.item, state.highlighted && styles.highlighted]`. Each part receives the fields listed under [Part State](#part-state).
+
+## Part State
+
+### AutocompleteInput [#part-state-autocompleteinput]
+
+<PartStateTable
+  component="autocomplete"
+  part="input"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteInputState"
+/>
+
+### AutocompleteTrigger [#part-state-autocompletetrigger]
+
+<PartStateTable
+  component="autocomplete"
+  part="trigger"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteTriggerState"
+/>
+
+### AutocompleteClear [#part-state-autocompleteclear]
+
+<PartStateTable
+  component="autocomplete"
+  part="clear"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteClearState"
+/>
+
+### AutocompleteContent [#part-state-autocompletecontent]
+
+<PartStateTable
+  component="autocomplete"
+  part="content"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteContentState"
+/>
+
+With `startingStyle` and `endingStyle`, described under [Animation](#animation), and what placement measured, undefined until it's first placed: `side`, `align`, `anchorWidth`, `anchorHeight`, `availableWidth`, `availableHeight`, `transformOrigin` and `arrowOffset`, as on [Popover's content](./popover#part-state-popovercontent).
+
+### AutocompleteList [#part-state-autocompletelist]
+
+<PartStateTable
+  component="autocomplete"
+  part="list"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteContentState"
+/>
+
+### AutocompleteItem [#part-state-autocompleteitem]
+
+<PartStateTable
+  component="autocomplete"
+  part="item"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteItemState"
+/>
+
+### AutocompleteItemText [#part-state-autocompleteitemtext]
+
+<PartStateTable
+  component="autocomplete"
+  part="item-text"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteItemTextState"
+/>
+
+### AutocompleteItemIcon [#part-state-autocompleteitemicon]
+
+<PartStateTable
+  component="autocomplete"
+  part="item-icon"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteItemIconState"
+/>
+
+### AutocompleteEmpty [#part-state-autocompleteempty]
+
+<PartStateTable
+  component="autocomplete"
+  part="empty"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteEmptyState"
+/>
+
+### AutocompleteStatus [#part-state-autocompletestatus]
+
+<PartStateTable
+  component="autocomplete"
+  part="status"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteStatusState"
+/>
+
+### AutocompleteArrow [#part-state-autocompletearrow]
+
+<PartStateTable
+  component="autocomplete"
+  part="arrow"
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteArrowState"
+/>
+
+With `side`, `align` and `arrowClamped`, as on [Popover's arrow](./popover#part-state-popoverarrow).
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. Each part also takes its host's props.
+
+### Autocomplete
+
+`name`, `form`, `required` and `container` don't exist on native, which has no forms or DOM containers, and neither does `modal`: the suggestions never take the keyboard from the field. `presentation="sheet"` and `"auto"` present as the list until the sheet entry is imported.
+
+<TypeTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteOptions"
+  omit={["container", "name", "form", "required", "modal"]}
+/>
+
+### AutocompleteContent
+
+`anchor` takes a view or a point in window coordinates.
+
+<TypeTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteContentProps"
+  omit={["container"]}
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### AutocompleteItem
+
+<TypeTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteItemProps"
+/>
+
+### AutocompleteItemIcon
+
+<TypeTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteItemIconProps"
+/>
+
+### AutocompleteClear
+
+<TypeTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteClearProps"
+/>
+
+### Items as Data
+
+Each suggestion in `items`, or a plain string. Groups are `{ type: "group", label, items }` and separators `{ type: "separator" }`.
+
+<TypeTable
+  path="../../packages/core/src/foundation/lists/listbox.ts"
+  name="ListItem"
+/>
+
+### Reasons
+
+`details.reason` says why the text changed. `"list-navigation"`, `"escape-key"` and `"reset"` never happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteValueChangeReason"
+/>
+
+And why the suggestions opened or closed. `"focus-out"`, `"window-blur"` and `"swipe"` never happen on native:
+
+<ReasonTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteOpenChangeReason"
+/>
+
+### Controller
+
+Create one with `createAutocompleteController()` and pass it as `controller`. Its `focus()` starts editing the field.
+
+<ControllerTable
+  path="../../packages/core/src/components/autocomplete/autocomplete.ts"
+  name="AutocompleteController"
+/>
+
+### Events
+
+| Prop                   | On             | Receives                                                     |
+| ---------------------- | -------------- | ------------------------------------------------------------ |
+| `onValueChange`        | `Autocomplete` | `(value, details)`: the new text, and the [reason](#reasons) |
+| `onOpenChange`         | `Autocomplete` | `(open, details)`: the new state, and the [reason](#reasons) |
+| `onOpenChangeComplete` | `Autocomplete` | `(open)`, as described under [Animation](#animation)         |
+| `onSubmit`             | `Autocomplete` | `(value, {})`: the text, when the return key submits it      |
+| `onHighlight`          | `Autocomplete` | `(value, { index })`: the highlighted suggestion and its row |
+| `onLoadMore`           | `Autocomplete` | `()`, when the highlight reaches the last suggestion         |
+| `onDismissAttempt`     | `Autocomplete` | `({ reason })`, when a dismissal was refused                 |
+
+## Accessibility
+
+The field has the combobox role and an expanded state, which TalkBack can expand and collapse, and it's named by `AutocompleteLabel`, a [Field](./field)'s label or its own `aria-label`. TalkBack announces it as a combo box; React Native gives iOS no combo box trait, so VoiceOver reads it as a text field. Each suggestion is its own element, a button selected while it's highlighted; React Native has no option role. A separator and an icon are hidden from screen readers.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key    | Does                                                                                         |
+| ------ | -------------------------------------------------------------------------------------------- |
+| Tab    | Moves from the field to the suggestions and the other controls; Android skips a disabled one |
+| Return | In the field, chooses the highlighted suggestion, or submits the text                        |
+| Space  | Chooses a suggestion that has focus                                                          |
+
+Arrow keys don't move the highlight from the field: React Native doesn't report them from a `TextInput`.
