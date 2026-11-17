@@ -89,7 +89,7 @@ const isSecretField = (props: {
   textContentType?: unknown
 }) =>
   props.secureTextEntry === true ||
-  /password|one-time-code|cc-|credit-card/i.test(
+  /password|one-?time-?code|sms-otp|cc-|credit-?card/i.test(
     `${props.autoComplete ?? ""} ${props.textContentType ?? ""}`
   )
 

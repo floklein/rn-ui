@@ -195,3 +195,16 @@ test("observe hears an agent's change, and history puts it back", async () => {
   history.destroy()
   stop()
 })
+
+test("a one-time-code field's value reads redacted", async () => {
+  await render(
+    <Input
+      aria-label="Code"
+      defaultValue="123456"
+      textContentType="oneTimeCode"
+    />
+  )
+  expect(onScreen()).toEqual([
+    expect.objectContaining({ label: "Code", value: "[redacted]" }),
+  ])
+})

@@ -769,7 +769,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
           disabled: translated.accessibilityState?.disabled === true,
           hidden: marked.hidden,
           offLimits: marked.offLimits,
-          secret: marked.secret || isSecretField(rest),
+          secret: marked.secret || isSecretField({ ...translated, ...rest }),
           confirm: marked.confirm,
           within: marked.within,
           press: onPress && (() => onPress()),
