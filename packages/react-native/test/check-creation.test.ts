@@ -26,6 +26,7 @@ import { scrollArea } from "@ui-sdk/core/scroll-area"
 import { segmentedControl } from "@ui-sdk/core/segmented-control"
 import { separator } from "@ui-sdk/core/separator"
 import { slider } from "@ui-sdk/core/slider"
+import { colorPicker } from "@ui-sdk/core/color-picker"
 import { switchPrimitive } from "@ui-sdk/core/switch"
 import { tabs } from "@ui-sdk/core/tabs"
 import { createToaster, toastRegion } from "@ui-sdk/core/toast"
@@ -72,6 +73,28 @@ describe("checkCreation", () => {
     expect(() => checkCreation(slider, { defaultValue: 40 })).not.toThrow()
     expect(() =>
       checkCreation(slider, { defaultValue: [20, 80], locale: "de-DE" })
+    ).not.toThrow()
+  })
+
+  test("passes on a color picker, in each space", () => {
+    expect(() =>
+      checkCreation(
+        colorPicker,
+        { defaultValue: "#0ea5e9" },
+        {
+          "swatch-item": { value: "#ef4444" },
+        }
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(
+        colorPicker,
+        {
+          space: "oklch",
+          defaultValue: "oklch(0.62 0.19 259)",
+        },
+        { "swatch-item": { value: "#ef4444" } }
+      )
     ).not.toThrow()
   })
 

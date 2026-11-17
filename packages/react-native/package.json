@@ -25,6 +25,8 @@
     "./calendar": "./src/calendar.tsx",
     "./checkbox": "./src/checkbox.tsx",
     "./collapsible": "./src/collapsible.tsx",
+    "./color": "./src/color.ts",
+    "./color-picker": "./src/color-picker.tsx",
     "./date": "./src/date.ts",
     "./date-picker": "./src/date-picker.tsx",
     "./dialog": "./src/dialog.tsx",
@@ -100,6 +102,14 @@
       "./collapsible": {
         "types": "./dist/collapsible.d.ts",
         "default": "./dist/collapsible.js"
+      },
+      "./color": {
+        "types": "./dist/color.d.ts",
+        "default": "./dist/color.js"
+      },
+      "./color-picker": {
+        "types": "./dist/color-picker.d.ts",
+        "default": "./dist/color-picker.js"
       },
       "./date": {
         "types": "./dist/date.d.ts",
