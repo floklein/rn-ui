@@ -23,7 +23,6 @@ function Example() {
       onAnchorChange={(anchor) =>
         log(anchor ? `Started on ${anchor}` : "Range finished")
       }
-      onFocusedChange={(focused) => log(`Focus on ${focused}`)}
       style={styles.calendar}
     >
       <View style={styles.header}>

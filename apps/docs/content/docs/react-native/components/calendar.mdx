@@ -232,7 +232,7 @@ A range cannot include an unavailable date unless `allowUnavailable` is set. Tha
 
 The root's state has `anchor`, the start while an end is being picked. `onAnchorChange` reports it before it changes, to show the range being picked outside the calendar, and canceling keeps things as they were.
 
-The root's `focused` is the day with the keyboard's Tab stop on the web. React Native never reports which day a screen reader or a keyboard is on, so `focused` moves only when a controller's `focus()` asks for a day, and `onFocusedChange` doesn't run for a press.
+The root's `focused` is the day with the keyboard's Tab stop on the web. React Native never reports which day a screen reader or a keyboard is on, so `focused` stays on the day the calendar prefers: the selection when it shows, else today, else the first available day. `onFocusedChange` doesn't run for a press.
 
 <ComponentExample
   name="calendar/range-progress"
