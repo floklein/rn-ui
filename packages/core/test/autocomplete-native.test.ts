@@ -76,7 +76,7 @@ function mount(options: AutocompleteOptions = {}) {
   const instance = autocomplete({ id: "a", ...options })
   keep(instance)
   const rendered: Part[] = []
-  const always: Record<string, Part> = {}
+  const always = {} as Record<"label" | "input" | "trigger", Part>
   for (const slot of ["label", "input", "trigger"] as const) {
     const part = instance.part(slot, {})
     always[slot] = part
