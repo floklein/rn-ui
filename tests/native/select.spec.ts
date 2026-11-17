@@ -81,11 +81,12 @@ test("pressing an option selects it, closes the list and shows its label", async
   )
 })
 
+// Non-modal lists: on Android a Modal hides the changes readout behind it.
 test("a disabled option can't be chosen", async () => {
-  await open("modal")
-  await device.press("modal-banana")
-  await expectShown("modal-content", true)
-  await expectText("changes", "modal:true:trigger-press")
+  await open("plain")
+  await device.press("plain-banana")
+  await expectShown("plain-content", true)
+  await expectText("changes", "plain:true:trigger-press")
 })
 
 test("with multiple, options toggle and the list stays open", async () => {

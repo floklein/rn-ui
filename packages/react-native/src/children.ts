@@ -1,9 +1,6 @@
 import * as React from "react"
 import { carry } from "./carried-context"
 
-// Whether an element of this type is among the children, at any depth the
-// markup shows: a root that renders its own content part when the app gives
-// none checks here, so a placed part never renders a second one.
 function hasChild(children: React.ReactNode, type: React.ElementType) {
   for (const child of React.Children.toArray(children)) {
     if (
@@ -16,8 +13,6 @@ function hasChild(children: React.ReactNode, type: React.ElementType) {
   return false
 }
 
-// Where a root's content part says it's there, for one inside a component of
-// the app's own that `hasChild` can't see.
 const PlacedContext = carry(
   "Placed",
   React.createContext<(() => () => void) | null>(null)

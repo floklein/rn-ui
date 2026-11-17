@@ -134,7 +134,6 @@ type SelectArrowPlacementState = {
   arrowClamped?: boolean
 }
 
-// Element props that mean something else on a select part.
 type Clashing = "value" | "defaultValue" | "onChange" | "onSelect"
 
 /**
@@ -285,7 +284,6 @@ function TriggerPart({
     handle.api.internal.selection.labels()
   )
   const placeholder = handle.state.placeholder
-  // Named by its label, the value it shows is read as its value.
   const named = !!(
     user["aria-label"] ||
     user["aria-labelledby"] ||
@@ -655,7 +653,6 @@ const SelectItemIndicator = notLabel(
   parts.ItemIndicator
 ) as SelectParts["ItemIndicator"]
 
-// What each item's icon shows, for the value icon to show the selected one's.
 const iconNodes = new WeakMap<object, React.ReactNode>()
 
 /**
@@ -792,8 +789,9 @@ function SelectItems({ items }: { items: ListData<unknown> }) {
   return renderItems(items, handle.api.internal.keyOf)
 }
 
-// An option per item, groups with their labels, and separators. Keyed by
-// each item's key, and each group by its label, so a filtered list keeps its options.
+// Keyed by each item's key, and each group by its label, so a filtered list
+// keeps its options.
+// check-code: allow return-type recursive, so TypeScript cannot infer it.
 function renderItems(
   items: readonly ListData<any>[number][],
   keyOf: (value: unknown) => string

@@ -78,7 +78,7 @@ function mount(
 ) {
   const instance = select({ id: "s", ...options })
   keep(instance)
-  const trigger = instance.part("trigger", {}, true)
+  const trigger = instance.part("trigger", {})
   rendered.push(trigger)
   unmounts.push(selectNative.trigger!(trigger) ?? (() => {}))
   let mounted = false
@@ -89,17 +89,17 @@ function mount(
     if (instance.get().mounted && !mounted) {
       mounted = true
       if (searchable) {
-        const input = instance.part("input", {}, true)
+        const input = instance.part("input", {})
         rendered.push(input)
         cleanups.push(selectNative.input!(input))
       }
       for (const item of items) {
-        const part = instance.part("item", { id: item.value, ...item }, true)
+        const part = instance.part("item", { id: item.value, ...item })
         parts[item.value] = part
         rendered.push(part)
         cleanups.push(selectNative.item!(part))
       }
-      const content = instance.part("content", {}, true)
+      const content = instance.part("content", {})
       cleanups.push(selectNative.content!(content))
       presence = createPresence(
         () => {},

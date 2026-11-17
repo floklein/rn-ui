@@ -654,7 +654,14 @@
       "file": "packages/core/src/foundation/popups/index.ts",
       "mirrors": ["packages/core/src/foundation/popups/index.ts"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Exports popupNative and partIn, which Dialog's native behavior file imports."
+      "why": "Exports popupNative, partIn and openerBySource, which the native behavior files of Dialog, Popover and Select import."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/lists/index.ts",
+      "mirrors": ["packages/core/src/foundation/lists/index.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "Exports announceHighlight and nativeItem from listbox-native.ts, which Select's native behavior imports, and Combobox's, Autocomplete's and Command's will."
     },
     {
       "kind": "edit",

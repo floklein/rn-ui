@@ -4,7 +4,6 @@ import {
   settleFlag,
 } from "../../foundation/kernel/bound-keys"
 import { type ChangeSource, withSource } from "../../foundation/kernel/details"
-import { partOf } from "../../foundation/kernel/native-element"
 import type { NativeBehavior } from "../../foundation/kernel/native-host"
 import type { Part } from "../../foundation/kernel/primitive-types"
 import { bindItem } from "../../foundation/lists/listbox-parts"
@@ -22,7 +21,7 @@ import type { SelectApi } from "./select-api"
 // The highlight opening sets isn't announced: focus moving says it.
 let opening = false
 
-// Its internals hold the popup's, under the select's own, like `hover`.
+// `any`: Select's own `internal.hover` clashes with the popup's hover feature.
 const popup: NativeBehavior<SelectApi> = popupNative<any>({
   focus(api: SelectApi, plan: string) {
     const internal = api.internal as unknown as Parameters<typeof partIn>[0]
@@ -37,7 +36,12 @@ const popup: NativeBehavior<SelectApi> = popupNative<any>({
     } finally {
       opening = false
     }
-    return (target && partOf(target)) ?? partIn(internal, "input") ?? content
+    const highlighted = api.internal.store.get().highlighted
+    const item =
+      target && highlighted !== null
+        ? partIn(internal, "item", highlighted)
+        : undefined
+    return item ?? partIn(internal, "input") ?? content
   },
 })
 

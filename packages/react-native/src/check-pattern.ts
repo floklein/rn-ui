@@ -931,10 +931,9 @@ const openModal = (context: Context) =>
     (node) => node.type === "Modal" && node.props.visible !== false
   )
 
-// A select-only combobox: activating it opens its options and moves the
-// screen reader into them, choosing one commits it and closes the list with
-// focus back on the combobox, and back on Android or the escape gesture on
-// iOS closes it too (APG combobox).
+// APG select-only combobox: opening moves the screen reader into the options,
+// and choosing one, back on Android or iOS's escape gesture closes the list
+// with focus back on the combobox.
 async function comboboxPattern(context: Context) {
   const box = () => context.withRole("combobox")[0]
   if (!box()) {

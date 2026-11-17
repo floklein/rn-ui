@@ -136,7 +136,7 @@ function Fixture() {
         <Fruit name="plain" modal={false} onChanges={onChanges} />
       </View>
       <View style={styles.row}>
-        <Fruit name="multi" multiple onChanges={onChanges} />
+        <Fruit name="multi" multiple modal={false} onChanges={onChanges} />
         <Fruit name="search" searchable onChanges={onChanges} />
       </View>
     </View>

@@ -111,3 +111,4 @@ export {
   type TreeRow,
   visibleTreeRows,
 } from "./tree-collection"
+export { announceHighlight, nativeItem } from "./listbox-native"
