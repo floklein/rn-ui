@@ -1,4 +1,5 @@
 import type { Store } from "../../foundation/kernel/store"
+import { isRTL } from "../../foundation/platform/env"
 import {
   draggedPosition,
   edgesOf,
@@ -70,6 +71,19 @@ const names = {
 } as const
 
 const none = () => {}
+
+// How fast a drag at `at` scrolls toward the nearer edge, negative toward the
+// start: faster the deeper it is in the band along that edge, as on the web.
+function edgeVelocity(at: number, length: number, edge: number, speed: number) {
+  const band = Math.min(edge, length / 3)
+  if (at < band) {
+    return -speed * Math.min(1, (band - at) / band)
+  }
+  if (at > length - band) {
+    return speed * Math.min(1, (at - (length - band)) / band)
+  }
+  return 0
+}
 
 const views = new WeakSet<object>()
 
@@ -358,6 +372,38 @@ function createNativeScrollView(store: Store<ScrollAreaModel>) {
       return () => {
         watchers.delete(watcher)
       }
+    },
+    /**
+     * A drag held at `point`, px from the viewport's top left corner, scrolls
+     * it a step along each of `along` it's near an edge of, by up to `speed`
+     * px within `edge` px of it. Returns the axes it scrolled.
+     */
+    edgeScroll(
+      point: { x: number; y: number },
+      { edge, speed }: { edge: number; speed: number },
+      along: readonly Axis[] = axes
+    ) {
+      const scrolled: Axis[] = []
+      for (const axis of along) {
+        const axisMetrics = metrics[axis]
+        const flip = axis === "x" && isRTL(null) ? -1 : 1
+        const step =
+          flip * edgeVelocity(point[axis], axisMetrics.client, edge, speed)
+        const to = Math.min(
+          Math.max(axisMetrics.position + step, 0),
+          maxScroll(axisMetrics)
+        )
+        if (!scroller || Math.abs(to - axisMetrics.position) < 0.5) {
+          continue
+        }
+        scroller.scrollTo(axis, to, false)
+        axisMetrics.position = to
+        scrolled.push(axis)
+      }
+      if (scrolled.length) {
+        update()
+      }
+      return scrolled
     },
     /**
      * A finger lands on a scrollbar, `point` px from its start: on the thumb

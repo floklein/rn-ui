@@ -90,6 +90,8 @@ A `ScrollView` scrolls one axis, and Android has none that scrolls both, so a sc
 
 A drag inside a scroll area, like a slider's, stops the viewport's scrolling until the finger lifts or the drag is taken away. A swipe beside the slider still scrolls. A scroll area inside another holds both. A plain `ScrollView`, even one inside the viewport, needs the app to do this itself: see [Slider](./slider#inside-a-scroll-view).
 
+A list reordered by touch scrolls the viewport when the finger holds near its edge, faster the closer it gets, so an item can travel past what's in view. This works only inside a scroll area: a plain `ScrollView` stays where it is. See [Native Host](/docs/core/native-host#native-behavior) for binding a reorderable list.
+
 <ComponentExample
   name="scroll-area/drag"
   caption="Drag a channel's thumb sideways. The mixer stays put, and a swipe between the sliders scrolls it."
