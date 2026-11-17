@@ -484,7 +484,13 @@ function SelectList({
   children = listItems,
   ...props
 }: PartProps<typeof View, SelectContentState>) {
-  return usePart(select, "list", {}, { ...props, children }, View)
+  return usePart(
+    select,
+    "list",
+    {},
+    { ...props, children } as Record<string, unknown>,
+    View
+  )
 }
 
 const listItems = (state: SelectContentState) => (
@@ -537,7 +543,13 @@ function SelectEmpty({
       : state.empty
         ? children
         : null
-  return usePart(select, "empty", {}, { ...props, children: content }, View)
+  return usePart(
+    select,
+    "empty",
+    {},
+    { ...props, children: content } as Record<string, unknown>,
+    View
+  )
 }
 
 /**
@@ -622,7 +634,7 @@ function SelectItemText({
     select,
     "item-text",
     { id: item.value as string, text },
-    { ...props, children: content },
+    { ...props, children: content } as Record<string, unknown>,
     Text
   )
 }
@@ -641,7 +653,13 @@ function SelectSelectAll(
   const part = {
     id: selectAllKey(useAround(select, "group")?.id as string | undefined),
   }
-  return usePart(handle, "select-all" as never, part as never, props, Pressable)
+  return usePart(
+    handle,
+    "select-all" as never,
+    part as never,
+    props as Record<string, unknown>,
+    Pressable
+  )
 }
 
 /**
