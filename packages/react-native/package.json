@@ -51,7 +51,8 @@
     "./testing": "./src/testing.ts",
     "./textarea": "./src/textarea.tsx",
     "./toggle": "./src/toggle.tsx",
-    "./toolbar": "./src/toolbar.tsx"
+    "./toolbar": "./src/toolbar.tsx",
+    "./tooltip": "./src/tooltip.tsx"
   },
   "sideEffects": [
     "./src/native-host.ts",
@@ -203,6 +204,10 @@
       "./toolbar": {
         "types": "./dist/toolbar.d.ts",
         "default": "./dist/toolbar.js"
+      },
+      "./tooltip": {
+        "types": "./dist/tooltip.d.ts",
+        "default": "./dist/tooltip.js"
       }
     }
   },

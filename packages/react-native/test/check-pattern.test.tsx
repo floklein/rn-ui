@@ -129,6 +129,7 @@ import {
   ToolbarLink,
   ToolbarSeparator,
 } from "../src/toolbar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../src/tooltip"
 
 const os = Platform.OS === "android" ? "android" : "ios"
 const check = () => checkPattern(screen.container, "switch", { os, act })
@@ -1882,6 +1883,71 @@ describe("checkPattern's toolbar pattern on the native host", () => {
     )
     await expect(checkToolbar()).rejects.toThrow(
       "has no name; a screen has more than one toolbar, so each needs an accessibilityLabel"
+    )
+  })
+})
+
+describe("checkPattern's tooltip pattern on the native host", () => {
+  const checkTooltip = () =>
+    checkPattern(screen.container, "tooltip", { os, act })
+
+  test.each([false, true])(
+    "passes on tooltips that name and describe their triggers, toggleable %s",
+    async (toggleable) => {
+      await render(
+        <OverlayHost>
+          <Tooltip toggleable={toggleable}>
+            <TooltipTrigger>
+              <View />
+            </TooltipTrigger>
+            <TooltipContent>
+              <Text>Add to library</Text>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip toggleable={toggleable} defaultOpen>
+            <TooltipTrigger>
+              <Text>Export</Text>
+            </TooltipTrigger>
+            <TooltipContent>
+              <Text>Download as CSV</Text>
+            </TooltipContent>
+          </Tooltip>
+        </OverlayHost>
+      )
+      await expect(checkTooltip()).resolves.toBeUndefined()
+    }
+  )
+
+  test("fails on a button its tooltip neither names nor describes", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Export</Text>
+      </Pressable>
+    )
+    await expect(checkTooltip()).rejects.toThrow(
+      "is neither named nor described by its tooltip"
+    )
+  })
+
+  test("fails on a tooltip that takes focus or stays open", async () => {
+    function Sticky() {
+      const [open, setOpen] = useState(false)
+      return (
+        <View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityHint="Download as CSV"
+            onPress={() => setOpen(true)}
+          >
+            <Text>Export</Text>
+          </Pressable>
+          {open && <Text>Download as CSV</Text>}
+        </View>
+      )
+    }
+    await render(<Sticky />)
+    await expect(checkTooltip()).rejects.toThrow(
+      "leaves its tooltip open when activated again"
     )
   })
 })

@@ -458,11 +458,9 @@ function checkEvent(
     string,
     (new () => Event) | undefined
   >
-  const matches = allowed.some((name) => {
-    const constructor = constructors[name]
-    return !!constructor && event instanceof constructor
-  })
-  if (matches) {
+  const known = allowed.flatMap((name) => constructors[name] ?? [])
+  // A host without these events, like React Native, has nothing to check.
+  if (!known.length || known.some((type) => event instanceof type)) {
     return
   }
   const key = `${reason}:${event.constructor.name}`

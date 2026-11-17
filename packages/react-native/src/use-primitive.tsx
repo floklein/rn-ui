@@ -18,6 +18,7 @@ import type { RatingPrimitive } from "@ui-sdk/core/rating"
 import type { SegmentedControlPrimitive } from "@ui-sdk/core/segmented-control"
 import type { SliderPrimitive } from "@ui-sdk/core/slider"
 import type { SwitchPrimitive } from "@ui-sdk/core/switch"
+import type { TooltipPrimitive } from "@ui-sdk/core/tooltip"
 import {
   attrs,
   commit,
@@ -415,11 +416,16 @@ let rendered = 0
 
 type OnExit = (done: () => void) => void
 
-// A part animates in and out when its slot takes `keepMounted`.
+// A part animates in and out when its slot takes `keepMounted`, or, like a
+// tooltip's content, is always present on the web and hidden while closed.
 type Animates<
   P extends Primitive,
   S extends SlotName<P>,
-> = "keepMounted" extends keyof PropsOf<P, S> ? true : false
+> = "keepMounted" extends keyof PropsOf<P, S>
+  ? true
+  : [P, S] extends [TooltipPrimitive, "content"]
+    ? true
+    : false
 
 type PresenceOf<P extends Primitive, S extends SlotName<P>> =
   Animates<P, S> extends true ? PresenceState : {}
@@ -586,7 +592,9 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       part.store.set({ formDisabled: disabling.disabled })
     }
   }, [disabling, part, owner])
-  const animates = "keepMounted" in (schemaOf(primitive).slots[slot] ?? {})
+  const animates =
+    "keepMounted" in (schemaOf(primitive).slots[slot] ?? {}) ||
+    (primitive.name === "tooltip" && slot === "content")
   const { onExit, ...hostProps } = props as typeof props & ExitProps
   const slotState = partState(part, slotProps) as { open?: boolean }
   // `keepMounted` and `hiddenUntilFound` only keep a hidden part mounted. A

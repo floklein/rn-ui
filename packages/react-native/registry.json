@@ -713,6 +713,23 @@
       "why": "Popover's focus on open: the title, where pressOpening's initialFocus picks the first focusable element, and the content after a touch or with initialFocus=\"content\", as the DOM host focuses the popup itself."
     },
     {
+      "kind": "behavior",
+      "file": "packages/core/src/components/tooltip/tooltip-native.ts",
+      "mirrors": [
+        "packages/core/src/components/tooltip/tooltip.ts",
+        "packages/core/src/foundation/popups/popup-features.ts"
+      ],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "What the content's bind adds to a popup's: it joins the warm group while mounted. Its Escape rule for the screen reader's escape gesture: a tooltip never takes focus, so when the gesture reached its text the screen reader goes back to the trigger, where the DOM host's focus never left it."
+    },
+    {
+      "kind": "edit",
+      "file": "packages/core/src/foundation/kernel/dev.ts",
+      "mirrors": ["packages/core/src/foundation/kernel/dev.ts"],
+      "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
+      "why": "checkEvent skips a host that has none of a reason's event constructors, like React Native, whose hover reaches core as a pointer event's nativeEvent."
+    },
+    {
       "kind": "edit",
       "file": "packages/core/src/foundation/platform/position.ts",
       "mirrors": ["packages/core/src/foundation/platform/position.ts"],
@@ -1300,6 +1317,27 @@
         }
       }
     },
+    "tooltip": {
+      "entry": "packages/react-native/src/tooltip.tsx",
+      "slots": {
+        "tooltip.trigger": {
+          "covered": "packages/react-native/src/tooltip.tsx",
+          "reason": "Its asleep sets the first trigger's key, which popup-native.ts does while the trigger is mounted, and decides whether the trigger has a name of its own, which the adapter reads from the trigger's aria-label, accessibilityLabel and text. Its pointerenter and pointerleave become the Pressable's onPointerEnter and onPointerLeave, which React Native sends only where the app turned on pointer events; a touch's are ignored, as on the web. Its keydown and focus handlers open on keyboard focus, which a native view doesn't report. Its press goes through the slot's own press, which opens a toggleable tooltip, with its text announced, and closes any other."
+        },
+        "tooltip.content": {
+          "covered": "packages/core/src/components/tooltip/tooltip-native.ts",
+          "reason": "Its bind joins the warm group and shows the popup: the layer, back and the exit, which popup-native.ts and tooltip-native.ts restate, and its placement beside the trigger, which placement-native.ts computes from the boxes packages/react-native/src/placement.ts measures. Its asleep labels the content with its spoken text, which the adapter registers by the content's id from the content's text, so it names or describes the trigger while closed too. Its pointerenter and pointerleave keep it open under a pointer, which the adapter passes as onPointerEnter and onPointerLeave."
+        },
+        "tooltip.arrow": {
+          "covered": "packages/core/src/foundation/popups/placement-native.ts",
+          "reason": "Its bind asks for a placement check, so an arrow that binds late points at the trigger; the adapter measures the arrow with the content on every check, and placement-native.ts places it."
+        },
+        "tooltip.shortcut": {
+          "needs": "nothing",
+          "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+        }
+      }
+    },
     "drawer": {
       "entry": "packages/react-native/src/drawer.tsx",
       "slots": {
@@ -1441,7 +1479,6 @@
     "timeline",
     "toast",
     "token-input",
-    "tooltip",
     "tree",
     "trigger-menu",
     "waterfall"
@@ -1821,6 +1858,18 @@
     },
     {
       "component": "popover",
+      "example": "shortcut",
+      "feature": "Keyboard shortcuts on a trigger",
+      "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "tooltip",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "tooltip",
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
