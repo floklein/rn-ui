@@ -203,11 +203,21 @@ function NumberInputScrubArea({
   ...props
 }: Omit<NumberInputScrubAreaProps, "controller"> &
   PartProps<typeof View, NumberInputState>) {
+  const handle = useHandle(numberInput)
+  const { disabled, formDisabled, readOnly } = handle.state
   return usePart(
-    useHandle(numberInput),
+    handle,
     "scrub-area",
     { orientation, pixelsPerStep },
-    props as Record<string, unknown>,
+    mergeProps(
+      {
+        // A pressable label inside would take the touch first; the web's
+        // scrub starts from any pointerdown inside, and a tap focuses anyway.
+        onStartShouldSetResponderCapture: () =>
+          !disabled && !formDisabled && !readOnly,
+      },
+      props as Record<string, unknown>
+    ),
     View
   )
 }

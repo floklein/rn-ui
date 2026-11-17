@@ -216,6 +216,22 @@ describe("NumberInput", () => {
     )
   })
 
+  test("the scrub area takes a touch before a pressable label inside it", async () => {
+    await render(
+      <Field>
+        <NumberInput>
+          <NumberInputScrubArea testID="scrub">
+            <FieldLabel>Amount</FieldLabel>
+          </NumberInputScrubArea>
+          <NumberInputControl />
+        </NumberInput>
+      </Field>
+    )
+    expect(
+      screen.getByTestId("scrub").props.onStartShouldSetResponderCapture()
+    ).toBe(true)
+  })
+
   test("a read-only field can't be typed in or stepped", async () => {
     await render(<Amount defaultValue={3} readOnly />)
     expect(field().props.editable).toBe(false)
@@ -274,7 +290,9 @@ describe("NumberInput", () => {
   })
 
   test("a controlled value shows, and a refused change puts the text back", async () => {
-    await render(<Amount value={7} onValueChange={(_, details) => details.cancel()} />)
+    await render(
+      <Amount value={7} onValueChange={(_, details) => details.cancel()} />
+    )
     await fireEvent(field(), "focus")
     await fireEvent.changeText(field(), "")
     expect(field().props.value).toBe("")

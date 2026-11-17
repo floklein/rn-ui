@@ -42,7 +42,9 @@ type NativeField = {
   /** Sets the device's keyboard, which picks the input mode. */
   setPlatform: (platform: "ios" | "android") => void
   /** What a touch drag on a scrub area does, with the area's props read as it starts. */
-  scrubDrag: (props: () => Omit<NumberInputScrubAreaProps, "controller">) => NativeDrag
+  scrubDrag: (
+    props: () => Omit<NumberInputScrubAreaProps, "controller">
+  ) => NativeDrag
 }
 
 /**

@@ -1687,6 +1687,24 @@
       "example": "shortcut",
       "feature": "Keyboard shortcuts on a trigger",
       "reason": "Keyboard shortcuts are web-only: native has no shortcut option or part."
+    },
+    {
+      "component": "number-input",
+      "example": "form",
+      "feature": "Form submission and reset",
+      "reason": "Native has no forms: the app reads the number from change callbacks."
+    },
+    {
+      "component": "number-input",
+      "example": "rtl",
+      "feature": "A direction for part of the screen",
+      "reason": "React Native has one direction for the whole app, from I18nManager."
+    },
+    {
+      "component": "number-input",
+      "example": "wheel",
+      "feature": "Stepping with the mouse wheel",
+      "reason": "Touch screens have no wheel, so native Number Input has no wheel option."
     }
   ]
 }
