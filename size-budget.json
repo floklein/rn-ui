@@ -431,11 +431,11 @@
   "@ui-sdk/react-native/checkbox": 16296,
   "@ui-sdk/react-native/collapsible": 14713,
   "@ui-sdk/react-native/date": 3630,
-  "@ui-sdk/react-native/date-picker": 44587,
-  "@ui-sdk/react-native/date-picker (lazy)": 5944,
-  "@ui-sdk/react-native/dialog": 31253,
-  "@ui-sdk/react-native/dialog (lazy)": 6056,
-  "@ui-sdk/react-native/drawer": 41262,
+  "@ui-sdk/react-native/date-picker": 44588,
+  "@ui-sdk/react-native/date-picker (lazy)": 6065,
+  "@ui-sdk/react-native/dialog": 31254,
+  "@ui-sdk/react-native/dialog (lazy)": 6179,
+  "@ui-sdk/react-native/drawer": 42390,
   "@ui-sdk/react-native/drawer (lazy)": 180,
   "@ui-sdk/react-native/field": 13309,
   "@ui-sdk/react-native/field (lazy)": 180,
@@ -459,6 +459,6 @@
   "@ui-sdk/react-native/toggle": 15962,
   "@ui-sdk/react-native/slider": 19638,
   "@ui-sdk/react-native/toolbar": 14574,
-  "@ui-sdk/react-native/popover": 34612,
-  "@ui-sdk/react-native/popover (lazy)": 5944
+  "@ui-sdk/react-native/popover": 34611,
+  "@ui-sdk/react-native/popover (lazy)": 6065
 }
