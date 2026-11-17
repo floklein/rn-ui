@@ -162,7 +162,9 @@ async function fileInputPattern(context: Context) {
       : []
   }
   const names = () => removers().map(nameOf)
-  for (const name of removers().filter((node) => !isDisabled(node)).map(nameOf)) {
+  for (const name of removers()
+    .filter((node) => !isDisabled(node))
+    .map(nameOf)) {
     const button = removers().find((node) => nameOf(node) === name)
     if (!button) {
       continue

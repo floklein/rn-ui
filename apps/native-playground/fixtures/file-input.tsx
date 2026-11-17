@@ -13,17 +13,22 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 
 const picked: PickedFile[] = [
   {
-    name: "photo.png",
+    name: "Beach photo.heic",
     size: 120_000,
-    type: "image/png",
-    uri: "file:///photo.png",
+    type: "image/heic",
+    uri: "file:///beach.heic",
   },
-  { name: "notes.txt", size: 300, type: "text/plain", uri: "file:///notes.txt" },
   {
-    name: "report.pdf",
+    name: "Shopping notes.txt",
+    size: 300,
+    type: "text/plain",
+    uri: "file:///notes.txt",
+  },
+  {
+    name: "Lease report.pdf",
     size: 480_000,
     type: "application/pdf",
-    uri: "file:///report.pdf",
+    uri: "file:///lease.pdf",
   },
 ]
 

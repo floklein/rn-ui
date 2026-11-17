@@ -664,7 +664,7 @@
       "file": "size-budget.json",
       "mirrors": ["size-budget.json"],
       "reviewed": "724a7d6c2d0ca1251a8eb6172462ae220c484714",
-      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog and popover."
+      "why": "Budgets for @ui-sdk/react-native/primitive, switch, button, checkbox, collapsible, accordion, toggle, avatar, radio, rating, segmented-control, tabs, testing, input, textarea, password-input, otp-input, slider, dialog, alert-dialog, popover and file-input."
     },
     {
       "kind": "behavior",

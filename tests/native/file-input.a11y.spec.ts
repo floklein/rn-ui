@@ -12,7 +12,7 @@ async function pickFiles() {
   await device.expectTree((tree) =>
     assert.equal(
       tree.get("file-value")?.text,
-      "photo.png and report.pdf by picker"
+      "Beach photo.heic and Lease report.pdf by picker"
     )
   )
 }
@@ -34,8 +34,8 @@ test("the platform tree with files: a remove button named for each", async () =>
   await pickFiles()
   await device.saveTree("files")
   assert.deepEqual(removers(await device.tree()), [
-    { role: "button", label: "Remove photo.png", enabled: true },
-    { role: "button", label: "Remove report.pdf", enabled: true },
+    { role: "button", label: "Remove Beach photo.heic", enabled: true },
+    { role: "button", label: "Remove Lease report.pdf", enabled: true },
   ])
 })
 

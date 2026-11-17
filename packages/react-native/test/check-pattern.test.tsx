@@ -1256,7 +1256,9 @@ describe("checkPattern's file-input pattern on the native host", () => {
               key={name}
               accessibilityRole="button"
               accessibilityLabel={`Remove ${name}`}
-              onPress={() => setNames((all) => all.filter((n) => n !== "b.png"))}
+              onPress={() =>
+                setNames((all) => all.filter((n) => n !== "b.png"))
+              }
             />
           ))}
         </View>

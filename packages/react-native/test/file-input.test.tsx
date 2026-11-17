@@ -126,7 +126,11 @@ describe("FileInput", () => {
   test("a remove button is named for its file, removes it and moves focus to the next file's, else the trigger", async () => {
     const onValueChange = jest.fn()
     await render(
-      <Files multiple defaultValue={[photo, notes]} onValueChange={onValueChange} />
+      <Files
+        multiple
+        defaultValue={[photo, notes]}
+        onValueChange={onValueChange}
+      />
     )
     await fireEvent.press(
       screen.getByRole("button", { name: "Remove photo.png" })
@@ -137,9 +141,9 @@ describe("FileInput", () => {
       reason: "remove-press",
       removed: [photo],
     })
-    expect(sendAccessibilityEvent.mock.lastCall?.[0] === views["notes.txt"]).toBe(
-      true
-    )
+    expect(
+      sendAccessibilityEvent.mock.lastCall?.[0] === views["notes.txt"]
+    ).toBe(true)
 
     await fireEvent.press(
       screen.getByRole("button", { name: "Remove notes.txt" })

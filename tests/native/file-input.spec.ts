@@ -13,40 +13,40 @@ beforeEach(() => device.open("fixture-file-input"))
 
 test("the trigger adds the files pick returns that pass the checks", async () => {
   await device.press("trigger")
-  await expectText("file-value", "photo.png and report.pdf by picker")
-  await expectText("file-rejected", "notes.txt file-type")
+  await expectText("file-value", "Beach photo.heic and Lease report.pdf by picker")
+  await expectText("file-rejected", "Shopping notes.txt file-type")
 })
 
 test("a remove button removes its own file", async () => {
   await device.press("trigger")
-  await expectText("file-value", "photo.png and report.pdf by picker")
-  await device.pressNamed("Remove photo.png")
-  await expectText("file-value", "report.pdf by remove-press")
+  await expectText("file-value", "Beach photo.heic and Lease report.pdf by picker")
+  await device.pressNamed("Remove Beach photo.heic")
+  await expectText("file-value", "Lease report.pdf by remove-press")
   const tree = await device.tree()
   assert.ok(
-    [...tree.values()].some((node) => node.label === "Remove report.pdf")
+    [...tree.values()].some((node) => node.label === "Remove Lease report.pdf")
   )
 })
 
 test("a disabled field disables the trigger and the remove buttons", async () => {
   await device.press("trigger")
-  await expectText("file-value", "photo.png and report.pdf by picker")
+  await expectText("file-value", "Beach photo.heic and Lease report.pdf by picker")
   await device.press("toggle-disabled")
   await device.expectTree((tree) => {
     assert.equal(tree.get("trigger")?.enabled, false)
     const remove = [...tree.values()].find(
-      (node) => node.label === "Remove photo.png"
+      (node) => node.label === "Remove Beach photo.heic"
     )
     assert.equal(remove?.enabled, false)
   })
   await device.press("trigger")
-  await device.pressNamed("Remove photo.png")
-  await expectText("file-value", "photo.png and report.pdf by picker")
+  await device.pressNamed("Remove Beach photo.heic")
+  await expectText("file-value", "Beach photo.heic and Lease report.pdf by picker")
 })
 
 test("the controller clears the files", async () => {
   await device.press("trigger")
-  await expectText("file-value", "photo.png and report.pdf by picker")
+  await expectText("file-value", "Beach photo.heic and Lease report.pdf by picker")
   await device.press("clear")
   await expectText("file-value", "no files by imperative")
 })

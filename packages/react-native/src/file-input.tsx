@@ -8,11 +8,9 @@ import {
   createFileInputController as createController,
   fileInput,
   type FileInputOptions as CoreOptions,
-  type FileInputState as CoreState,
-  type FileInputItemState as CoreItemState,
+  type FileInputDropzoneState,
   type FileInputItemRemoveState,
   type FileInputValueChangeReason,
-  type FileLike,
   type FileRejection,
 } from "@ui-sdk/core/file-input"
 import { nativeHost } from "@ui-sdk/core/native"
@@ -39,7 +37,13 @@ import {
  * read, and the `uri` to read or upload it from.
  * @experimental
  */
-type PickedFile = FileLike & {
+type PickedFile = {
+  /** The file name, with its extension. */
+  name: string
+  /** The MIME type, like `"image/png"`. Empty when the picker doesn't know it. */
+  type: string
+  /** The size in bytes. */
+  size: number
   /** Where the file is, like a `file://` or `content://` URI from the picker. */
   uri: string
 }
@@ -180,18 +184,28 @@ type FileInputOptions = Omit<
  * What `render` functions and state-based styles receive.
  * @experimental
  */
-type FileInputState = Omit<CoreState, "value"> & {
+type FileInputState = {
   /** The files it holds. */
   value: readonly PickedFile[]
+  /** Whether it's disabled, by itself or by a Field or FieldSet. */
+  disabled: boolean
+  /** Whether it's marked required. */
+  required: boolean
+  /** Whether files are being dragged over a drop zone. Always false on native. */
+  dragging: boolean
 }
 
 /**
  * The state the item hands `render` functions and state-based styles.
  * @experimental
  */
-type FileInputItemState = Omit<CoreItemState, "file"> & {
-  /** The file this item shows. */
+type FileInputItemState = {
+  /** The file this item shows: the one its `FileInputList` renders it for, or its `file` prop. */
   file: PickedFile
+  /** Where it is in the value, from 0. */
+  index: number
+  /** Whether the file input is disabled, so the item can't be removed. */
+  disabled: boolean
 }
 
 /**
@@ -290,10 +304,7 @@ function FileInputTrigger({
   controller,
   ...props
 }: PressableProps<FileInputState> & { controller?: FileInputController }) {
-  const handle = useControllerTarget(
-    controller as never,
-    useNearest(fileInput)
-  )
+  const handle = useControllerTarget(controller as never, useNearest(fileInput))
   if (!handle) {
     const { render, ...rest } = props
     return renderElement(
@@ -340,7 +351,7 @@ function TriggerPart(props: PressableProps<FileInputState>) {
  * drops or pastes, so it never shows `dragging`.
  * @experimental
  */
-function FileInputDropzone(props: ViewProps<FileInputState>) {
+function FileInputDropzone(props: ViewProps<FileInputDropzoneState>) {
   return usePart(
     fileInput,
     "dropzone",
@@ -440,7 +451,8 @@ function FileInputItemRemove({
           if (handle.api.getValue().includes(slotProps.file)) {
             return
           }
-          const next = neighbour && removers.get(handle.api)?.get(fileKey(neighbour))
+          const next =
+            neighbour && removers.get(handle.api)?.get(fileKey(neighbour))
           if (next) {
             nativeHost()?.focus(next)
           } else {
@@ -455,6 +467,7 @@ function FileInputItemRemove({
 
 export { formatFileSize } from "@ui-sdk/core/file-input"
 export type {
+  FileInputDropzoneState,
   FileInputItemRemoveState,
   FileInputPrimitive,
   FileInputValueChangeReason,
@@ -473,12 +486,13 @@ export {
   FileInputDropzone,
   FileInputItem,
   type FileInputItemProps,
+  FileInputItemRemove,
   type FileInputItemState,
   FileInputList,
   type FileInputOptions,
   type FileInputPickOptions,
   type FileInputState,
   FileInputTrigger,
+  type FileInputValueChangeDetails,
   type PickedFile,
-  FileInputItemRemove,
 }

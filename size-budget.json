@@ -439,6 +439,7 @@
   "@ui-sdk/react-native/drawer (lazy)": 180,
   "@ui-sdk/react-native/field": 13309,
   "@ui-sdk/react-native/field (lazy)": 180,
+  "@ui-sdk/react-native/file-input": 17120,
   "@ui-sdk/react-native/input": 13208,
   "@ui-sdk/react-native/label": 10027,
   "@ui-sdk/react-native/meter": 10608,
