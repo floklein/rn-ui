@@ -225,6 +225,16 @@ describe("a native number input's scrub area", () => {
     expect(commits).toHaveBeenCalledWith(3, "scrub")
   })
 
+  test("a touch a pressable label inside took becomes a scrub once it moves along the axis", () => {
+    const { drags } = host()
+    const { instance } = mount({ defaultValue: 0 })
+    const area = instance.part("scrub-area", {}, true)
+    numberInputNative["scrub-area"]!(area)
+    const drag = drags.get(area)!
+    expect(drag.claims!(2, 30)).toBe(false)
+    expect(drag.claims!(12, 0)).toBe(true)
+  })
+
   test("vertical scrubs go up", () => {
     const { drags } = host()
     const { instance, state } = mount({ defaultValue: 0 })

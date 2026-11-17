@@ -110,6 +110,8 @@ function nativeField({
       let dragged = false
       return {
         accepts: () => !isLocked(),
+        claims: (dx, dy) =>
+          props().orientation === "vertical" ? isDrag(0, dy) : isDrag(dx, 0),
         start(touch) {
           from = last = touch
           distance = 0

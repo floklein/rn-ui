@@ -226,22 +226,6 @@ describe("NumberInput", () => {
     )
   })
 
-  test("the scrub area takes a touch before a pressable label inside it", async () => {
-    await render(
-      <Field>
-        <NumberInput>
-          <NumberInputScrubArea testID="scrub">
-            <FieldLabel>Amount</FieldLabel>
-          </NumberInputScrubArea>
-          <NumberInputControl />
-        </NumberInput>
-      </Field>
-    )
-    expect(
-      screen.getByTestId("scrub").props.onStartShouldSetResponderCapture()
-    ).toBe(true)
-  })
-
   test("a read-only field can't be typed in or stepped", async () => {
     await render(<Amount defaultValue={3} readOnly />)
     expect(field().props.editable).toBe(false)
