@@ -65,6 +65,8 @@ import {
   NumberInputIncrement,
 } from "../src/number-input"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import { DateInput } from "../src/date-input"
+import { TimeInput } from "../src/time-input"
 import { OverlayHost } from "../src/overlays"
 import {
   Popover,
@@ -496,6 +498,18 @@ describe("checkPattern's textbox pattern on the native host", () => {
     )
     await expect(checkTextbox()).resolves.toBeUndefined()
     await expect(checkButton()).resolves.toBeUndefined()
+  })
+
+  test("passes on a date input and a time input, enabled, read-only or disabled, as a textbox per segment", async () => {
+    await render(
+      <View>
+        <DateInput locale="en-US" defaultValue="2026-11-04" />
+        <DateInput locale="en-US" granularity="minute" readOnly />
+        <DateInput locale="en-US" disabled />
+        <TimeInput locale="en-US" granularity="second" />
+      </View>
+    )
+    await expect(checkTextbox()).resolves.toBeUndefined()
   })
 
   test("fails with no text field", async () => {

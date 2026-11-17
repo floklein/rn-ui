@@ -29,10 +29,14 @@ import { parseDate } from "../../foundation/date/parse"
 import { isDisabled, watchFieldsets } from "../../foundation/forms/form"
 import { isRTL } from "../../foundation/platform/env"
 import { bindPageLocale, localeOf } from "../../foundation/text/locale"
-import { elements } from "../../foundation/kernel/elements"
 import { createChange } from "../../foundation/kernel/input-source"
 import type { ChangeOptions } from "../../foundation/kernel/details"
 import type { PrimitiveContext } from "../../foundation/kernel/primitive-types"
+import type { TextSelection } from "../../foundation/text/corrected-edit"
+import {
+  nativeField,
+  segmentElements as segmentParts,
+} from "./date-input-field"
 
 /**
  * Why a date or time input's value wants to change.
@@ -88,6 +92,8 @@ type State = {
   required: boolean
   name: string | undefined
   form: string | undefined
+  // The selection a native segment's corrected edit writes back with its text.
+  selection: ({ type: EditableType } & TextSelection) | null
 }
 
 const keyOf = (value: string | null) => String(value)
@@ -218,6 +224,7 @@ function initialDateInputState(kind: Kind, options: SharedOptions): State {
     buffer: null,
     pageLocale: null,
     formDisabled: false,
+    selection: null,
   }
 }
 
@@ -259,10 +266,7 @@ function dateInputApiBody(
   const format = () => formatOf(store.get())
 
   const segmentElements = () =>
-    elements<{ segment?: Pick<DateInputSegmentData, "key"> }>(
-      context,
-      "segment"
-    )
+    segmentParts(context)
       .map(({ el, props }) => ({
         el,
         type: segmentFor(store.get(), props.segment?.key ?? "")?.type,
@@ -353,7 +357,7 @@ function dateInputApiBody(
     return direction === 1 ? min : max
   }
 
-  function step(type: EditableType, key: string, event: KeyboardEvent) {
+  function step(type: EditableType, key: string, event?: KeyboardEvent) {
     const fields = shownFields(store.get())
     const { hourCycle } = format()
     let next: Fields
@@ -379,7 +383,7 @@ function dateInputApiBody(
     type: EditableType,
     el: HTMLElement,
     text: string,
-    event: Event
+    event?: Event
   ) {
     const { hourCycle, locale } = format()
     let target = el
@@ -441,7 +445,7 @@ function dateInputApiBody(
     type: EditableType,
     el: HTMLElement,
     backward: boolean,
-    event: Event
+    event?: Event
   ) {
     const state = store.get()
     const fields = shownFields(state)
@@ -468,9 +472,12 @@ function dateInputApiBody(
   function paste(event: ClipboardEvent) {
     const text = event.clipboardData?.getData("text/plain")?.trim()
     event.preventDefault()
-    if (!text || !editable()) {
-      return
+    if (text && editable()) {
+      pasteText(text, event)
     }
+  }
+
+  function pasteText(text: string, event?: Event) {
     const state = store.get()
     let value = normalizeValue(text, format())
     if (value === null && state.kind === "date") {
@@ -479,9 +486,7 @@ function dateInputApiBody(
         value = normalizeValue(date, format())
       }
     }
-    if (value !== null) {
-      setValue(value, "paste", event)
-    }
+    return value !== null && setValue(value, "paste", event)
   }
 
   function keydown(event: KeyboardEvent, type: EditableType, el: HTMLElement) {
@@ -629,6 +634,15 @@ function dateInputApiBody(
     /** Focuses a segment, like `"month"`, or the first one. */
     focus: focusSegment,
     internal: {
+      ...nativeField({
+        store,
+        segmentElement,
+        insert,
+        remove,
+        pasteText,
+        step,
+        blur,
+      }),
       keydown,
       beforeinput,
       adopt,

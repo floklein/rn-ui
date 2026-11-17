@@ -30,6 +30,7 @@
     "./color": "./src/color.ts",
     "./color-picker": "./src/color-picker.tsx",
     "./date": "./src/date.ts",
+    "./date-input": "./src/date-input.tsx",
     "./date-picker": "./src/date-picker.tsx",
     "./dialog": "./src/dialog.tsx",
     "./drawer": "./src/drawer.tsx",
@@ -62,6 +63,7 @@
     "./testing": "./src/testing.ts",
     "./text-match": "./src/text-match.ts",
     "./textarea": "./src/textarea.tsx",
+    "./time-input": "./src/time-input.tsx",
     "./toast": "./src/toast.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toolbar": "./src/toolbar.tsx",
@@ -128,6 +130,10 @@
       "./date": {
         "types": "./dist/date.d.ts",
         "default": "./dist/date.js"
+      },
+      "./date-input": {
+        "types": "./dist/date-input.d.ts",
+        "default": "./dist/date-input.js"
       },
       "./date-picker": {
         "types": "./dist/date-picker.d.ts",
@@ -257,6 +263,10 @@
       "./textarea": {
         "types": "./dist/textarea.d.ts",
         "default": "./dist/textarea.js"
+      },
+      "./time-input": {
+        "types": "./dist/time-input.d.ts",
+        "default": "./dist/time-input.js"
       },
       "./toast": {
         "types": "./dist/toast.d.ts",

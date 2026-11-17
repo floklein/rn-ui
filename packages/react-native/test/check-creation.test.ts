@@ -13,7 +13,9 @@ import { input, inputGroup, textarea } from "@ui-sdk/core/input"
 import { label } from "@ui-sdk/core/label"
 import { meter } from "@ui-sdk/core/meter"
 import { nativeHost } from "@ui-sdk/core/native"
+import { dateInput } from "@ui-sdk/core/date-input"
 import { numberInput } from "@ui-sdk/core/number-input"
+import { timeInput } from "@ui-sdk/core/time-input"
 import { fileInput } from "@ui-sdk/core/file-input"
 import { otpInput } from "@ui-sdk/core/otp-input"
 import { pagination } from "@ui-sdk/core/pagination"
@@ -215,6 +217,38 @@ describe("checkCreation", () => {
         format: { style: "percent" },
         disabled: true,
       })
+    ).not.toThrow()
+  })
+
+  test("passes on a date input and a time input, empty, full or disabled", () => {
+    expect(() => checkCreation(dateInput, {})).not.toThrow()
+    expect(() =>
+      checkCreation(
+        dateInput,
+        {
+          defaultValue: "2026-11-04T14:30",
+          granularity: "minute",
+          disabled: true,
+        },
+        {
+          segment: {
+            segment: {
+              key: "day",
+              type: "day",
+              text: "04",
+              value: 4,
+              min: 1,
+              max: 30,
+              empty: false,
+              editable: true,
+              label: "day",
+            },
+          },
+        }
+      )
+    ).not.toThrow()
+    expect(() =>
+      checkCreation(timeInput, { defaultValue: "14:30" })
     ).not.toThrow()
   })
 

@@ -18,6 +18,7 @@ export {
   nativeColorPicker,
 } from "./components/color-picker/color-picker-native"
 export { collapsibleNative } from "./components/collapsible/collapsible-native"
+export { dateInputNative } from "./components/date-input/date-input-native"
 export {
   datePickerNative,
   datePickerText,
