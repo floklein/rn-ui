@@ -36,14 +36,14 @@ import type {
   CarouselPlayingOptions,
 } from "./carousel"
 import { isFocusFromKeyboard } from "../../foundation/kernel/modality"
-import { isRTL } from "../../foundation/platform/env"
+import { isBrowser, isRTL } from "../../foundation/platform/env"
 import { prefersReducedMotion } from "../../foundation/platform/platform"
 import { bindTabStop } from "../../foundation/focus/tabbable"
 import { sheetPhysics } from "../../foundation/motion/physics"
 import { on } from "../../foundation/kernel/events"
 import type { PrimitiveContext } from "../../foundation/kernel/primitive-types"
 import { createChange } from "../../foundation/kernel/input-source"
-import { elements } from "../../foundation/kernel/elements"
+import { createOrder } from "../../foundation/kernel/order"
 
 /** A measured layout, read from the DOM. */
 type CarouselMeasure = {
@@ -141,6 +141,10 @@ function carouselApiBody(
   let viewportSize = 0
   let measured = false
   let measureQueued = false
+  // The bound viewport and slides, which the native host binds with stand-ins.
+  let viewportEl: HTMLElement | undefined
+  const slideOrder = createOrder<{ key: string; el: HTMLElement }>()
+  const slides = () => [...slideOrder.list()]
   // Watches the viewport and every slide while the viewport is bound.
   let resizeObserver: ResizeObserver | undefined
   // Direction comes from computed style, so it's read when measuring and on
@@ -166,7 +170,7 @@ function carouselApiBody(
     rtl: isRtl,
   })
   const loop = createCarouselLoop({
-    slides: () => elements(context, "item"),
+    slides,
     motion: () => motion,
     pages: () => layout,
     visual: () => visual,
@@ -276,33 +280,33 @@ function carouselApiBody(
   // Reads the slides' layout from the DOM.
   function measure() {
     measureQueued = false
-    const viewport = element("viewport")
-    const slides = elements(context, "item")
+    const viewport = viewportEl
+    const bound = slides()
     if (!viewport || !viewport.isConnected) {
       return
     }
     // Slides that bound before they were in the page, as Vue binds them, get watched now.
-    for (const { el } of slides) {
+    for (const { el } of bound) {
       resizeObserver?.observe(el)
     }
     readDirection()
     // A loop rotates the slides, unless they don't lay out by CSS order, and
     // then it rewinds.
     const first = loop.prepare(
-      slides,
-      store.get().loop && slides.length > 1 && motion !== undefined
+      bound,
+      store.get().loop && bound.length > 1 && motion !== undefined
     )
     // Read after writing the order, to check the slides follow it.
-    applyLayout({ ...readCarouselLayout(viewport, slides, axis()), first })
+    applyLayout({ ...readCarouselLayout(viewport, bound, axis()), first })
     // Slides that didn't rotate, or a track too short to, lay out in their own order.
     if (first && !loop.isActive()) {
       return measure()
     }
     if (store.get().slidesPerPage !== 1) {
-      writeSnapAreas(slides, layout, axis().vertical)
+      writeSnapAreas(bound, layout, axis().vertical)
       snapAreas = true
     } else if (snapAreas) {
-      clearSnapAreas(slides, store.get().align)
+      clearSnapAreas(bound, store.get().align)
       snapAreas = false
     }
     loop.recenter()
@@ -488,11 +492,15 @@ function carouselApiBody(
       onScroll: updateInView,
     })
     motion = viewportMotion
+    viewportEl = viewport
     cleanups.push(viewportMotion.destroy, () => {
       if (motion === viewportMotion) {
         motion = undefined
       }
-      loop.reset(elements(context, "item"))
+      if (viewportEl === viewport) {
+        viewportEl = undefined
+      }
+      loop.reset(slides())
     })
     cleanups.push(
       on(viewport, "pointerdown", followDirection, { capture: true })
@@ -509,7 +517,7 @@ function carouselApiBody(
         passive: true,
       })
     )
-    if (typeof ResizeObserver !== "undefined") {
+    if (isBrowser && typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver(queueMeasure)
       observer.observe(viewport)
       resizeObserver = observer
@@ -521,8 +529,12 @@ function carouselApiBody(
       })
     }
     // Content that can't take focus still needs a tab stop to scroll by keyboard.
-    const tabStop = bindTabStop(viewport, () => true, { skipWhenHolding: true })
-    cleanups.push(tabStop.stop)
+    if (isBrowser) {
+      const tabStop = bindTabStop(viewport, () => true, {
+        skipWhenHolding: true,
+      })
+      cleanups.push(tabStop.stop)
+    }
     measured = false
     queueMeasure()
     return () => cleanups.forEach((cleanup) => cleanup())
@@ -534,7 +546,9 @@ function carouselApiBody(
   }
 
   function bindRoot(root: HTMLElement) {
-    writeInterval(root)
+    if (isBrowser) {
+      writeInterval(root)
+    }
     if (dev) {
       queueMicrotask(
         () =>
@@ -564,14 +578,18 @@ function carouselApiBody(
           setPlaying(false, { reason: "focus-in", event })
         }
       }),
-      onVisibilityChange(root.ownerDocument, () =>
-        autoplay.setPaused(
-          "hidden",
-          root.ownerDocument.visibilityState === "hidden"
-        )
-      ),
     ]
-    if (typeof IntersectionObserver !== "undefined") {
+    if (isBrowser) {
+      cleanups.push(
+        onVisibilityChange(root.ownerDocument, () =>
+          autoplay.setPaused(
+            "hidden",
+            root.ownerDocument.visibilityState === "hidden"
+          )
+        )
+      )
+    }
+    if (isBrowser && typeof IntersectionObserver !== "undefined") {
       const observer = new IntersectionObserver((entries) => {
         const entry = entries[entries.length - 1]
         if (entry) {
@@ -662,10 +680,13 @@ function carouselApiBody(
       bindRoot,
       bindViewport,
       onViewportKeyDown,
+      // The native host measures again once its views lay out.
+      measure: queueMeasure,
       bindItem(el: HTMLElement, key: string) {
         resizeObserver?.observe(el)
         queueMeasure()
         const cleanups = [
+          slideOrder.add({ key, el }),
           labelSlide(el, key, store),
           on(el, "focusin", () => store.set({ focused: key })),
           on(el, "focusout", (event) => {
