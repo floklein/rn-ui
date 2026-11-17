@@ -23,6 +23,7 @@ const controlsById: Map<string, (() => void)[]> = new Map()
 const parts: WeakMap<HostInstance, Part> = new WeakMap()
 const drags: WeakMap<Part, NativeDrag> = new WeakMap()
 const steps: WeakMap<Part, (direction: 1 | -1) => void> = new WeakMap()
+const holds: WeakMap<Part, () => void> = new WeakMap()
 
 // `onPress` doesn't say who pressed, so a press while a screen reader runs is
 // taken as the screen reader's.
@@ -129,13 +130,21 @@ setNativeHost({
 
 // Refusing termination and blocking native responders are meant to keep a
 // scroll view from taking the touch; iOS pans a same-axis one anyway, so
-// the app turns its scrollEnabled off (#71).
-function responder(part: Part) {
+// the app turns its scrollEnabled off (#71), and a Scroll Area its own.
+function responder(part: Part, hold: (() => () => void) | null) {
+  const letGo = () => {
+    holds.get(part)?.()
+    holds.delete(part)
+  }
   return {
     onStartShouldSetResponder: () => drags.get(part)?.accepts() ?? false,
     onResponderTerminationRequest: () => false,
     onResponderGrant(event: GestureResponderEvent) {
       fingers.set(part, String(event.nativeEvent.identifier))
+      letGo()
+      if (hold) {
+        holds.set(part, hold())
+      }
       const touch = touchOf(event, part)
       if (touch) {
         withSource("touch", () => drags.get(part)?.start(touch))
@@ -148,9 +157,14 @@ function responder(part: Part) {
         withSource("touch", () => drags.get(part)?.move(touch))
       }
     },
-    onResponderRelease: () => withSource("touch", () => drags.get(part)?.end()),
-    onResponderTerminate: () =>
-      withSource("touch", () => drags.get(part)?.cancel()),
+    onResponderRelease() {
+      letGo()
+      withSource("touch", () => drags.get(part)?.end())
+    },
+    onResponderTerminate() {
+      letGo()
+      withSource("touch", () => drags.get(part)?.cancel())
+    },
   }
 }
 

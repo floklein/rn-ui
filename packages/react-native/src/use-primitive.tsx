@@ -118,6 +118,13 @@ const DisabledContext = carry(
   } | null>(null)
 )
 
+// A Scroll Area's viewport stops its own scrolling while a drag inside it
+// holds it, until the release `hold` returns runs.
+const ScrollHoldContext = carry(
+  "ScrollHold",
+  React.createContext<(() => () => void) | null>(null)
+)
+
 /**
  * What `usePrimitive` returns, and what a component's context holds: one object for the instance's life.
  * @experimental
@@ -565,6 +572,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
   }, [part])
   // What a fieldset watcher in `bind` writes on the web.
   const disabling = React.useContext(DisabledContext)
+  const hold = React.useContext(ScrollHoldContext)
   React.useLayoutEffect(() => {
     const state = part.store.get() as { formDisabled?: boolean }
     if (
@@ -715,7 +723,7 @@ function usePressedPart<P extends Primitive, S extends NativeSlot<P>>(
       Record<string, { on?: object } | undefined> | undefined
     const drags =
       !pressable && slots?.[slot]?.on && "pointerdown" in slots[slot].on
-        ? responder(part)
+        ? responder(part, hold)
         : {}
     element = renderElement(
       host,
@@ -1020,6 +1028,7 @@ export {
   createParts,
   DisabledContext,
   HandleScope,
+  ScrollHoldContext,
   type ExitProps,
   type GenericPartComponent,
   type PartComponent,

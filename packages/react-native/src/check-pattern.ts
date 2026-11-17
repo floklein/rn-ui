@@ -18,6 +18,8 @@ import {
  * the progressbar role on native, and must always have a value. Pass a
  * separator's own view as the root of `"separator"`, since nothing marks one,
  * and a pagination's for `"pagination"`, whose current page is any selected button.
+ * A scroll area's content is what its ScrollView holds; beside it, only a
+ * named button (scroll-to-end) may reach a screen reader.
  * A calendar's days are its buttons with a selected state; pass one that can
  * change, since read-only isn't in the native tree.
  * A toolbar's buttons and toggles are checked as `"button"` checks them.
@@ -37,6 +39,7 @@ type NativePattern =
   | "pagination"
   | "progressbar"
   | "radio-group"
+  | "scroll-area"
   | "separator"
   | "slider"
   | "switch"
@@ -767,6 +770,45 @@ async function separatorPattern(context: Context) {
   }
 }
 
+// Screen readers scroll a ScrollView themselves, item by item, so drawn
+// scrollbars stay hidden and the content must not be one element.
+async function scrollAreaPattern(context: Context) {
+  const scrollViews = shownNodes(context.root).filter((node) =>
+    /ScrollView$/.test(node.type)
+  )
+  if (!scrollViews.length) {
+    context.problem(
+      context.root,
+      "has no ScrollView, so a screen reader can't scroll it."
+    )
+  }
+  const elements = context.elements()
+  const inside = new Set(
+    scrollViews.flatMap((node) => readTree(node, context.os).elements)
+  )
+  for (const node of scrollViews) {
+    if (elements.includes(node)) {
+      context.problem(
+        node,
+        "is one accessible element, so a screen reader can't read its content item by item."
+      )
+    }
+  }
+  for (const node of elements) {
+    if (inside.has(node) || scrollViews.includes(node)) {
+      continue
+    }
+    if (roleOf(node) === "button") {
+      requireName(context, node, "button")
+    } else {
+      context.problem(
+        node,
+        "is read beside the ScrollView; a scroll area's scrollbars, thumbs and corner are hidden from screen readers."
+      )
+    }
+  }
+}
+
 async function toolbarPattern(context: Context) {
   const bars = shownNodes(context.root).filter(
     (node) => roleOf(node) === "toolbar"
@@ -979,6 +1021,7 @@ const patterns: Record<NativePattern, (context: Context) => Promise<void>> = {
   pagination: paginationPattern,
   progressbar: (context) => barPattern(context, "progressbar"),
   "radio-group": radioGroupPattern,
+  "scroll-area": scrollAreaPattern,
   separator: separatorPattern,
   slider: sliderPattern,
   switch: switchPattern,

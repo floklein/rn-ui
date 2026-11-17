@@ -1,0 +1,283 @@
+---
+title: Scroll Area
+description: Add styled scrollbars, edge state and follow-to-end behavior to a ScrollView.
+---
+
+Use a scroll area when content needs its own scrolling region with scrollbars that match your design. A `ScrollView` still does the scrolling, so touch, momentum and screen readers work as usual.
+
+<ComponentExample
+  name="scroll-area/basic"
+  caption="Swipe the tags, or drag the scrollbar thumb. The scrollbar shows while the list scrolls."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build a `ScrollArea`:
+
+```text
+ScrollArea
+├── ScrollAreaViewport
+│   └── ScrollAreaContent
+└── ScrollAreaScrollbar
+    └── ScrollAreaThumb
+```
+
+- **ScrollArea** holds the state and renders a `View`. Give it a size: the scrollbars are placed against it.
+- **ScrollAreaViewport** is the scroller, a `ScrollView`. It takes every `ScrollView` prop. Pass `horizontal` for a scroll area that scrolls along the inline axis.
+- **ScrollAreaContent** wraps the content inside the viewport, a `View`.
+- **ScrollAreaScrollbar** is a `View` over the viewport's edge, hidden from screen readers. Give it a width, or a height for `orientation="horizontal"`.
+- **ScrollAreaThumb** sizes and moves itself along its scrollbar. Give it a thickness and a color.
+- **ScrollAreaScrollToEnd** is a `Pressable` that scrolls to the end, like "Jump to latest". Name it with its content.
+
+With a scrollbar mounted, the `ScrollView`'s own indicators hide. Leave the scrollbars out to keep them.
+
+## Usage
+
+Import the parts and put them together. Give the parts their sizes and colors with styles:
+
+```tsx
+import {
+  ScrollArea,
+  ScrollAreaContent,
+  ScrollAreaScrollbar,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+} from "@ui-sdk/react-native/scroll-area"
+import { StyleSheet, Text } from "react-native"
+
+function ReleaseNotes() {
+  return (
+    <ScrollArea style={styles.area}>
+      <ScrollAreaViewport aria-label="Release notes">
+        <ScrollAreaContent>
+          <Text>Content to scroll</Text>
+        </ScrollAreaContent>
+      </ScrollAreaViewport>
+      <ScrollAreaScrollbar style={styles.scrollbar}>
+        <ScrollAreaThumb style={styles.thumb} />
+      </ScrollAreaScrollbar>
+    </ScrollArea>
+  )
+}
+
+const styles = StyleSheet.create({
+  area: { height: 280 },
+  scrollbar: { width: 10, padding: 2 },
+  thumb: { width: 6, borderRadius: 3, backgroundColor: "#a1a1aa" },
+})
+
+export { ReleaseNotes }
+```
+
+## Horizontal
+
+Pass `horizontal` to the viewport, and use a scrollbar with `orientation="horizontal"`. Here `type="auto"` keeps the scrollbar in view, so the row reads as one that scrolls.
+
+<ComponentExample
+  name="scroll-area/horizontal"
+  caption="Swipe the palette from Sand to Ink, or drag the scrollbar."
+/>
+
+A `ScrollView` scrolls one axis, and Android has none that scrolls both, so a scroll area scrolls one axis too. For a table that scrolls both ways, put a horizontal `ScrollView` inside the viewport.
+
+## Drags Inside
+
+A drag inside a scroll area, like a slider's, stops the viewport's scrolling until the finger lifts or the drag is taken away. A swipe beside the slider still scrolls. A plain `ScrollView` needs the app to do this itself: see [Slider](./slider#inside-a-scroll-view).
+
+<ComponentExample
+  name="scroll-area/drag"
+  caption="Drag a channel's thumb sideways. The mixer stays put, and a swipe between the sliders scrolls it."
+/>
+
+## Edge Fades
+
+The root's state says whether the view is at the start and at the end, as `atStart` and `atEnd`. A style function, or the root's children as a function, can show a fade at each edge while there's more to scroll.
+
+<ComponentExample
+  name="scroll-area/edge-fade"
+  caption="Scroll the release notes. The top fade shows once you leave the top, and the bottom fade goes at the end."
+/>
+
+## Native Scrollbars
+
+Leave out the scrollbar parts to keep the `ScrollView`'s own indicators, with everything else: the state, sticking to the end and the controller.
+
+<ComponentExample
+  name="scroll-area/native-scrollbars"
+  caption="Scroll the inbox with the system's indicator. The scroll area still tracks its edges."
+/>
+
+## When Scrollbars Show
+
+`type` decides when each scrollbar's state has `visible`:
+
+| `type`              | Shows                                                  |
+| ------------------- | ------------------------------------------------------ |
+| `"hover"` (default) | While scrolling, or while a mouse or pen is over it    |
+| `"scroll"`          | While its own axis scrolls, or its thumb is dragged    |
+| `"auto"`            | Whenever the content overflows on its axis             |
+| `"always"`          | Always, even when the content fits, with no thumb then |
+
+Touch doesn't hover, so on a phone `"hover"` shows the scrollbars while scrolling, like `"scroll"`. Style the state: `(state) => [styles.scrollbar, !state.visible && styles.hidden]`. A hidden scrollbar lets touches through to the content under it.
+
+<ComponentExample
+  name="scroll-area/type"
+  caption="Scroll each list to compare. The auto and always scrollbars show from the start; hover and scroll wait for scrolling."
+/>
+
+## Hide Delay
+
+With `"scroll"` and `"hover"`, `scrollHideDelay` keeps a scrollbar for a while after scrolling stops, in ms. It defaults to 600.
+
+<ComponentExample
+  name="scroll-area/hide-delay"
+  caption="Scroll each list and stop. The scrollbar on the left hides at once; the one on the right waits 2000 milliseconds."
+/>
+
+## Controller
+
+A [controller](#controller-1), from `createScrollAreaController()`, scrolls the area from anywhere and reads where it is. Pass it as `controller`.
+
+<ComponentExample
+  name="scroll-area/controller"
+  caption="Press Jump to the End, then Back to Top. The console logs each end of the list as the view reaches it."
+/>
+
+For a chat or a log, set `stickToEnd` to keep new content in view until the user scrolls up; `ScrollAreaScrollToEnd` is a button that brings it back. It's hidden from screen readers and lets touches through while the view is at the end.
+
+## Touch
+
+- **Dragging the thumb** moves the content as far along as the thumb moves along its scrollbar.
+- **A touch on the scrollbar** beside the thumb pages toward it, by most of a viewport.
+
+## Custom Rendering
+
+Every part takes `render`, to render a different component in its place. `render`, `style` and `children` can be functions of the part's state. Here the root's children read its state to show a hint until you leave the top.
+
+<ComponentExample
+  name="scroll-area/render"
+  caption="Scroll the releases. The hint under the list changes once you leave the top."
+/>
+
+## Styling
+
+Parts are unstyled, apart from what they need: scrollbars are placed absolutely over the viewport's edges, and the thumb gets its length and offset. Give the root a size, each scrollbar a thickness, and the thumb a color.
+
+Style each part with a function of its state, like `(state) => [styles.thumb, state.dragging && styles.dragging]`. Each part receives the fields listed under [Part State](#part-state), and a second argument, `{ pressed, hovered, focused }`.
+
+## Part State
+
+### ScrollArea [#part-state-scrollarea]
+
+<PartStateTable
+  component="scroll-area"
+  part="root"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaState"
+/>
+
+### ScrollAreaViewport [#part-state-scrollareaviewport]
+
+<PartStateTable
+  component="scroll-area"
+  part="viewport"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaState"
+/>
+
+### ScrollAreaContent [#part-state-scrollareacontent]
+
+<PartStateTable
+  component="scroll-area"
+  part="content"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaState"
+/>
+
+### ScrollAreaScrollbar [#part-state-scrollareascrollbar]
+
+<PartStateTable
+  component="scroll-area"
+  part="scrollbar"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaScrollbarState"
+/>
+
+### ScrollAreaThumb [#part-state-scrollareathumb]
+
+<PartStateTable
+  component="scroll-area"
+  part="thumb"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaThumbState"
+/>
+
+### ScrollAreaScrollToEnd [#part-state-scrollareascrolltoend]
+
+<PartStateTable
+  component="scroll-area"
+  part="scroll-to-end"
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaScrollToEndState"
+/>
+
+## API Reference
+
+Props are the same as below, as React Native props.
+
+### ScrollArea
+
+<TypeTable
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaOptions"
+/>
+
+### ScrollAreaScrollbar
+
+<TypeTable
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaScrollbarProps"
+/>
+
+### ScrollAreaViewport, ScrollAreaContent, ScrollAreaThumb, ScrollAreaCorner and ScrollAreaScrollToEnd
+
+These take no options of their own, only the props of the component they render. A thumb follows the orientation of its scrollbar.
+
+### State
+
+What render, style and children functions receive. The root, the viewport and the content receive the scroll area's state.
+
+<StateTable
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaState"
+/>
+
+### Controller
+
+Create one with `createScrollAreaController()` and pass it as `controller`.
+
+<ControllerTable
+  path="../../packages/core/src/components/scroll-area/scroll-area.ts"
+  name="ScrollAreaController"
+/>
+
+`scrollToEnd` and `scrollToStart` take an optional `{ behavior }`:
+
+<TypeTable
+  path="../../packages/core/src/components/scroll-area/scroll-area-view.ts"
+  name="ScrollAreaScrollOptions"
+/>
+
+## Accessibility
+
+No WAI-ARIA pattern covers scroll areas: the viewport is a `ScrollView`, which VoiceOver and TalkBack scroll themselves, item by item or a page at a time. Scrollbars, thumbs and the corner are hidden from screen readers.
+
+### Keyboard
+
+A hardware keyboard moves through the content's focusable views, and the `ScrollView` scrolls each into view. React Native delivers no arrow keys, Page Up or Page Down to a scroll view.

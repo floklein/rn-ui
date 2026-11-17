@@ -69,6 +69,15 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import {
+  ScrollArea,
+  ScrollAreaContent,
+  ScrollAreaCorner,
+  ScrollAreaScrollbar,
+  ScrollAreaScrollToEnd,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+} from "../src/scroll-area"
 import { Separator } from "../src/separator"
 import { Slider, SliderControl, SliderThumb } from "../src/slider"
 import { Switch, SwitchThumb } from "../src/switch"
@@ -246,6 +255,36 @@ describe("checkDirection on the native host", () => {
                 </MeterTrack>
               </Meter>
             </View>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a scroll area", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <ScrollArea>
+              <ScrollAreaViewport>
+                <ScrollAreaContent>
+                  <Text>Release notes</Text>
+                </ScrollAreaContent>
+              </ScrollAreaViewport>
+              <ScrollAreaScrollbar>
+                <ScrollAreaThumb />
+              </ScrollAreaScrollbar>
+              <ScrollAreaScrollbar orientation="horizontal">
+                <ScrollAreaThumb />
+              </ScrollAreaScrollbar>
+              <ScrollAreaCorner />
+              <ScrollAreaScrollToEnd>
+                <Text>Latest</Text>
+              </ScrollAreaScrollToEnd>
+            </ScrollArea>
           )
           return screen.container
         },
