@@ -262,6 +262,20 @@ describe("Drawer", () => {
     })
   })
 
+  test.each(["top", "right"] as const)(
+    "a drawer from the %s gets the room above the keyboard without sliding",
+    async (side) => {
+      await render(<Sheet defaultOpen side={side} />)
+      await layOut()
+      await settled()
+      await keyboard(300)
+      expect(style(frame())).toMatchObject({
+        paddingBottom: 300,
+        transform: [{ translateY: 0 }],
+      })
+    }
+  )
+
   test("a drawer taller than the room above the keyboard keeps its height", async () => {
     await render(<Sheet defaultOpen />)
     await layOut(700)
@@ -349,6 +363,63 @@ describe("Drawer", () => {
       await fireEvent.press(screen.getByRole("button", { name: "Update" }))
       await settled()
       expect(await scale()).toBeCloseTo(1)
+    } finally {
+      inJavaScript.mockRestore()
+    }
+  })
+
+  test("a parent closed while a drawer opened from it is open opens again unscaled", async () => {
+    const timing = Animated.timing
+    const inJavaScript = jest
+      .spyOn(Animated, "timing")
+      .mockImplementation((value, config) =>
+        timing(value, { ...config, useNativeDriver: false })
+      )
+    try {
+      const tree = (
+        <Drawer>
+          <DrawerTrigger>
+            <Text>Account</Text>
+          </DrawerTrigger>
+          <DrawerContent testID="content">
+            <DrawerTitle>Account</DrawerTitle>
+            <DrawerClose>
+              <Text>Done</Text>
+            </DrawerClose>
+            <Drawer defaultOpen>
+              <DrawerContent testID="child">
+                <DrawerTitle>Change password</DrawerTitle>
+              </DrawerContent>
+            </Drawer>
+          </DrawerContent>
+        </Drawer>
+      )
+      const open = async () => {
+        await fireEvent.press(screen.getByRole("button", { name: "Account" }))
+        await layOut()
+        const child = screen.getByTestId("child", {
+          includeHiddenElements: true,
+        })
+        await fireEvent(child.parent!.parent!, "layout", {
+          nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 800 } },
+        })
+        await fireEvent(child, "layout", {
+          nativeEvent: { layout: { x: 0, y: 600, width: 400, height: 200 } },
+        })
+        await settled()
+      }
+      await render(tree)
+      await open()
+      await screen.rerender(tree)
+      expect(transform(content()!).scale).toBeCloseTo(0.96)
+      await fireEvent.press(screen.getByRole("button", { name: "Done" }))
+      await settled()
+      expect(content()).toBeNull()
+      await fireEvent.press(screen.getByRole("button", { name: "Account" }))
+      await layOut()
+      await settled()
+      await screen.rerender(tree)
+      expect(transform(content()!).scale).toBe(1)
     } finally {
       inJavaScript.mockRestore()
     }

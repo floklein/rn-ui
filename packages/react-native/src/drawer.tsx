@@ -83,6 +83,7 @@ type Track = { value: Animated.Value; at: (extent: number) => number }
 
 function createMotion() {
   const extent = new Animated.Value(0)
+  const size = new Animated.Value(0)
   const fade = new Animated.Value(1)
   const stack = new Animated.Value(0)
   let layout: Layout = {
@@ -107,6 +108,9 @@ function createMotion() {
     }
   }
   function lay(change: Partial<Layout>) {
+    if (change.content !== undefined) {
+      size.setValue(change.content)
+    }
     layout = { ...layout, ...change }
     listeners.forEach((listener) => listener())
   }
@@ -119,7 +123,7 @@ function createMotion() {
     let depth = 0
     for (
       let below = stackedOn.get(motion);
-      below;
+      below?.shown;
       below = stackedOn.get(below)
     ) {
       const steps = depth++
@@ -157,9 +161,19 @@ function createMotion() {
   }
   const motion = {
     extent,
+    size,
     fade,
     stack,
     reduced: false,
+    shown: false,
+    // Drawers below, still shown, step forward; one leaving with them is reset.
+    leave() {
+      tracks()
+        .slice(1)
+        .forEach((track) => track.value.setValue(track.at(0)))
+      motion.shown = false
+      stack.setValue(0)
+    },
     view,
     lay,
     modal: true,
@@ -549,7 +563,6 @@ function DrawerContent({
 }: ContentPartProps) {
   const handle = useHandle(drawer)
   const motion = motions.get(handle.api)!
-  const { content } = useLayout(motion)
   const { side } = handle.state
   // Each drawer open above scales it back by 4%, as the web's docs suggest.
   const stepBack = React.useMemo(
@@ -558,13 +571,27 @@ function DrawerContent({
     [motion]
   )
   const view = React.useRef<HostInstance>(null)
+  // A new node would make Animated call the content's ref again, which
+  // shows the popup's layer again, over any drawer open above it.
   const translate = React.useMemo(
     () =>
-      motion.extent.interpolate({
-        inputRange: [0, Math.max(content, 1)],
-        outputRange: [towardEdge(side) * content, 0],
-      }),
-    [motion, content, side]
+      Animated.multiply(
+        Animated.subtract(motion.size, motion.extent),
+        towardEdge(side)
+      ),
+    [motion, side]
+  )
+  const opacity = React.useMemo(
+    () =>
+      Animated.multiply(
+        motion.size.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1],
+          extrapolate: "clamp",
+        }),
+        motion.fade
+      ),
+    [motion]
   )
   const laidOut = () => nativeSheet(handle.api).input?.layout()
   const element = usePart(
@@ -590,7 +617,7 @@ function DrawerContent({
         style: (state: DrawerContentState, interaction: never) => [
           typeof style === "function" ? style(state, interaction) : style,
           {
-            opacity: content ? motion.fade : 0,
+            opacity,
             transform: [
               vertical(side)
                 ? { translateY: translate }
@@ -630,6 +657,10 @@ function SheetFrame({
   const frame = React.useRef<HostInstance>(null)
   const size = React.useRef({ width: 0, height: 0 })
   const { inset, slide } = useKeyboardInset(frame, motion, size, side)
+  React.useEffect(() => {
+    motion.shown = true
+    return motion.leave
+  }, [motion])
   const laidOut = () => {
     const { width, height } = size.current
     motion.lay({ container: vertical(side) ? height - inset : width })
@@ -695,7 +726,7 @@ function useKeyboardInset(
         }
         shown.current = next
         setInset(next)
-        slide.setValue(motion.reduced ? 0 : shift)
+        slide.setValue(side === "bottom" && !motion.reduced ? shift : 0)
         Animated.timing(slide, {
           toValue: 0,
           duration: motion.reduced ? 0 : duration || 250,

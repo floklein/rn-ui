@@ -170,7 +170,7 @@ A drawer opened from inside another opens over it, in its own `Modal`. The one b
 
 ## Keyboard Avoidance
 
-When the on-screen keyboard opens over a drawer, the drawer rises above it, sliding with the keyboard's own curve, and comes back down when the keyboard hides. Snap points are measured against the room left above the keyboard. A drawer taller than that room keeps its height and lets the keyboard cover its bottom, as iOS sheets do: put the fields in a `ScrollView` so the focused one can scroll into view.
+When the on-screen keyboard opens over a bottom drawer, the drawer rises above it, sliding with the keyboard's own curve, and comes back down when the keyboard hides. A drawer at another edge keeps its place and ends above the keyboard. Snap points are measured against the room left above the keyboard. A drawer taller than that room keeps its height and lets the keyboard cover its bottom, as iOS sheets do: put the fields in a `ScrollView` so the focused one can scroll into view.
 
 ## Focus
 
