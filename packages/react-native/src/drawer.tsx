@@ -37,16 +37,18 @@ import {
 } from "react-native-gesture-handler"
 import { useControllerEntry, useControllerTarget } from "./controller-target"
 import {
-  createOutlet,
-  DialogLayer,
   type DialogParts,
   dialogParts,
-  OutletContext,
   type TriggerPartProps,
-  useOutlet,
 } from "./dialog-parts"
 import { layerInput } from "./native-host"
 import { landIn } from "./overlay-host"
+import {
+  createOutlet,
+  OutletContext,
+  PopupLayer,
+  useOutlet,
+} from "./popup-parts"
 import { mergeProps, renderElement } from "./render-element"
 import {
   HandleScope,
@@ -363,8 +365,8 @@ function Drawer({ children, ...options }: DrawerProps) {
     <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
       <OutletContext.Provider value={outlet}>
         {children}
-        <DialogLayer
-          handle={handle as unknown as PrimitiveHandle<typeof dialog>}
+        <PopupLayer
+          handle={handle}
           outlet={outlet}
           modal={motion.modal}
           Root={Root}
@@ -495,16 +497,16 @@ function DrawerContent({
     Animated.View
   )
   const viewport = element && (
-    <Viewport api={handle.api} motion={motion} side={side} content={view}>
+    <SheetFrame api={handle.api} motion={motion} side={side} content={view}>
       {element}
-    </Viewport>
+    </SheetFrame>
   )
   return useOutlet("content", viewport)
 }
 
 // The gesture lives inside the `Modal`, beside its detector: in the
 // content's own render, attaching it re-rendered the outlet without end.
-function Viewport({
+function SheetFrame({
   api,
   motion,
   side,

@@ -1,0 +1,322 @@
+---
+title: Accordion
+description: Show and hide sections of content from their triggers.
+---
+
+Use an accordion for content people can explore one section at a time, such as answers, settings, or a course outline. Each item's trigger opens its panel.
+
+<ComponentExample
+  name="accordion/basic"
+  caption="Tap “What is your return policy?”, or swipe to it with VoiceOver or TalkBack and double-tap. Its answer opens and the shipping answer closes."
+/>
+
+## Installation
+
+```bash
+npm install @ui-sdk/react-native @ui-sdk/core
+```
+
+## Composition
+
+Use the following composition to build an `Accordion`:
+
+```text
+Accordion
+├── AccordionItem
+│   ├── AccordionHeader
+│   │   └── AccordionTrigger
+│   └── AccordionPanel
+└── AccordionItem
+    ├── AccordionHeader
+    │   └── AccordionTrigger
+    └── AccordionPanel
+```
+
+Give every item a unique `value`. The accordion's value is always an array of open item values, even when only one can be open.
+
+`AccordionTrigger` renders a `Pressable` with the button role, expanded while its panel is open. The other parts render a `View`. `AccordionHeader` has no heading role: React Native gives an element one role, and the trigger keeps the button's, so screen readers can't move between items by heading.
+
+## Usage
+
+Import the parts and put them together. Text inside the trigger goes in a `Text`, and names it:
+
+```tsx
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "@ui-sdk/react-native/accordion"
+import { Text } from "react-native"
+
+function Example() {
+  return (
+    <Accordion>
+      <AccordionItem value="shipping">
+        <AccordionHeader>
+          <AccordionTrigger>
+            <Text>What are your shipping options?</Text>
+          </AccordionTrigger>
+        </AccordionHeader>
+        <AccordionPanel>
+          <Text>Standard, express and overnight.</Text>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  )
+}
+
+export { Example }
+```
+
+## Multiple
+
+Add `multiple` to let several items stay open. Opening one then leaves the others as they are.
+
+<ComponentExample
+  name="accordion/multiple"
+  caption="Open Privacy and security. Notification settings stays open; close either section independently."
+/>
+
+## Disabled
+
+Set `disabled` on an item or on a single trigger to prevent changes, or on the accordion to disable every item. Screen readers still reach a disabled trigger and announce it as dimmed or disabled. On Android the disabled state disables the view, so Tab skips it.
+
+<ComponentExample
+  name="accordion/disabled"
+  caption="Tap Premium feature information. Its panel stays closed. Try “How do I update my email address?” instead."
+/>
+
+## Collapsible
+
+Set `collapsible={false}` when the open item should stay open until another item replaces it. Pair it with `defaultValue={["overview"]}` so a panel starts open. The open trigger reads as disabled, because pressing it leaves its panel open.
+
+<ComponentExample
+  name="accordion/collapsible"
+  caption="Open Timeline, then tap it again. It stays open until you choose another item."
+/>
+
+## Controlled
+
+Pass `value` and update it in `onValueChange`. An item can refuse a change: call `details.cancel()` in its `onOpenChange` callback. Item callbacks run before the accordion's `onValueChange`, including the item that would close when another opens. Canceling any one of them cancels the whole change.
+
+For a button elsewhere on the screen, create a [controller](#controller) with `createAccordionController()` and pass it as `controller`. Its `focus(value)` moves VoiceOver's or TalkBack's focus to that item's trigger, or to the first trigger without a value. Create one controller per mounted accordion.
+
+<ComponentExample
+  name="accordion/controlled"
+  caption="Tap Review security, then tap Security to close it. Cancel the alert and Security stays open; choose Close and the section closes."
+/>
+
+The callbacks receive `details`, whose `reason` is `"trigger-press"` or `"imperative"`, and whose `source` is `"touch"`, or `"virtual"` while a screen reader runs.
+
+## Keep Mounted
+
+A closed panel unmounts. Add `keepMounted` to one panel or the whole accordion to keep its content mounted and hidden, so a field keeps what you typed into it. Native has no find in page, so `hiddenUntilFound` only keeps the panel mounted, like `keepMounted`.
+
+<ComponentExample
+  name="accordion/keep-mounted"
+  caption="Write a message, open Formatting, then return to Reply to this thread. Your draft is still there."
+/>
+
+## Animation
+
+Each panel's state holds its size, `panelHeight` and `panelWidth`, in place of the web's `--accordion-panel-*` variables, measured as on [Collapsible](./collapsible#animation): the panel lays its children out in a view of its own, so the size is the content's whatever height the panel's style gives it. Animate the panel's height to `panelHeight` with `overflow: "hidden"`, and put padding on the content rather than the panel.
+
+A panel leaves through `onExit`. When it closes, it calls `onExit` with a `done` function and stays on screen until you call it, or until two seconds pass. Meanwhile it takes no touches and screen readers skip it. Without `onExit`, it unmounts at once, or hides with `keepMounted`.
+
+`Grow` is the example's own: an effect that animates the height to the size it's given.
+
+While it leaves, `panelHeight` is the height the panel had when it began closing; once closed it is `0`. The state also has `startingStyle`, true for the panel's first frame after it appears, and `endingStyle`, true while it leaves.
+
+Opening settles at once, so an item's `onOpenChangeComplete(true)` runs as its panel appears. `onOpenChangeComplete(false)` runs once `done` is called, or at once without `onExit`. A panel open from the start reports neither.
+
+<ComponentExample
+  name="accordion/animation"
+  caption="Open or close an item. Its panel grows and shrinks."
+/>
+
+## Expand All
+
+With `multiple`, a controller's `openAll()` opens every enabled item. `closeAll()` closes every item that may close.
+
+<ComponentExample
+  name="accordion/expand-all"
+  caption="Tap Expand all or Collapse all."
+/>
+
+## Nested
+
+Put another accordion inside a panel when a section has its own expandable sections. Each accordion tracks its own items.
+
+<ComponentExample
+  name="accordion/nested"
+  caption="Open Billing, then Invoices inside it. The inner accordion changes without closing Billing."
+/>
+
+## FAQ Search
+
+Control `value` to open the items that match a search, and render only the matching items.
+
+<ComponentExample
+  name="accordion/search"
+  caption="Type “refund” in the search field. The matching questions open, with the match highlighted."
+/>
+
+## Custom Rendering
+
+Every part takes `render`, an element or a function of the native props, the part's state and `{ pressed, hovered, focused }`. Spread the props on a `Pressable` so the trigger keeps its role, expanded state and press. An item's `index` is its position among the accordion's items, from where they render.
+
+<ComponentExample
+  name="accordion/render"
+  caption="Tap Import the parts. Its trigger shades while open, and each trigger shows its step number."
+/>
+
+## Styling
+
+Style each part with a function of its state, like `(state) => [styles.trigger, state.open && styles.open]`. Each part receives the fields listed under [Part State](#part-state). The trigger gets a second argument, `{ pressed, hovered, focused }`, for press feedback, and keyboard focus on Android.
+
+## Part State
+
+### Accordion [#part-state-accordion]
+
+<PartStateTable
+  component="accordion"
+  part="root"
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionState"
+/>
+
+### AccordionItem [#part-state-accordionitem]
+
+<PartStateTable
+  component="accordion"
+  part="item"
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionItemState"
+/>
+
+An item's `index` updates as items mount and unmount. Native reports no item that moves without remounting, so a reordered list keeps its old indexes until an item mounts or unmounts.
+
+### AccordionHeader [#part-state-accordionheader]
+
+<PartStateTable
+  component="accordion"
+  part="header"
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionHeaderState"
+/>
+
+### AccordionTrigger [#part-state-accordiontrigger]
+
+<PartStateTable
+  component="accordion"
+  part="trigger"
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionTriggerState"
+/>
+
+### AccordionPanel [#part-state-accordionpanel]
+
+<PartStateTable
+  component="accordion"
+  part="panel"
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionPanelState"
+/>
+
+With `startingStyle` and `endingStyle`, and its size in pixels, described under [Animation](#animation):
+
+| Field         | Type     | Description                                                                                                     |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `panelHeight` | `number` | The content's height while open, the panel's height when it began closing while it leaves, and `0` once closed. |
+| `panelWidth`  | `number` | The same for the width, which follows the panel's own.                                                          |
+
+Both are unset until the content has been laid out.
+
+## API Reference
+
+Props and callbacks are the same as below, as React Native props. Headers, triggers and panels take their item's value from the item. `AccordionTrigger` also takes `Pressable`'s props, and the other parts take `View`'s.
+
+### Accordion
+
+<TypeTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionOptions"
+/>
+
+### AccordionItem
+
+<TypeTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionItemProps"
+/>
+
+### AccordionHeader
+
+The header takes no options of its own, only `View`'s props.
+
+### AccordionTrigger
+
+<TypeTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionTriggerProps"
+/>
+
+### AccordionPanel
+
+<TypeTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionPanelProps"
+/>
+
+`onExit` is described under [Animation](#animation).
+
+### Reasons
+
+`details.reason` says why items opened or closed, for `onValueChange` and every item's `onOpenChange`. `"find-in-page"` never happens on native.
+
+<ReasonTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionValueChangeReason"
+/>
+
+### Controller
+
+Create one with `createAccordionController()` and pass it as `controller`.
+
+Every write method takes an optional `{ reason, event }`, runs the item and accordion callbacks like a press, and returns `false` when the change is canceled or does nothing.
+
+<ControllerTable
+  path="../../packages/core/src/components/accordion/accordion.ts"
+  name="AccordionController"
+/>
+
+### Events
+
+Callbacks get the new state first, then the details.
+
+| Prop                   | On              | Receives                                                       |
+| ---------------------- | --------------- | -------------------------------------------------------------- |
+| `onValueChange`        | `Accordion`     | `(value, details)`: the open items, and the [reason](#reasons) |
+| `onOpenChange`         | `AccordionItem` | `(open, details)`, before `onValueChange`                      |
+| `onOpenChangeComplete` | `AccordionItem` | `(open)`, as described under [Animation](#animation)           |
+
+## Accessibility
+
+The accordion follows the [WAI-ARIA accordion pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/), translated to React Native's accessibility props: each trigger has the button role and its expanded and disabled state. TalkBack says whether it's expanded or collapsed, and its expand and collapse actions open and close the panel. React Native 0.88 says nothing on iOS for a collapsed trigger, so VoiceOver reads only its name until the panel opens. A double-tap opens or closes the panel. Panels are `View`s with no role, and while closed or leaving, screen readers skip them.
+
+Native has no heading around a trigger, so VoiceOver's rotor and TalkBack's heading navigation don't reach the items; swipe from trigger to trigger instead.
+
+### Keyboard
+
+With a hardware keyboard, with iOS Full Keyboard Access or on Android:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Tab        | Moves to the next control, and Shift-Tab to the previous one |
+| Arrow keys | Move between controls, on Android only                       |
+| Space      | Opens or closes the panel from the trigger                   |
+| Enter      | Opens or closes the panel, on Android only                   |
+
+Native never reports where the screen reader's focus is, so closing a panel with focus inside it leaves focus to the OS rather than moving it back to the trigger.

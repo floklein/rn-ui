@@ -1,6 +1,13 @@
 import { act, cleanup, render, screen } from "@testing-library/react-native"
 import { useState } from "react"
 import { Platform, Text, View } from "react-native"
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "../src/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import { Button } from "../src/button"
 import { Checkbox, CheckboxIndicator } from "../src/checkbox"
@@ -34,12 +41,21 @@ import {
   ProgressValue,
 } from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import { OverlayHost } from "../src/overlays"
+import {
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "../src/popover"
 import {
   Pagination,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "../src/pagination"
+import { Calendar } from "../src/calendar"
 import {
   PasswordInput,
   PasswordInputControl,
@@ -156,6 +172,18 @@ describe("checkDirection on the native host", () => {
       )
     ).resolves.toBeUndefined()
   })
+
+  test("passes on a calendar", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(<Calendar defaultValue="2026-02-16" locale="en-US" />)
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  }, 30_000)
 
   test("passes on a pagination", async () => {
     await expect(
@@ -404,6 +432,56 @@ describe("checkDirection on the native host", () => {
                 </DrawerClose>
               </DrawerContent>
             </Drawer>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on an accordion", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await render(
+            <Accordion defaultValue={["shipping"]}>
+              <AccordionItem value="shipping">
+                <AccordionHeader>
+                  <AccordionTrigger>
+                    <Text>Shipping</Text>
+                  </AccordionTrigger>
+                </AccordionHeader>
+                <AccordionPanel>
+                  <Text>Ships in two days.</Text>
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
+          )
+          return screen.container
+        },
+        { os, act }
+      )
+    ).resolves.toBeUndefined()
+  })
+
+  test("passes on a popover, placed by its arrow's side", async () => {
+    await expect(
+      checkDirection(
+        async () => {
+          await cleanup()
+          await render(
+            <OverlayHost>
+              <Popover>
+                <PopoverTrigger>
+                  <Text>Share</Text>
+                </PopoverTrigger>
+                <PopoverContent side="right">
+                  <PopoverArrow />
+                  <PopoverTitle>Share link</PopoverTitle>
+                </PopoverContent>
+              </Popover>
+            </OverlayHost>
           )
           return screen.container
         },

@@ -4,6 +4,13 @@ import { build } from "esbuild"
 import path from "node:path"
 import { useState } from "react"
 import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native"
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "../src/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "../src/avatar"
 import {
   AlertDialog,
@@ -39,6 +46,14 @@ import {
   ProgressValue,
 } from "../src/progress"
 import { OTPInput, OTPInputGroup, OTPInputSlot } from "../src/otp-input"
+import { OverlayHost } from "../src/overlays"
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "../src/popover"
 import {
   Pagination,
   PaginationEllipsis,
@@ -60,6 +75,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem,
 } from "../src/segmented-control"
+import { Calendar } from "../src/calendar"
 import {
   Drawer,
   DrawerBackdrop,
@@ -104,6 +120,8 @@ const checkImage = () => checkPattern(screen.container, "img", { os, act })
 const checkTabs = () => checkPattern(screen.container, "tabs", { os, act })
 const checkSeparator = () =>
   checkPattern(screen.container, "separator", { os, act })
+const checkCalendar = () =>
+  checkPattern(screen.container, "calendar", { os, act })
 const checkPagination = () =>
   checkPattern(screen.container, "pagination", { os, act })
 const checkProgress = () =>
@@ -113,6 +131,8 @@ const checkToolbar = () =>
   checkPattern(screen.container, "toolbar", { os, act })
 const checkDisclosure = () =>
   checkPattern(screen.container, "disclosure", { os, act })
+const checkAccordion = () =>
+  checkPattern(screen.container, "accordion", { os, act })
 
 // A disclosure written by hand, whose actions focus a switch through its controller when `requests` is set.
 function Disclosure({
@@ -985,6 +1005,56 @@ describe("checkPattern's disclosure pattern on the native host", () => {
   })
 })
 
+function Faq(props: React.ComponentProps<typeof Accordion>) {
+  return (
+    <Accordion {...props}>
+      {["Shipping", "Returns"].map((name) => (
+        <AccordionItem key={name} value={name}>
+          <AccordionHeader>
+            <AccordionTrigger>
+              <Text>{name}</Text>
+            </AccordionTrigger>
+          </AccordionHeader>
+          <AccordionPanel>
+            <Text>{`${name} answer`}</Text>
+          </AccordionPanel>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  )
+}
+
+describe("checkPattern's accordion pattern on the native host", () => {
+  test("passes on one item open at a time, several, one that must stay open, and a disabled accordion", async () => {
+    await render(<Faq />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq multiple defaultValue={["Shipping"]} />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq collapsible={false} defaultValue={["Shipping"]} />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+    await render(<Faq disabled />)
+    await expect(checkAccordion()).resolves.toBeUndefined()
+  })
+
+  test("fails on a screen with no button that has an expanded state", async () => {
+    await render(
+      <Button>
+        <Text>Save</Text>
+      </Button>
+    )
+    await expect(checkAccordion()).rejects.toThrow(
+      "has no button with an expanded state, so it isn't an accordion"
+    )
+  })
+
+  test("fails on a header button whose content doesn't follow the activate action", async () => {
+    await render(<HandDisclosure pressShows={false} />)
+    await expect(checkAccordion()).rejects.toThrow(
+      'the button "Order #4189" shows no content after the activate action'
+    )
+  })
+})
+
 describe("checkPattern's separator pattern on the native host", () => {
   test("passes on separators, decorative or not, in either orientation", async () => {
     await render(
@@ -1115,6 +1185,68 @@ describe("checkPattern's pagination pattern on the native host", () => {
     )
     await expect(checkPagination()).rejects.toThrow(
       "has no name; a button needs an accessibilityLabel or text inside it."
+    )
+  })
+})
+
+describe("checkPattern's calendar pattern on the native host", () => {
+  test("passes on a calendar picking one date, several or a range, selecting each enabled day", async () => {
+    const onValueChange = jest.fn()
+    await render(
+      <View>
+        <Calendar
+          defaultValue="2026-10-16"
+          unavailable={["2026-10-20"]}
+          locale="en-US"
+          onValueChange={onValueChange}
+        />
+        <Calendar mode="multiple" defaultMonth="2026-11" locale="en-US" />
+        <Calendar mode="range" defaultMonth="2026-12" locale="en-US" />
+      </View>
+    )
+    await expect(checkCalendar()).resolves.toBeUndefined()
+    expect(onValueChange).toHaveBeenCalled()
+  }, 30_000)
+
+  test("passes on a disabled calendar, which ignores the activation", async () => {
+    await render(<Calendar disabled defaultMonth="2026-10" locale="en-US" />)
+    await expect(checkCalendar()).resolves.toBeUndefined()
+  })
+
+  test("fails with no day", async () => {
+    await render(
+      <Pressable accessibilityRole="button">
+        <Text>Next month</Text>
+      </Pressable>
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      "has no button with a selected state, so it has no days."
+    )
+  })
+
+  test("fails on a day with no name", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: true }}
+      />
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      "has no name; a day needs an accessibilityLabel or text inside it."
+    )
+  })
+
+  test("fails on a day that isn't selected after the activate action", async () => {
+    await render(
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: false }}
+      >
+        <Text>16</Text>
+      </Pressable>
+    )
+    await expect(checkCalendar()).rejects.toThrow(
+      `the button "16" isn't selected after the activate action; activating a day that isn't disabled selects it.`
     )
   })
 })
@@ -1367,6 +1499,59 @@ describe("checkPattern's dialog patterns on the native host", () => {
     await expect(
       checkPattern(screen.container, "alertdialog", { os, act })
     ).resolves.toBeUndefined()
+  })
+
+  test.each([false, true])(
+    "passes on a popover with modal %s, which opens beside its trigger",
+    async (modal) => {
+      await render(
+        <OverlayHost>
+          <Popover modal={modal}>
+            <PopoverTrigger>
+              <Text>Share</Text>
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverTitle>Share link</PopoverTitle>
+              <PopoverClose>
+                <Text>Done</Text>
+              </PopoverClose>
+            </PopoverContent>
+          </Popover>
+        </OverlayHost>
+      )
+      await expect(checkDialog()).resolves.toBeUndefined()
+    }
+  )
+
+  test("fails on a popover whose expand action moves no focus", async () => {
+    function Panel() {
+      const [open, setOpen] = useState(false)
+      const toggle = () => setOpen(!open)
+      return (
+        <View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            accessibilityActions={[{ name: open ? "collapse" : "expand" }]}
+            onAccessibilityAction={toggle}
+            onPress={toggle}
+          >
+            <Text>Share</Text>
+          </Pressable>
+          {open && (
+            <View onAccessibilityEscape={toggle}>
+              <Text accessibilityRole="header">Share link</Text>
+            </View>
+          )}
+        </View>
+      )
+    }
+    await render(<Panel />)
+    await expect(checkDialog()).rejects.toThrow(
+      os === "ios"
+        ? "requests no accessibility focus when it opens the dialog"
+        : "requests no accessibility focus after the expand action"
+    )
   })
 
   test("fails on a dialog with no title", async () => {

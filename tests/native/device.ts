@@ -64,6 +64,8 @@ const capabilities =
         "appium:adbExecTimeout": limits.adb,
         "appium:androidInstallTimeout": limits.adb,
         "appium:uiautomator2ServerInstallTimeout": limits.adb,
+        "appium:uiautomator2ServerLaunchTimeout": limits.adb,
+        "appium:appWaitDuration": limits.adb,
         // An emulator from simlock sits behind its own adb server.
         ...(process.env.ANDROID_ADB_SERVER_PORT && {
           "appium:adbPort": Number(process.env.ANDROID_ADB_SERVER_PORT),
@@ -109,7 +111,7 @@ const byId = (id: string) =>
 const named = (label: string) =>
   platform === "ios"
     ? `~${label}`
-    : `android=new UiSelector().descriptionMatches("\\\\Q${label}\\\\E(, .*)?")`
+    : `android=new UiSelector().descriptionMatches("\\Q${label}\\E(, .*)?")`
 
 // UiAutomator only finds what's on screen, so a screen low in the list is
 // scrolled to first.

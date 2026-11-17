@@ -57,7 +57,7 @@ async function pressSlot(index: number, hold?: number) {
 async function paste() {
   const item = await device.driver.$(
     device.platform === "ios"
-      ? "~Paste"
+      ? '-ios class chain:**/XCUIElementTypeMenuItem[`name == "Paste"`]'
       : 'android=new UiSelector().text("Paste")'
   )
   await item.waitForDisplayed({ timeout: 5000 })

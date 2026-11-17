@@ -1,3 +1,4 @@
+import { Button } from "@ui-sdk/react-native/button"
 import { Checkbox } from "@ui-sdk/react-native/checkbox"
 import {
   Field,
@@ -7,7 +8,9 @@ import {
   FieldSet,
 } from "@ui-sdk/react-native/field"
 import { Input } from "@ui-sdk/react-native/input"
+import { Radio, RadioGroup } from "@ui-sdk/react-native/radio"
 import { Switch, SwitchThumb } from "@ui-sdk/react-native/switch"
+import { Toggle } from "@ui-sdk/react-native/toggle"
 import { useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 
@@ -87,6 +90,20 @@ function Fixture() {
             aria-label="Digest"
             style={styles.box}
           />
+          <Toggle testID="toggle-mute" aria-label="Mute" style={styles.action}>
+            <Text>Mute</Text>
+          </Toggle>
+          <RadioGroup aria-label="Frequency" style={styles.row}>
+            <Radio
+              testID="radio-daily"
+              aria-label="Daily"
+              value="daily"
+              style={styles.box}
+            />
+          </RadioGroup>
+          <Button testID="button-test-alert" style={styles.action}>
+            <Text>Test alert</Text>
+          </Button>
         </FieldSet>
       </FieldSet>
     </View>

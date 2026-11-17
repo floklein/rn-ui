@@ -9,19 +9,21 @@ import type {
   DialogTriggerProps,
   DialogTriggerState,
 } from "@ui-sdk/core/dialog"
-import {
-  dialogNative,
-  type NativeBehavior,
-  pressTrigger,
-} from "@ui-sdk/core/native"
+import { dialogNative, type NativeBehavior } from "@ui-sdk/core/native"
 import type { PresenceState } from "@ui-sdk/core/renderer"
 import * as React from "react"
-import { Modal, Pressable, Text, View } from "react-native"
-import { Carried, carry, useCarried } from "./carried-context"
-import { useControllerEntry, useControllerTarget } from "./controller-target"
-import { layerInput, pressSource } from "./native-host"
-import { landIn, ModalHost, useHosted } from "./overlay-host"
-import { mergeProps, renderElement } from "./render-element"
+import { Pressable, Text, View } from "react-native"
+import { useControllerEntry } from "./controller-target"
+import { layerInput } from "./native-host"
+import { landIn } from "./overlay-host"
+import {
+  createOutlet,
+  OutletContext,
+  PopupLayer,
+  popupTrigger,
+  useOutlet,
+} from "./popup-parts"
+import { mergeProps } from "./render-element"
 import {
   createParts,
   type ExitProps,
@@ -30,9 +32,7 @@ import {
   type Parts,
   type PrimitiveHandle,
   useHandle,
-  useNearest,
   usePart,
-  usePressedPart,
   usePrimitive,
 } from "./use-primitive"
 
@@ -58,107 +58,14 @@ type DialogParts = Parts<
   { title: typeof Text; description: typeof Text; close: typeof Pressable }
 >
 
-// The backdrop and content, which the root renders together in a host, or in
-// one `Modal` when modal, so the backdrop sits under the content.
-type Outlet = {
-  get: () => { backdrop?: React.ReactNode; content?: React.ReactNode }
-  set: (slot: "backdrop" | "content", element: React.ReactNode) => void
-  subscribe: (listener: () => void) => () => void
-}
-
-function createOutlet() {
-  let slots: ReturnType<Outlet["get"]> = {}
-  const listeners = new Set<() => void>()
-  const outlet: Outlet = {
-    get: () => slots,
-    set(slot, element) {
-      if (slots[slot] === element) {
-        return
-      }
-      slots = { ...slots, [slot]: element }
-      listeners.forEach((listener) => listener())
-    },
-    subscribe(listener) {
-      listeners.add(listener)
-      return () => {
-        listeners.delete(listener)
-      }
-    },
-  }
-  return outlet
-}
-
-const OutletContext = carry("Outlet", React.createContext<Outlet | null>(null))
-
-function useOutlet(slot: "backdrop" | "content", element: React.ReactNode) {
-  const outlet = React.useContext(OutletContext)!
-  const values = useCarried()
-  React.useLayoutEffect(() => {
-    outlet.set(
-      slot,
-      element ? <Carried values={values}>{element}</Carried> : null
-    )
-  })
-  React.useLayoutEffect(() => () => outlet.set(slot, null), [outlet, slot])
-  return null
-}
-
-// A modal dialog's layer is a `Modal` carrying a host of its own.
-function DialogLayer({
-  handle,
-  outlet,
-  modal = handle.state.modal !== false,
-  Root = React.Fragment,
-}: {
-  handle: PrimitiveHandle<typeof dialogPrimitive>
-  outlet: Outlet
-  modal?: boolean
-  Root?: React.ComponentType<{ children: React.ReactNode }>
-}) {
-  const { backdrop, content } = React.useSyncExternalStore(
-    outlet.subscribe,
-    outlet.get
-  )
-  const mounted = React.useSyncExternalStore(
-    handle.instance.subscribe,
-    () => handle.state.mounted
-  )
-  const layer = modal ? (
-    <Modal
-      visible={mounted && !!content}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={() => {
-        layerInput()?.back()
-      }}
-    >
-      <Root>
-        <ModalHost>
-          {backdrop}
-          {content}
-        </ModalHost>
-      </Root>
-    </Modal>
-  ) : (
-    <>
-      {backdrop}
-      {content}
-    </>
-  )
-  return useHosted(layer, mounted, {
-    component: handle.primitive.name,
-    id: handle.instance.id,
-    modal,
-  })
-}
-
 // Dialog, AlertDialog and Drawer render the same parts over their own primitive.
 function dialogParts(
   primitive: typeof dialogPrimitive,
   behavior: NativeBehavior = dialogNative
 ) {
+  const Trigger = popupTrigger(primitive) as (
+    props: TriggerPartProps
+  ) => React.ReactElement | null
   const parts: DialogParts = createParts(
     primitive,
     { title: Text, description: Text, close: Pressable },
@@ -173,52 +80,9 @@ function dialogParts(
       <HandleScope handle={handle as unknown as PrimitiveHandle<never>}>
         <OutletContext.Provider value={outlet}>
           {children}
-          <DialogLayer handle={handle} outlet={outlet} />
+          <PopupLayer handle={handle} outlet={outlet} />
         </OutletContext.Provider>
       </HandleScope>
-    )
-  }
-
-  // Until the dialog it names mounts, a trigger outside it is a plain button.
-  function Trigger({ controller, ...props }: TriggerPartProps) {
-    const handle = useControllerTarget(controller, useNearest(primitive))
-    if (!handle) {
-      const { disabled, focusableWhenDisabled, render, ...rest } = props
-      return renderElement(
-        Pressable,
-        {
-          accessibilityRole: "button",
-          accessibilityState: { disabled: !!disabled },
-          disabled: disabled && !focusableWhenDisabled,
-          ...rest,
-        },
-        render,
-        { open: false, disabled: !!disabled }
-      )
-    }
-    const part = <TriggerPart {...props} />
-    return controller ? <HandleScope handle={handle}>{part}</HandleScope> : part
-  }
-
-  function TriggerPart({
-    id,
-    disabled,
-    focusableWhenDisabled,
-    payload,
-    ...props
-  }: Omit<TriggerPartProps, "controller">) {
-    const fallback = React.useId()
-    const handle = useHandle(primitive)
-    return usePressedPart(
-      primitive,
-      "trigger",
-      { id: id ?? fallback, disabled, focusableWhenDisabled, payload },
-      mergeProps(
-        { onTouchStart: landIn(handle.api) },
-        props as Record<string, unknown>
-      ),
-      Pressable,
-      (part) => () => pressTrigger(part, pressSource())
     )
   }
 
@@ -291,12 +155,8 @@ function dialogParts(
 export {
   type BackdropPartProps,
   type ContentPartProps,
-  createOutlet,
-  DialogLayer,
   type DialogParts,
   dialogParts,
-  OutletContext,
-  useOutlet,
   type RootProps,
   type TriggerPartProps,
 }
